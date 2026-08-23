@@ -221,7 +221,7 @@ export const Example = (props: ExampleProps) => {
 
 ## Convenções de Git
 
-- As mensagens de commit seguem **Conventional Commits**: prefixe o assunto com `feat:`, `fix:`, `docs:` ou `refactor:` dependendo da mudança (ex.: `feat: add Text atom`, `fix: correct zIndex layer gaps`).
+- As mensagens de commit seguem **Conventional Commits**: prefixe o assunto com um tipo (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`, `style:`, `perf:`, `build:`, `ci:`, `revert:`, opcionalmente `type(scope):`) dependendo da mudança (ex.: `feat: add Text atom`, `fix: correct zIndex layer gaps`).
 - Mantenha a **primeira linha com menos de 72 caracteres**. Coloque qualquer detalhe adicional no corpo do commit depois de uma linha em branco, em vez de deixar o assunto ficar longo demais.
 - **Sempre execute `bun run test` antes de commitar** — nunca commite com a suíte de testes falhando.
 
@@ -229,6 +229,6 @@ export const Example = (props: ExampleProps) => {
 
 - `core.hooksPath` está definido como `.husky/_` (via `husky init`); o script `prepare` (`"prepare": "husky"`) refaz esse link a cada `bun install`, para que os hooks funcionem para qualquer pessoa que clone o repositório — não apague o script `prepare`.
 - `.husky/pre-commit` executa `bun run test` — um commit é bloqueado se a suíte falhar.
-- `.husky/commit-msg` executa `bunx commitlint --edit "$1"`, que rejeita o commit se a linha de assunto não começar com `feat:`/`fix:`/`docs:`/`refactor:` (opcionalmente `type(scope):`) ou exceder 72 caracteres. `commitlint.config.js` (na raiz) estende o preset `@commitlint/config-conventional` e sobrescreve apenas `type-enum` (a lista restrita de tipos permitidos) e `header-max-length` (72) — se um novo tipo de commit precisar ser permitido, edite o array de `type-enum` lá.
+- `.husky/commit-msg` executa `bunx commitlint --edit "$1"`, que rejeita o commit se a linha de assunto não seguir o formato `type:`/`type(scope):` do Conventional Commits ou exceder 72 caracteres. `commitlint.config.js` (na raiz) estende o preset `@commitlint/config-conventional` (que já traz a lista padrão de tipos — `feat`, `fix`, `docs`, `refactor`, `chore`, `test`, `style`, `perf`, `build`, `ci`, `revert`) e sobrescreve apenas `header-max-length` (72) — para restringir novamente a lista de tipos permitidos, adicione uma regra `type-enum` lá.
 - Scripts Node-only (git hooks auxiliares, etc.) vão em `scripts/` e recebem um bloco dedicado no `eslint.config.js` com `globals.node` (para `process`, etc.) em vez do `globals.browser` usado em todo o resto — a pasta está vazia hoje (a validação de commit foi migrada para o `commitlint`), mas continua sendo o lugar certo para qualquer script Node futuro.
 - Os arquivos de hook em `.husky/` devem manter o bit de execução (`100755`) no git, não `100644` — sistemas de arquivos do Windows não rastreiam isso nativamente, então depois de criar/editar um arquivo de hook, corrija-o explicitamente com `git update-index --chmod=+x .husky/<hook-name>` caso `git ls-files --stage .husky/<hook-name>` mostre `100644`.
