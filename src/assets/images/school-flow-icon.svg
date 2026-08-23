@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="SchoolFlow360">
+  <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#1E5BFF"/><stop offset="1" stop-color="#6C4DFF"/></linearGradient></defs>
+  <rect width="192" height="192" rx="44" fill="url(#g)"/>
+  <path d="M38 74 96 38l58 36-58 36-58-36Z" fill="#fff" opacity=".96"/>
+  <path d="M58 101v31c21 16 55 16 76 0v-31l-38 24-38-24Z" fill="#fff" opacity=".84"/>
+  <circle cx="144" cy="126" r="18" fill="#18C7A3"/>
+  <path d="m136 126 6 6 12-15" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
