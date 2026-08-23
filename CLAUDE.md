@@ -185,6 +185,7 @@ export type TokenNameType = typeof tokenName
 - **Ordem alfabética de propriedades, obrigatórias antes de opcionais**, imposta pelo `eslint-plugin-perfectionist`, mas restrita a `files: ["src/ds-components/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"]` (ver `eslint.config.js`) — deliberadamente **não** aplicada a `src/foundation/`, cujas escalas de token (`xs`→`4xl`, `50`→`900`) são ordenadas por tamanho, não alfabeticamente:
   - `perfectionist/sort-object-types` ordena os membros de tipos de prop (`type FooProps = {...}`) alfabeticamente dentro de dois grupos, nesta ordem: `required-property` primeiro, depois `optional-property` (cada grupo alfabético dentro de si — ver `TextProps`/`StyledTextProps`).
   - `perfectionist/sort-objects` ordena object literals e padrões desestruturados (ex.: `const { a, b } = props`) de forma puramente alfabética — não há conceito de obrigatório/opcional no nível da desestruturação.
+- **Os blocos `scripts`, `dependencies` e `devDependencies` em `package.json` devem estar em ordem alfabética.** Não é imposto por lint (`perfectionist` não cobre arquivos `.json`) — revise manualmente ao adicionar, renomear ou remover um script/dependência.
 
 ## Ordenação do corpo do componente
 
