@@ -133,3 +133,9 @@ export const MaskExpiry: Story = {
 export const Cvv: Story = {
   args: { helperText: "3 dígitos, no verso do cartão", maxLength: 3, numeric: true, title: "CVV" },
 }
+
+// No dedicated date picker component: the native type="date" attribute is forwarded as-is, and the browser
+// already renders its own OS-appropriate calendar picker for it
+export const DatePicker: Story = {
+  args: { title: "Data de nascimento", type: "date" },
+}

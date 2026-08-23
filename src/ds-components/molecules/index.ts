@@ -1,1 +1,6 @@
+export * from "./Checkbox"
+export * from "./FileUpload"
 export * from "./Input"
+export * from "./Select"
+export * from "./Switch"
+export * from "./Textarea"

@@ -162,6 +162,12 @@ describe("Input", () => {
     expect(input.value).toBe("123")
   })
 
+  it("supports a date field via the native type attribute, without a dedicated date picker component", () => {
+    render(<Input title="Data de nascimento" type="date" />)
+
+    expect(screen.getByLabelText("Data de nascimento")).toHaveAttribute("type", "date")
+  })
+
   it("formats the value as a CEP while typing", () => {
     render(<Input mask="cep" placeholder="CEP" />)
 
