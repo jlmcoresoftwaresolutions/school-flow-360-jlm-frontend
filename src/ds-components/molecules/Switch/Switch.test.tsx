@@ -7,10 +7,10 @@ import { spacing } from "@/foundation"
 import { Switch } from "./Switch"
 
 describe("Switch", () => {
-  it("renders a checkbox input", () => {
+  it("renders a switch input", () => {
     render(<Switch label="Notificações por e-mail" />)
 
-    expect(screen.getByRole("checkbox")).toBeInTheDocument()
+    expect(screen.getByRole("switch")).toBeInTheDocument()
   })
 
   it("renders the label associated with the switch", () => {
@@ -25,13 +25,13 @@ describe("Switch", () => {
   it("is off by default", () => {
     render(<Switch label="Notificações por e-mail" />)
 
-    expect(screen.getByRole("checkbox")).not.toBeChecked()
+    expect(screen.getByRole("switch")).not.toBeChecked()
   })
 
-  it("respects the defaultChecked attribute", () => {
+  it("respects the defaultChecked prop", () => {
     render(<Switch defaultChecked label="Notificações por e-mail" />)
 
-    expect(screen.getByRole("checkbox")).toBeChecked()
+    expect(screen.getByRole("switch")).toBeChecked()
   })
 
   it("renders helperText below the switch", () => {
@@ -69,19 +69,22 @@ describe("Switch", () => {
   it("toggles when clicked and forwards onChange", () => {
     const handleChange = vi.fn()
 
-    render(<Switch label="Financeiro" onChange={handleChange} />)
+    render(<Switch checked={false} label="Financeiro" onChange={handleChange} />)
 
-    const input = screen.getByRole("checkbox")
+    fireEvent.click(screen.getByRole("switch"))
 
-    fireEvent.click(input)
-
-    expect(input).toBeChecked()
-    expect(handleChange).toHaveBeenCalled()
+    expect(handleChange).toHaveBeenCalledWith(expect.anything(), true)
   })
 
-  it("respects the disabled attribute", () => {
+  it("respects the checked prop for controlled usage", () => {
+    render(<Switch checked label="Financeiro" onChange={vi.fn()} />)
+
+    expect(screen.getByRole("switch")).toBeChecked()
+  })
+
+  it("respects the disabled prop", () => {
     render(<Switch disabled label="Financeiro" />)
 
-    expect(screen.getByRole("checkbox")).toBeDisabled()
+    expect(screen.getByRole("switch")).toBeDisabled()
   })
 })

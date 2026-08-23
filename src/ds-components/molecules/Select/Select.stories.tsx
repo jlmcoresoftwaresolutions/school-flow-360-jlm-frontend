@@ -1,16 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { useState } from "react"
 
 import { borderRadiusLevels, type BorderRadiusLevelsType, spacing } from "@/foundation"
 
-import { Select } from "./Select"
+import { Select, type SelectOption } from "./Select"
 
 const borderRadiusLevelKeys = Object.keys(borderRadiusLevels) as (keyof BorderRadiusLevelsType)[]
 
-const turnoOptions = [
+const turnoOptions: SelectOption[] = [
   { label: "Manhã", value: "manha" },
   { label: "Tarde", value: "tarde" },
   { label: "Noite", value: "noite" },
 ]
+
+const ControlledExample = () => {
+  const [value, setValue] = useState<SelectOption | null>(null)
+
+  return <Select onChange={setValue} options={turnoOptions} title="Turno" value={value} />
+}
 
 const meta: Meta<typeof Select> = {
   args: { options: turnoOptions, placeholder: "Selecione..." },
@@ -20,11 +27,11 @@ const meta: Meta<typeof Select> = {
       description: "Border radius level applied to the select: subtle, low, medium, high or full. Defaults to medium.",
       options: borderRadiusLevelKeys,
     },
-    disabled: { control: "boolean", description: "Native disabled attribute, forwarded to the select element" },
     elevated: { control: "boolean", description: "Adds a drop shadow around the select. Defaults to true." },
     helperText: { control: "text", description: "Text rendered below the select to provide extra context" },
+    isDisabled: { control: "boolean", description: "Disables the select, forwarded to react-select" },
     options: { control: "object", description: "Array of { label, value } options rendered inside the select" },
-    placeholder: { control: "text", description: "Disabled placeholder option shown before a real value is chosen" },
+    placeholder: { control: "text", description: "Placeholder shown before a value is chosen" },
     title: { control: "text", description: "Label rendered above the select" },
   },
   component: Select,
@@ -39,7 +46,7 @@ type Story = StoryObj<typeof Select>
 // Default rendering with no title or helperText set
 export const Default: Story = {}
 
-// The title prop rendering a label above the select, linked via htmlFor/id
+// The title prop rendering a label above the select, linked via inputId/htmlFor
 export const WithTitle: Story = {
   args: { title: "Turno" },
 }
@@ -70,7 +77,12 @@ export const BorderRadiuses: Story = {
   ),
 }
 
-// The native disabled attribute, forwarded straight through to the select element
+// The isDisabled prop, forwarded straight through to react-select
 export const Disabled: Story = {
-  args: { defaultValue: "manha", disabled: true, title: "Turno" },
+  args: { defaultValue: turnoOptions[0], isDisabled: true, title: "Turno" },
+}
+
+// A fully controlled select, driving the value/onChange props from useState
+export const Controlled: Story = {
+  render: () => <ControlledExample />,
 }

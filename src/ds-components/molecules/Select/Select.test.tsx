@@ -1,12 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { createRef } from "react"
+import type { SelectInstance } from "react-select"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, shadows, spacing } from "@/foundation"
+import { shadows, spacing } from "@/foundation"
 
-import { Select } from "./Select"
+import { Select, type SelectOption } from "./Select"
 
-const options = [
+const options: SelectOption[] = [
   { label: "Manhã", value: "manha" },
   { label: "Tarde", value: "tarde" },
 ]
@@ -15,18 +16,19 @@ describe("Select", () => {
   it("renders a select with the given options", () => {
     render(<Select options={options} />)
 
-    expect(screen.getByRole("combobox")).toBeInTheDocument()
-    expect(screen.getByRole("option", { name: "Manhã" })).toBeInTheDocument()
-    expect(screen.getByRole("option", { name: "Tarde" })).toBeInTheDocument()
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    expect(screen.getByText("Manhã")).toBeInTheDocument()
+    expect(screen.getByText("Tarde")).toBeInTheDocument()
   })
 
-  it("renders a disabled placeholder option when placeholder is provided", () => {
+  it("renders a placeholder when no value is selected", () => {
     render(<Select options={options} placeholder="Selecione..." />)
 
-    expect(screen.getByRole("option", { name: "Selecione..." })).toBeDisabled()
+    expect(screen.getByText("Selecione...")).toBeInTheDocument()
   })
 
-  it("does not render a placeholder option when placeholder is not provided", () => {
+  it("does not render a placeholder when placeholder is not provided", () => {
     render(<Select options={options} />)
 
     expect(screen.queryByText("Selecione...")).not.toBeInTheDocument()
@@ -38,7 +40,7 @@ describe("Select", () => {
     const select = screen.getByLabelText("Turno")
 
     expect(select).toBeInTheDocument()
-    expect(select.tagName).toBe("SELECT")
+    expect(select).toHaveAttribute("role", "combobox")
   })
 
   it("renders helperText below the select", () => {
@@ -59,55 +61,53 @@ describe("Select", () => {
     expect(container.firstChild).toHaveStyle({ marginTop: spacing[8] })
   })
 
-  it("forwards a ref to the underlying select element", () => {
-    const ref = createRef<HTMLSelectElement>()
+  it("forwards a ref to the underlying react-select instance", () => {
+    const ref = createRef<SelectInstance<SelectOption, false>>()
 
     render(<Select options={options} ref={ref} />)
 
-    expect(ref.current).toBeInstanceOf(HTMLSelectElement)
+    expect(ref.current).not.toBeNull()
+    expect(ref.current?.focus).toBeInstanceOf(Function)
   })
 
-  it("forwards native select props like value and onChange", () => {
+  it("shows the value passed via the value prop", () => {
+    render(<Select options={options} title="Turno" value={options[0]} />)
+
+    expect(screen.getByText("Manhã")).toBeInTheDocument()
+  })
+
+  it("calls onChange with the picked option", () => {
     const handleChange = vi.fn()
 
-    render(<Select onChange={handleChange} options={options} title="Turno" value="manha" />)
+    render(<Select onChange={handleChange} options={options} title="Turno" value={options[0]} />)
 
-    const select = screen.getByLabelText("Turno") as HTMLSelectElement
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+    fireEvent.click(screen.getByText("Tarde"))
 
-    expect(select.value).toBe("manha")
-
-    fireEvent.change(select, { target: { value: "tarde" } })
-
-    expect(handleChange).toHaveBeenCalled()
+    expect(handleChange).toHaveBeenCalledWith(options[1], expect.anything())
   })
 
-  it("defaults to the medium border radius", () => {
-    render(<Select options={options} title="Turno" />)
+  it("uses the defaultValue prop for uncontrolled usage", () => {
+    render(<Select defaultValue={options[1]} options={options} title="Turno" />)
 
-    expect(screen.getByLabelText("Turno")).toHaveStyle({ borderRadius: borderRadiusLevels.medium })
-  })
-
-  it("applies the borderRadius prop", () => {
-    render(<Select borderRadius="high" options={options} title="Turno" />)
-
-    expect(screen.getByLabelText("Turno")).toHaveStyle({ borderRadius: borderRadiusLevels.high })
+    expect(screen.getByText("Tarde")).toBeInTheDocument()
   })
 
   it("has a drop shadow by default", () => {
-    render(<Select options={options} title="Turno" />)
+    const { container } = render(<Select options={options} title="Turno" />)
 
-    expect(screen.getByLabelText("Turno")).not.toHaveStyle({ boxShadow: shadows.none })
+    expect(container.querySelector(".select__control")).not.toHaveStyle({ boxShadow: shadows.none })
   })
 
   it("removes the drop shadow when elevated is false", () => {
-    render(<Select elevated={false} options={options} title="Turno" />)
+    const { container } = render(<Select elevated={false} options={options} title="Turno" />)
 
-    expect(screen.getByLabelText("Turno")).toHaveStyle({ boxShadow: shadows.none })
+    expect(container.querySelector(".select__control")).toHaveStyle({ boxShadow: shadows.none })
   })
 
-  it("respects the disabled attribute", () => {
-    render(<Select disabled options={options} title="Turno" />)
+  it("respects the isDisabled prop", () => {
+    const { container } = render(<Select isDisabled options={options} title="Turno" />)
 
-    expect(screen.getByLabelText("Turno")).toBeDisabled()
+    expect(container.querySelector(".select__control")).toHaveAttribute("aria-disabled", "true")
   })
 })

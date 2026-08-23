@@ -1,6 +1,7 @@
-import styled, { css } from "styled-components"
+import type { StylesConfig } from "react-select"
+import styled from "styled-components"
 
-import { colors, shadows, spacing, typography } from "@/foundation"
+import { colors, motion, shadows, spacing, typography, zIndex } from "@/foundation"
 
 export const SelectWrapper = styled.div`
   display: flex;
@@ -8,53 +9,85 @@ export const SelectWrapper = styled.div`
   gap: ${spacing[4]};
 `
 
-export const SelectFieldWrapper = styled.div`
-  position: relative;
-`
-
-export type StyledSelectProps = {
-  $borderRadius: string
-  $elevated?: boolean
+export type SelectStylesConfig = {
+  borderRadius: string
+  elevated: boolean
 }
 
-export const StyledSelect = styled.select<StyledSelectProps>`
-  ${(props) => {
-    const { $borderRadius, $elevated } = props
+export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfig<Option, false> => {
+  const { borderRadius, elevated } = config
 
-    return css`
-      appearance: none;
-      background: ${colors.neutral[0]};
-      border-radius: ${$borderRadius};
-      border: 1px solid ${colors.neutral[300]};
-      box-shadow: ${$elevated ? shadows.sm : shadows.none};
-      color: ${colors.neutral[900]};
-      cursor: pointer;
-      font-family: ${typography.fontFamily.sans};
-      font-size: ${typography.fontSize.md}px;
-      padding: ${spacing[12]};
-      padding-right: ${spacing[40]};
-      width: 100%;
+  return {
+    control: (base, state) => ({
+      ...base,
+      "&:hover": {
+        borderColor: state.isFocused ? colors.primary[500] : colors.neutral[300],
+      },
+      background: state.isDisabled ? colors.neutral[50] : colors.neutral[0],
+      borderColor: state.isFocused ? colors.primary[500] : colors.neutral[300],
+      borderRadius,
+      boxShadow: state.isFocused ? "none" : elevated ? shadows.sm : shadows.none,
+      cursor: state.isDisabled ? "not-allowed" : "pointer",
+      minHeight: "unset",
+      padding: `calc(${spacing[12]} - 2px) ${spacing[4]}`,
+      transition: `border-color ${motion.duration.fast} ${motion.easing.ease}`,
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      padding: `0 ${spacing[8]}`,
+    }),
+    indicatorSeparator: () => ({
+      display: "none",
+    }),
+    input: (base) => ({
+      ...base,
+      color: colors.neutral[900],
+      fontFamily: typography.fontFamily.sans,
+      margin: 0,
+      padding: 0,
+    }),
+    menu: (base) => ({
+      ...base,
+      borderRadius,
+      boxShadow: shadows.md,
+      overflow: "hidden",
+      zIndex: zIndex.dropdown,
+    }),
+    menuList: (base) => ({
+      ...base,
+      padding: spacing[4],
+    }),
+    option: (base, state) => {
+      let background = "transparent"
 
-      &:focus {
-        border-color: ${colors.primary[500]};
-        outline: none;
+      if (state.isSelected) {
+        background = colors.primary[500]
+      } else if (state.isFocused) {
+        background = colors.primary[100]
       }
 
-      &:disabled {
-        background: ${colors.neutral[50]};
-        color: ${colors.neutral[500]};
-        cursor: not-allowed;
+      return {
+        ...base,
+        background,
+        borderRadius,
+        color: state.isSelected ? colors.neutral[0] : colors.neutral[900],
+        cursor: "pointer",
+        padding: `${spacing[8]} ${spacing[12]}`,
       }
-    `
-  }}
-`
-
-export const SelectChevron = styled.span`
-  align-items: center;
-  display: inline-flex;
-  pointer-events: none;
-  position: absolute;
-  right: ${spacing[12]};
-  top: 50%;
-  transform: translateY(-50%);
-`
+    },
+    placeholder: (base) => ({
+      ...base,
+      color: colors.neutral[500],
+    }),
+    singleValue: (base, state) => ({
+      ...base,
+      color: state.isDisabled ? colors.neutral[500] : colors.neutral[900],
+    }),
+    valueContainer: (base) => ({
+      ...base,
+      fontFamily: typography.fontFamily.sans,
+      fontSize: typography.fontSize.md,
+      padding: `0 ${spacing[8]}`,
+    }),
+  }
+}

@@ -1,11 +1,24 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
+import { useState } from "react"
 
 import { Switch } from "./Switch"
+
+const ControlledExample = () => {
+  const [checked, setChecked] = useState(false)
+
+  return (
+    <Switch
+      checked={checked}
+      label="Cobrança de mensalidades ativa"
+      onChange={(_event, nextChecked) => setChecked(nextChecked)}
+    />
+  )
+}
 
 const meta: Meta<typeof Switch> = {
   args: { label: "Cobrança de mensalidades ativa" },
   argTypes: {
-    disabled: { control: "boolean", description: "Native disabled attribute, forwarded to the switch input" },
+    disabled: { control: "boolean", description: "Disables the switch, forwarded to the MUI Switch" },
     helperText: { control: "text", description: "Text rendered below the switch to provide extra context" },
     label: { control: "text", description: "Label rendered next to the switch track" },
   },
@@ -21,7 +34,7 @@ type Story = StoryObj<typeof Switch>
 // Default rendering, off
 export const Default: Story = {}
 
-// On by default via the native defaultChecked attribute
+// On by default via defaultChecked, uncontrolled
 export const Checked: Story = {
   args: { defaultChecked: true },
 }
@@ -31,12 +44,17 @@ export const WithHelperText: Story = {
   args: { helperText: "Ativa o módulo financeiro para esta rede." },
 }
 
-// The native disabled attribute, forwarded straight through to the switch input
+// The disabled prop, forwarded straight through to the MUI Switch
 export const Disabled: Story = {
   args: { disabled: true },
 }
 
-// The native disabled attribute combined with defaultChecked
+// The disabled prop combined with defaultChecked
 export const DisabledChecked: Story = {
   args: { defaultChecked: true, disabled: true },
+}
+
+// A fully controlled switch, driving the checked/onChange props from useState
+export const Controlled: Story = {
+  render: () => <ControlledExample />,
 }

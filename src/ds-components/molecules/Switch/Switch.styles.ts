@@ -1,6 +1,7 @@
+import type { SxProps, Theme } from "@mui/material/styles"
 import styled from "styled-components"
 
-import { colors, motion, opacity, radius, spacing } from "@/foundation"
+import { colors, motion, opacity, shadows, spacing } from "@/foundation"
 
 export const SwitchWrapper = styled.div`
   display: flex;
@@ -15,44 +16,21 @@ export const SwitchRow = styled.label`
   gap: ${spacing[8]};
 `
 
-export const HiddenSwitchInput = styled.input`
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  width: 1px;
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-`
-
-export const SwitchThumb = styled.span`
-  background: ${colors.neutral[0]};
-  border-radius: ${radius.full};
-  height: ${spacing[16]};
-  transition: transform ${motion.duration.fast} ${motion.easing.ease};
-  width: ${spacing[16]};
-`
-
-export const SwitchTrack = styled.span`
-  background: ${colors.neutral[300]};
-  border-radius: ${radius.full};
-  display: inline-flex;
-  flex-shrink: 0;
-  height: ${spacing[24]};
-  padding: ${spacing[4]};
-  transition: background ${motion.duration.fast} ${motion.easing.ease};
-  width: ${spacing[40]};
-
-  ${HiddenSwitchInput}:checked + & {
-    background: ${colors.primary[500]};
-  }
-
-  ${HiddenSwitchInput}:checked + & ${SwitchThumb} {
-    transform: translateX(${spacing[16]});
-  }
-
-  ${HiddenSwitchInput}:disabled + & {
-    opacity: ${opacity.disabled};
-  }
-`
+export const getSwitchSx = (disabled?: boolean): SxProps<Theme> => ({
+  "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+    backgroundColor: colors.primary[500],
+    opacity: opacity.visible,
+  },
+  "& .MuiSwitch-thumb": {
+    backgroundColor: colors.neutral[0],
+    boxShadow: shadows.xs,
+  },
+  "& .MuiSwitch-track": {
+    backgroundColor: colors.neutral[300],
+    opacity: opacity.visible,
+    transitionDuration: motion.duration.fast,
+    transitionTimingFunction: motion.easing.ease,
+  },
+  cursor: disabled ? "not-allowed" : "pointer",
+  opacity: disabled ? opacity.disabled : opacity.visible,
+})

@@ -1,10 +1,12 @@
-import type { ComponentPropsWithoutRef, CSSProperties } from "react"
+import type { CSSProperties } from "react"
 import { forwardRef, useId } from "react"
+import type { DropdownIndicatorProps, SelectInstance } from "react-select"
+import ReactSelect, { components } from "react-select"
 
 import { Icon, Text } from "@/ds-components/atoms"
 import { borderRadiusLevels, type BorderRadiusLevelsType } from "@/foundation"
 
-import { SelectChevron, SelectFieldWrapper, SelectWrapper, StyledSelect } from "./Select.styles"
+import { getSelectStyles, SelectWrapper } from "./Select.styles"
 
 export type SelectOption = {
   label: string
@@ -15,32 +17,51 @@ type SelectOwnProps = {
   options: SelectOption[]
   borderRadius?: keyof BorderRadiusLevelsType
   className?: string
+  defaultValue?: SelectOption | null
   elevated?: boolean
   helperText?: string
+  id?: string
+  isDisabled?: boolean
+  name?: string
   placeholder?: string
   style?: CSSProperties
   title?: string
+  value?: SelectOption | null
+  onBlur?: () => void
+  onChange?: (option: SelectOption | null) => void
 }
 
-export type SelectProps = SelectOwnProps & Omit<ComponentPropsWithoutRef<"select">, keyof SelectOwnProps>
+export type SelectProps = SelectOwnProps
 
-export const Select = forwardRef<HTMLSelectElement, SelectProps>((props, ref) => {
+const DropdownIndicator = (props: DropdownIndicatorProps<SelectOption, false>) => (
+  <components.DropdownIndicator {...props}>
+    <Icon color="secondary" name="chevron-down" size={16} />
+  </components.DropdownIndicator>
+)
+
+export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProps>((props, ref) => {
   const {
     borderRadius = "medium",
     className,
+    defaultValue,
     elevated = true,
     helperText,
     id,
+    isDisabled,
+    name,
+    onBlur,
+    onChange,
     options,
     placeholder,
     style,
     title,
-    ...rest
+    value,
   } = props
 
   const generatedId = useId()
 
   const selectId = id ?? generatedId
+  const selectStyles = getSelectStyles<SelectOption>({ borderRadius: borderRadiusLevels[borderRadius], elevated })
 
   return (
     <SelectWrapper className={className} style={style}>
@@ -49,29 +70,21 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>((props, ref) =>
           {title}
         </Text>
       )}
-      <SelectFieldWrapper>
-        <StyledSelect
-          $borderRadius={borderRadiusLevels[borderRadius]}
-          $elevated={elevated}
-          id={selectId}
-          ref={ref}
-          {...rest}
-        >
-          {placeholder && (
-            <option disabled value="">
-              {placeholder}
-            </option>
-          )}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </StyledSelect>
-        <SelectChevron>
-          <Icon color="secondary" name="chevron-down" size={16} />
-        </SelectChevron>
-      </SelectFieldWrapper>
+      <ReactSelect
+        classNamePrefix="select"
+        components={{ DropdownIndicator }}
+        defaultValue={defaultValue}
+        inputId={selectId}
+        isDisabled={isDisabled}
+        name={name}
+        onBlur={onBlur}
+        onChange={onChange}
+        options={options}
+        placeholder={placeholder}
+        ref={ref}
+        styles={selectStyles}
+        value={value}
+      />
       {helperText && (
         <Text as="span" color="muted" fontSize="xs">
           {helperText}
