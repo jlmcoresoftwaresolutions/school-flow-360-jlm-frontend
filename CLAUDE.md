@@ -20,7 +20,7 @@ Este arquivo fornece orientações ao Claude Code (claude.ai/code) ao trabalhar 
 
 `playwright` **é** uma dependência de desenvolvimento, mas apenas como ferramenta avulsa para verificação manual e pontual de UI (ex.: um script descartável que abre o Chromium contra o `bun run dev` e tira um screenshot) — não está integrado ao Storybook, ao Vitest, nem a nenhum script do `bun`, e este projeto não tem suíte de testes E2E. Não crie uma, e não adicione `@playwright/test` ou um `playwright.config.ts`, sem pedido explícito.
 
-Para checar tipos sem fazer build: `npx tsc -b --noEmit` (o projeto usa TS project references — `tsconfig.app.json` para `src/`, `tsconfig.node.json` para a configuração do Vite).
+Para checar tipos sem fazer build: `bunx tsc -b --noEmit` (o projeto usa TS project references — `tsconfig.app.json` para `src/`, `tsconfig.node.json` para a configuração do Vite).
 
 ## Arquitetura
 
@@ -171,6 +171,7 @@ export type TokenNameType = typeof tokenName
 - `noUnusedLocals` / `noUnusedParameters` estão habilitados — bindings não usados quebram o build, não só o lint.
 - **O path alias `@/*` mapeia para `src/*`** — configurado tanto em `tsconfig.app.json` (`paths`, sem `baseUrl`; obsoleto nesta versão do TS) quanto em `vite.config.ts` (`resolve.alias`, via `path.resolve(import.meta.dirname, "src")`). Os dois devem permanecer sincronizados — o TS só faz a checagem de tipos do alias, é o Vite quem de fato o resolve em build/dev/test.
 - Use `@/...` para imports transversais (ex.: `@/foundation`, `@/styles/GlobalStyle`) para evitar cadeias no estilo `../../../` conforme os componentes se aninham mais fundo nas camadas do Atomic Design. Mantenha imports relativos simples (`./Text.styles`) para arquivos co-localizados na mesma pasta de componente — o alias é para cruzar para uma preocupação de nível superior diferente, não para arquivos irmãos.
+- **Cada bloco de `compilerOptions` em `tsconfig.app.json` deve ter suas chaves organizadas em ordem alfabética.** O arquivo já é dividido em blocos por comentário (`/* Bundler mode */`, `/* Linting */`, e o bloco inicial sem comentário) — a ordem alfabética se aplica dentro de cada bloco, não ao arquivo inteiro. Não é imposto por lint (JSON com comentários não é coberto pelo `eslint-plugin-perfectionist`) — revise manualmente.
 
 ### Convenções de ESLint/Prettier
 
