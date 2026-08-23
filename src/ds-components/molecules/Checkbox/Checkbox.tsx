@@ -1,21 +1,47 @@
-import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from "react"
+import MuiCheckbox from "@mui/material/Checkbox"
+import type { ChangeEvent, CSSProperties, ReactNode } from "react"
 import { forwardRef, useId } from "react"
 
 import { Text } from "@/ds-components/atoms"
 
-import { CheckboxRow, CheckboxWrapper, StyledCheckbox } from "./Checkbox.styles"
+import { CheckboxRow, CheckboxWrapper, getCheckboxSx } from "./Checkbox.styles"
 
 type CheckboxOwnProps = {
   label: ReactNode
+  autoFocus?: boolean
+  checked?: boolean
   className?: string
+  defaultChecked?: boolean
+  disabled?: boolean
   helperText?: string
+  id?: string
+  name?: string
+  required?: boolean
   style?: CSSProperties
+  value?: string
+  onBlur?: () => void
+  onChange?: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void
 }
 
-export type CheckboxProps = CheckboxOwnProps & Omit<ComponentPropsWithoutRef<"input">, keyof CheckboxOwnProps | "type">
+export type CheckboxProps = CheckboxOwnProps
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref) => {
-  const { className, helperText, id, label, style, ...rest } = props
+  const {
+    autoFocus,
+    checked,
+    className,
+    defaultChecked,
+    disabled,
+    helperText,
+    id,
+    label,
+    name,
+    onBlur,
+    onChange,
+    required,
+    style,
+    value,
+  } = props
 
   const generatedId = useId()
 
@@ -24,7 +50,21 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref)
   return (
     <CheckboxWrapper className={className} style={style}>
       <CheckboxRow>
-        <StyledCheckbox id={checkboxId} ref={ref} type="checkbox" {...rest} />
+        <MuiCheckbox
+          autoFocus={autoFocus}
+          checked={checked}
+          defaultChecked={defaultChecked}
+          disabled={disabled}
+          disableRipple
+          id={checkboxId}
+          name={name}
+          onBlur={onBlur}
+          onChange={onChange}
+          required={required}
+          slotProps={{ input: { ref } }}
+          sx={getCheckboxSx(disabled)}
+          value={value}
+        />
         <Text as="label" fontSize="sm" htmlFor={checkboxId}>
           {label}
         </Text>

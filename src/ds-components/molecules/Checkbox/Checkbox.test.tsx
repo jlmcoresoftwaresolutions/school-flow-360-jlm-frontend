@@ -28,7 +28,7 @@ describe("Checkbox", () => {
     expect(screen.getByRole("checkbox")).not.toBeChecked()
   })
 
-  it("respects the defaultChecked attribute", () => {
+  it("respects the defaultChecked prop", () => {
     render(<Checkbox defaultChecked label="Aceito os termos" />)
 
     expect(screen.getByRole("checkbox")).toBeChecked()
@@ -69,17 +69,20 @@ describe("Checkbox", () => {
   it("toggles when clicked and forwards onChange", () => {
     const handleChange = vi.fn()
 
-    render(<Checkbox label="Aceito os termos" onChange={handleChange} />)
+    render(<Checkbox checked={false} label="Aceito os termos" onChange={handleChange} />)
 
-    const checkbox = screen.getByRole("checkbox")
+    fireEvent.click(screen.getByRole("checkbox"))
 
-    fireEvent.click(checkbox)
-
-    expect(checkbox).toBeChecked()
-    expect(handleChange).toHaveBeenCalled()
+    expect(handleChange).toHaveBeenCalledWith(expect.anything(), true)
   })
 
-  it("respects the disabled attribute", () => {
+  it("respects the checked prop for controlled usage", () => {
+    render(<Checkbox checked label="Aceito os termos" onChange={vi.fn()} />)
+
+    expect(screen.getByRole("checkbox")).toBeChecked()
+  })
+
+  it("respects the disabled prop", () => {
     render(<Checkbox disabled label="Aceito os termos" />)
 
     expect(screen.getByRole("checkbox")).toBeDisabled()

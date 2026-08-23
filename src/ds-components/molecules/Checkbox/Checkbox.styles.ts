@@ -1,3 +1,4 @@
+import type { SxProps, Theme } from "@mui/material/styles"
 import styled from "styled-components"
 
 import { colors, opacity, spacing } from "@/foundation"
@@ -14,14 +15,15 @@ export const CheckboxRow = styled.div`
   gap: ${spacing[8]};
 `
 
-export const StyledCheckbox = styled.input`
-  accent-color: ${colors.primary[500]};
-  cursor: pointer;
-  height: ${spacing[20]};
-  width: ${spacing[20]};
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: ${opacity.disabled};
-  }
-`
+export const getCheckboxSx = (disabled?: boolean): SxProps<Theme> => ({
+  "&.Mui-checked": {
+    color: colors.primary[500],
+  },
+  "& .MuiSvgIcon-root": {
+    fontSize: spacing[20],
+  },
+  color: colors.neutral[400],
+  cursor: disabled ? "not-allowed" : "pointer",
+  opacity: disabled ? opacity.disabled : opacity.visible,
+  padding: 0,
+})
