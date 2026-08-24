@@ -17,6 +17,7 @@ type SwitchOwnProps = {
   id?: string
   name?: string
   required?: boolean
+  size?: "small" | "medium"
   style?: CSSProperties
   value?: string
   onBlur?: () => void
@@ -39,6 +40,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>((props, ref) => 
     onBlur,
     onChange,
     required,
+    size = "medium",
     style,
     value,
   } = props
@@ -57,7 +59,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>((props, ref) => 
           onBlur={onBlur}
           onChange={onChange}
           required={required}
-          size="small"
+          size={size}
           slotProps={{ input: { ref } }}
           sx={getSwitchSx(disabled)}
           value={value}

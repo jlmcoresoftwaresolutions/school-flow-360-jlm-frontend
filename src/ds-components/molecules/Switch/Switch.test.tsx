@@ -87,4 +87,16 @@ describe("Switch", () => {
 
     expect(screen.getByRole("switch")).toBeDisabled()
   })
+
+  it("defaults to the medium size", () => {
+    const { container } = render(<Switch label="Financeiro" />)
+
+    expect(container.querySelector(".MuiSwitch-sizeMedium")).toBeInTheDocument()
+  })
+
+  it("applies the size prop", () => {
+    const { container } = render(<Switch label="Financeiro" size="small" />)
+
+    expect(container.querySelector(".MuiSwitch-sizeSmall")).toBeInTheDocument()
+  })
 })

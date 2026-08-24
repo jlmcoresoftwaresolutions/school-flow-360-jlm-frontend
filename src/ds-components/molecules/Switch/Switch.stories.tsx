@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
+import { colors, spacing } from "@/foundation"
+
 import { Switch } from "./Switch"
 
 const ControlledExample = () => {
@@ -21,8 +23,20 @@ const meta: Meta<typeof Switch> = {
     disabled: { control: "boolean", description: "Disables the switch, forwarded to the MUI Switch" },
     helperText: { control: "text", description: "Text rendered below the switch to provide extra context" },
     label: { control: "text", description: "Label rendered next to the switch track" },
+    size: {
+      control: "select",
+      description: "Size of the switch track/thumb, forwarded to the MUI Switch. Defaults to medium.",
+      options: ["small", "medium"],
+    },
   },
   component: Switch,
+  decorators: [
+    (Story) => (
+      <div style={{ background: colors.neutral[100], padding: spacing[24] }}>
+        <Story />
+      </div>
+    ),
+  ],
   tags: ["autodocs"],
   title: "Molecules/Switch",
 }
@@ -42,6 +56,11 @@ export const Checked: Story = {
 // The helperText prop rendering supporting text below the switch
 export const WithHelperText: Story = {
   args: { helperText: "Ativa o módulo financeiro para esta rede." },
+}
+
+// The size prop set to small, more compact than the default medium size
+export const Small: Story = {
+  args: { size: "small" },
 }
 
 // The disabled prop, forwarded straight through to the MUI Switch
