@@ -1,8 +1,8 @@
-/// <reference types="vitest/config" />
 import path from "node:path"
 
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+import { configDefaults } from "vitest/config"
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,10 +13,11 @@ export default defineConfig({
     },
   },
   server: {
-    open: true,
+    open: !process.env.PLAYWRIGHT,
   },
   test: {
     environment: "jsdom",
+    exclude: [...configDefaults.exclude, "e2e/**"],
     setupFiles: ["./src/test/setup.ts"],
   },
 })

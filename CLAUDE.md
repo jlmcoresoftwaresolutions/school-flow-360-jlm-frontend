@@ -15,6 +15,7 @@ Este arquivo fornece orientações ao Claude Code (claude.ai/code) ao trabalhar 
 - `bun run test` — executa a suíte do Vitest uma vez (`vitest run`)
 - `bun run test:watch` — executa o Vitest em modo watch
 - Para rodar um único arquivo de teste: `bunx vitest run src/ds-components/atoms/Text/Text.test.tsx` (ou remova o `run` para modo watch apenas nesse arquivo)
+- `bun run e2e` — executa a suíte E2E do Playwright (`playwright test`) contra `e2e/`, ver a seção sobre Playwright abaixo
 
 **Não reinstale `@storybook/addon-vitest` ou `@chromatic-com/storybook`** — o `storybook init` os adiciona por padrão, mas foram removidos deliberadamente (ver a seção sobre Storybook abaixo). Os testes unitários deste projeto usam uma configuração simples e independente do Vitest, propositalmente não integrada ao Storybook.
 
@@ -143,11 +144,20 @@ Cada pasta de componente também recebe um `ComponentName.stories.tsx` co-locali
 ### Testes unitários com Vitest + React Testing Library
 
 - Cada pasta de componente também recebe um `ComponentName.test.tsx` co-localizado — ver `Text.test.tsx`. Teste o comportamento renderizado (conteúdo de texto, nome da tag, atributos/classes) via `render`/`screen` do `@testing-library/react`, não detalhes de implementação.
-- O Vitest é configurado diretamente em `vite.config.ts` (`test: { environment: "jsdom", setupFiles: ["./src/test/setup.ts"] }`) via a diretiva triple-slash `/// <reference types="vitest/config" />` — não há um `vitest.config.ts` separado.
+- O Vitest é configurado diretamente em `vite.config.ts` (`test: { environment: "jsdom", exclude: [...], setupFiles: ["./src/test/setup.ts"] }`) — não há um `vitest.config.ts` separado. A tipagem do campo `test` vem do `import { configDefaults } from "vitest/config"` (também usado para estender a lista padrão de exclusões e ignorar `e2e/**`, ver a seção sobre Playwright abaixo), não mais de uma diretiva triple-slash — o `eslint-plugin-typescript-eslint` rejeita `/// <reference ... />` quando o mesmo módulo já é importado normalmente.
 - `src/test/setup.ts` importa `@testing-library/jest-dom/vitest` (o entry point específico do Vitest, não o genérico `@testing-library/jest-dom`) para registrar matchers como `toHaveClass`/`toBeInTheDocument` no `expect` do Vitest.
 - Importe `describe`/`it`/`expect` explicitamente de `"vitest"` em todo arquivo de teste — `globals` não está habilitado na configuração do Vitest, alinhado com a preferência deste projeto por imports explícitos em vez de globais ambientes.
 - `@testing-library/dom` é uma peer dependency obrigatória de `@testing-library/react` e deve permanecer instalada mesmo que nada a importe diretamente.
 - `src/test/setup.ts` também chama `afterEach(() => cleanup())` explicitamente. O auto-cleanup do React Testing Library só se registra sozinho quando detecta um `afterEach` global (ex.: Jest, ou Vitest com `globals: true`); como a configuração do Vitest deste projeto mantém `globals` desligado, o auto-cleanup nunca dispara sem isso — e sem ele, cada `render()` em um arquivo continua se acumulando em `document.body` entre os blocos `it` (mais visível em componentes baseados em portal, como `Tooltip`, ou em texto repetido entre testes).
+
+### Testes E2E com Playwright
+
+- `e2e/<fluxo>.spec.ts` guarda os testes de ponta a ponta, um arquivo por fluxo/página (ex.: `e2e/home.spec.ts`, `e2e/login.spec.ts`) — não é o mesmo diretório nem a mesma ferramenta dos testes unitários (`ComponentName.test.tsx` com Vitest + RTL, ver acima). Importe `expect`/`test` de `"@playwright/test"`, nunca de `"vitest"`, e prefira locators por role/label (`page.getByRole(...)`, `page.getByLabel(...)`) em vez de seletores CSS/`data-testid`, na mesma linha do RTL usado nos testes unitários.
+- `playwright.config.ts` (raiz) define `testDir: "./e2e"` e um `webServer` que sobe `bun run dev -- --port 5174 --strictPort` automaticamente antes da suíte (`reuseExistingServer` fora de CI, então um `bun run dev` já rodando localmente é reaproveitado). Não é preciso subir o servidor manualmente antes de `bun run e2e`.
+- `vite.config.ts` desliga a abertura automática do navegador (`server.open`) quando a env var `PLAYWRIGHT` está definida — é o `webServer.env` do `playwright.config.ts` quem a define, então isso é interno à suíte E2E e não afeta `bun run dev` no dia a dia.
+- `tsconfig.e2e.json` (espelhando `tsconfig.node.json`) cobre `e2e/` e `playwright.config.ts` no `tsc -b`, e o bloco de globals Node do `eslint.config.js` (originalmente só para `scripts/`) também cobre esses arquivos — ambos rodam em Node, não no browser.
+- Os testes E2E cobrem fluxos reais de navegação/interação do usuário através de páginas inteiras (`src/pages/`) — não são um substituto para os testes unitários por componente, e não geram uma story nem alteram a regra de "Adicionando ou alterando props" (isso continua sendo Storybook + Vitest).
+- `playwright-report/`, `test-results/` e `blob-report/` (gerados por `bun run e2e`) são ignorados pelo git.
 
 ### Convenções de `src/foundation/`
 

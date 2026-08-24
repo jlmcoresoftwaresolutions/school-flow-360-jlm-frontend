@@ -45,9 +45,10 @@ export default defineConfig([
     },
   },
   {
-    // Node scripts (git hooks, etc.) run outside the browser, so they need Node globals
-    // (process, __dirname, ...) instead of the browser globals used by the rest of the app.
-    files: ["scripts/**/*.{js,mjs,cjs}"],
+    // Node scripts (git hooks, etc.) and Playwright E2E specs run outside the browser, so they
+    // need Node globals (process, __dirname, ...) instead of the browser globals used by the
+    // rest of the app.
+    files: ["scripts/**/*.{js,mjs,cjs}", "e2e/**/*.ts", "playwright.config.ts"],
     languageOptions: {
       globals: {
         ...globals.node,
