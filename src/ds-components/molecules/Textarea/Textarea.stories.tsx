@@ -11,8 +11,7 @@ const meta: Meta<typeof Textarea> = {
   argTypes: {
     borderRadius: {
       control: "select",
-      description:
-        "Border radius level applied to the textarea: subtle, low, medium, high or full. Defaults to medium.",
+      description: "Border radius level applied to the textarea: subtle, low, medium, high or full. Defaults to low.",
       options: borderRadiusLevelKeys,
     },
     disabled: { control: "boolean", description: "Native disabled attribute, forwarded to the textarea element" },

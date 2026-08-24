@@ -18,7 +18,7 @@ type TextareaOwnProps = {
 export type TextareaProps = TextareaOwnProps & Omit<ComponentPropsWithoutRef<"textarea">, keyof TextareaOwnProps>
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>((props, ref) => {
-  const { borderRadius = "medium", className, elevated = true, helperText, id, style, title, ...rest } = props
+  const { borderRadius = "low", className, elevated = true, helperText, id, style, title, ...rest } = props
 
   const generatedId = useId()
 

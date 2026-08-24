@@ -3,7 +3,7 @@ import { createRef } from "react"
 import type { SelectInstance } from "react-select"
 import { describe, expect, it, vi } from "vitest"
 
-import { shadows, spacing } from "@/foundation"
+import { borderRadiusLevels, shadows, spacing } from "@/foundation"
 
 import { Select, type SelectOption } from "./Select"
 
@@ -93,6 +93,18 @@ describe("Select", () => {
     expect(screen.getByText("Tarde")).toBeInTheDocument()
   })
 
+  it("defaults to the low border radius", () => {
+    const { container } = render(<Select options={options} title="Turno" />)
+
+    expect(container.querySelector(".select__control")).toHaveStyle({ borderRadius: borderRadiusLevels.low })
+  })
+
+  it("applies the borderRadius prop", () => {
+    const { container } = render(<Select borderRadius="high" options={options} title="Turno" />)
+
+    expect(container.querySelector(".select__control")).toHaveStyle({ borderRadius: borderRadiusLevels.high })
+  })
+
   it("has a drop shadow by default", () => {
     const { container } = render(<Select options={options} title="Turno" />)
 
@@ -109,5 +121,29 @@ describe("Select", () => {
     const { container } = render(<Select isDisabled options={options} title="Turno" />)
 
     expect(container.querySelector(".select__control")).toHaveAttribute("aria-disabled", "true")
+  })
+
+  it("makes helperText transparent while the menu is open", () => {
+    render(<Select helperText="Define o período das aulas." options={options} />)
+
+    const helperText = screen.getByText("Define o período das aulas.")
+
+    expect(helperText).toHaveStyle({ opacity: "1" })
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    expect(helperText).toHaveStyle({ opacity: "0" })
+  })
+
+  it("rotates the dropdown indicator icon when the menu opens", () => {
+    const { container } = render(<Select options={options} />)
+
+    const indicator = container.querySelector(".select__dropdown-indicator span")
+
+    expect(indicator).toHaveStyle({ transform: "rotate(0deg)" })
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    expect(indicator).toHaveStyle({ transform: "rotate(180deg)" })
   })
 })

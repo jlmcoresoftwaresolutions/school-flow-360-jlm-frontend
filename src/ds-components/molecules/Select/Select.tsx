@@ -1,10 +1,10 @@
 import type { CSSProperties } from "react"
-import { forwardRef, useId } from "react"
+import { forwardRef, useId, useState } from "react"
 import type { DropdownIndicatorProps, SelectInstance } from "react-select"
 import ReactSelect, { components } from "react-select"
 
 import { Icon, Text } from "@/ds-components/atoms"
-import { borderRadiusLevels, type BorderRadiusLevelsType } from "@/foundation"
+import { borderRadiusLevels, type BorderRadiusLevelsType, motion, opacity } from "@/foundation"
 
 import { getSelectStyles, SelectWrapper } from "./Select.styles"
 
@@ -35,13 +35,21 @@ export type SelectProps = SelectOwnProps
 
 const DropdownIndicator = (props: DropdownIndicatorProps<SelectOption, false>) => (
   <components.DropdownIndicator {...props}>
-    <Icon color="secondary" name="chevron-down" size={16} />
+    <Icon
+      color="secondary"
+      name="chevron-down"
+      size={16}
+      style={{
+        transform: props.selectProps.menuIsOpen ? "rotate(180deg)" : "rotate(0deg)",
+        transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
+      }}
+    />
   </components.DropdownIndicator>
 )
 
 export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProps>((props, ref) => {
   const {
-    borderRadius = "medium",
+    borderRadius = "low",
     className,
     defaultValue,
     elevated = true,
@@ -59,6 +67,8 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
   } = props
 
   const generatedId = useId()
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const selectId = id ?? generatedId
   const selectStyles = getSelectStyles<SelectOption>({ borderRadius: borderRadiusLevels[borderRadius], elevated })
@@ -79,6 +89,8 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
         name={name}
         onBlur={onBlur}
         onChange={onChange}
+        onMenuClose={() => setIsMenuOpen(false)}
+        onMenuOpen={() => setIsMenuOpen(true)}
         options={options}
         placeholder={placeholder}
         ref={ref}
@@ -86,7 +98,15 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
         value={value}
       />
       {helperText && (
-        <Text as="span" color="muted" fontSize="xs">
+        <Text
+          as="span"
+          color="muted"
+          fontSize="xs"
+          style={{
+            opacity: isMenuOpen ? opacity.hidden : opacity.visible,
+            transition: `opacity ${motion.duration.fast} ${motion.easing.ease}`,
+          }}
+        >
           {helperText}
         </Text>
       )}

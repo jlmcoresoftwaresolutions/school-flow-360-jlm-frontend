@@ -24,7 +24,7 @@ const meta: Meta<typeof Select> = {
   argTypes: {
     borderRadius: {
       control: "select",
-      description: "Border radius level applied to the select: subtle, low, medium, high or full. Defaults to medium.",
+      description: "Border radius level applied to the select: subtle, low, medium, high or full. Defaults to low.",
       options: borderRadiusLevelKeys,
     },
     elevated: { control: "boolean", description: "Adds a drop shadow around the select. Defaults to true." },

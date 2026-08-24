@@ -75,10 +75,10 @@ describe("Textarea", () => {
     expect(handleChange).toHaveBeenCalled()
   })
 
-  it("defaults to the medium border radius", () => {
+  it("defaults to the low border radius", () => {
     render(<Textarea placeholder="Amount" />)
 
-    expect(screen.getByPlaceholderText("Amount")).toHaveStyle({ borderRadius: borderRadiusLevels.medium })
+    expect(screen.getByPlaceholderText("Amount")).toHaveStyle({ borderRadius: borderRadiusLevels.low })
   })
 
   it("applies the borderRadius prop", () => {

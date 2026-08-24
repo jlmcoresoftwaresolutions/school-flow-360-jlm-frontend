@@ -27,7 +27,7 @@ export const StyledTextarea = styled.textarea<StyledTextareaProps>`
       font-size: ${typography.fontSize.md}px;
       min-height: ${spacing[80]};
       padding: ${spacing[12]};
-      resize: vertical;
+      resize: none;
       width: 100%;
 
       &::placeholder {
