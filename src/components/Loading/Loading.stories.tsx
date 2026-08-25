@@ -6,9 +6,6 @@ import { spacing } from "@/foundation"
 import { Loading } from "./Loading"
 
 const meta: Meta<typeof Loading> = {
-  argTypes: {
-    label: { control: "text", description: "Accessible name announced to screen readers via aria-label" },
-  },
   component: Loading,
   decorators: [
     (Story) => (
@@ -37,8 +34,3 @@ type Story = StoryObj<typeof Loading>
 
 // Default rendering: covers the full viewport with a centered spinner over a frosted backdrop
 export const Default: Story = {}
-
-// The label prop overriding the default "Carregando..." accessible name
-export const CustomLabel: Story = {
-  args: { label: "Enviando formulário..." },
-}

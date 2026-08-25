@@ -12,16 +12,10 @@ describe("Loading", () => {
     expect(element.parentElement).toBe(document.body)
   })
 
-  it("uses a default accessible label when none is provided", () => {
+  it("has 'Carregando...' as its accessible label", () => {
     render(<Loading />)
 
     expect(screen.getByRole("status", { name: "Carregando..." })).toBeInTheDocument()
-  })
-
-  it("uses a custom accessible label when provided", () => {
-    render(<Loading label="Enviando formulário..." />)
-
-    expect(screen.getByRole("status", { name: "Enviando formulário..." })).toBeInTheDocument()
   })
 
   it("applies the className passed as a prop", () => {
