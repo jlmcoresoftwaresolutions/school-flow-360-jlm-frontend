@@ -7,6 +7,7 @@ export const zIndex = {
   modal: 1400,
   popover: 1500,
   tooltip: 1600,
+  toast: 1700,
 }
 
 export type ZIndexType = typeof zIndex
