@@ -84,12 +84,12 @@ describe("Input", () => {
     expect(input).toHaveStyle({ fontSize: `${typography.fontSize.md}px` })
   })
 
-  it("defaults to the medium border radius", () => {
+  it("defaults to the low border radius", () => {
     render(<Input placeholder="Amount" />)
 
     const input = screen.getByPlaceholderText("Amount")
 
-    expect(input).toHaveStyle({ borderRadius: borderRadiusLevels.medium })
+    expect(input).toHaveStyle({ borderRadius: borderRadiusLevels.low })
   })
 
   it("applies the borderRadius prop", () => {
@@ -162,10 +162,10 @@ describe("Input", () => {
     expect(input.value).toBe("123")
   })
 
-  it("supports a date field via the native type attribute, without a dedicated date picker component", () => {
-    render(<Input title="Data de nascimento" type="date" />)
+  it("forwards the type prop to the input element", () => {
+    render(<Input placeholder="E-mail" type="email" />)
 
-    expect(screen.getByLabelText("Data de nascimento")).toHaveAttribute("type", "date")
+    expect(screen.getByPlaceholderText("E-mail")).toHaveAttribute("type", "email")
   })
 
   it("formats the value as a CEP while typing", () => {

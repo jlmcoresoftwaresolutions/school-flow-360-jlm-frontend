@@ -9,6 +9,33 @@ import type { MaskType } from "./Input.masks"
 import { applyMask } from "./Input.masks"
 import { InputWrapper, StyledInput } from "./Input.styles"
 
+// Deliberately not derived from React's own HTMLInputTypeAttribute: that type ends in a
+// `(string & {})` catch-all for forward compatibility, which would let "date" back in through
+// an Exclude/Omit since a string literal is still assignable to it. Listing every other native
+// type explicitly is what actually blocks "date" at compile time, steering callers to DateInput.
+type InputType =
+  | "button"
+  | "checkbox"
+  | "color"
+  | "datetime-local"
+  | "email"
+  | "file"
+  | "hidden"
+  | "image"
+  | "month"
+  | "number"
+  | "password"
+  | "radio"
+  | "range"
+  | "reset"
+  | "search"
+  | "submit"
+  | "tel"
+  | "text"
+  | "time"
+  | "url"
+  | "week"
+
 type InputOwnProps = {
   borderRadius?: keyof BorderRadiusLevelsType
   className?: string
@@ -18,13 +45,14 @@ type InputOwnProps = {
   numeric?: boolean
   style?: CSSProperties
   title?: string
+  type?: InputType
 }
 
 export type InputProps = InputOwnProps & Omit<ComponentPropsWithoutRef<"input">, keyof InputOwnProps>
 
 export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const {
-    borderRadius = "medium",
+    borderRadius = "low",
     className,
     elevated = true,
     helperText,

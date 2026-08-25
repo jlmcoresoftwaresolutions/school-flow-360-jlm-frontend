@@ -18,7 +18,7 @@ const meta: Meta<typeof Input> = {
   argTypes: {
     borderRadius: {
       control: "select",
-      description: "Border radius level applied to the input: subtle, low, medium, high or full. Defaults to medium.",
+      description: "Border radius level applied to the input: subtle, low, medium, high or full. Defaults to low.",
       options: borderRadiusLevelKeys,
     },
     disabled: { control: "boolean", description: "Native disabled attribute, forwarded to the input element" },
@@ -35,6 +35,11 @@ const meta: Meta<typeof Input> = {
       description: "Restricts input to digits only, and hints a numeric keyboard on mobile",
     },
     title: { control: "text", description: "Label rendered above the input" },
+    type: {
+      control: "text",
+      description:
+        "Native type attribute, forwarded to the input element. Excludes date — use DateInput for date fields instead.",
+    },
   },
   component: Input,
   tags: ["autodocs"],
@@ -132,10 +137,4 @@ export const MaskExpiry: Story = {
 // No dedicated mask for CVV: it's just digits with a fixed length, already covered by numeric + the native maxLength attribute
 export const Cvv: Story = {
   args: { helperText: "3 dígitos, no verso do cartão", maxLength: 3, numeric: true, title: "CVV" },
-}
-
-// No dedicated date picker component: the native type="date" attribute is forwarded as-is, and the browser
-// already renders its own OS-appropriate calendar picker for it
-export const DatePicker: Story = {
-  args: { title: "Data de nascimento", type: "date" },
 }
