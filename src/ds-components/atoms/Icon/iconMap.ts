@@ -2,6 +2,7 @@ import type { IconType } from "react-icons"
 import {
   MdAdd,
   MdAttachMoney,
+  MdCalendarMonth,
   MdCancel,
   MdCheck,
   MdCheckCircle,
@@ -24,6 +25,7 @@ import {
   MdMoreVert,
   MdNotifications,
   MdOutlineAttachMoney,
+  MdOutlineCalendarMonth,
   MdOutlineCancel,
   MdOutlineCheckCircle,
   MdOutlineDashboard,
@@ -57,6 +59,8 @@ import {
 export const iconMap = {
   bell: MdNotifications,
   "bell-outline": MdOutlineNotifications,
+  calendar: MdCalendarMonth,
+  "calendar-outline": MdOutlineCalendarMonth,
   check: MdCheck,
   "check-circle": MdCheckCircle,
   "check-circle-outline": MdOutlineCheckCircle,
