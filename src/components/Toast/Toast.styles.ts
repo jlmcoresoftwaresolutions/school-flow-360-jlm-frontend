@@ -159,8 +159,9 @@ export const StyledToastWrapper = styled.div`
     cursor: default;
     display: flex;
     font-family: ${typography.fontFamily.sans};
-    font-size: ${typography.fontSize.sm}px;
+    font-size: ${typography.fontSize.md}px;
     max-width: calc(100vw - ${spacing[32]});
+    overflow: hidden;
     padding: ${spacing[16]};
     position: relative;
     width: 360px;
@@ -227,11 +228,14 @@ export const StyledToastWrapper = styled.div`
     width: ${spacing[12]};
   }
 
+  // No border-radius/overflow here: rounding a 4px-tall strip to match the toast's 12px corners
+  // produces a flattened curve that doesn't line up with the toast's own circular corner. Letting
+  // the parent .Toastify__toast (tall enough for a true 12px curve) do the clipping instead keeps
+  // both corners identical.
   .Toastify__progress-bar--wrp {
     bottom: 0;
     height: ${spacing[4]};
     left: 0;
-    overflow: hidden;
     position: absolute;
     width: 100%;
   }
