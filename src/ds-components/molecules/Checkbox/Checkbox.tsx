@@ -4,6 +4,7 @@ import { forwardRef, useId } from "react"
 
 import { Text } from "@/ds-components/atoms"
 
+import type { CheckboxSize } from "./Checkbox.styles"
 import { CheckboxRow, CheckboxWrapper, getCheckboxSx } from "./Checkbox.styles"
 
 type CheckboxOwnProps = {
@@ -17,6 +18,7 @@ type CheckboxOwnProps = {
   id?: string
   name?: string
   required?: boolean
+  size?: CheckboxSize
   style?: CSSProperties
   value?: string
   onBlur?: () => void
@@ -39,6 +41,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref)
     onBlur,
     onChange,
     required,
+    size = "large",
     style,
     value,
   } = props
@@ -62,7 +65,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref)
           onChange={onChange}
           required={required}
           slotProps={{ input: { ref } }}
-          sx={getCheckboxSx(disabled)}
+          sx={getCheckboxSx(size, disabled)}
           value={value}
         />
         <Text as="label" fontSize="sm" htmlFor={checkboxId}>

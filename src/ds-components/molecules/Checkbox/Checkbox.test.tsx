@@ -87,4 +87,16 @@ describe("Checkbox", () => {
 
     expect(screen.getByRole("checkbox")).toBeDisabled()
   })
+
+  it("defaults to the large size", () => {
+    const { container } = render(<Checkbox label="Aceito os termos" />)
+
+    expect(container.querySelector("svg")).toHaveStyle({ fontSize: spacing[24] })
+  })
+
+  it("applies the size prop", () => {
+    const { container } = render(<Checkbox label="Aceito os termos" size="medium" />)
+
+    expect(container.querySelector("svg")).toHaveStyle({ fontSize: spacing[20] })
+  })
 })

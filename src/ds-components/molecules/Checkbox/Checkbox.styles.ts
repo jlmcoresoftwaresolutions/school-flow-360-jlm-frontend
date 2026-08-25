@@ -15,12 +15,20 @@ export const CheckboxRow = styled.div`
   gap: ${spacing[8]};
 `
 
-export const getCheckboxSx = (disabled?: boolean): SxProps<Theme> => ({
+export type CheckboxSize = "large" | "medium" | "small"
+
+const iconSizeStyles: Record<CheckboxSize, string> = {
+  large: spacing[24],
+  medium: spacing[20],
+  small: spacing[16],
+}
+
+export const getCheckboxSx = (size: CheckboxSize, disabled?: boolean): SxProps<Theme> => ({
   "&.Mui-checked": {
     color: colors.primary[500],
   },
   "& .MuiSvgIcon-root": {
-    fontSize: spacing[20],
+    fontSize: iconSizeStyles[size],
   },
   color: colors.neutral[400],
   cursor: disabled ? "not-allowed" : "pointer",

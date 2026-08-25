@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
+import { spacing } from "@/foundation"
+
 import { Checkbox } from "./Checkbox"
 
 const ControlledExample = () => {
@@ -21,6 +23,11 @@ const meta: Meta<typeof Checkbox> = {
     disabled: { control: "boolean", description: "Disables the checkbox, forwarded to the MUI Checkbox" },
     helperText: { control: "text", description: "Text rendered below the checkbox to provide extra context" },
     label: { control: "text", description: "Label rendered next to the checkbox, linked via htmlFor/id" },
+    size: {
+      control: "select",
+      description: "Size of the checkbox icon: small, medium or large. Defaults to large.",
+      options: ["small", "medium", "large"],
+    },
   },
   component: Checkbox,
   tags: ["autodocs"],
@@ -42,6 +49,27 @@ export const Checked: Story = {
 // The helperText prop rendering supporting text below the checkbox
 export const WithHelperText: Story = {
   args: { helperText: "Necessário para publicar fotos em comunicados." },
+}
+
+// The size prop set to small, more compact than the default large size
+export const Small: Story = {
+  args: { size: "small" },
+}
+
+// The size prop set to medium, a step up from small but still more compact than the default large size
+export const Medium: Story = {
+  args: { size: "medium" },
+}
+
+// All three sizes rendered side by side
+export const Sizes: Story = {
+  render: () => (
+    <div style={{ alignItems: "center", display: "flex", gap: spacing[16] }}>
+      <Checkbox label="Small" size="small" />
+      <Checkbox label="Medium" size="medium" />
+      <Checkbox label="Large" size="large" />
+    </div>
+  ),
 }
 
 // The disabled prop, forwarded straight through to the MUI Checkbox
