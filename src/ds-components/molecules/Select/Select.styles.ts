@@ -29,7 +29,7 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
       boxShadow: state.isFocused ? "none" : elevated ? shadows.sm : shadows.none,
       cursor: state.isDisabled ? "not-allowed" : "pointer",
       minHeight: "unset",
-      padding: `calc(${spacing[12]} - 2px) ${spacing[4]}`,
+      padding: `${spacing[12]} ${spacing[4]}`,
       transition: `border-color ${motion.duration.fast} ${motion.easing.ease}`,
     }),
     dropdownIndicator: (base) => ({
