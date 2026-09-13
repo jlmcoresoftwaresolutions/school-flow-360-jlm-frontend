@@ -24,7 +24,7 @@ export const Login = () => {
     <LoginWrapper>
       <Grid.Container>
         <Grid.Row align="center" justify="center">
-          <Grid.Col xs={12} md={6}>
+          <Grid.Col xs={12} md={7}>
             <Card
               borderRadius="high"
               translucent="high"
@@ -44,16 +44,6 @@ export const Login = () => {
                   </Text>
                 </div>
               </div>
-
-              <Tag
-                color="success"
-                fontSize="xs"
-                fontWeight="superbold"
-                variant="soft"
-                style={{ textTransform: "uppercase" }}
-              >
-                SaaS White Label Multi-Tenant
-              </Tag>
 
               <Text as="p" color="inverse" fontSize="7xl" bold>
                 Gestão escolar que parece simples, mas opera em 360º.
@@ -88,26 +78,16 @@ export const Login = () => {
             </Card>
           </Grid.Col>
 
-          <Grid.Col xs={12} md={6}>
+          <Grid.Col xs={12} md={5}>
             <Card
               borderRadius="high"
               color="surface"
               elevated
               style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
             >
-              <div style={{ display: "flex", flexDirection: "column", gap: spacing[12] }}>
-                <Text as="p" color="brand" fontSize="xs" superbold style={{ textTransform: "uppercase" }}>
-                  Entrada Segura
-                </Text>
-
-                <Text as="p" fontSize="3xl" bold>
-                  Acesse sua jornada SchoolFlow360º
-                </Text>
-
-                <Text as="p" color="secondary">
-                  Digite seu e-mail e senha, escolha seu perfil e acesse uma experiência preparada para a sua rotina.
-                </Text>
-              </div>
+              <Text as="p" fontSize="3xl" bold>
+                Acesse sua jornada SchoolFlow360º
+              </Text>
 
               <div style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
@@ -119,14 +99,7 @@ export const Login = () => {
                 <div
                   style={{ alignItems: "center", display: "flex", gap: spacing[16], justifyContent: "space-between" }}
                 >
-                  <Button
-                    startIcon={<Icon color="inverse" name="lock-outline" size={16} />}
-                    style={{
-                      background: `linear-gradient(90deg, ${colors.primary[500]} 0%, ${colors.success[500]} 100%)`,
-                    }}
-                  >
-                    Entrar
-                  </Button>
+                  <Button startIcon={<Icon color="inverse" name="lock-outline" size={16} />}>Entrar</Button>
 
                   <Button variant="link">Esqueci minha senha</Button>
                 </div>
