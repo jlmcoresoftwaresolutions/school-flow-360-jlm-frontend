@@ -1,9 +1,8 @@
-import { createBrowserRouter } from "react-router-dom"
+import { createBrowserRouter, Navigate } from "react-router-dom"
 
-import { Experimental, Home, Login } from "@/pages"
+import { Login } from "@/pages"
 
 export const router = createBrowserRouter([
-  { element: <Home />, path: "/" },
-  { element: <Experimental />, path: "/experimental" },
+  { element: <Navigate to="/login" replace />, path: "/" },
   { element: <Login />, path: "/login" },
 ])
