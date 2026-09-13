@@ -1,5 +1,24 @@
 {
   "projects": {
+    "app": "school-flow-360",
+    "storybook": "school-flow-360-storybook",
     "default": "school-flow-360-storybook"
-  }
+  },
+  "targets": {
+    "school-flow-360": {
+      "hosting": {
+        "app": [
+          "school-flow-360"
+        ]
+      }
+    },
+    "school-flow-360-storybook": {
+      "hosting": {
+        "storybook": [
+          "school-flow-360-storybook"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
