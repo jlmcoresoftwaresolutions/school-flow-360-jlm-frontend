@@ -32,10 +32,12 @@ describe("Image", () => {
     })
   })
 
-  it("defaults to the xl box shadow", () => {
+  it("defaults to the md box shadow", () => {
     render(<Image alt="Foto de perfil" src="/avatar.png" />)
 
-    expect(screen.getByRole("img", { name: "Foto de perfil" })).not.toHaveStyle({ boxShadow: "none" })
+    // Not an exact-value match against shadows.md: jsdom re-serializes the multi-layer rgba()
+    // values (spacing/leading zeros), so it would never textually equal the raw token string.
+    expect(screen.getByRole("img", { name: "Foto de perfil" })).not.toHaveStyle({ boxShadow: shadows.none })
   })
 
   it("applies the boxShadow prop", () => {

@@ -29,7 +29,7 @@ const meta: Meta<typeof Image> = {
     },
     boxShadow: {
       control: "select",
-      description: "Box shadow token applied to the image, from the shadows token scale. Defaults to xl.",
+      description: "Box shadow token applied to the image, from the shadows token scale. Defaults to md.",
       options: shadowKeys,
     },
     size: {
@@ -51,7 +51,7 @@ export default meta
 
 type Story = StoryObj<typeof Image>
 
-// Default rendering, using the default 48px size, xl box shadow and medium border radius
+// Default rendering, using the default 48px size, md box shadow and medium border radius
 export const Default: Story = {}
 
 // Every spacing-token-derived size available for the size prop

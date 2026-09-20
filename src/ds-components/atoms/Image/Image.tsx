@@ -24,7 +24,7 @@ export type ImageProps = {
 }
 
 export const Image = (props: ImageProps) => {
-  const { alt, borderRadius = "medium", boxShadow = "xl", className, size = 48, src, style, tooltip } = props
+  const { alt, borderRadius = "medium", boxShadow = "md", className, size = 48, src, style, tooltip } = props
 
   const { tooltipElement, tooltipHandlers } = useTooltip(tooltip)
 
