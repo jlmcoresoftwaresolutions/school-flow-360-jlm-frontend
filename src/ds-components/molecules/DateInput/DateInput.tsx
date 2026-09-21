@@ -6,6 +6,7 @@ import ReactDatePicker, { registerLocale } from "react-datepicker"
 import { Icon, Text } from "@/ds-components/atoms"
 import { borderRadiusLevels, type BorderRadiusLevelsType, motion, opacity } from "@/foundation"
 
+import type { InputSize } from "../Input/Input.styles"
 import { StyledInput } from "../Input/Input.styles"
 import {
   CalendarIconWrapper,
@@ -21,6 +22,7 @@ registerLocale("pt-BR", ptBR)
 type DateInputFieldProps = {
   $borderRadius: string
   $elevated: boolean
+  $size: InputSize
   innerRef?: Ref<HTMLInputElement>
 }
 
@@ -129,7 +131,12 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
         <DatePickerWrapper>
           <ReactDatePicker
             customInput={
-              <DateInputField $borderRadius={borderRadiusLevels[borderRadius]} $elevated={elevated} ref={ref} />
+              <DateInputField
+                $borderRadius={borderRadiusLevels[borderRadius]}
+                $elevated={elevated}
+                $size="medium"
+                ref={ref}
+              />
             }
             customInputRef="innerRef"
             dateFormat={dateFormat}

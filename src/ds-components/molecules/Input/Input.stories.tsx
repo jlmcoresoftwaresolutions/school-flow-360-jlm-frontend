@@ -34,6 +34,11 @@ const meta: Meta<typeof Input> = {
       control: "boolean",
       description: "Restricts input to digits only, and hints a numeric keyboard on mobile",
     },
+    size: {
+      control: "select",
+      description: "Font size and padding level of the input: small, medium or large. Defaults to medium.",
+      options: ["small", "medium", "large"],
+    },
     title: { control: "text", description: "Label rendered above the input" },
     type: {
       control: "text",
@@ -71,6 +76,17 @@ export const WithTitleAndHelperText: Story = {
 // The elevated prop set to false, removing the default drop shadow around the input
 export const Flat: Story = {
   args: { elevated: false, title: "E-mail" },
+}
+
+// Every size available for the size prop - medium (the default) matches the pre-size-prop look
+export const Sizes: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
+      <Input placeholder="small" size="small" title="Small" />
+      <Input placeholder="medium" size="medium" title="Medium (padrão)" />
+      <Input placeholder="large" size="large" title="Large" />
+    </div>
+  ),
 }
 
 // Every border radius level available for the borderRadius prop

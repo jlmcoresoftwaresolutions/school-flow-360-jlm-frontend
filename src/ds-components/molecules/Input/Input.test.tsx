@@ -76,12 +76,28 @@ describe("Input", () => {
     expect(handleChange).toHaveBeenCalled()
   })
 
-  it("uses a medium font size", () => {
+  it("defaults to the medium size", () => {
     render(<Input placeholder="Amount" />)
 
     const input = screen.getByPlaceholderText("Amount")
 
-    expect(input).toHaveStyle({ fontSize: `${typography.fontSize.md}px` })
+    expect(input).toHaveStyle({ fontSize: `${typography.fontSize.md}px`, padding: spacing[12] })
+  })
+
+  it("applies the small size", () => {
+    render(<Input placeholder="Amount" size="small" />)
+
+    const input = screen.getByPlaceholderText("Amount")
+
+    expect(input).toHaveStyle({ fontSize: `${typography.fontSize.sm}px`, padding: spacing[8] })
+  })
+
+  it("applies the large size", () => {
+    render(<Input placeholder="Amount" size="large" />)
+
+    const input = screen.getByPlaceholderText("Amount")
+
+    expect(input).toHaveStyle({ fontSize: `${typography.fontSize.lg}px`, padding: spacing[16] })
   })
 
   it("defaults to the low border radius", () => {

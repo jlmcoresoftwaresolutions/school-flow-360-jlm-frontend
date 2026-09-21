@@ -7,6 +7,7 @@ import { stripNonDigits } from "@/utils/formats"
 
 import type { MaskType } from "./Input.masks"
 import { applyMask } from "./Input.masks"
+import type { InputSize } from "./Input.styles"
 import { InputWrapper, StyledInput } from "./Input.styles"
 
 // Deliberately not derived from React's own HTMLInputTypeAttribute: that type ends in a
@@ -43,6 +44,7 @@ type InputOwnProps = {
   helperText?: string
   mask?: MaskType
   numeric?: boolean
+  size?: InputSize
   style?: CSSProperties
   title?: string
   type?: InputType
@@ -60,6 +62,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     mask,
     numeric,
     onChange,
+    size = "medium",
     style,
     title,
     ...rest
@@ -88,6 +91,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
       <StyledInput
         $borderRadius={borderRadiusLevels[borderRadius]}
         $elevated={elevated}
+        $size={size}
         id={inputId}
         ref={ref}
         {...rest}
