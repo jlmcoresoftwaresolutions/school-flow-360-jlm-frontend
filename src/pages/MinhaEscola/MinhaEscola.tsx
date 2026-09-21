@@ -5,7 +5,7 @@ import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Loading, toast } from "@/components"
 import { Button, Card, Grid, Icon, Image, Tag, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { FileUpload, Input, Select, Textarea } from "@/ds-components/molecules"
+import { ColorPicker, FileUpload, Input, Select, Textarea } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 
 import type { Organization, OrganizationBranding, OrganizationDetails } from "./MinhaEscola.mock"
@@ -218,8 +218,8 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 
   const handleCancel = () => setIsEditing(false)
 
-  const handleColorChange = (field: keyof OrganizationBranding) => (event: ChangeEvent<HTMLInputElement>) => {
-    setDraft((current) => ({ ...current, [field]: event.target.value }))
+  const handleColorChange = (field: keyof OrganizationBranding) => (nextValue: string) => {
+    setDraft((current) => ({ ...current, [field]: nextValue }))
   }
 
   const handleFileChange = (field: "faviconFileName" | "logoFileName") => (event: ChangeEvent<HTMLInputElement>) => {
@@ -269,18 +269,16 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 
             <Grid.Row>
               <Grid.Col xs={12} md={6}>
-                <Input
+                <ColorPicker
                   onChange={handleColorChange("primaryColor")}
                   title="Cor primária"
-                  type="color"
                   value={draft.primaryColor}
                 />
               </Grid.Col>
               <Grid.Col xs={12} md={6}>
-                <Input
+                <ColorPicker
                   onChange={handleColorChange("secondaryColor")}
                   title="Cor secundária"
-                  type="color"
                   value={draft.secondaryColor}
                 />
               </Grid.Col>

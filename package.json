@@ -27,6 +27,7 @@
     "axios": "^1.18.1",
     "date-fns": "^4.4.0",
     "react": "^19.2.7",
+    "react-colorful": "^5.8.1",
     "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.7",
     "react-grid-system": "^8.2.1",
