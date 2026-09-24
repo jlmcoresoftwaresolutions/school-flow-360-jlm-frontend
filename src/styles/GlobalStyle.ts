@@ -1,7 +1,11 @@
 import { createGlobalStyle, keyframes } from "styled-components"
 
 import appBackground from "@/assets/images/app-background.png"
-import { typography } from "@/foundation"
+import { colors, radius, spacing, typography } from "@/foundation"
+import { hexToRgba } from "@/utils/colors"
+
+const scrollbarThumb = hexToRgba(colors.neutral[900], 0.16)
+const scrollbarThumbHover = hexToRgba(colors.neutral[900], 0.28)
 
 // Oversizing the image and panning it lets the same blurry glow drift slowly across the
 // viewport - motion.duration's tokens are all UI-transition scale (150-400ms), not ambient
@@ -18,11 +22,36 @@ const drift = keyframes`
   }
 `
 
+// The one place scrollbars are styled - components must not declare their own, so every scrollable
+// area (page, panels, tables, textareas, react-select/datepicker menus) looks the same. Both
+// mechanisms are set on purpose: scrollbar-width/-color are the standard properties (Firefox, and
+// Chrome/Edge 121+, which ignore ::-webkit-scrollbar once either is set), while the ::-webkit-
+// scrollbar rules give Safari and older Chromium the same 4px pill with a hover state.
 const GlobalStyle = createGlobalStyle`
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    scrollbar-color: ${scrollbarThumb} transparent;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    height: ${spacing[4]};
+    width: ${spacing[4]};
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: ${scrollbarThumb};
+    border-radius: ${radius.full};
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: ${scrollbarThumbHover};
   }
 
   body {
