@@ -6,21 +6,8 @@ import { Text } from "@/ds-components/atoms"
 import { AppShell } from "./AppShell"
 
 const meta: Meta<typeof AppShell> = {
-  args: {
-    organizationName: "Colégio Horizonte",
-    unitName: "Unidade Aldeota",
-  },
-  argTypes: {
-    organizationName: {
-      control: "text",
-      description: "Nome exibido no rodapé da sidebar, identificando a organização corrente.",
-    },
-    unitName: {
-      control: "text",
-      description: "Nome exibido no rodapé da sidebar, identificando a unidade corrente dentro da organização.",
-    },
-  },
   component: AppShell,
+  parameters: { layout: "fullscreen" },
   tags: ["autodocs"],
   title: "Templates/AppShell",
 }
@@ -31,10 +18,10 @@ type Story = StoryObj<typeof AppShell>
 
 // Default rendering: sidebar + a placeholder routed page shown through the Outlet
 export const Default: Story = {
-  render: (args) => (
+  render: () => (
     <MemoryRouter initialEntries={["/administracao/minha-escola"]}>
       <Routes>
-        <Route element={<AppShell {...args} />}>
+        <Route element={<AppShell />}>
           <Route
             element={
               <Text as="p" fontSize="xl" bold>
@@ -49,12 +36,12 @@ export const Default: Story = {
   ),
 }
 
-// A route with no matching nav item leaves every Sidebar item inactive
+// A route with no matching nav item leaves every Sidebar item inactive and the Administração group collapsed
 export const UnknownRoute: Story = {
-  render: (args) => (
+  render: () => (
     <MemoryRouter initialEntries={["/rota-desconhecida"]}>
       <Routes>
-        <Route element={<AppShell {...args} />}>
+        <Route element={<AppShell />}>
           <Route
             element={
               <Text as="p" fontSize="xl" bold>

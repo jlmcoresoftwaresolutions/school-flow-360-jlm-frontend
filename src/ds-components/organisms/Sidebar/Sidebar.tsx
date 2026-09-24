@@ -1,100 +1,77 @@
-import type { CSSProperties, ReactNode } from "react"
+import type { CSSProperties } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
-import { Icon, Image, Text } from "@/ds-components/atoms"
+import { Image } from "@/ds-components/atoms"
 
 import {
+  SidebarBottom,
   SidebarBrand,
-  SidebarBrandText,
-  SidebarFooter,
-  SidebarItemButton,
+  SidebarBrandTitle,
   SidebarItemList,
   SidebarNav,
-  SidebarSection,
-  SidebarSectionTitle,
+  SidebarNavContent,
   SidebarWrapper,
 } from "./Sidebar.styles"
+import { SidebarItem } from "./SidebarItem"
+
+export type SidebarNavChild = {
+  key: string
+  label: string
+  active?: boolean
+  disabled?: boolean
+  onClick?: () => void
+}
 
 export type SidebarNavItem = {
   icon: IconName
   key: string
   label: string
   active?: boolean
+  children?: SidebarNavChild[]
+  disabled?: boolean
   onClick?: () => void
 }
 
-export type SidebarNavSection = {
-  items: SidebarNavItem[]
-  key: string
-  title?: string
-}
-
 export type SidebarProps = {
+  items: SidebarNavItem[]
   logoAlt: string
   logoSrc: string
-  sections: SidebarNavSection[]
   title: string
+  bottomItems?: SidebarNavItem[]
   className?: string
-  footer?: ReactNode
   style?: CSSProperties
-  subtitle?: string
 }
 
 export const Sidebar = (props: SidebarProps) => {
-  const { className, footer, logoAlt, logoSrc, sections, style, subtitle, title } = props
+  const { bottomItems = [], className, items, logoAlt, logoSrc, style, title } = props
 
   return (
     <SidebarWrapper className={className} style={style}>
       <SidebarBrand>
-        <Image alt={logoAlt} borderRadius="medium" size={40} src={logoSrc} />
+        <Image alt={logoAlt} borderRadius="low" boxShadow="none" size={32} src={logoSrc} />
 
-        <SidebarBrandText>
-          <Text as="p" color="inverse" fontSize="lg" bold>
-            {title}
-          </Text>
-
-          {subtitle && (
-            <Text as="p" color="muted" fontSize="xs">
-              {subtitle}
-            </Text>
-          )}
-        </SidebarBrandText>
+        <SidebarBrandTitle>{title}</SidebarBrandTitle>
       </SidebarBrand>
 
       <SidebarNav aria-label="Navegação principal">
-        {sections.map((section) => (
-          <SidebarSection key={section.key}>
-            {section.title && (
-              <SidebarSectionTitle>
-                <Text as="p" color="muted" fontSize="xs" uppercase semibold>
-                  {section.title}
-                </Text>
-              </SidebarSectionTitle>
-            )}
-
-            <SidebarItemList>
-              {section.items.map((item) => (
-                <li key={item.key}>
-                  <SidebarItemButton
-                    $active={Boolean(item.active)}
-                    aria-current={item.active ? "page" : undefined}
-                    onClick={item.onClick}
-                    type="button"
-                  >
-                    <Icon color={item.active ? "brand" : "inverse"} name={item.icon} size={20} />
-
-                    <Text as="span" color={item.active ? "brand" : "inverse"} fontSize="sm" semibold={item.active}>
-                      {item.label}
-                    </Text>
-                  </SidebarItemButton>
-                </li>
-              ))}
-            </SidebarItemList>
-          </SidebarSection>
-        ))}
+        <SidebarNavContent>
+          <SidebarItemList>
+            {items.map((item) => (
+              <SidebarItem item={item} key={item.key} />
+            ))}
+          </SidebarItemList>
+        </SidebarNavContent>
       </SidebarNav>
 
-      {footer && <SidebarFooter>{footer}</SidebarFooter>}
+      {bottomItems.length > 0 && (
+        <SidebarBottom>
+          <SidebarItemList>
+            {bottomItems.map((item) => (
+              <SidebarItem item={item} key={item.key} />
+            ))}
+          </SidebarItemList>
+        </SidebarBottom>
+      )}
     </SidebarWrapper>
   )
 }

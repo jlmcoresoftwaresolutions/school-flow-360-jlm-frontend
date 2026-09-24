@@ -1,91 +1,174 @@
 import { fireEvent, render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
-import type { SidebarNavSection } from "./Sidebar"
+import type { SidebarNavItem, SidebarProps } from "./Sidebar"
 import { Sidebar } from "./Sidebar"
 
-const sections: SidebarNavSection[] = [
+const items: SidebarNavItem[] = [
+  { icon: "home-outline", key: "inicio", label: "Início" },
   {
-    items: [
-      { active: true, icon: "home-outline", key: "minha-escola", label: "Minha Escola" },
-      { icon: "users-outline", key: "usuarios", label: "Usuários" },
+    children: [
+      { key: "minha-escola", label: "Minha Escola" },
+      { key: "unidades", label: "Unidades" },
     ],
+    icon: "gear-outline",
     key: "administracao",
-    title: "Administração",
+    label: "Administração",
   },
-  {
-    items: [{ icon: "users-outline", key: "alunos", label: "Alunos" }],
-    key: "pessoas",
-  },
+  { disabled: true, icon: "users-outline", key: "usuarios", label: "Usuários" },
 ]
 
-const renderSidebar = (overrides: Partial<Parameters<typeof Sidebar>[0]> = {}) =>
-  render(<Sidebar logoAlt="Ícone" logoSrc="/logo.svg" sections={sections} title="SchoolFlow360º" {...overrides} />)
+const renderSidebar = (overrides: Partial<SidebarProps> = {}) =>
+  render(<Sidebar items={items} logoAlt="Ícone" logoSrc="/logo.svg" title="SchoolFlow360º" {...overrides} />)
 
 describe("Sidebar", () => {
-  it("renders the brand title and subtitle", () => {
-    renderSidebar({ subtitle: "JLM CORE" })
+  it("renders the brand title and logo", () => {
+    renderSidebar()
 
     expect(screen.getByText("SchoolFlow360º")).toBeInTheDocument()
-    expect(screen.getByText("JLM CORE")).toBeInTheDocument()
+    expect(screen.getByRole("img", { name: "Ícone" })).toHaveAttribute("src", "/logo.svg")
   })
 
-  it("does not render a subtitle when it is not passed", () => {
+  it("renders a button for every top-level item", () => {
     renderSidebar()
 
-    expect(screen.queryByText("JLM CORE")).not.toBeInTheDocument()
-  })
-
-  it("renders a section title only when the section has one", () => {
-    renderSidebar()
-
-    expect(screen.getByText("Administração")).toBeInTheDocument()
-    expect(screen.queryByText("Pessoas")).not.toBeInTheDocument()
-  })
-
-  it("renders a nav item for every item across all sections", () => {
-    renderSidebar()
-
-    expect(screen.getByRole("button", { name: "Minha Escola" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Início" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Administração" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Usuários" })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Alunos" })).toBeInTheDocument()
   })
 
   it("marks the active item with aria-current, and leaves other items without it", () => {
-    renderSidebar()
+    renderSidebar({ items: [{ active: true, icon: "home-outline", key: "inicio", label: "Início" }, items[2]] })
 
-    expect(screen.getByRole("button", { name: "Minha Escola" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("button", { name: "Início" })).toHaveAttribute("aria-current", "page")
     expect(screen.getByRole("button", { name: "Usuários" })).not.toHaveAttribute("aria-current")
   })
 
-  it("calls onClick when a nav item is clicked", () => {
-    let clicked = false
+  it("calls onClick when an item is clicked", () => {
+    const handleClick = vi.fn()
+    renderSidebar({ items: [{ icon: "home-outline", key: "inicio", label: "Início", onClick: handleClick }] })
+
+    fireEvent.click(screen.getByRole("button", { name: "Início" }))
+
+    expect(handleClick).toHaveBeenCalledTimes(1)
+  })
+
+  it("disables an item marked disabled", () => {
+    renderSidebar()
+
+    expect(screen.getByRole("button", { name: "Usuários" })).toBeDisabled()
+  })
+
+  it("does not call onClick on a disabled item", () => {
+    const handleClick = vi.fn()
     renderSidebar({
-      sections: [
+      items: [{ disabled: true, icon: "home-outline", key: "inicio", label: "Início", onClick: handleClick }],
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: "Início" }))
+
+    expect(handleClick).not.toHaveBeenCalled()
+  })
+
+  it("keeps a group collapsed when none of its children is active", () => {
+    renderSidebar()
+
+    expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "false")
+    expect(screen.queryByRole("button", { name: "Minha Escola" })).not.toBeInTheDocument()
+  })
+
+  it("keeps a collapsed group's children mounted but hidden, so the collapse can animate", () => {
+    renderSidebar()
+
+    // By text, not role: a hidden element loses its accessible name, which is the point of hiding it.
+    const child = screen.getByText("Minha Escola")
+
+    expect(child).toBeInTheDocument()
+    expect(child).not.toBeVisible()
+  })
+
+  it("makes the children visible once the group is expanded", () => {
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole("button", { name: "Administração" }))
+
+    expect(screen.getByRole("button", { name: "Minha Escola" })).toBeVisible()
+  })
+
+  it("links a group header to its children through aria-controls", () => {
+    renderSidebar()
+
+    const controlled = document.getElementById(
+      screen.getByRole("button", { name: "Administração" }).getAttribute("aria-controls") ?? "",
+    )
+
+    expect(controlled).toContainElement(screen.getByText("Minha Escola"))
+  })
+
+  it("expands and collapses a group when its header is clicked", () => {
+    renderSidebar()
+
+    fireEvent.click(screen.getByRole("button", { name: "Administração" }))
+
+    expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
+    expect(screen.getByRole("button", { name: "Minha Escola" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Unidades" })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Administração" }))
+
+    expect(screen.queryByRole("button", { name: "Minha Escola" })).not.toBeInTheDocument()
+  })
+
+  it("opens a group by itself when one of its children is active", () => {
+    renderSidebar({
+      items: [
         {
-          items: [
-            { icon: "home-outline", key: "minha-escola", label: "Minha Escola", onClick: () => (clicked = true) },
-          ],
+          children: [{ active: true, key: "minha-escola", label: "Minha Escola" }],
+          icon: "gear-outline",
           key: "administracao",
+          label: "Administração",
+        },
+      ],
+    })
+
+    expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
+    expect(screen.getByRole("button", { name: "Minha Escola" })).toHaveAttribute("aria-current", "page")
+  })
+
+  it("calls a child's onClick when it is clicked", () => {
+    const handleClick = vi.fn()
+    renderSidebar({
+      items: [
+        {
+          children: [{ active: true, key: "minha-escola", label: "Minha Escola", onClick: handleClick }],
+          icon: "gear-outline",
+          key: "administracao",
+          label: "Administração",
         },
       ],
     })
 
     fireEvent.click(screen.getByRole("button", { name: "Minha Escola" }))
 
-    expect(clicked).toBe(true)
+    expect(handleClick).toHaveBeenCalledTimes(1)
   })
 
-  it("renders the footer content when passed", () => {
-    renderSidebar({ footer: <span>Colégio Horizonte</span> })
+  it("renders bottomItems after the menu", () => {
+    renderSidebar({ bottomItems: [{ icon: "help-outline", key: "ajuda", label: "Ajuda" }] })
 
-    expect(screen.getByText("Colégio Horizonte")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Ajuda" })).toBeInTheDocument()
   })
 
-  it("does not render a footer element when footer is not passed", () => {
+  it("does not render a bottom area when bottomItems is not passed", () => {
     const { container } = renderSidebar()
 
     expect(container.querySelector("aside")?.children.length).toBe(2)
+  })
+
+  it("fills the height of its container instead of the viewport", () => {
+    const { container } = renderSidebar()
+
+    expect(container.firstChild).toHaveStyle({ height: "100%" })
   })
 
   it("applies the className passed as a prop", () => {

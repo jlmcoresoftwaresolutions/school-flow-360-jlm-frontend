@@ -1,42 +1,88 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
-import { Text } from "@/ds-components/atoms"
 
-import type { SidebarNavSection } from "./Sidebar"
+import type { SidebarNavChild, SidebarNavItem } from "./Sidebar"
 import { Sidebar } from "./Sidebar"
 
-const sections: SidebarNavSection[] = [
+const childrenOf = (...labels: string[]): SidebarNavChild[] => labels.map((label) => ({ key: label, label }))
+
+const items: SidebarNavItem[] = [
+  { icon: "home-outline", key: "inicio", label: "Início" },
   {
-    items: [
-      { active: true, icon: "home-outline", key: "minha-escola", label: "Minha Escola" },
-      { icon: "users-outline", key: "usuarios", label: "Usuários" },
-    ],
-    key: "administracao",
-    title: "Administração",
+    children: childrenOf("Turmas", "Disciplinas", "Diário de classe", "Boletins"),
+    icon: "school-outline",
+    key: "academico",
+    label: "Acadêmico",
   },
   {
-    items: [
-      { icon: "users-outline", key: "alunos", label: "Alunos" },
-      { icon: "user-outline", key: "responsaveis", label: "Responsáveis" },
-    ],
-    key: "pessoas",
-    title: "Pessoas",
+    children: childrenOf("Mensalidades", "Cobranças", "Contratos", "Conciliação"),
+    icon: "money-outline",
+    key: "financeiro",
+    label: "Financeiro",
+  },
+  {
+    children: childrenOf("Comunicados", "Mensagens", "Notificações"),
+    icon: "chat-outline",
+    key: "comunicacao",
+    label: "Comunicação",
+  },
+  {
+    children: childrenOf("Relatórios acadêmicos", "Relatórios financeiros", "Exportações"),
+    icon: "file-outline",
+    key: "relatorios",
+    label: "Relatórios",
+  },
+  {
+    children: [{ active: true, key: "minha-escola", label: "Minha Escola" }, ...childrenOf("Unidades")],
+    icon: "gear-outline",
+    key: "administracao",
+    label: "Administração",
+  },
+  {
+    children: childrenOf("Lista de usuários", "Perfis e permissões", "Convites"),
+    icon: "users-outline",
+    key: "usuarios",
+    label: "Usuários",
+  },
+  {
+    children: childrenOf("Preferências", "Integrações", "Segurança"),
+    icon: "gear-outline",
+    key: "configuracoes",
+    label: "Configurações",
+  },
+  {
+    children: childrenOf("Acessos recentes", "Auditoria", "Sessões ativas"),
+    icon: "history",
+    key: "logs-de-acesso",
+    label: "Logs de Acesso",
   },
 ]
 
 const meta: Meta<typeof Sidebar> = {
   args: {
+    bottomItems: [
+      {
+        children: childrenOf("Central de ajuda", "Contato com o suporte"),
+        icon: "help-outline",
+        key: "ajuda",
+        label: "Ajuda",
+      },
+    ],
+    items,
     logoAlt: "Ícone do SchoolFlow360",
     logoSrc: schoolFlowIcon,
-    sections,
-    subtitle: "JLM CORE",
     title: "SchoolFlow360º",
   },
   argTypes: {
-    footer: {
+    bottomItems: {
       control: false,
-      description: "Optional content rendered below the nav, separated by a divider - e.g. current org/unit.",
+      description: "Optional items pinned below the scrollable menu, e.g. a help entry. Same shape as items.",
+    },
+    items: {
+      control: false,
+      description:
+        "Menu entries. An item with children is a collapsible group; one without is a plain link. Each takes icon/label and optionally active, disabled and onClick.",
     },
     logoAlt: {
       control: "text",
@@ -46,20 +92,13 @@ const meta: Meta<typeof Sidebar> = {
       control: "text",
       description: "Source of the brand logo image shown at the top of the sidebar.",
     },
-    sections: {
-      control: false,
-      description: "Nav sections, each an optional title plus a list of items with icon/label/active/onClick.",
-    },
-    subtitle: {
-      control: "text",
-      description: "Optional line rendered under the title, e.g. a product/company tagline.",
-    },
     title: {
       control: "text",
       description: "Brand name rendered next to the logo.",
     },
   },
   component: Sidebar,
+  parameters: { layout: "fullscreen" },
   tags: ["autodocs"],
   title: "Organisms/Sidebar",
 }
@@ -68,7 +107,7 @@ export default meta
 
 type Story = StoryObj<typeof Sidebar>
 
-// Default rendering with two nav sections and one active item
+// Default rendering: the P1 menu, with the Administração group open because its child Minha Escola is the current page
 export const Default: Story = {
   render: (args) => (
     <div style={{ height: "100vh" }}>
@@ -77,50 +116,56 @@ export const Default: Story = {
   ),
 }
 
-// The footer prop rendering the current organization/unit context below the nav
-export const WithFooter: Story = {
+// With no active child every group starts collapsed, and each one opens when its header is clicked
+export const CollapsedGroups: Story = {
   render: (args) => (
     <div style={{ height: "100vh" }}>
       <Sidebar
         {...args}
-        footer={
-          <>
-            <Text as="p" color="inverse" fontSize="sm" semibold>
-              Colégio Horizonte
-            </Text>
-            <Text as="p" color="muted" fontSize="xs">
-              Unidade Aldeota
-            </Text>
-          </>
-        }
+        items={items.map((item) => ({
+          ...item,
+          children: item.children?.map((child) => ({ ...child, active: false })),
+        }))}
       />
     </div>
   ),
 }
 
-// Omitting subtitle, showing only the brand title next to the logo
-export const WithoutSubtitle: Story = {
-  render: (args) => (
-    <div style={{ height: "100vh" }}>
-      <Sidebar {...args} subtitle={undefined} />
-    </div>
-  ),
-}
-
-// Many sections/items overflow the available height and scroll within the nav, rather than the page
-export const ManySections: Story = {
+// The disabled flag on entries whose page doesn't exist yet - dimmed and not clickable (open a group to see its disabled children)
+export const DisabledItems: Story = {
   render: (args) => (
     <div style={{ height: "100vh" }}>
       <Sidebar
         {...args}
-        sections={Array.from({ length: 6 }, (_, sectionIndex) => ({
-          items: Array.from({ length: 4 }, (_, itemIndex) => ({
-            icon: "dashboard-outline" as const,
-            key: `s${sectionIndex}-i${itemIndex}`,
-            label: `Item ${sectionIndex + 1}.${itemIndex + 1}`,
-          })),
-          key: `s${sectionIndex}`,
-          title: `Seção ${sectionIndex + 1}`,
+        items={items.map((item) => ({
+          ...item,
+          children: item.children?.map((child) => ({ ...child, disabled: true })),
+          disabled: !item.children,
+        }))}
+      />
+    </div>
+  ),
+}
+
+// Without bottomItems nothing is pinned under the menu
+export const WithoutBottomItems: Story = {
+  render: (args) => (
+    <div style={{ height: "100vh" }}>
+      <Sidebar {...args} bottomItems={undefined} />
+    </div>
+  ),
+}
+
+// Many items overflow the available height and scroll within the nav (thin scrollbar flush to the sidebar's right edge), keeping the bottom item pinned
+export const ManyItems: Story = {
+  render: (args) => (
+    <div style={{ height: "100vh" }}>
+      <Sidebar
+        {...args}
+        items={Array.from({ length: 24 }, (_, index) => ({
+          icon: "dashboard-outline" as const,
+          key: `item-${index}`,
+          label: `Item ${index + 1}`,
         }))}
       />
     </div>
