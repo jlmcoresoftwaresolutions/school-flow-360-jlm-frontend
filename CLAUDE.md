@@ -59,6 +59,10 @@ Uma exceção: as props de breakpoint do `Grid.Col` (`xs`/`sm`/`md`/`lg`/`xl`/`x
 
 - **Nunca use `.replace(/\D/g, "")` inline para remover caracteres não numéricos.** Use `stripNonDigits`, exportado de `@/utils/formats` (ver seu uso no tratamento `numeric` de `Input.tsx` e em `viaCep.ts`). Manter isso em um único lugar significa que uma mudança futura no que conta como "um dígito" (ou a troca da implementação) só precisa acontecer uma vez.
 
+### `src/hooks/` guarda hooks compartilhados e transversais
+
+`src/hooks/<hookName>/` segue o mesmo formato de pasta por módulo de `src/utils/` (`<hookName>.ts` + `index.ts` + `<hookName>.test.ts` co-localizado), reexportado pelo `src/hooks/index.ts`, e é importado via `@/hooks`. É o lugar de hooks que não pertencem a um componente só (`useTooltip`, por exemplo, continua co-localizado com o `Tooltip` por ser fortemente acoplado a ele). Hoje há `useMediaQuery(query)`, que assina uma media query via `useSyncExternalStore` e devolve se ela casa — onde `matchMedia` não existe (jsdom, ou seja, todo teste unitário que não o stubar) devolve `false`. O `Sidebar` o usa com `not all and ${media.md}` (a própria token de breakpoint, negada) para saber se a tela é compacta; em testes, `vi.stubGlobal("matchMedia", ...)` simula uma tela compacta e `vi.unstubAllGlobals()` no `afterEach` limpa.
+
 ### `src/services/` guarda as chamadas a APIs externas
 
 `src/services/<serviceName>/` segue o mesmo formato de pasta por módulo que `src/utils/` (`<serviceName>.ts` + `index.ts` reexportando-o, ex.: `export * from "./viaCep"`), reexportado por sua vez através do `src/services/index.ts` no topo. Apenas named exports, nunca export default. **Diferente de toda outra camada deste projeto, services não recebem testes unitários** — não há `<serviceName>.test.ts` para escrever, nem mockado nem de outra forma (`httpClient` é a única exceção, justamente por não ser uma chamada de rede simples — ver abaixo).
