@@ -1,6 +1,6 @@
 import styled from "styled-components"
 
-import { colors, spacing } from "@/foundation"
+import { colors, media, spacing } from "@/foundation"
 
 // The 100vh line is a fallback for browsers without dvh: on mobile, 100vh includes the area the
 // collapsing address bar covers, so dvh (the currently visible height) is what actually fills the
@@ -15,5 +15,9 @@ export const AppShellContent = styled.main`
   background: ${colors.neutral[50]};
   flex: 1;
   overflow-y: auto;
-  padding: ${spacing[32]};
+  padding: ${spacing[16]};
+
+  @media ${media.md} {
+    padding: ${spacing[32]};
+  }
 `
