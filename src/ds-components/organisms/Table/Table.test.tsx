@@ -141,6 +141,52 @@ describe("Table", () => {
     expect(screen.queryByRole("button", { name: "Próxima" })).not.toBeInTheDocument()
   })
 
+  it("numbers the page buttons and marks the current page", () => {
+    render(
+      <Table paginator rows={1} value={alunos}>
+        <Table.Column field="nome" header="Nome" />
+      </Table>,
+    )
+
+    expect(screen.getByRole("button", { name: "Página 1" })).toHaveAttribute("aria-current", "page")
+
+    fireEvent.click(screen.getByRole("button", { name: "Página 3" }))
+
+    expect(screen.getByText("Carlos")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Página 3" })).toHaveAttribute("aria-current", "page")
+  })
+
+  it("replaces the paginator copy with the label props", () => {
+    render(
+      <Table
+        nextPageLabel="Next"
+        pageLabel={(page) => `Page ${page}`}
+        pageSummary={(page, totalPages) => `Page ${page} of ${totalPages}`}
+        paginator
+        previousPageLabel="Previous"
+        rows={2}
+        value={alunos}
+      >
+        <Table.Column field="nome" header="Nome" />
+      </Table>,
+    )
+
+    expect(screen.getByText("Page 1 of 2")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Next" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "Previous" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Page 2" })).toBeInTheDocument()
+  })
+
+  it("shows loadingMessage in the loading row", () => {
+    render(
+      <Table loading loadingMessage="Loading..." value={alunos}>
+        <Table.Column field="nome" header="Nome" />
+      </Table>,
+    )
+
+    expect(screen.getByText("Loading...")).toBeInTheDocument()
+  })
+
   it("applies the className passed as a prop", () => {
     const { container } = render(
       <Table className="custom" value={alunos}>

@@ -85,8 +85,10 @@ export const StyledTableCell = styled.td<StyledTableCellProps>`
   text-align: ${(props) => props.$align};
 `
 
+// neutral 700, not a lighter gray: this message is the only content of an empty table, and the
+// lighter shades miss WCAG AA contrast.
 export const TableEmptyCell = styled.td`
-  color: ${colors.neutral[500]};
+  color: ${colors.neutral[700]};
   padding: ${spacing[32]};
   text-align: center;
 `
@@ -95,6 +97,8 @@ export const TableFooter = styled.div`
   align-items: center;
   border-top: 1px solid ${colors.neutral[200]};
   display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[8]};
   justify-content: space-between;
   padding: ${spacing[12]} ${spacing[16]};
 `

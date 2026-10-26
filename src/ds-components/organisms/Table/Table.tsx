@@ -1,8 +1,8 @@
 import type { CSSProperties, ReactElement, ReactNode } from "react"
 import { Children, isValidElement, useState } from "react"
 
-import { Button, Icon, Text } from "@/ds-components/atoms"
-import { spacing } from "@/foundation"
+import { Icon, Text } from "@/ds-components/atoms"
+import { Pagination } from "@/ds-components/molecules"
 
 import type { TableAlign } from "./Table.styles"
 import {
@@ -46,11 +46,19 @@ export type TableProps<T> = {
   dataKey?: keyof T & string
   emptyMessage?: string
   loading?: boolean
+  loadingMessage?: string
+  nextPageLabel?: string
   paginator?: boolean
+  previousPageLabel?: string
   rows?: number
   striped?: boolean
   style?: CSSProperties
+  pageLabel?: (page: number) => string
+  pageSummary?: (page: number, totalPages: number) => string
 }
+
+const defaultPageLabel = (page: number) => `Página ${page}`
+const defaultPageSummary = (page: number, totalPages: number) => `Página ${page} de ${totalPages}`
 
 type TableComponentType = {
   <T>(props: TableProps<T>): ReactElement
@@ -67,7 +75,12 @@ export const Table = (<T,>(props: TableProps<T>) => {
     dataKey,
     emptyMessage = "Nenhum registro encontrado.",
     loading = false,
+    loadingMessage = "Carregando...",
+    nextPageLabel = "Próxima",
+    pageLabel = defaultPageLabel,
+    pageSummary = defaultPageSummary,
     paginator = false,
+    previousPageLabel = "Anterior",
     rows = 10,
     striped = true,
     style,
@@ -141,7 +154,7 @@ export const Table = (<T,>(props: TableProps<T>) => {
         <tbody>
           {loading && (
             <tr>
-              <TableEmptyCell colSpan={columns.length}>Carregando...</TableEmptyCell>
+              <TableEmptyCell colSpan={columns.length}>{loadingMessage}</TableEmptyCell>
             </tr>
           )}
           {!loading && pagedValue.length === 0 && (
@@ -169,28 +182,17 @@ export const Table = (<T,>(props: TableProps<T>) => {
       {paginator && (
         <TableFooter>
           <Text color="secondary" fontSize="sm">
-            Página {currentPage + 1} de {totalPages}
+            {pageSummary(currentPage + 1, totalPages)}
           </Text>
 
-          <div style={{ display: "flex", gap: spacing[8] }}>
-            <Button
-              disabled={currentPage === 0}
-              onClick={() => setPage(currentPage - 1)}
-              size="small"
-              variant="outlined"
-            >
-              Anterior
-            </Button>
-
-            <Button
-              disabled={currentPage >= totalPages - 1}
-              onClick={() => setPage(currentPage + 1)}
-              size="small"
-              variant="outlined"
-            >
-              Próxima
-            </Button>
-          </div>
+          <Pagination
+            nextLabel={nextPageLabel}
+            onChange={(nextPage) => setPage(nextPage - 1)}
+            page={currentPage + 1}
+            pageLabel={pageLabel}
+            previousLabel={previousPageLabel}
+            totalPages={totalPages}
+          />
         </TableFooter>
       )}
     </TableWrapper>

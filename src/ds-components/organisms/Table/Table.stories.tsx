@@ -33,9 +33,30 @@ const meta: Meta<typeof Table> = {
       control: "boolean",
       description: "Shows a loading row instead of the data rows.",
     },
+    loadingMessage: {
+      control: "text",
+      description: "Message shown in the loading row. Defaults to a pt-BR message.",
+    },
+    nextPageLabel: {
+      control: "text",
+      description: "Accessible name of the paginator's next button. Defaults to a pt-BR label.",
+    },
+    pageLabel: {
+      control: false,
+      description: "Builds the accessible name of each page button from its number. Defaults to a pt-BR label.",
+    },
+    pageSummary: {
+      control: false,
+      description: "Builds the footer's page summary from the current page and the total. Defaults to a pt-BR summary.",
+    },
     paginator: {
       control: "boolean",
-      description: "Shows a footer with page navigation, splitting value into pages of rows items.",
+      description:
+        "Shows a footer with numbered page navigation (see Pagination), splitting value into pages of rows items.",
+    },
+    previousPageLabel: {
+      control: "text",
+      description: "Accessible name of the paginator's previous button. Defaults to a pt-BR label.",
     },
     rows: {
       control: "number",
@@ -150,6 +171,24 @@ export const NotStriped: Story = {
       <Table.Column field="nome" header="Nome" />
       <Table.Column field="turma" header="Turma" />
       <Table.Column field="email" header="E-mail" />
+    </Table>
+  ),
+}
+
+// The loadingMessage and paginator label props replacing the default copy, as a translated page would
+export const CustomLabels: Story = {
+  render: () => (
+    <Table
+      nextPageLabel="Avançar"
+      pageLabel={(page) => `Ir para a página ${page}`}
+      pageSummary={(page, totalPages) => `${page} / ${totalPages}`}
+      paginator
+      previousPageLabel="Voltar"
+      rows={3}
+      value={alunos}
+    >
+      <Table.Column field="nome" header="Nome" />
+      <Table.Column field="turma" header="Turma" />
     </Table>
   ),
 }
