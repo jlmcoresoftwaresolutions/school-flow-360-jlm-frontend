@@ -6,6 +6,12 @@ import { spacing } from "@/foundation"
 import { Loading } from "./Loading"
 
 const meta: Meta<typeof Loading> = {
+  argTypes: {
+    label: {
+      control: "text",
+      description: "Accessible name of the loading status, announced by screen readers. Defaults to a pt-BR label.",
+    },
+  },
   component: Loading,
   decorators: [
     (Story) => (
@@ -34,3 +40,10 @@ type Story = StoryObj<typeof Loading>
 
 // Default rendering: covers the full viewport with a centered spinner over a frosted backdrop
 export const Default: Story = {}
+
+// The label prop replacing the accessible name announced by screen readers
+export const CustomLabel: Story = {
+  args: {
+    label: "Salvando alterações...",
+  },
+}

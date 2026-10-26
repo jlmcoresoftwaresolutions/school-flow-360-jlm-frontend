@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
+import { LanguageSwitcher } from "@/components"
 import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Text } from "@/ds-components/atoms"
 
 import { Input } from "../../ds-components/molecules"
@@ -89,9 +90,15 @@ export const Login = () => {
               elevated
               style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
             >
-              <Text as="p" fontSize="3xl" bold>
-                {t("login.signInTitle")}
-              </Text>
+              <div
+                style={{ alignItems: "flex-start", display: "flex", gap: spacing[12], justifyContent: "space-between" }}
+              >
+                <Text as="h1" fontSize="3xl" bold>
+                  {t("login.signInTitle")}
+                </Text>
+
+                <LanguageSwitcher label={t("common.changeLanguage")} />
+              </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>

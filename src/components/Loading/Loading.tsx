@@ -5,14 +5,15 @@ import { LoadingDot, LoadingOverlay, LoadingRingInner, LoadingRingOuter, Loading
 
 export type LoadingProps = {
   className?: string
+  label?: string
   style?: CSSProperties
 }
 
 export const Loading = (props: LoadingProps) => {
-  const { className, style } = props
+  const { className, label = "Carregando...", style } = props
 
   return createPortal(
-    <LoadingOverlay aria-label="Carregando..." className={className} role="status" style={style}>
+    <LoadingOverlay aria-label={label} className={className} role="status" style={style}>
       <LoadingSpinner>
         <LoadingRingOuter />
         <LoadingRingInner />

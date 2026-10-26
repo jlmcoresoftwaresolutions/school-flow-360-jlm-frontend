@@ -1,6 +1,8 @@
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
+
+import { i18n } from "@/i18n"
 
 import { AppShell } from "./AppShell"
 
@@ -118,5 +120,30 @@ describe("AppShell", () => {
     renderAppShell("/outra")
 
     expect(screen.queryByRole("navigation", { name: "Você está em" })).not.toBeInTheDocument()
+  })
+
+  it("puts a language switcher in the topbar", () => {
+    renderAppShell("/outra")
+
+    expect(within(screen.getByRole("banner")).getByRole("button", { name: "Alterar idioma" })).toBeInTheDocument()
+  })
+
+  describe("in another language", () => {
+    afterEach(async () => {
+      await act(() => i18n.changeLanguage("pt-BR"))
+    })
+
+    it("translates the menu, the breadcrumb and the topbar", async () => {
+      renderAppShell("/administracao/minha-escola")
+
+      await act(() => i18n.changeLanguage("en"))
+
+      expect(await screen.findByRole("button", { name: "Administration" })).toBeInTheDocument()
+      expect(within(screen.getByRole("navigation", { name: "You are here" })).getByText("My School")).toHaveAttribute(
+        "aria-current",
+        "page",
+      )
+      expect(within(screen.getByRole("banner")).getByRole("button", { name: "Notifications" })).toBeDisabled()
+    })
   })
 })

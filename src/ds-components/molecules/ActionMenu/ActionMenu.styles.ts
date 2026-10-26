@@ -77,3 +77,8 @@ export const StyledActionMenuItem = styled.button<StyledActionMenuItemProps>`
     opacity: ${opacity.disabled};
   }
 `
+
+// Takes the free space, so a trailing check mark (radio items) sits at the item's right edge.
+export const StyledActionMenuItemLabel = styled.span`
+  flex: 1;
+`

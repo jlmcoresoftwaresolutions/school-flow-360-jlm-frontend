@@ -1,5 +1,3 @@
-import type { SelectOption } from "@/ds-components/molecules"
-
 // Local mock, standing in for the future @/models/organization + @/services/organization pair
 // (see ENB-0004 / ORG-US-001 in the P1-P3 backlog) once /api/v1/organization/current exists.
 // Kept inside this page folder rather than under src/models or src/services so it's obvious this
@@ -29,20 +27,23 @@ export type Organization = OrganizationDetails & {
 // Order matches the private/public operation-model field already used across the project
 // (see erp-vision-scope memory) - not itself a stand-in for DP-02, which is about which fields
 // are mandatory, not this list of values.
-export const operationModelOptions: SelectOption[] = [
-  { label: "Privada", value: "PRIVADA" },
-  { label: "Pública Municipal", value: "PUBLICA_MUNICIPAL" },
-  { label: "Pública Estadual", value: "PUBLICA_ESTADUAL" },
-  { label: "Pública Federal", value: "PUBLICA_FEDERAL" },
-  { label: "Mista", value: "MISTA" },
-]
+// Only the values live here; their labels are copy, translated by the page (minhaEscola.operationModels).
+export const operationModelValues = [
+  "PRIVADA",
+  "PUBLICA_MUNICIPAL",
+  "PUBLICA_ESTADUAL",
+  "PUBLICA_FEDERAL",
+  "MISTA",
+] as const
+
+export type OperationModel = (typeof operationModelValues)[number]
 
 // DP-03 (final status taxonomy for Organização/Unidade) is still open - this two-value set is
 // only good enough to demo the screen, not a proposal for the real taxonomy.
-export const statusOptions: SelectOption[] = [
-  { label: "Ativa", value: "ATIVA" },
-  { label: "Inativa", value: "INATIVA" },
-]
+// Labels translated by the page (minhaEscola.statuses).
+export const statusValues = ["ATIVA", "INATIVA"] as const
+
+export type OrganizationStatus = (typeof statusValues)[number]
 
 export const mockOrganization: Organization = {
   address: "Av. Santos Dumont, 1500 - Fortaleza/CE",

@@ -46,6 +46,9 @@ export type SidebarProps = {
   title: string
   bottomItems?: SidebarNavItem[]
   className?: string
+  collapseLabel?: string
+  expandLabel?: string
+  navLabel?: string
   style?: CSSProperties
 }
 
@@ -56,7 +59,18 @@ const compactQuery = `not all and ${media.md}`
 // On compact screens the sidebar is an icon-only rail with a button that opens it over the content;
 // on wider screens it is always fully expanded and that button doesn't exist.
 export const Sidebar = (props: SidebarProps) => {
-  const { bottomItems = [], className, items, logoAlt, logoSrc, style, title } = props
+  const {
+    bottomItems = [],
+    className,
+    collapseLabel = "Recolher menu",
+    expandLabel = "Expandir menu",
+    items,
+    logoAlt,
+    logoSrc,
+    navLabel = "Navegação principal",
+    style,
+    title,
+  } = props
 
   const panelId = useId()
 
@@ -126,7 +140,7 @@ export const Sidebar = (props: SidebarProps) => {
             <SidebarToggleButton
               aria-controls={panelId}
               aria-expanded={isOpen}
-              aria-label={isOpen ? "Recolher menu" : "Expandir menu"}
+              aria-label={isOpen ? collapseLabel : expandLabel}
               onClick={isOpen ? collapse : expand}
               type="button"
             >
@@ -135,7 +149,7 @@ export const Sidebar = (props: SidebarProps) => {
           )}
         </SidebarBrand>
 
-        <SidebarNav $collapsed={isCollapsed} aria-label="Navegação principal">
+        <SidebarNav $collapsed={isCollapsed} aria-label={navLabel}>
           <SidebarNavContent $collapsed={isCollapsed}>
             <SidebarItemList>{renderItems(items)}</SidebarItemList>
           </SidebarNavContent>

@@ -35,4 +35,10 @@ describe("GlobalLoading", () => {
     act(() => stopLoading())
     expect(screen.queryByRole("status")).not.toBeInTheDocument()
   })
+
+  it("shows the overlay with no request in flight when visible is set", () => {
+    render(<GlobalLoading visible />)
+
+    expect(screen.getByRole("status", { name: "Carregando..." })).toBeInTheDocument()
+  })
 })

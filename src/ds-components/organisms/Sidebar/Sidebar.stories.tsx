@@ -120,6 +120,14 @@ const meta: Meta<typeof Sidebar> = {
       control: false,
       description: "Optional items pinned below the scrollable menu, e.g. a help entry. Same shape as items.",
     },
+    collapseLabel: {
+      control: "text",
+      description: "Accessible name of the compact-screen button while the panel is open. Defaults to a pt-BR label.",
+    },
+    expandLabel: {
+      control: "text",
+      description: "Accessible name of the compact-screen button while the panel is a rail. Defaults to a pt-BR label.",
+    },
     items: {
       control: false,
       description:
@@ -132,6 +140,10 @@ const meta: Meta<typeof Sidebar> = {
     logoSrc: {
       control: "text",
       description: "Source of the brand logo image shown at the top of the sidebar.",
+    },
+    navLabel: {
+      control: "text",
+      description: "Accessible name of the navigation landmark. Defaults to a pt-BR label.",
     },
     title: {
       control: "text",

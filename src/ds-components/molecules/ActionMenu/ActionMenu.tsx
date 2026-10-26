@@ -6,11 +6,17 @@ import type { IconName } from "@/ds-components/atoms"
 import { Icon } from "@/ds-components/atoms"
 import { spacing } from "@/foundation"
 
-import { StyledActionMenuItem, StyledActionMenuList, StyledActionMenuTrigger } from "./ActionMenu.styles"
+import {
+  StyledActionMenuItem,
+  StyledActionMenuItemLabel,
+  StyledActionMenuList,
+  StyledActionMenuTrigger,
+} from "./ActionMenu.styles"
 
 export type ActionMenuItem = {
   key: string
   label: string
+  checked?: boolean
   disabled?: boolean
   icon?: IconName
   tone?: "danger" | "default"
@@ -24,7 +30,11 @@ export type ActionMenuProps = {
   className?: string
   disabled?: boolean
   style?: CSSProperties
+  triggerIcon?: IconName
 }
+
+// The enabled items, in order; menuitemradio items (see `checked`) count too.
+const enabledItemSelector = "[role^='menuitem']:not(:disabled)"
 
 // Gap between the trigger and its menu, and a rough row height used only to decide whether the menu
 // fits below the trigger before it has been rendered (and so measured).
@@ -37,8 +47,10 @@ const estimatedItemHeight = parseInt(spacing[40])
 // those would leave it detached from its trigger. Keyboard follows the WAI-ARIA menu pattern: focus
 // moves into the menu when it opens, arrows/Home/End move between the enabled items, Escape closes it
 // and returns focus to the trigger. It owns no copy: triggerLabel is the trigger's accessible name.
+// An item with `checked` set (true or false) is a menuitemradio instead, for picking one option out
+// of several (e.g. a language): the checked one shows a check mark and is announced as checked.
 export const ActionMenu = (props: ActionMenuProps) => {
-  const { align = "end", className, disabled, items, style, triggerLabel } = props
+  const { align = "end", className, disabled, items, style, triggerIcon = "dots-vertical", triggerLabel } = props
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -53,7 +65,12 @@ export const ActionMenu = (props: ActionMenuProps) => {
   useEffect(() => {
     if (!isOpen) return
 
-    menuRef.current?.querySelector<HTMLElement>("[role='menuitem']:not(:disabled)")?.focus()
+    // A radio-style menu opens on its checked item, so the arrows start from the current choice.
+    const initialItem =
+      menuRef.current?.querySelector<HTMLElement>("[aria-checked='true']:not(:disabled)") ??
+      menuRef.current?.querySelector<HTMLElement>(enabledItemSelector)
+
+    initialItem?.focus()
 
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as Node
@@ -109,7 +126,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
   }
 
   const handleMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const enabled = Array.from(menuRef.current?.querySelectorAll<HTMLElement>("[role='menuitem']:not(:disabled)") ?? [])
+    const enabled = Array.from(menuRef.current?.querySelectorAll<HTMLElement>(enabledItemSelector) ?? [])
     if (enabled.length === 0) return
 
     const current = enabled.indexOf(document.activeElement as HTMLElement)
@@ -141,7 +158,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
         style={style}
         type="button"
       >
-        <Icon color="secondary" name="dots-vertical" size={20} />
+        <Icon color="secondary" name={triggerIcon} size={20} />
       </StyledActionMenuTrigger>
 
       {isOpen &&
@@ -157,17 +174,19 @@ export const ActionMenu = (props: ActionMenuProps) => {
             {items.map((item) => (
               <StyledActionMenuItem
                 $danger={item.tone === "danger"}
+                aria-checked={item.checked}
                 disabled={item.disabled}
                 key={item.key}
                 onClick={() => handleSelect(item)}
-                role="menuitem"
+                role={item.checked === undefined ? "menuitem" : "menuitemradio"}
                 tabIndex={-1}
                 type="button"
               >
                 {item.icon && (
                   <Icon color={item.tone === "danger" ? "danger" : "secondary"} name={item.icon} size={16} />
                 )}
-                {item.label}
+                <StyledActionMenuItemLabel>{item.label}</StyledActionMenuItemLabel>
+                {item.checked && <Icon color="brand" name="check" size={16} />}
               </StyledActionMenuItem>
             ))}
           </StyledActionMenuList>,

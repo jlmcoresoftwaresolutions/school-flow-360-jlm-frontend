@@ -250,4 +250,63 @@ describe("ActionMenu", () => {
     expect(screen.getByRole("button", { name: "Ações da unidade" })).toHaveClass("custom")
     expect(screen.getByRole("button", { name: "Ações da unidade" })).toHaveStyle({ margin: "4px" })
   })
+
+  it("shows triggerIcon on the trigger instead of the kebab", () => {
+    const { container } = render(
+      <ActionMenu items={[{ key: "a", label: "A" }]} triggerIcon="language" triggerLabel="Idioma" />,
+    )
+    const { container: kebab } = render(<ActionMenu items={[{ key: "a", label: "A" }]} triggerLabel="Ações" />)
+
+    expect(container.querySelector("svg")?.innerHTML).not.toBe(kebab.querySelector("svg")?.innerHTML)
+  })
+
+  describe("checked items", () => {
+    const languageItems: ActionMenuItem[] = [
+      { checked: true, key: "pt-BR", label: "Português (Brasil)" },
+      { checked: false, key: "en", label: "English" },
+    ]
+
+    it("renders items with checked set as menuitemradio, announcing which is checked", () => {
+      render(<ActionMenu items={languageItems} triggerLabel="Idioma" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+
+      expect(screen.getByRole("menuitemradio", { name: "Português (Brasil)" })).toHaveAttribute("aria-checked", "true")
+      expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveAttribute("aria-checked", "false")
+    })
+
+    it("moves focus to the checked item when it opens", () => {
+      render(
+        <ActionMenu
+          items={[
+            { checked: false, key: "pt-BR", label: "Português (Brasil)" },
+            { checked: true, key: "en", label: "English" },
+          ]}
+          triggerLabel="Idioma"
+        />,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+
+      expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveFocus()
+    })
+
+    it("moves between radio items with the arrows", () => {
+      render(<ActionMenu items={languageItems} triggerLabel="Idioma" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+      fireEvent.keyDown(screen.getByRole("menu"), { key: "ArrowDown" })
+
+      expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveFocus()
+    })
+
+    it("shows a check mark only on the checked item", () => {
+      render(<ActionMenu items={languageItems} triggerLabel="Idioma" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+
+      expect(screen.getByRole("menuitemradio", { name: "Português (Brasil)" }).querySelector("svg")).toBeInTheDocument()
+      expect(screen.getByRole("menuitemradio", { name: "English" }).querySelector("svg")).not.toBeInTheDocument()
+    })
+  })
 })

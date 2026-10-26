@@ -48,4 +48,13 @@ i18next
     supportedLngs: supportedLanguages,
   })
 
+// Keeps <html lang> on the active language, so screen readers pick the right voice and pronunciation
+// (index.html starts it at pt-BR, the fallback, for the moment before this runs).
+const syncDocumentLanguage = (language: string) => {
+  document.documentElement.lang = language
+}
+
+if (i18next.resolvedLanguage) syncDocumentLanguage(i18next.resolvedLanguage)
+i18next.on("languageChanged", syncDocumentLanguage)
+
 export const i18n = i18next

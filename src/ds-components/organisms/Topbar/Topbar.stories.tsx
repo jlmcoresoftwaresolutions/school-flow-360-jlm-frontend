@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Breadcrumb } from "../../molecules"
+import { ActionMenu, Breadcrumb } from "../../molecules"
 import { Topbar } from "./Topbar"
 
 // A self-contained placeholder photo, so the story doesn't depend on an external image host.
@@ -34,6 +34,11 @@ const meta: Meta<typeof Topbar> = {
     children: {
       control: false,
       description: "Content of the leading side, typically a Breadcrumb.",
+    },
+    extraActions: {
+      control: false,
+      description:
+        "Content placed after the icon actions, for controls that are more than a button, e.g. an ActionMenu used as a language switcher.",
     },
     user: {
       control: "object",
@@ -76,5 +81,21 @@ export const WithDisabledAction: Story = {
       { disabled: true, icon: "bell-outline", key: "notificacoes", label: "Notificações" },
       { icon: "help-outline", key: "ajuda", label: "Ajuda" },
     ],
+  },
+}
+
+// The extraActions prop holding a language switcher menu next to the icon actions
+export const WithExtraActions: Story = {
+  args: {
+    extraActions: (
+      <ActionMenu
+        items={[
+          { checked: true, key: "pt-BR", label: "Português (Brasil)" },
+          { checked: false, key: "en", label: "English" },
+        ]}
+        triggerIcon="language"
+        triggerLabel="Alterar idioma"
+      />
+    ),
   },
 }

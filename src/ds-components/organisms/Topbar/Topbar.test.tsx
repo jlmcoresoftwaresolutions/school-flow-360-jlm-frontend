@@ -65,6 +65,12 @@ describe("Topbar", () => {
     expect(screen.getByText("Notificações", { selector: "div" })).toBeInTheDocument()
   })
 
+  it("renders extraActions on the trailing side", () => {
+    renderTopbar({ extraActions: <button>Alterar idioma</button> })
+
+    expect(screen.getByRole("button", { name: "Alterar idioma" })).toBeInTheDocument()
+  })
+
   describe("user", () => {
     it("shows the name and the role", () => {
       renderTopbar({ user: { name: "Maria da Silva", role: "Diretora" } })

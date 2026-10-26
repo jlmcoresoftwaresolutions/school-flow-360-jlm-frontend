@@ -25,7 +25,11 @@ const meta: Meta<typeof ActionMenu> = {
     items: {
       control: "object",
       description:
-        "The actions: key, label and optionally icon, tone (danger paints it red), disabled and onClick. Selecting one runs its onClick and closes the menu.",
+        "The actions: key, label and optionally icon, tone (danger paints it red), disabled, onClick and checked. Selecting one runs its onClick and closes the menu. An item with checked set (true or false) becomes a menuitemradio, for picking one option out of several.",
+    },
+    triggerIcon: {
+      control: "text",
+      description: "Name of the icon shown on the trigger. Defaults to dots-vertical (a kebab).",
     },
     triggerLabel: {
       control: "text",
@@ -77,4 +81,16 @@ export const InTableRow: Story = {
       <Table.Column align="right" body={() => <ActionMenu {...args} />} field="id" header="Ações" />
     </Table>
   ),
+}
+
+// The triggerIcon prop and checked items turning the menu into a single-choice picker, as a language switcher
+export const SingleChoice: Story = {
+  args: {
+    items: [
+      { checked: true, key: "pt-BR", label: "Português (Brasil)" },
+      { checked: false, key: "en", label: "English" },
+    ],
+    triggerIcon: "language",
+    triggerLabel: "Alterar idioma",
+  },
 }

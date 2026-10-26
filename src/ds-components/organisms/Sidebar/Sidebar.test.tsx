@@ -423,4 +423,21 @@ describe("Sidebar on a compact screen", () => {
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
     expect(screen.getByRole("button", { name: "Minha Escola" })).toBeVisible()
   })
+
+  it("names the expand/collapse button with expandLabel and collapseLabel", () => {
+    stubCompactScreen()
+    renderSidebar({ collapseLabel: "Collapse menu", expandLabel: "Expand menu" })
+
+    fireEvent.click(screen.getByRole("button", { name: "Expand menu" }))
+
+    expect(screen.getByRole("button", { name: "Collapse menu" })).toBeInTheDocument()
+  })
+})
+
+describe("Sidebar labels", () => {
+  it("names the navigation landmark with navLabel", () => {
+    renderSidebar({ navLabel: "Main navigation" })
+
+    expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument()
+  })
 })

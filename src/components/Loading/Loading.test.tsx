@@ -18,6 +18,12 @@ describe("Loading", () => {
     expect(screen.getByRole("status", { name: "Carregando..." })).toBeInTheDocument()
   })
 
+  it("uses label as its accessible label when given", () => {
+    render(<Loading label="Loading..." />)
+
+    expect(screen.getByRole("status", { name: "Loading..." })).toBeInTheDocument()
+  })
+
   it("applies the className passed as a prop", () => {
     render(<Loading className="custom" />)
 

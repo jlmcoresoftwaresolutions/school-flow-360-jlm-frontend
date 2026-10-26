@@ -1,5 +1,6 @@
 import type { ChangeEvent, FormEvent } from "react"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Loading, toast } from "@/components"
@@ -8,8 +9,14 @@ import type { SelectOption } from "@/ds-components/molecules"
 import { ColorPicker, FileUpload, Input, Select, Textarea } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 
-import type { Organization, OrganizationBranding, OrganizationDetails } from "./MinhaEscola.mock"
-import { fetchMockOrganization, operationModelOptions, statusOptions } from "./MinhaEscola.mock"
+import type {
+  OperationModel,
+  Organization,
+  OrganizationBranding,
+  OrganizationDetails,
+  OrganizationStatus,
+} from "./MinhaEscola.mock"
+import { fetchMockOrganization, operationModelValues, statusValues } from "./MinhaEscola.mock"
 import {
   CardHeader,
   ColorPreviewRow,
@@ -26,6 +33,22 @@ const statusTagColor = (status: string) => (status === "ATIVA" ? "success" : "mu
 const optionLabel = (options: SelectOption[], value: string) =>
   options.find((option) => option.value === value)?.label ?? value
 
+// The Select options with translated labels; the values stay the codes the data uses.
+const useOrganizationOptions = () => {
+  const { t } = useTranslation()
+
+  const operationModelOptions: SelectOption[] = operationModelValues.map((value: OperationModel) => ({
+    label: t(`minhaEscola.operationModels.${value}`),
+    value,
+  }))
+  const statusOptions: SelectOption[] = statusValues.map((value: OrganizationStatus) => ({
+    label: t(`minhaEscola.statuses.${value}`),
+    value,
+  }))
+
+  return { operationModelOptions, statusOptions }
+}
+
 export type OrganizationDetailsCardProps = {
   details: OrganizationDetails
   onSave: (details: OrganizationDetails) => void
@@ -33,6 +56,9 @@ export type OrganizationDetailsCardProps = {
 
 export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => {
   const { details, onSave } = props
+
+  const { t } = useTranslation()
+  const { operationModelOptions, statusOptions } = useOrganizationOptions()
 
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState<OrganizationDetails>(details)
@@ -53,14 +79,14 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
     event.preventDefault()
     onSave(draft)
     setIsEditing(false)
-    toast.success("Dados da organização atualizados.")
+    toast.success(t("minhaEscola.detailsSaved"))
   }
 
   return (
     <Card color="surface" elevated style={{ padding: spacing[32] }}>
       <CardHeader>
         <Text as="h2" fontSize="lg" bold>
-          Dados da organização
+          {t("minhaEscola.detailsTitle")}
         </Text>
 
         {!isEditing && (
@@ -69,7 +95,7 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
             startIcon={<Icon color="brand" name="pen-outline" size={16} />}
             variant="outlined"
           >
-            Editar
+            {t("common.edit")}
           </Button>
         )}
       </CardHeader>
@@ -81,13 +107,18 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
               <Grid.Col xs={12} md={6}>
                 <Input
                   onChange={handleChange("legalName")}
-                  title="Nome da organização"
+                  title={t("minhaEscola.legalName")}
                   value={draft.legalName}
                   required
                 />
               </Grid.Col>
               <Grid.Col xs={12} md={6}>
-                <Input onChange={handleChange("displayName")} title="Nome exibido" value={draft.displayName} required />
+                <Input
+                  onChange={handleChange("displayName")}
+                  title={t("minhaEscola.displayName")}
+                  value={draft.displayName}
+                  required
+                />
               </Grid.Col>
             </Grid.Row>
 
@@ -96,7 +127,7 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
                 <Select
                   onChange={(option) => setDraft((current) => ({ ...current, operationModel: option?.value ?? "" }))}
                   options={operationModelOptions}
-                  title="Modelo de operação"
+                  title={t("minhaEscola.operationModel")}
                   value={operationModelOptions.find((option) => option.value === draft.operationModel) ?? null}
                 />
               </Grid.Col>
@@ -104,7 +135,7 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
                 <Select
                   onChange={(option) => setDraft((current) => ({ ...current, status: option?.value ?? "" }))}
                   options={statusOptions}
-                  title="Situação"
+                  title={t("minhaEscola.status")}
                   value={statusOptions.find((option) => option.value === draft.status) ?? null}
                 />
               </Grid.Col>
@@ -114,60 +145,65 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
               <Grid.Col xs={12} md={6}>
                 <Input
                   onChange={handleChange("contactEmail")}
-                  title="E-mail institucional"
+                  title={t("minhaEscola.contactEmail")}
                   type="email"
                   value={draft.contactEmail}
                   required
                 />
               </Grid.Col>
               <Grid.Col xs={12} md={6}>
-                <Input onChange={handleChange("contactPhone")} title="Telefone" value={draft.contactPhone} required />
+                <Input
+                  onChange={handleChange("contactPhone")}
+                  title={t("minhaEscola.contactPhone")}
+                  value={draft.contactPhone}
+                  required
+                />
               </Grid.Col>
             </Grid.Row>
 
-            <Input onChange={handleChange("address")} title="Endereço" value={draft.address} required />
+            <Input onChange={handleChange("address")} title={t("minhaEscola.address")} value={draft.address} required />
 
             <Textarea
-              helperText="Visível apenas para a equipe administrativa."
+              helperText={t("minhaEscola.internalNotesHelper")}
               onChange={handleChange("internalNotes")}
-              title="Observação interna"
+              title={t("minhaEscola.internalNotes")}
               value={draft.internalNotes}
             />
           </FieldGroup>
 
           <FormActions>
             <Button onClick={handleCancel} type="button" variant="outlined">
-              Cancelar
+              {t("common.cancel")}
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit">{t("common.save")}</Button>
           </FormActions>
         </form>
       ) : (
         <ReadOnlyGrid>
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              Nome da organização
+              {t("minhaEscola.legalName")}
             </Text>
             <Text fontSize="sm">{details.legalName}</Text>
           </ReadOnlyField>
 
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              Nome exibido
+              {t("minhaEscola.displayName")}
             </Text>
             <Text fontSize="sm">{details.displayName}</Text>
           </ReadOnlyField>
 
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              Modelo de operação
+              {t("minhaEscola.operationModel")}
             </Text>
             <Text fontSize="sm">{optionLabel(operationModelOptions, details.operationModel)}</Text>
           </ReadOnlyField>
 
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              Situação
+              {t("minhaEscola.status")}
             </Text>
             <Tag color={statusTagColor(details.status)} variant="soft">
               {optionLabel(statusOptions, details.status)}
@@ -176,21 +212,21 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
 
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              E-mail institucional
+              {t("minhaEscola.contactEmail")}
             </Text>
             <Text fontSize="sm">{details.contactEmail}</Text>
           </ReadOnlyField>
 
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              Telefone
+              {t("minhaEscola.contactPhone")}
             </Text>
             <Text fontSize="sm">{details.contactPhone}</Text>
           </ReadOnlyField>
 
           <ReadOnlyField>
             <Text color="muted" fontSize="xs">
-              Endereço
+              {t("minhaEscola.address")}
             </Text>
             <Text fontSize="sm">{details.address}</Text>
           </ReadOnlyField>
@@ -207,6 +243,8 @@ export type OrganizationBrandingCardProps = {
 
 export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) => {
   const { branding, onSave } = props
+
+  const { t } = useTranslation()
 
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState<OrganizationBranding>(branding)
@@ -231,14 +269,14 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
     event.preventDefault()
     onSave(draft)
     setIsEditing(false)
-    toast.success("Identidade visual atualizada.")
+    toast.success(t("minhaEscola.brandingSaved"))
   }
 
   return (
     <Card color="surface" elevated style={{ padding: spacing[32] }}>
       <CardHeader>
         <Text as="h2" fontSize="lg" bold>
-          Identidade visual
+          {t("minhaEscola.brandingTitle")}
         </Text>
 
         {!isEditing && (
@@ -247,7 +285,7 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
             startIcon={<Icon color="brand" name="pen-outline" size={16} />}
             variant="outlined"
           >
-            Editar
+            {t("common.edit")}
           </Button>
         )}
       </CardHeader>
@@ -256,29 +294,29 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <FileUpload
-              helperText="PNG ou SVG, fundo transparente recomendado."
+              helperText={t("minhaEscola.logoHelper")}
               onChange={handleFileChange("logoFileName")}
-              title="Logo"
+              title={t("minhaEscola.logo")}
             />
 
             <FileUpload
-              helperText="Formato .svg ou .ico recomendado."
+              helperText={t("minhaEscola.faviconHelper")}
               onChange={handleFileChange("faviconFileName")}
-              title="Favicon"
+              title={t("minhaEscola.favicon")}
             />
 
             <Grid.Row>
               <Grid.Col xs={12} md={6}>
                 <ColorPicker
                   onChange={handleColorChange("primaryColor")}
-                  title="Cor primária"
+                  title={t("minhaEscola.primaryColor")}
                   value={draft.primaryColor}
                 />
               </Grid.Col>
               <Grid.Col xs={12} md={6}>
                 <ColorPicker
                   onChange={handleColorChange("secondaryColor")}
-                  title="Cor secundária"
+                  title={t("minhaEscola.secondaryColor")}
                   value={draft.secondaryColor}
                 />
               </Grid.Col>
@@ -287,19 +325,19 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 
           <FormActions>
             <Button onClick={handleCancel} type="button" variant="outlined">
-              Cancelar
+              {t("common.cancel")}
             </Button>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit">{t("common.save")}</Button>
           </FormActions>
         </form>
       ) : (
         <FieldGroup>
-          <Image alt="Logo da organização" borderRadius="medium" size={64} src={schoolFlowIcon} />
+          <Image alt={t("minhaEscola.logoAlt")} borderRadius="medium" size={64} src={schoolFlowIcon} />
 
           <ReadOnlyGrid>
             <ReadOnlyField>
               <Text color="muted" fontSize="xs">
-                Cor primária
+                {t("minhaEscola.primaryColor")}
               </Text>
               <ColorPreviewRow>
                 <ColorSwatch $color={branding.primaryColor} />
@@ -309,7 +347,7 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 
             <ReadOnlyField>
               <Text color="muted" fontSize="xs">
-                Cor secundária
+                {t("minhaEscola.secondaryColor")}
               </Text>
               <ColorPreviewRow>
                 <ColorSwatch $color={branding.secondaryColor} />
@@ -319,7 +357,7 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 
             <ReadOnlyField>
               <Text color="muted" fontSize="xs">
-                Favicon
+                {t("minhaEscola.favicon")}
               </Text>
               <Text fontSize="sm">{branding.faviconFileName}</Text>
             </ReadOnlyField>
@@ -331,8 +369,10 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 }
 
 export const MinhaEscola = () => {
+  const { t } = useTranslation()
+
   const [organization, setOrganization] = useState<Organization | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [reloadToken, setReloadToken] = useState(0)
 
@@ -346,7 +386,7 @@ export const MinhaEscola = () => {
         const result = await fetchMockOrganization()
         setOrganization(result)
       } catch {
-        setError("Não foi possível carregar os dados da organização.")
+        setHasError(true)
       } finally {
         setIsLoading(false)
       }
@@ -357,7 +397,7 @@ export const MinhaEscola = () => {
 
   const handleRetry = () => {
     setIsLoading(true)
-    setError(null)
+    setHasError(false)
     setReloadToken((current) => current + 1)
   }
 
@@ -371,18 +411,18 @@ export const MinhaEscola = () => {
 
   return (
     <>
-      {isLoading && <Loading />}
+      {isLoading && <Loading label={t("common.loading")} />}
 
       <PageHeader>
         <Text as="h1" fontSize="2xl" bold>
-          Minha Escola
+          {t("minhaEscola.title")}
         </Text>
         <Text color="secondary" fontSize="sm">
-          Configure a identidade institucional da organização corrente.
+          {t("minhaEscola.subtitle")}
         </Text>
       </PageHeader>
 
-      {error && (
+      {hasError && (
         <Card
           color="danger"
           style={{
@@ -394,10 +434,10 @@ export const MinhaEscola = () => {
           }}
         >
           <Text color="inverse" fontSize="sm">
-            {error}
+            {t("minhaEscola.loadError")}
           </Text>
           <Button color="inverse" onClick={handleRetry} size="small" variant="outlined">
-            Tentar novamente
+            {t("common.tryAgain")}
           </Button>
         </Card>
       )}
