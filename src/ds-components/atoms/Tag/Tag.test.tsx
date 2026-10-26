@@ -24,13 +24,13 @@ describe("Tag", () => {
   it("applies the brand color styles", () => {
     render(<Tag color="brand">Novo</Tag>)
 
-    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.primary[500] })
+    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.primary[600] })
   })
 
   it("applies the danger color styles", () => {
     render(<Tag color="danger">Novo</Tag>)
 
-    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.danger[500] })
+    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.danger[700] })
   })
 
   it("applies the inverse color's visible border", () => {
@@ -52,7 +52,7 @@ describe("Tag", () => {
   it("defaults to the solid variant", () => {
     render(<Tag color="brand">Novo</Tag>)
 
-    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.primary[500] })
+    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.primary[600] })
   })
 
   it("applies a transparent background and colored border/text for the outlined variant", () => {
@@ -64,8 +64,8 @@ describe("Tag", () => {
 
     expect(screen.getByText("Novo")).toHaveStyle({
       backgroundColor: "rgba(0, 0, 0, 0)",
-      border: `1px solid ${colors.primary[500]}`,
-      color: colors.primary[500],
+      border: `1px solid ${colors.primary[600]}`,
+      color: colors.primary[600],
     })
   })
 
@@ -144,7 +144,7 @@ describe("Tag", () => {
 
     expect(screen.getByText("Novo")).toHaveStyle({
       backdropFilter: translucency.medium.backdropFilter,
-      backgroundColor: hexToRgba(colors.primary[500], 0.4),
+      backgroundColor: hexToRgba(colors.primary[600], 0.4),
     })
   })
 
@@ -157,7 +157,7 @@ describe("Tag", () => {
 
     expect(screen.getByText("Novo")).toHaveStyle({
       backdropFilter: translucency.high.backdropFilter,
-      backgroundColor: hexToRgba(colors.danger[500], 0.1),
+      backgroundColor: hexToRgba(colors.danger[700], 0.1),
     })
   })
 
@@ -169,7 +169,7 @@ describe("Tag", () => {
     )
 
     expect(screen.getByText("Novo")).toHaveStyle({
-      backgroundColor: hexToRgba(colors.success[500], 0.4),
+      backgroundColor: hexToRgba(colors.success[700], 0.4),
     })
   })
 

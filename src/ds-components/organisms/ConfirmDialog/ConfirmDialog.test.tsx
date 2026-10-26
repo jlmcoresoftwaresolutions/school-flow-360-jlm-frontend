@@ -77,13 +77,13 @@ describe("ConfirmDialog", () => {
   it("paints the confirm button with the brand color by default", () => {
     renderDialog()
 
-    expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: colors.primary[500] })
+    expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: colors.primary[600] })
   })
 
   it("paints the confirm button red in the danger tone", () => {
     renderDialog({ tone: "danger" })
 
-    expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: colors.danger[500] })
+    expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: colors.danger[700] })
   })
 
   it("disables both buttons while loading", () => {

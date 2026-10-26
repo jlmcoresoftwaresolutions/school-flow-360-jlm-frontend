@@ -119,5 +119,15 @@ export const Loading: Story = {
   args: {
     loading: true,
   },
-  render: (args) => <ConfirmDialog {...(args as ConfirmDialogProps)} onClose={() => {}} onConfirm={() => {}} open />,
+  render: (args) => (
+    <ConfirmDialog
+      cancelLabel="Cancelar"
+      confirmLabel="Confirmar"
+      title="Confirmar ação?"
+      {...(args as Partial<ConfirmDialogProps>)}
+      onClose={() => {}}
+      onConfirm={() => {}}
+      open
+    />
+  ),
 }

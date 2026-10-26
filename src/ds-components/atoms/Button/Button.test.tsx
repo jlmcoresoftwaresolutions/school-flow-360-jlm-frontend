@@ -30,7 +30,7 @@ describe("Button", () => {
   it("defaults to the filled variant", () => {
     render(<Button>Click me</Button>)
 
-    expect(screen.getByRole("button")).toHaveStyle({ backgroundColor: colors.primary[500] })
+    expect(screen.getByRole("button")).toHaveStyle({ backgroundColor: colors.primary[600] })
   })
 
   it("defaults to the brand color", () => {
@@ -84,7 +84,7 @@ describe("Button", () => {
   it("applies the outlined variant styles", () => {
     render(<Button variant="outlined">Click me</Button>)
 
-    expect(screen.getByRole("button")).toHaveStyle({ color: colors.primary[500] })
+    expect(screen.getByRole("button")).toHaveStyle({ color: colors.primary[600] })
   })
 
   it("applies the link variant styles", () => {
