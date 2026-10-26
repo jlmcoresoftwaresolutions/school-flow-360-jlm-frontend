@@ -99,4 +99,20 @@ describe("Switch", () => {
 
     expect(container.querySelector(".MuiSwitch-sizeSmall")).toBeInTheDocument()
   })
+
+  it("links helperText to the switch through aria-describedby", () => {
+    render(<Switch helperText="Pode ser alterado depois." label="Opção" />)
+
+    expect(screen.getByRole("switch", { name: "Opção" })).toHaveAccessibleDescription("Pode ser alterado depois.")
+  })
+
+  it("shows the error in place of helperText and marks the switch as invalid", () => {
+    render(<Switch error="Campo obrigatório." helperText="Ajuda" label="Opção" />)
+
+    const control = screen.getByRole("switch", { name: "Opção" })
+
+    expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+    expect(control).toHaveAccessibleDescription("Campo obrigatório.")
+    expect(control).toHaveAttribute("aria-invalid", "true")
+  })
 })

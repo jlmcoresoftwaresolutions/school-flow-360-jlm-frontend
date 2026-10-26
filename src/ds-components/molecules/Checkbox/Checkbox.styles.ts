@@ -23,14 +23,16 @@ const iconSizeStyles: Record<CheckboxSize, string> = {
   small: spacing[16],
 }
 
-export const getCheckboxSx = (size: CheckboxSize, disabled?: boolean): SxProps<Theme> => ({
+// An error paints the unchecked box red; a checked box keeps the brand color, since checking it is
+// usually what clears the error.
+export const getCheckboxSx = (size: CheckboxSize, disabled?: boolean, hasError?: boolean): SxProps<Theme> => ({
   "&.Mui-checked": {
     color: colors.primary[500],
   },
   "& .MuiSvgIcon-root": {
     fontSize: iconSizeStyles[size],
   },
-  color: colors.neutral[400],
+  color: hasError ? colors.danger[500] : colors.neutral[400],
   cursor: disabled ? "not-allowed" : "pointer",
   opacity: disabled ? opacity.disabled : opacity.visible,
   padding: 0,

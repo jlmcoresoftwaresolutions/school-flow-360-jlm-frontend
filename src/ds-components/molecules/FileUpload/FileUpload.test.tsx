@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { createRef } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-import { spacing } from "@/foundation"
+import { colors, spacing } from "@/foundation"
 
 import { FileUpload } from "./FileUpload"
 
@@ -97,5 +97,47 @@ describe("FileUpload", () => {
     render(<FileUpload disabled title="Comprovante de residência" />)
 
     expect(screen.getByLabelText("Comprovante de residência")).toBeDisabled()
+  })
+
+  it("names the input by its title only, not by the drop zone text", () => {
+    render(<FileUpload title="Logo" />)
+
+    expect(screen.getByLabelText("Logo")).toHaveAccessibleName("Logo")
+  })
+
+  it("replaces the default prompt with placeholder", () => {
+    render(<FileUpload placeholder="Escolha o logo" />)
+
+    expect(screen.getByText("Escolha o logo")).toBeInTheDocument()
+  })
+
+  it("links helperText to the input through aria-describedby", () => {
+    render(<FileUpload helperText="PNG ou SVG." title="Logo" />)
+
+    expect(screen.getByLabelText("Logo")).toHaveAccessibleDescription("PNG ou SVG.")
+  })
+
+  describe("error", () => {
+    it("shows the error in place of helperText and marks the input as invalid", () => {
+      render(<FileUpload error="Arquivo muito grande." helperText="PNG ou SVG." title="Logo" />)
+
+      expect(screen.queryByText("PNG ou SVG.")).not.toBeInTheDocument()
+      expect(screen.getByLabelText("Logo")).toHaveAccessibleDescription("Arquivo muito grande.")
+      expect(screen.getByLabelText("Logo")).toHaveAttribute("aria-invalid", "true")
+    })
+
+    it("turns the dashed border red", () => {
+      render(<FileUpload error="Arquivo muito grande." title="Logo" />)
+
+      expect(screen.getByLabelText("Logo").parentElement).toHaveStyle({ border: `1px dashed ${colors.danger[500]}` })
+    })
+  })
+
+  it("marks the input as required and adds an asterisk to the title", () => {
+    render(<FileUpload title="Logo" required />)
+
+    // The label's text content includes the (aria-hidden) asterisk, hence the regex.
+    expect(screen.getByLabelText(/^Logo/)).toBeRequired()
+    expect(screen.getByText("*")).toHaveAttribute("aria-hidden", "true")
   })
 })

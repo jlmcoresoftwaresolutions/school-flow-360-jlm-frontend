@@ -1,8 +1,9 @@
 import MuiSwitch from "@mui/material/Switch"
 import type { ChangeEvent, CSSProperties, ReactNode } from "react"
-import { forwardRef } from "react"
+import { forwardRef, useId } from "react"
 
-import { Text } from "@/ds-components/atoms"
+import { FieldMessage, Text } from "@/ds-components/atoms"
+import { joinIds } from "@/utils/strings"
 
 import { getSwitchSx, SwitchRow, SwitchWrapper } from "./Switch.styles"
 
@@ -13,6 +14,7 @@ type SwitchOwnProps = {
   className?: string
   defaultChecked?: boolean
   disabled?: boolean
+  error?: string
   helperText?: string
   id?: string
   name?: string
@@ -33,6 +35,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>((props, ref) => 
     className,
     defaultChecked,
     disabled,
+    error,
     helperText,
     id,
     label,
@@ -44,6 +47,10 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>((props, ref) => 
     style,
     value,
   } = props
+
+  const generatedId = useId()
+
+  const messageId = `${id ?? generatedId}-message`
 
   return (
     <SwitchWrapper className={className} style={style}>
@@ -60,7 +67,13 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>((props, ref) => 
           onChange={onChange}
           required={required}
           size={size}
-          slotProps={{ input: { ref } }}
+          slotProps={{
+            input: {
+              "aria-describedby": joinIds((error || helperText) && messageId),
+              "aria-invalid": error ? true : undefined,
+              ref,
+            },
+          }}
           sx={getSwitchSx(disabled)}
           value={value}
         />
@@ -68,11 +81,7 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>((props, ref) => 
           {label}
         </Text>
       </SwitchRow>
-      {helperText && (
-        <Text as="span" color="muted" fontSize="xs">
-          {helperText}
-        </Text>
-      )}
+      <FieldMessage error={error} helperText={helperText} id={messageId} />
     </SwitchWrapper>
   )
 })

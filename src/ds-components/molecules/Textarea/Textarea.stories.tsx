@@ -16,7 +16,16 @@ const meta: Meta<typeof Textarea> = {
     },
     disabled: { control: "boolean", description: "Native disabled attribute, forwarded to the textarea element" },
     elevated: { control: "boolean", description: "Adds a drop shadow around the textarea. Defaults to true." },
+    error: {
+      control: "text",
+      description:
+        "Error message shown below the textarea in red, replacing helperText. Also turns the border red and sets aria-invalid.",
+    },
     helperText: { control: "text", description: "Text rendered below the textarea to provide extra context" },
+    required: {
+      control: "boolean",
+      description: "Native required attribute, forwarded to the textarea. Also adds a red asterisk to the title.",
+    },
     rows: { control: "number", description: "Native rows attribute, forwarded to the textarea element" },
     title: { control: "text", description: "Label rendered above the textarea" },
   },
@@ -39,7 +48,7 @@ export const WithTitle: Story = {
 
 // The helperText prop rendering supporting text below the textarea
 export const WithHelperText: Story = {
-  args: { helperText: "Visível apenas para a coordenação." },
+  args: { helperText: "Visível apenas para a coordenação.", title: "Observações" },
 }
 
 // The rows prop controlling the initial visible height
@@ -66,4 +75,21 @@ export const BorderRadiuses: Story = {
 // The native disabled attribute, forwarded straight through to the textarea element
 export const Disabled: Story = {
   args: { disabled: true, title: "Observações", value: "Não é possível editar" },
+}
+
+// The error prop replacing helperText with a red message and marking the textarea aria-invalid
+export const WithError: Story = {
+  args: {
+    error: "A observação deve ter no máximo 500 caracteres.",
+    helperText: "Visível apenas para a equipe administrativa.",
+    title: "Observações",
+  },
+}
+
+// The native required attribute, which also adds a red asterisk to the title
+export const Required: Story = {
+  args: {
+    required: true,
+    title: "Motivo da inativação",
+  },
 }

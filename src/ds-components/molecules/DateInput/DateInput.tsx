@@ -3,7 +3,7 @@ import type { CSSProperties, MouseEvent, Ref } from "react"
 import { forwardRef, useId, useState } from "react"
 import ReactDatePicker, { registerLocale } from "react-datepicker"
 
-import { Icon, Text } from "@/ds-components/atoms"
+import { FieldLabel, FieldMessage, Icon } from "@/ds-components/atoms"
 import { borderRadiusLevels, type BorderRadiusLevelsType, motion, opacity } from "@/foundation"
 
 import type { InputSize } from "../Input/Input.styles"
@@ -23,6 +23,7 @@ type DateInputFieldProps = {
   $borderRadius: string
   $elevated: boolean
   $size: InputSize
+  $hasError?: boolean
   innerRef?: Ref<HTMLInputElement>
 }
 
@@ -50,16 +51,19 @@ DateInputField.displayName = "DateInputField"
 type DateInputOwnProps = {
   borderRadius?: keyof BorderRadiusLevelsType
   className?: string
+  clearLabel?: string
   dateFormat?: string
   defaultValue?: Date | null
   disabled?: boolean
   elevated?: boolean
+  error?: string
   helperText?: string
   id?: string
   maxDate?: Date
   minDate?: Date
   name?: string
   placeholder?: string
+  required?: boolean
   style?: CSSProperties
   title?: string
   value?: Date | null
@@ -73,10 +77,12 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
   const {
     borderRadius = "low",
     className,
+    clearLabel = "Limpar data selecionada",
     dateFormat = "dd/MM/yyyy",
     defaultValue = null,
     disabled,
     elevated = true,
+    error,
     helperText,
     id,
     maxDate,
@@ -85,6 +91,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
     onBlur,
     onChange,
     placeholder,
+    required,
     style,
     title,
     value,
@@ -96,6 +103,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
   const [isCalendarOpen, setIsCalendarOpen] = useState(false)
 
   const dateInputId = id ?? generatedId
+  const messageId = `${dateInputId}-message`
   const isControlled = value !== undefined
   const selectedValue = isControlled ? value : uncontrolledValue
 
@@ -123,17 +131,21 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
   return (
     <DateInputWrapper className={className} style={style}>
       {title && (
-        <Text as="label" fontSize="sm" fontWeight="medium" htmlFor={dateInputId}>
+        <FieldLabel htmlFor={dateInputId} required={required}>
           {title}
-        </Text>
+        </FieldLabel>
       )}
       <StyledCalendar $borderRadius={borderRadiusLevels[borderRadius]}>
         <DatePickerWrapper>
           <ReactDatePicker
+            ariaDescribedBy={error || helperText ? messageId : undefined}
+            ariaInvalid={error ? "true" : undefined}
+            ariaRequired={required ? "true" : undefined}
             customInput={
               <DateInputField
                 $borderRadius={borderRadiusLevels[borderRadius]}
                 $elevated={elevated}
+                $hasError={Boolean(error)}
                 $size="medium"
                 ref={ref}
               />
@@ -152,13 +164,14 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
             onChange={handleChange}
             placeholderText={placeholder}
             popperPlacement="bottom-start"
+            required={required}
             selected={selectedValue}
             showPopperArrow={false}
           />
           <InputIconsWrapper>
             {selectedValue && !disabled && (
               <ClearButton
-                aria-label="Limpar data selecionada"
+                aria-label={clearLabel}
                 onClick={handleClear}
                 onMouseDown={handleClearMouseDown}
                 type="button"
@@ -172,19 +185,15 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
           </InputIconsWrapper>
         </DatePickerWrapper>
       </StyledCalendar>
-      {helperText && (
-        <Text
-          as="span"
-          color="muted"
-          fontSize="xs"
-          style={{
-            opacity: isCalendarOpen ? opacity.hidden : opacity.visible,
-            transition: `opacity ${motion.duration.fast} ${motion.easing.ease}`,
-          }}
-        >
-          {helperText}
-        </Text>
-      )}
+      <FieldMessage
+        error={error}
+        helperText={helperText}
+        id={messageId}
+        style={{
+          opacity: isCalendarOpen ? opacity.hidden : opacity.visible,
+          transition: `opacity ${motion.duration.fast} ${motion.easing.ease}`,
+        }}
+      />
     </DateInputWrapper>
   )
 })

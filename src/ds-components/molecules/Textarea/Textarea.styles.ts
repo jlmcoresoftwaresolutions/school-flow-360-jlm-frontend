@@ -11,16 +11,17 @@ export const TextareaWrapper = styled.div`
 export type StyledTextareaProps = {
   $borderRadius: string
   $elevated?: boolean
+  $hasError?: boolean
 }
 
 export const StyledTextarea = styled.textarea<StyledTextareaProps>`
   ${(props) => {
-    const { $borderRadius, $elevated } = props
+    const { $borderRadius, $elevated, $hasError } = props
 
     return css`
       background: ${colors.neutral[0]};
       border-radius: ${$borderRadius};
-      border: 1px solid ${colors.neutral[300]};
+      border: 1px solid ${$hasError ? colors.danger[500] : colors.neutral[300]};
       box-shadow: ${$elevated ? shadows.sm : shadows.none};
       color: ${colors.neutral[900]};
       font-family: ${typography.fontFamily.sans};
@@ -35,7 +36,7 @@ export const StyledTextarea = styled.textarea<StyledTextareaProps>`
       }
 
       &:focus {
-        border-color: ${colors.primary[500]};
+        border-color: ${$hasError ? colors.danger[500] : colors.primary[500]};
         outline: none;
       }
 

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { createRef } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, shadows, spacing } from "@/foundation"
+import { borderRadiusLevels, colors, shadows, spacing } from "@/foundation"
 
 import { Textarea } from "./Textarea"
 
@@ -103,5 +103,34 @@ describe("Textarea", () => {
     render(<Textarea disabled title="Observações" />)
 
     expect(screen.getByLabelText("Observações")).toBeDisabled()
+  })
+
+  it("links helperText to the textarea through aria-describedby", () => {
+    render(<Textarea helperText="Visível só para a equipe." title="Observações" />)
+
+    expect(screen.getByLabelText("Observações")).toHaveAccessibleDescription("Visível só para a equipe.")
+  })
+
+  describe("error", () => {
+    it("shows the error in place of helperText and describes the textarea with it", () => {
+      render(<Textarea error="Texto muito longo." helperText="Ajuda" title="Observações" />)
+
+      expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+      expect(screen.getByLabelText("Observações")).toHaveAccessibleDescription("Texto muito longo.")
+    })
+
+    it("marks the textarea as invalid and turns its border red", () => {
+      render(<Textarea error="Texto muito longo." title="Observações" />)
+
+      expect(screen.getByLabelText("Observações")).toHaveAttribute("aria-invalid", "true")
+      expect(screen.getByLabelText("Observações")).toHaveStyle({ border: `1px solid ${colors.danger[500]}` })
+    })
+  })
+
+  it("marks the textarea as required and adds an asterisk to the title", () => {
+    render(<Textarea title="Motivo" required />)
+
+    expect(screen.getByRole("textbox", { name: "Motivo" })).toBeRequired()
+    expect(screen.getByText("*")).toHaveAttribute("aria-hidden", "true")
   })
 })

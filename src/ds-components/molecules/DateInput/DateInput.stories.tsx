@@ -22,6 +22,10 @@ const meta: Meta<typeof DateInput> = {
         "Border radius level applied to the input and the calendar: subtle, low, medium, high or full. Defaults to low.",
       options: borderRadiusLevelKeys,
     },
+    clearLabel: {
+      control: "text",
+      description: "Accessible name of the clear button shown once a date is picked. Defaults to a pt-BR label.",
+    },
     dateFormat: {
       control: "text",
       description: "date-fns format string used to display the selected date. Defaults to dd/MM/yyyy.",
@@ -33,10 +37,20 @@ const meta: Meta<typeof DateInput> = {
     },
     disabled: { control: "boolean", description: "Disables the input and prevents the calendar from opening" },
     elevated: { control: "boolean", description: "Adds a drop shadow around the input. Defaults to true." },
+    error: {
+      control: "text",
+      description:
+        "Error message shown below the input in red, replacing helperText. Also turns the border red and sets aria-invalid.",
+    },
     helperText: { control: "text", description: "Text rendered below the input to provide extra context" },
     maxDate: { control: "date", description: "Latest selectable date; later days are rendered as disabled" },
     minDate: { control: "date", description: "Earliest selectable date; earlier days are rendered as disabled" },
     placeholder: { control: "text", description: "Placeholder shown before a date is chosen" },
+    required: {
+      control: "boolean",
+      description:
+        "Marks the input as required (native validation and aria-required). Also adds a red asterisk to the title.",
+    },
     title: { control: "text", description: "Label rendered above the input" },
   },
   component: DateInput,
@@ -117,4 +131,18 @@ export const Disabled: Story = {
 // A fully controlled date input, driving the value/onChange props from useState
 export const Controlled: Story = {
   render: () => <ControlledExample />,
+}
+
+// The error prop replacing helperText with a red message and turning the border red
+export const WithError: Story = {
+  args: {
+    error: "A data de início não pode ser posterior à data de término.",
+    helperText: "Primeiro dia letivo.",
+    title: "Início do ano letivo",
+  },
+}
+
+// The required prop, which also adds a red asterisk to the title
+export const Required: Story = {
+  args: { required: true, title: "Data de nascimento" },
 }

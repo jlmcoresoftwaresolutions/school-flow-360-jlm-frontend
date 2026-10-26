@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
+import { colors } from "@/foundation"
+
 import { ColorPicker } from "./ColorPicker"
 
 describe("ColorPicker", () => {
@@ -40,6 +42,15 @@ describe("ColorPicker", () => {
     fireEvent.mouseDown(document.body)
 
     expect(document.querySelector(".react-colorful")).not.toBeInTheDocument()
+  })
+
+  it("keeps the picker popover open when pressing the mouse inside it", () => {
+    render(<ColorPicker title="Cor primária" value="#4B87D6" />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Abrir seletor de cor" }))
+    fireEvent.mouseDown(screen.getByLabelText("R"))
+
+    expect(document.querySelector(".react-colorful")).toBeInTheDocument()
   })
 
   it("closes the picker popover when pressing Escape", () => {
@@ -113,5 +124,28 @@ describe("ColorPicker", () => {
     const { container } = render(<ColorPicker className="custom" title="Cor primária" value="#4B87D6" />)
 
     expect(container.firstChild).toHaveClass("custom")
+  })
+
+  it("links helperText to the hex input through aria-describedby", () => {
+    render(<ColorPicker helperText="Usada nos portais." title="Cor primária" value="#4B87D6" />)
+
+    expect(screen.getByLabelText("Cor primária")).toHaveAccessibleDescription("Usada nos portais.")
+  })
+
+  it("shows the error in place of helperText, marks the hex input as invalid and turns it red", () => {
+    render(<ColorPicker error="Pouco contraste." helperText="Ajuda" title="Cor primária" value="#4B87D6" />)
+
+    const input = screen.getByLabelText("Cor primária")
+
+    expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+    expect(input).toHaveAccessibleDescription("Pouco contraste.")
+    expect(input).toHaveAttribute("aria-invalid", "true")
+    expect(input).toHaveStyle({ border: `1px solid ${colors.danger[500]}` })
+  })
+
+  it("names the swatch button with openLabel", () => {
+    render(<ColorPicker openLabel="Open color picker" value="#4B87D6" />)
+
+    expect(screen.getByRole("button", { name: "Open color picker" })).toBeInTheDocument()
   })
 })

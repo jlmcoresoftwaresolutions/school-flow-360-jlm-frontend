@@ -3,7 +3,7 @@ import { createRef } from "react"
 import type { SelectInstance } from "react-select"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, shadows, spacing } from "@/foundation"
+import { borderRadiusLevels, colors, shadows, spacing } from "@/foundation"
 
 import { Select, type SelectOption } from "./Select"
 
@@ -145,5 +145,49 @@ describe("Select", () => {
     fireEvent.mouseDown(screen.getByRole("combobox"))
 
     expect(indicator).toHaveStyle({ transform: "rotate(180deg)" })
+  })
+
+  it("links helperText to the combobox through aria-describedby", () => {
+    render(<Select helperText="Define o período das aulas." options={options} title="Turno" />)
+
+    expect(screen.getByRole("combobox", { name: "Turno" })).toHaveAccessibleDescription(
+      expect.stringContaining("Define o período das aulas."),
+    )
+  })
+
+  describe("error", () => {
+    it("shows the error in place of helperText and describes the combobox with it", () => {
+      render(<Select error="Selecione o turno." helperText="Ajuda" options={options} title="Turno" />)
+
+      expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+      expect(screen.getByRole("combobox", { name: "Turno" })).toHaveAccessibleDescription(
+        expect.stringContaining("Selecione o turno."),
+      )
+    })
+
+    it("marks the combobox as invalid", () => {
+      render(<Select error="Selecione o turno." options={options} title="Turno" />)
+
+      expect(screen.getByRole("combobox", { name: "Turno" })).toHaveAttribute("aria-invalid", "true")
+    })
+
+    it("turns the border red", () => {
+      const { container } = render(<Select error="Selecione o turno." options={options} title="Turno" />)
+
+      expect(container.querySelector(".select__control")).toHaveStyle({ borderColor: colors.danger[500] })
+    })
+  })
+
+  it("marks the combobox as required and adds an asterisk to the title", () => {
+    render(<Select options={options} title="Turno" required />)
+
+    expect(screen.getByRole("combobox", { name: "Turno" })).toHaveAttribute("aria-required", "true")
+    expect(screen.getByText("*")).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("names the combobox with aria-label when there is no title", () => {
+    render(<Select aria-label="Turno" options={options} />)
+
+    expect(screen.getByRole("combobox", { name: "Turno" })).toBeInTheDocument()
   })
 })

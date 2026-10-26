@@ -33,6 +33,11 @@ const meta: Meta<typeof ColorPicker> = {
       control: "boolean",
       description: "Adds a drop shadow to the hex input, matching Input's own elevated prop. Defaults to true.",
     },
+    error: {
+      control: "text",
+      description:
+        "Error message shown below the control in red, replacing helperText. Also turns the borders red and sets aria-invalid on the hex input.",
+    },
     helperText: {
       control: "text",
       description: "Text shown below the control.",
@@ -40,6 +45,10 @@ const meta: Meta<typeof ColorPicker> = {
     onChange: {
       control: false,
       description: "Called with the new #RRGGBB value from either the swatch picker or the hex input.",
+    },
+    openLabel: {
+      control: "text",
+      description: "Accessible name of the swatch button that opens the picker. Defaults to a pt-BR label.",
     },
     title: {
       control: "text",
@@ -81,5 +90,13 @@ export const Disabled: Story = {
 export const NotElevated: Story = {
   args: {
     elevated: false,
+  },
+}
+
+// The error prop replacing helperText with a red message and turning the borders red
+export const WithError: Story = {
+  args: {
+    error: "Escolha uma cor com mais contraste com o branco.",
+    value: "#E5E7EB",
   },
 }

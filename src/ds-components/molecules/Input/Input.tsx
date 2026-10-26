@@ -1,14 +1,16 @@
 import type { ChangeEvent, ComponentPropsWithoutRef, CSSProperties } from "react"
 import { forwardRef, useId } from "react"
 
-import { Text } from "@/ds-components/atoms"
+import type { IconName } from "@/ds-components/atoms"
+import { FieldLabel, FieldMessage, Icon } from "@/ds-components/atoms"
 import { borderRadiusLevels, type BorderRadiusLevelsType } from "@/foundation"
 import { stripNonDigits } from "@/utils/formats"
+import { joinIds } from "@/utils/strings"
 
 import type { MaskType } from "./Input.masks"
 import { applyMask } from "./Input.masks"
 import type { InputSize } from "./Input.styles"
-import { InputWrapper, StyledInput } from "./Input.styles"
+import { InputControl, InputStartIcon, InputWrapper, StyledInput } from "./Input.styles"
 
 // Deliberately not derived from React's own HTMLInputTypeAttribute: that type ends in a
 // `(string & {})` catch-all for forward compatibility, which would let "date" back in through
@@ -41,10 +43,12 @@ type InputOwnProps = {
   borderRadius?: keyof BorderRadiusLevelsType
   className?: string
   elevated?: boolean
+  error?: string
   helperText?: string
   mask?: MaskType
   numeric?: boolean
   size?: InputSize
+  startIcon?: IconName
   style?: CSSProperties
   title?: string
   type?: InputType
@@ -54,15 +58,19 @@ export type InputProps = InputOwnProps & Omit<ComponentPropsWithoutRef<"input">,
 
 export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const {
+    "aria-describedby": ariaDescribedBy,
     borderRadius = "low",
     className,
     elevated = true,
+    error,
     helperText,
     id,
     mask,
     numeric,
     onChange,
+    required,
     size = "medium",
+    startIcon,
     style,
     title,
     ...rest
@@ -71,6 +79,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const generatedId = useId()
 
   const inputId = id ?? generatedId
+  const messageId = `${inputId}-message`
+  // A caller's own aria-describedby is kept, with the message appended to it.
+  const describedBy = joinIds(ariaDescribedBy, (error || helperText) && messageId)
 
   // type stays "text" (rather than "number") so digits can be masked without the native
   // number input's quirks (spinners, "e"/"+"/"-", no leading zeros); inputMode still gives
@@ -84,26 +95,34 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   return (
     <InputWrapper className={className} style={style}>
       {title && (
-        <Text as="label" fontSize="sm" fontWeight="medium" htmlFor={inputId}>
+        <FieldLabel htmlFor={inputId} required={required}>
           {title}
-        </Text>
+        </FieldLabel>
       )}
-      <StyledInput
-        $borderRadius={borderRadiusLevels[borderRadius]}
-        $elevated={elevated}
-        $size={size}
-        id={inputId}
-        ref={ref}
-        {...rest}
-        inputMode={mask || numeric ? "numeric" : undefined}
-        onChange={handleChange}
-        pattern={numeric && !mask ? "[0-9]*" : undefined}
-      />
-      {helperText && (
-        <Text as="span" color="muted" fontSize="xs">
-          {helperText}
-        </Text>
-      )}
+      <InputControl>
+        {startIcon && (
+          <InputStartIcon $size={size}>
+            <Icon color="muted" name={startIcon} size={size === "small" ? 16 : 20} />
+          </InputStartIcon>
+        )}
+        <StyledInput
+          $borderRadius={borderRadiusLevels[borderRadius]}
+          $elevated={elevated}
+          $hasError={Boolean(error)}
+          $hasStartIcon={Boolean(startIcon)}
+          $size={size}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : undefined}
+          id={inputId}
+          ref={ref}
+          required={required}
+          {...rest}
+          inputMode={mask || numeric ? "numeric" : undefined}
+          onChange={handleChange}
+          pattern={numeric && !mask ? "[0-9]*" : undefined}
+        />
+      </InputControl>
+      <FieldMessage error={error} helperText={helperText} id={messageId} />
     </InputWrapper>
   )
 })

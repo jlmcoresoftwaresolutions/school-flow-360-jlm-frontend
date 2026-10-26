@@ -21,6 +21,10 @@ const meta: Meta<typeof Checkbox> = {
   args: { label: "Autorizo o uso de imagem" },
   argTypes: {
     disabled: { control: "boolean", description: "Disables the checkbox, forwarded to the MUI Checkbox" },
+    error: {
+      control: "text",
+      description: "Error message shown below the checkbox in red, replacing helperText. Also sets aria-invalid.",
+    },
     helperText: { control: "text", description: "Text rendered below the checkbox to provide extra context" },
     label: { control: "text", description: "Label rendered next to the checkbox, linked via htmlFor/id" },
     size: {
@@ -85,4 +89,9 @@ export const DisabledChecked: Story = {
 // A fully controlled checkbox, driving the checked/onChange props from useState
 export const Controlled: Story = {
   render: () => <ControlledExample />,
+}
+
+// The error prop replacing helperText with a red message and marking the checkbox aria-invalid
+export const WithError: Story = {
+  args: { error: "É preciso aceitar os termos para continuar.", label: "Aceito os termos de uso" },
 }

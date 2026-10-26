@@ -18,11 +18,12 @@ export const ColorPickerControl = styled.div`
 export type StyledSwatchButtonProps = {
   $borderRadius: string
   $color: string
+  $hasError?: boolean
 }
 
 export const SwatchButton = styled.button<StyledSwatchButtonProps>`
   background-color: ${(props) => props.$color};
-  border: 1px solid ${colors.neutral[300]};
+  border: 1px solid ${(props) => (props.$hasError ? colors.danger[500] : colors.neutral[300])};
   border-radius: ${(props) => props.$borderRadius};
   cursor: pointer;
   flex-shrink: 0;
@@ -47,16 +48,17 @@ export const SwatchButton = styled.button<StyledSwatchButtonProps>`
 export type StyledHexColorInputProps = {
   $borderRadius: string
   $elevated?: boolean
+  $hasError?: boolean
 }
 
 export const StyledHexColorInput = styled(HexColorInput)<StyledHexColorInputProps>`
   ${(props) => {
-    const { $borderRadius, $elevated } = props
+    const { $borderRadius, $elevated, $hasError } = props
 
     return css`
       background: ${colors.neutral[0]};
       border-radius: ${$borderRadius};
-      border: 1px solid ${colors.neutral[300]};
+      border: 1px solid ${$hasError ? colors.danger[500] : colors.neutral[300]};
       box-shadow: ${$elevated ? shadows.sm : shadows.none};
       color: ${colors.neutral[900]};
       font-family: ${typography.fontFamily.sans};
@@ -69,7 +71,7 @@ export const StyledHexColorInput = styled(HexColorInput)<StyledHexColorInputProp
       }
 
       &:focus {
-        border-color: ${colors.primary[500]};
+        border-color: ${$hasError ? colors.danger[500] : colors.primary[500]};
         outline: none;
       }
 

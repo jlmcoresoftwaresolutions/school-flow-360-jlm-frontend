@@ -3,9 +3,10 @@ import { useEffect, useId, useRef, useState } from "react"
 import { HexColorPicker } from "react-colorful"
 import { createPortal } from "react-dom"
 
-import { Text } from "@/ds-components/atoms"
+import { FieldLabel, FieldMessage } from "@/ds-components/atoms"
 import { borderRadiusLevels, type BorderRadiusLevelsType, spacing } from "@/foundation"
 import { hexToRgb, type RgbColor, rgbToHex } from "@/utils/colors"
+import { joinIds } from "@/utils/strings"
 
 import { Input } from "../Input"
 import {
@@ -30,8 +31,10 @@ type ColorPickerOwnProps = {
   className?: string
   disabled?: boolean
   elevated?: boolean
+  error?: string
   helperText?: string
   id?: string
+  openLabel?: string
   style?: CSSProperties
   title?: string
   onChange?: (value: string) => void
@@ -50,9 +53,11 @@ export const ColorPicker = (props: ColorPickerProps) => {
     className,
     disabled,
     elevated = true,
+    error,
     helperText,
     id,
     onChange,
+    openLabel = "Abrir seletor de cor",
     style,
     title,
     value,
@@ -60,6 +65,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
 
   const containerRef = useRef<HTMLDivElement>(null)
   const controlRef = useRef<HTMLDivElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
 
   const generatedId = useId()
 
@@ -67,12 +73,16 @@ export const ColorPicker = (props: ColorPickerProps) => {
   const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null)
 
   const colorPickerId = id ?? generatedId
+  const messageId = `${colorPickerId}-message`
 
   useEffect(() => {
     if (!isOpen) return
 
+    // The popover is portaled to document.body, outside the container, so a press inside it has to
+    // be checked separately or it would count as "outside" and close the popover under the cursor.
     const handleOutsideMouseDown = (event: MouseEvent) => {
-      if (containerRef.current?.contains(event.target as Node)) return
+      const target = event.target as Node
+      if (containerRef.current?.contains(target) || popoverRef.current?.contains(target)) return
       setIsOpen(false)
     }
 
@@ -110,18 +120,15 @@ export const ColorPicker = (props: ColorPickerProps) => {
 
   return (
     <ColorPickerWrapper className={className} ref={containerRef} style={style}>
-      {title && (
-        <Text as="label" fontSize="sm" fontWeight="medium" htmlFor={colorPickerId}>
-          {title}
-        </Text>
-      )}
+      {title && <FieldLabel htmlFor={colorPickerId}>{title}</FieldLabel>}
 
       <ColorPickerControl ref={controlRef}>
         <SwatchButton
           $borderRadius={borderRadiusLevels[borderRadius]}
           $color={safeValue}
+          $hasError={Boolean(error)}
           aria-expanded={isOpen}
-          aria-label="Abrir seletor de cor"
+          aria-label={openLabel}
           disabled={disabled}
           onClick={handleToggle}
           type="button"
@@ -130,6 +137,9 @@ export const ColorPicker = (props: ColorPickerProps) => {
         <StyledHexColorInput
           $borderRadius={borderRadiusLevels[borderRadius]}
           $elevated={elevated}
+          $hasError={Boolean(error)}
+          aria-describedby={joinIds((error || helperText) && messageId)}
+          aria-invalid={error ? true : undefined}
           color={value}
           disabled={disabled}
           id={colorPickerId}
@@ -141,7 +151,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
       {isOpen &&
         popoverPosition &&
         createPortal(
-          <ColorPickerPopover style={{ left: popoverPosition.left, top: popoverPosition.top }}>
+          <ColorPickerPopover ref={popoverRef} style={{ left: popoverPosition.left, top: popoverPosition.top }}>
             <HexColorPicker color={safeValue} onChange={onChange} />
 
             <RgbFieldsRow>
@@ -180,11 +190,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
           document.body,
         )}
 
-      {helperText && (
-        <Text as="span" color="muted" fontSize="xs">
-          {helperText}
-        </Text>
-      )}
+      <FieldMessage error={error} helperText={helperText} id={messageId} />
     </ColorPickerWrapper>
   )
 }

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { createRef } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, shadows, spacing } from "@/foundation"
+import { borderRadiusLevels, colors, shadows, spacing } from "@/foundation"
 
 import { DateInput } from "./DateInput"
 
@@ -277,5 +277,40 @@ describe("DateInput", () => {
     openCalendar(screen.getByPlaceholderText("dd/mm/aaaa"))
 
     expect(helperText).toHaveStyle({ opacity: "0" })
+  })
+
+  it("links helperText to the input through aria-describedby", () => {
+    render(<DateInput helperText="Primeiro dia letivo." title="Início" />)
+
+    expect(screen.getByLabelText("Início")).toHaveAccessibleDescription("Primeiro dia letivo.")
+  })
+
+  describe("error", () => {
+    it("shows the error in place of helperText and describes the input with it", () => {
+      render(<DateInput error="Data inválida." helperText="Ajuda" title="Início" />)
+
+      expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+      expect(screen.getByLabelText("Início")).toHaveAccessibleDescription("Data inválida.")
+    })
+
+    it("marks the input as invalid and turns its border red", () => {
+      render(<DateInput error="Data inválida." title="Início" />)
+
+      expect(screen.getByLabelText("Início")).toHaveAttribute("aria-invalid", "true")
+      expect(screen.getByLabelText("Início")).toHaveStyle({ border: `1px solid ${colors.danger[500]}` })
+    })
+  })
+
+  it("marks the input as required and adds an asterisk to the title", () => {
+    render(<DateInput title="Nascimento" required />)
+
+    expect(screen.getByRole("textbox", { name: "Nascimento" })).toBeRequired()
+    expect(screen.getByText("*")).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("names the clear button with clearLabel", () => {
+    render(<DateInput clearLabel="Clear date" defaultValue={new Date(2026, 0, 15)} />)
+
+    expect(screen.getByRole("button", { name: "Clear date" })).toBeInTheDocument()
   })
 })

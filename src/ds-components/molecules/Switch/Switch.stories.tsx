@@ -21,6 +21,10 @@ const meta: Meta<typeof Switch> = {
   args: { label: "Cobrança de mensalidades ativa" },
   argTypes: {
     disabled: { control: "boolean", description: "Disables the switch, forwarded to the MUI Switch" },
+    error: {
+      control: "text",
+      description: "Error message shown below the switch in red, replacing helperText. Also sets aria-invalid.",
+    },
     helperText: { control: "text", description: "Text rendered below the switch to provide extra context" },
     label: { control: "text", description: "Label rendered next to the switch track" },
     size: {
@@ -76,4 +80,9 @@ export const DisabledChecked: Story = {
 // A fully controlled switch, driving the checked/onChange props from useState
 export const Controlled: Story = {
   render: () => <ControlledExample />,
+}
+
+// The error prop replacing helperText with a red message and marking the switch aria-invalid
+export const WithError: Story = {
+  args: { error: "Configure uma conta bancária antes de ativar a cobrança.", label: "Cobrança de mensalidades ativa" },
 }

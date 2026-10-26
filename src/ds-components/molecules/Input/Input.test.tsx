@@ -3,7 +3,7 @@ import { createRef } from "react"
 import { useForm } from "react-hook-form"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, shadows, spacing, typography } from "@/foundation"
+import { borderRadiusLevels, colors, shadows, spacing, typography } from "@/foundation"
 
 import { Input } from "./Input"
 
@@ -34,6 +34,72 @@ describe("Input", () => {
     render(<Input helperText="We'll never share your email" />)
 
     expect(screen.getByText("We'll never share your email")).toBeInTheDocument()
+  })
+
+  it("links helperText to the input through aria-describedby", () => {
+    render(<Input helperText="Usado para recuperar o acesso." title="E-mail" />)
+
+    expect(screen.getByLabelText("E-mail")).toHaveAccessibleDescription("Usado para recuperar o acesso.")
+  })
+
+  it("keeps a caller's own aria-describedby alongside the message", () => {
+    render(
+      <>
+        <span id="extra">Dica extra</span>
+        <Input aria-describedby="extra" helperText="Ajuda" title="E-mail" />
+      </>,
+    )
+
+    expect(screen.getByLabelText("E-mail")).toHaveAccessibleDescription("Dica extra Ajuda")
+  })
+
+  it("has no aria-describedby without a message", () => {
+    render(<Input title="E-mail" />)
+
+    expect(screen.getByLabelText("E-mail")).not.toHaveAttribute("aria-describedby")
+  })
+
+  describe("error", () => {
+    it("shows the error in place of helperText and describes the input with it", () => {
+      render(<Input error="Informe um e-mail válido." helperText="Ajuda" title="E-mail" />)
+
+      expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+      expect(screen.getByLabelText("E-mail")).toHaveAccessibleDescription("Informe um e-mail válido.")
+    })
+
+    it("marks the input as invalid", () => {
+      render(<Input error="Informe um e-mail válido." title="E-mail" />)
+
+      expect(screen.getByLabelText("E-mail")).toHaveAttribute("aria-invalid", "true")
+    })
+
+    it("turns the border red", () => {
+      render(<Input error="Informe um e-mail válido." title="E-mail" />)
+
+      expect(screen.getByLabelText("E-mail")).toHaveStyle({ border: `1px solid ${colors.danger[500]}` })
+    })
+
+    it("is not marked invalid without an error", () => {
+      render(<Input title="E-mail" />)
+
+      expect(screen.getByLabelText("E-mail")).not.toHaveAttribute("aria-invalid")
+    })
+  })
+
+  it("marks the field as required and adds an asterisk to the title", () => {
+    render(<Input title="Nome" required />)
+
+    expect(screen.getByRole("textbox", { name: "Nome" })).toBeRequired()
+    expect(screen.getByText("*")).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("renders the startIcon inside the input and pads the text past it", () => {
+    const { container } = render(<Input aria-label="Buscar" startIcon="search-outline" />)
+
+    expect(container.querySelector("svg")).toBeInTheDocument()
+    expect(screen.getByRole("textbox", { name: "Buscar" })).toHaveStyle({
+      paddingLeft: `calc(${spacing[12]} * 2 + ${spacing[20]})`,
+    })
   })
 
   it("does not render helperText when it is not provided", () => {

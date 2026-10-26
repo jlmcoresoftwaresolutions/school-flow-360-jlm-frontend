@@ -23,6 +23,11 @@ const meta: Meta<typeof Input> = {
     },
     disabled: { control: "boolean", description: "Native disabled attribute, forwarded to the input element" },
     elevated: { control: "boolean", description: "Adds a drop shadow around the input. Defaults to true." },
+    error: {
+      control: "text",
+      description:
+        "Error message shown below the input in red, replacing helperText. Also turns the border red and sets aria-invalid.",
+    },
     helperText: { control: "text", description: "Text rendered below the input to provide extra context" },
     mask: {
       control: "select",
@@ -34,10 +39,18 @@ const meta: Meta<typeof Input> = {
       control: "boolean",
       description: "Restricts input to digits only, and hints a numeric keyboard on mobile",
     },
+    required: {
+      control: "boolean",
+      description: "Native required attribute, forwarded to the input. Also adds a red asterisk to the title.",
+    },
     size: {
       control: "select",
       description: "Font size and padding level of the input: small, medium or large. Defaults to medium.",
       options: ["small", "medium", "large"],
+    },
+    startIcon: {
+      control: "text",
+      description: "Name of an icon shown inside the input, before the text (e.g. search-outline for a search field).",
     },
     title: { control: "text", description: "Label rendered above the input" },
     type: {
@@ -65,7 +78,7 @@ export const WithTitle: Story = {
 
 // The helperText prop rendering supporting text below the input
 export const WithHelperText: Story = {
-  args: { helperText: "Nunca compartilharemos seu e-mail com ninguém." },
+  args: { helperText: "Nunca compartilharemos seu e-mail com ninguém.", title: "E-mail" },
 }
 
 // title and helperText combined
@@ -153,4 +166,32 @@ export const MaskExpiry: Story = {
 // No dedicated mask for CVV: it's just digits with a fixed length, already covered by numeric + the native maxLength attribute
 export const Cvv: Story = {
   args: { helperText: "3 dígitos, no verso do cartão", maxLength: 3, numeric: true, title: "CVV" },
+}
+
+// The error prop replacing helperText with a red message, turning the border red and marking the input aria-invalid
+export const WithError: Story = {
+  args: {
+    error: "Informe um e-mail válido.",
+    helperText: "Usado para recuperar o acesso.",
+    title: "E-mail",
+    value: "maria@",
+  },
+}
+
+// The native required attribute, which also adds a red asterisk to the title
+export const Required: Story = {
+  args: {
+    required: true,
+    title: "Nome da escola",
+  },
+}
+
+// The startIcon prop placing an icon inside the input, as in a search field
+export const WithStartIcon: Story = {
+  args: {
+    "aria-label": "Buscar",
+    placeholder: "Buscar por nome...",
+    startIcon: "search-outline",
+    type: "search",
+  },
 }

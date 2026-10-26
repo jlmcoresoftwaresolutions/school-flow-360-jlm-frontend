@@ -99,4 +99,20 @@ describe("Checkbox", () => {
 
     expect(container.querySelector("svg")).toHaveStyle({ fontSize: spacing[20] })
   })
+
+  it("links helperText to the checkbox through aria-describedby", () => {
+    render(<Checkbox helperText="Pode ser alterado depois." label="Opção" />)
+
+    expect(screen.getByRole("checkbox", { name: "Opção" })).toHaveAccessibleDescription("Pode ser alterado depois.")
+  })
+
+  it("shows the error in place of helperText and marks the checkbox as invalid", () => {
+    render(<Checkbox error="Campo obrigatório." helperText="Ajuda" label="Opção" />)
+
+    const control = screen.getByRole("checkbox", { name: "Opção" })
+
+    expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+    expect(control).toHaveAccessibleDescription("Campo obrigatório.")
+    expect(control).toHaveAttribute("aria-invalid", "true")
+  })
 })

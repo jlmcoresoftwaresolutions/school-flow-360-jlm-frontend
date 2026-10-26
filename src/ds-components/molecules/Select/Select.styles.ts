@@ -12,19 +12,26 @@ export const SelectWrapper = styled.div`
 export type SelectStylesConfig = {
   borderRadius: string
   elevated: boolean
+  hasError?: boolean
 }
 
 export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfig<Option, false> => {
-  const { borderRadius, elevated } = config
+  const { borderRadius, elevated, hasError } = config
+
+  // An error keeps the border red even while focused, so the state doesn't vanish on focus.
+  const borderColorFor = (isFocused: boolean) => {
+    if (hasError) return colors.danger[500]
+    return isFocused ? colors.primary[500] : colors.neutral[300]
+  }
 
   return {
     control: (base, state) => ({
       ...base,
       "&:hover": {
-        borderColor: state.isFocused ? colors.primary[500] : colors.neutral[300],
+        borderColor: borderColorFor(state.isFocused),
       },
       background: state.isDisabled ? colors.neutral[50] : colors.neutral[0],
-      borderColor: state.isFocused ? colors.primary[500] : colors.neutral[300],
+      borderColor: borderColorFor(state.isFocused),
       borderRadius,
       boxShadow: state.isFocused ? "none" : elevated ? shadows.sm : shadows.none,
       cursor: state.isDisabled ? "not-allowed" : "pointer",

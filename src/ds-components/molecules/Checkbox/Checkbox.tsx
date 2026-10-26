@@ -2,7 +2,8 @@ import MuiCheckbox from "@mui/material/Checkbox"
 import type { ChangeEvent, CSSProperties, ReactNode } from "react"
 import { forwardRef, useId } from "react"
 
-import { Text } from "@/ds-components/atoms"
+import { FieldMessage, Text } from "@/ds-components/atoms"
+import { joinIds } from "@/utils/strings"
 
 import type { CheckboxSize } from "./Checkbox.styles"
 import { CheckboxRow, CheckboxWrapper, getCheckboxSx } from "./Checkbox.styles"
@@ -14,6 +15,7 @@ type CheckboxOwnProps = {
   className?: string
   defaultChecked?: boolean
   disabled?: boolean
+  error?: string
   helperText?: string
   id?: string
   name?: string
@@ -34,6 +36,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref)
     className,
     defaultChecked,
     disabled,
+    error,
     helperText,
     id,
     label,
@@ -49,6 +52,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref)
   const generatedId = useId()
 
   const checkboxId = id ?? generatedId
+  const messageId = `${checkboxId}-message`
 
   return (
     <CheckboxWrapper className={className} style={style}>
@@ -64,19 +68,21 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>((props, ref)
           onBlur={onBlur}
           onChange={onChange}
           required={required}
-          slotProps={{ input: { ref } }}
-          sx={getCheckboxSx(size, disabled)}
+          slotProps={{
+            input: {
+              "aria-describedby": joinIds((error || helperText) && messageId),
+              "aria-invalid": error ? true : undefined,
+              ref,
+            },
+          }}
+          sx={getCheckboxSx(size, disabled, Boolean(error))}
           value={value}
         />
         <Text as="label" fontSize="sm" htmlFor={checkboxId}>
           {label}
         </Text>
       </CheckboxRow>
-      {helperText && (
-        <Text as="span" color="muted" fontSize="xs">
-          {helperText}
-        </Text>
-      )}
+      <FieldMessage error={error} helperText={helperText} id={messageId} />
     </CheckboxWrapper>
   )
 })
