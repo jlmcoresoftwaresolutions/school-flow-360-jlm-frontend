@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 import { describe, expect, it } from "vitest"
 
@@ -44,10 +44,13 @@ describe("AppShell", () => {
       "Ajuda",
     ]
 
-    expect(screen.getByRole("button", { name: "Início" })).toBeDisabled()
+    // Scoped to the sidebar: the topbar has its own "Ajuda" button.
+    const sidebar = within(screen.getByRole("complementary"))
+
+    expect(sidebar.getByRole("button", { name: "Início" })).toBeDisabled()
 
     groups.forEach((name) => {
-      expect(screen.getByRole("button", { name })).toHaveAttribute("aria-expanded", "false")
+      expect(sidebar.getByRole("button", { name })).toHaveAttribute("aria-expanded", "false")
     })
   })
 
@@ -91,5 +94,29 @@ describe("AppShell", () => {
 
     expect(screen.getByText("Página Minha Escola")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Minha Escola" })).toHaveAttribute("aria-current", "page")
+  })
+
+  it("renders the topbar with notifications and help disabled, as those features don't exist yet", () => {
+    renderAppShell("/outra")
+
+    const topbar = within(screen.getByRole("banner"))
+
+    expect(topbar.getByRole("button", { name: "Notificações" })).toBeDisabled()
+    expect(topbar.getByRole("button", { name: "Ajuda" })).toBeDisabled()
+  })
+
+  it("shows the breadcrumb for Minha Escola, with the current page marked", () => {
+    renderAppShell("/administracao/minha-escola")
+
+    const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
+
+    expect(within(breadcrumb).getByText("Administração")).toBeInTheDocument()
+    expect(within(breadcrumb).getByText("Minha Escola")).toHaveAttribute("aria-current", "page")
+  })
+
+  it("shows no breadcrumb on a route that has no trail", () => {
+    renderAppShell("/outra")
+
+    expect(screen.queryByRole("navigation", { name: "Você está em" })).not.toBeInTheDocument()
   })
 })

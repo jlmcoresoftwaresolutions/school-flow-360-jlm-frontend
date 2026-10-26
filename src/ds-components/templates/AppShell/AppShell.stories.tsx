@@ -16,7 +16,7 @@ export default meta
 
 type Story = StoryObj<typeof AppShell>
 
-// Default rendering: sidebar + a placeholder routed page shown through the Outlet
+// Default rendering: sidebar, topbar with the page breadcrumb, and a placeholder routed page shown through the Outlet
 export const Default: Story = {
   render: () => (
     <MemoryRouter initialEntries={["/administracao/minha-escola"]}>

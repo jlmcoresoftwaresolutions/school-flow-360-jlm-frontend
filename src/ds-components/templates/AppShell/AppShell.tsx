@@ -1,12 +1,30 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
-import type { SidebarNavChild, SidebarNavItem } from "@/ds-components/organisms"
-import { Sidebar } from "@/ds-components/organisms"
+import type { BreadcrumbItem } from "@/ds-components/molecules"
+import { Breadcrumb } from "@/ds-components/molecules"
+import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-components/organisms"
+import { Sidebar, Topbar } from "@/ds-components/organisms"
 
-import { AppShellContent, AppShellWrapper } from "./AppShell.styles"
+import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
 const minhaEscolaPath = "/administracao/minha-escola"
+
+// The trail shown in the topbar for each page; a route not listed here shows no breadcrumb. The group
+// ("Administração") has no page of its own, so it is plain text rather than a link.
+const breadcrumbByPath: Record<string, BreadcrumbItem[]> = {
+  [minhaEscolaPath]: [
+    { key: "administracao", label: "Administração" },
+    { key: "minha-escola", label: "Minha Escola" },
+  ],
+}
+
+// The art puts notifications and help in the topbar, but neither feature exists yet, so - like the
+// menu entries without a page - they are rendered disabled instead of as buttons that do nothing.
+const topbarActions: TopbarAction[] = [
+  { disabled: true, icon: "bell-outline", key: "notificacoes", label: "Notificações" },
+  { disabled: true, icon: "help-outline", key: "ajuda", label: "Ajuda" },
+]
 
 const placeholderChildren = (...labels: string[]): SidebarNavChild[] =>
   labels.map((label) => ({ disabled: true, key: label, label }))
@@ -79,6 +97,8 @@ export const AppShell = () => {
     },
   ]
 
+  const breadcrumbItems = breadcrumbByPath[location.pathname]
+
   const bottomItems: SidebarNavItem[] = [
     {
       children: placeholderChildren("Central de ajuda", "Contato com o suporte"),
@@ -98,9 +118,15 @@ export const AppShell = () => {
         title="SchoolFlow360º"
       />
 
-      <AppShellContent>
-        <Outlet />
-      </AppShellContent>
+      <AppShellBody>
+        <Topbar actions={topbarActions}>
+          {breadcrumbItems && <Breadcrumb items={breadcrumbItems} label="Você está em" />}
+        </Topbar>
+
+        <AppShellContent>
+          <Outlet />
+        </AppShellContent>
+      </AppShellBody>
     </AppShellWrapper>
   )
 }

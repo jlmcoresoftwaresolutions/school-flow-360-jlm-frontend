@@ -1,4 +1,5 @@
 export * from "./ActionMenu"
+export * from "./Breadcrumb"
 export * from "./Checkbox"
 export * from "./ColorPicker"
 export * from "./DateInput"

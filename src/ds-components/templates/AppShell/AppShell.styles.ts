@@ -11,6 +11,15 @@ export const AppShellWrapper = styled.div`
   height: 100dvh;
 `
 
+// min-width: 0 lets the column shrink below its content's width (a wide table, a long breadcrumb)
+// instead of pushing the page into horizontal scroll; only AppShellContent below it scrolls.
+export const AppShellBody = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+`
+
 export const AppShellContent = styled.main`
   background: ${colors.neutral[50]};
   flex: 1;
