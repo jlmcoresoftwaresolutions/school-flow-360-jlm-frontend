@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "sideEffects": [
+    "./src/main.tsx"
+  ],
   "scripts": {
     "build": "tsc -b && vite build",
     "build-storybook": "storybook build",
