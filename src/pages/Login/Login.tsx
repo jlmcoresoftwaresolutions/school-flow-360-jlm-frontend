@@ -36,6 +36,8 @@ const commonTagStartIconProps: Omit<IconProps, "name"> = {
 // such as a missing "@" or domain before a request is spent on them.
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+const signInErrorId = "login-sign-in-error"
+
 type SignInError = "invalidCredentials" | "signInUnavailable"
 
 // The entry page of the app. There is no sign-up here on purpose: accounts are created for users,
@@ -49,6 +51,9 @@ export const Login = () => {
   const [signInError, setSignInError] = useState<SignInError | null>(null)
 
   const { errors, isSubmitting } = formState
+  const credentialsRejected = signInError === "invalidCredentials"
+
+  const clearSignInError = () => setSignInError(null)
 
   // A new attempt always clears the previous one's error, whether it reaches the backend or stops at
   // the field validation (handleSubmit's second callback).
@@ -138,37 +143,44 @@ export const Login = () => {
               {/* noValidate: the browser's own validation bubbles are replaced by the messages under
                   each field, which match the rest of the design system and are translated. */}
               <form
-                onSubmit={handleSubmit(onSubmit, () => setSignInError(null))}
+                onSubmit={handleSubmit(onSubmit, clearSignInError)}
                 noValidate
                 style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
+                  {/* Rejected credentials don't say which field is wrong, so both are flagged and point at
+                      the one message under the form. */}
                   <Input
+                    aria-describedby={credentialsRejected ? signInErrorId : undefined}
                     autoComplete="username"
                     error={errors.email?.message}
                     placeholder={t("login.emailPlaceholder")}
                     title={t("login.emailLabel")}
                     type="email"
+                    invalid={credentialsRejected}
                     required
                     {...register("email", {
+                      onChange: clearSignInError,
                       pattern: { message: t("login.emailInvalid"), value: emailPattern },
                       required: t("login.emailRequired"),
                     })}
                   />
 
                   <Input
+                    aria-describedby={credentialsRejected ? signInErrorId : undefined}
                     autoComplete="current-password"
                     error={errors.password?.message}
                     placeholder={t("login.passwordPlaceholder")}
                     title={t("login.passwordLabel")}
                     type="password"
+                    invalid={credentialsRejected}
                     required
-                    {...register("password", { required: t("login.passwordRequired") })}
+                    {...register("password", { onChange: clearSignInError, required: t("login.passwordRequired") })}
                   />
                 </div>
 
                 {signInError && (
-                  <Text as="p" color="danger" fontSize="sm" role="alert">
+                  <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
                     {t(`login.${signInError}`)}
                   </Text>
                 )}

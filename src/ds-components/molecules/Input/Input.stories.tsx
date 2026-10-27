@@ -29,6 +29,11 @@ const meta: Meta<typeof Input> = {
         "Error message shown below the input in red, replacing helperText. Also turns the border red and sets aria-invalid.",
     },
     helperText: { control: "text", description: "Text rendered below the input to provide extra context" },
+    invalid: {
+      control: "boolean",
+      description:
+        "Marks the input as wrong (red border and aria-invalid) without a message under it, for an error explained elsewhere - e.g. one message under a form for several fields. Point aria-describedby at that message.",
+    },
     mask: {
       control: "select",
       description:
@@ -193,5 +198,14 @@ export const WithStartIcon: Story = {
     placeholder: "Buscar por nome...",
     startIcon: "search-outline",
     type: "search",
+  },
+}
+
+// The invalid prop turning the border red with no message of its own, as both login fields do after rejected credentials
+export const Invalid: Story = {
+  args: {
+    invalid: true,
+    title: "E-mail",
+    value: "diretor@escola.com.br",
   },
 }

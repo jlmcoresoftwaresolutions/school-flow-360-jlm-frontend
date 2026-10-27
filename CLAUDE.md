@@ -133,6 +133,7 @@ Todo campo (`Input`, `Textarea`, `Select`, `DateInput`, `FileUpload`, `ColorPick
 - `FieldLabel` renderiza o `title` como `<label htmlFor>`; com `required` adiciona um asterisco vermelho `aria-hidden` (quem anuncia o obrigatório é o `required`/`aria-required` do próprio campo).
 - `FieldMessage` renderiza, abaixo do campo, o `error` quando há um (substituindo o `helperText`) ou o `helperText`, com `id` estável `${id do campo}-message`. As cores são `neutral[700]`/`danger[700]`, não os tons 500, porque só os 700 atingem o contraste WCAG AA nesse tamanho de fonte.
 - O campo aponta `aria-describedby` para esse id (somado a um `aria-describedby` do próprio chamador, via `joinIds`), marca `aria-invalid` quando há `error` e pinta a borda de `danger[500]`.
+- O `Input` também aceita `invalid`: borda vermelha e `aria-invalid` **sem** mensagem própria, para um erro que vale para vários campos e é explicado uma vez só (ex.: credenciais recusadas no Login, onde os dois campos ficam `invalid` e apontam `aria-describedby` para a mensagem única do formulário).
 - Um campo novo deve seguir o mesmo contrato (props `error`/`helperText`/`required`, os dois atoms e os mesmos atributos ARIA), com stories `WithError`/`Required` e testes de `toHaveAccessibleDescription`/`aria-invalid`. Um campo sem `title` visível precisa de `aria-label` (o `Select` aceita `aria-label` para isso, ex.: dentro da `FilterBar`).
 
 ### `Tooltip` e a convenção da prop `tooltip`

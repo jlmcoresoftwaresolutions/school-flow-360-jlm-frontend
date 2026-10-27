@@ -19,7 +19,7 @@ export const ptBR = {
     heroSubtitle:
       "Uma experiência executiva para diretores, escola, professores e famílias: cada perfil entra em uma jornada visual própria, com navegação adaptativa, indicadores claros e interações acolhedoras.",
     heroTitle: "Gestão escolar que parece simples, mas opera em 360º.",
-    invalidCredentials: "E-mail ou senha incorretos.",
+    invalidCredentials: "Credenciais incorretas",
     logoAlt: "Ícone do SchoolFlow360",
     passwordLabel: "Senha",
     passwordPlaceholder: "Digite sua senha",

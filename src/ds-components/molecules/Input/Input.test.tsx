@@ -395,4 +395,31 @@ describe("Input", () => {
       expect(handleSubmit).toHaveBeenCalledWith({ email: "user@example.com" })
     })
   })
+
+  describe("invalid", () => {
+    it("marks the input as invalid and turns its border red, with no message under it", () => {
+      const { container } = render(<Input title="E-mail" invalid />)
+
+      expect(screen.getByLabelText("E-mail")).toHaveAttribute("aria-invalid", "true")
+      expect(screen.getByLabelText("E-mail")).toHaveStyle({ border: `1px solid ${colors.danger[500]}` })
+      expect(container.querySelector("[id$='-message']")).not.toBeInTheDocument()
+    })
+
+    it("can be described by a message elsewhere through aria-describedby", () => {
+      render(
+        <>
+          <p id="erro-login">Credenciais incorretas</p>
+          <Input aria-describedby="erro-login" title="E-mail" invalid />
+        </>,
+      )
+
+      expect(screen.getByLabelText("E-mail")).toHaveAccessibleDescription("Credenciais incorretas")
+    })
+
+    it("is not invalid by default", () => {
+      render(<Input title="E-mail" />)
+
+      expect(screen.getByLabelText("E-mail")).not.toHaveAttribute("aria-invalid")
+    })
+  })
 })

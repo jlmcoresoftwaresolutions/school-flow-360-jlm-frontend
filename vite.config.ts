@@ -35,6 +35,12 @@ export default defineConfig((configEnv) => {
     server: {
       open: !process.env.PLAYWRIGHT,
       proxy: apiProxy,
+      // The pages are lazy routes, so the dev server would otherwise only compile each one the first
+      // time it is opened - a pause on first navigation, long enough to time out an E2E assertion when
+      // several tests hit cold pages at once. Warming them up compiles them as soon as the server starts.
+      warmup: {
+        clientFiles: ["./src/main.tsx", "./src/pages/*/index.ts", "./src/ds-components/templates/*/index.ts"],
+      },
     },
     test: {
       environment: "jsdom",

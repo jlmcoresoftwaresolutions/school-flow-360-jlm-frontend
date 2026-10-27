@@ -45,6 +45,7 @@ type InputOwnProps = {
   elevated?: boolean
   error?: string
   helperText?: string
+  invalid?: boolean
   mask?: MaskType
   numeric?: boolean
   size?: InputSize
@@ -65,6 +66,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     error,
     helperText,
     id,
+    invalid,
     mask,
     numeric,
     onChange,
@@ -80,6 +82,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
 
   const inputId = id ?? generatedId
   const messageId = `${inputId}-message`
+  // `invalid` is for an error the field can't explain alone - e.g. a rejected login, where the message
+  // sits once under the form and both fields point at it through aria-describedby.
+  const hasError = Boolean(error) || Boolean(invalid)
   // A caller's own aria-describedby is kept, with the message appended to it.
   const describedBy = joinIds(ariaDescribedBy, (error || helperText) && messageId)
 
@@ -108,11 +113,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         <StyledInput
           $borderRadius={borderRadiusLevels[borderRadius]}
           $elevated={elevated}
-          $hasError={Boolean(error)}
+          $hasError={hasError}
           $hasStartIcon={Boolean(startIcon)}
           $size={size}
           aria-describedby={describedBy}
-          aria-invalid={error ? true : undefined}
+          aria-invalid={hasError ? true : undefined}
           id={inputId}
           ref={ref}
           required={required}

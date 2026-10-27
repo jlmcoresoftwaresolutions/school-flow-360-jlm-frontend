@@ -20,7 +20,7 @@ export const en: TranslationResource = {
     heroSubtitle:
       "An executive experience for principals, school staff, teachers and families: every profile gets its own visual journey, with adaptive navigation, clear indicators and welcoming interactions.",
     heroTitle: "School management that feels simple, yet runs in 360º.",
-    invalidCredentials: "Incorrect email or password.",
+    invalidCredentials: "Incorrect credentials",
     logoAlt: "SchoolFlow360 icon",
     passwordLabel: "Password",
     passwordPlaceholder: "Enter your password",

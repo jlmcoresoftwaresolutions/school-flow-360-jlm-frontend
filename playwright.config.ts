@@ -7,6 +7,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
+  // Navigations include loading the target page's lazy chunk, which the dev server may still be
+  // compiling on the first visit; the default 5s is tight for that on a busy machine.
+  expect: { timeout: 10_000 },
   use: {
     baseURL: "http://localhost:5174",
     // The app detects the browser language; the specs are written against the pt-BR copy.
