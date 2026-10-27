@@ -3,6 +3,7 @@ import axios, { isAxiosError } from "axios"
 
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { clearSession, getSessionToken } from "@/utils/session"
+import { getTenantId } from "@/utils/tenant"
 
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -38,9 +39,16 @@ export const httpClient = axios.create({ baseURL: import.meta.env.VITE_API_BASE_
 httpClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   if (config.showLoading !== false) startLoading()
 
-  if (isBackendRequest(config.url) && !config.headers.Authorization) {
-    const token = await getSessionToken()
-    if (token) config.headers.Authorization = `Bearer ${token}`
+  if (isBackendRequest(config.url)) {
+    // The backend separates each school's data by tenant and needs it on every call, the login
+    // included - without it, it looks in the "public" tenant and rejects valid accounts.
+    const tenantId = getTenantId()
+    if (tenantId && !config.headers["X-Tenant-ID"]) config.headers["X-Tenant-ID"] = tenantId
+
+    if (!config.headers.Authorization) {
+      const token = await getSessionToken()
+      if (token) config.headers.Authorization = `Bearer ${token}`
+    }
   }
 
   return config

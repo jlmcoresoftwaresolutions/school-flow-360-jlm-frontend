@@ -87,10 +87,12 @@ test.describe("login page", () => {
     await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
   })
 
-  test("sends e-mail and password to the backend", async ({ page }) => {
+  test("sends e-mail, password and the tenant to the backend", async ({ page }) => {
     let body: unknown
+    let tenantHeader: string | undefined
     await page.route(loginEndpoint, (route) => {
       body = route.request().postDataJSON()
+      tenantHeader = route.request().headers()["x-tenant-id"]
       return route.fulfill({ body: JSON.stringify(successBody), contentType: "application/json" })
     })
     await page.goto("/login")
@@ -100,6 +102,7 @@ test.describe("login page", () => {
 
     await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
     expect(body).toEqual({ email: "diretor@schoolflow360.com.br", password: "senha-correta" })
+    expect(tenantHeader).toBe("schoolflow_demo")
   })
 
   test("tells the user when the credentials are wrong", async ({ page }) => {
