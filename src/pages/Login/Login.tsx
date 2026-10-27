@@ -1,11 +1,17 @@
+import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
-import { LanguageSwitcher } from "@/components"
 import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Text } from "@/ds-components/atoms"
+import { Input } from "@/ds-components/molecules"
+import { colors, spacing } from "@/foundation"
+import type { LoginRequest } from "@/models"
+import { homePath } from "@/routes/paths"
+import { getErrorStatus, login } from "@/services"
+import { saveSession } from "@/utils/session"
 
-import { Input } from "../../ds-components/molecules"
-import { colors, spacing } from "../../foundation"
 import { LoginWrapper } from "./Login.styles"
 
 const commonTagProps: Omit<TagProps, "children"> = {
@@ -17,13 +23,48 @@ const commonTagProps: Omit<TagProps, "children"> = {
   variant: "soft",
 }
 
+// Secondary text on the dark hero card. The semantic muted color is a dark gray meant for light
+// surfaces (it reaches WCAG AA there, see semanticColors.ts) and would vanish on this background.
+const onDarkSecondaryText = colors.neutral[300]
+
 const commonTagStartIconProps: Omit<IconProps, "name"> = {
   color: "inverse",
   size: 16,
 }
 
+// Deliberately loose: the backend is the judge of what a real address is, this only catches typos
+// such as a missing "@" or domain before a request is spent on them.
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+type SignInError = "invalidCredentials" | "signInUnavailable"
+
+// The entry page of the app. There is no sign-up here on purpose: accounts are created for users,
+// never by them. On success the session is stored (see utils/session) and the user goes home; the
+// router keeps a signed-in user from coming back here (see routes.tsx).
 export const Login = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const { formState, handleSubmit, register } = useForm<LoginRequest>({ defaultValues: { email: "", password: "" } })
+
+  const [signInError, setSignInError] = useState<SignInError | null>(null)
+
+  const { errors, isSubmitting } = formState
+
+  // A new attempt always clears the previous one's error, whether it reaches the backend or stops at
+  // the field validation (handleSubmit's second callback).
+  const onSubmit = async (credentials: LoginRequest) => {
+    setSignInError(null)
+
+    try {
+      const authData = await login(credentials)
+      await saveSession(authData)
+      navigate(homePath, { replace: true })
+    } catch (error) {
+      // 401 is the backend's answer to a wrong e-mail/password; anything else (no response, a 5xx)
+      // isn't the user's fault, so they are told to try again instead.
+      setSignInError(getErrorStatus(error) === 401 ? "invalidCredentials" : "signInUnavailable")
+    }
+  }
 
   return (
     <LoginWrapper>
@@ -45,7 +86,7 @@ export const Login = () => {
                     SchoolFlow360º
                   </Text>
 
-                  <Text as="p" color="muted" fontSize="sm">
+                  <Text as="p" fontSize="sm" style={{ color: onDarkSecondaryText }}>
                     {t("common.poweredBy")}
                   </Text>
                 </div>
@@ -55,7 +96,7 @@ export const Login = () => {
                 {t("login.heroTitle")}
               </Text>
 
-              <Text as="p" color="muted">
+              <Text as="p" style={{ color: onDarkSecondaryText }}>
                 {t("login.heroSubtitle")}
               </Text>
 
@@ -90,37 +131,63 @@ export const Login = () => {
               elevated
               style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
             >
-              <div
-                style={{ alignItems: "flex-start", display: "flex", gap: spacing[12], justifyContent: "space-between" }}
+              <Text as="h1" fontSize="3xl" bold>
+                {t("login.signInTitle")}
+              </Text>
+
+              {/* noValidate: the browser's own validation bubbles are replaced by the messages under
+                  each field, which match the rest of the design system and are translated. */}
+              <form
+                onSubmit={handleSubmit(onSubmit, () => setSignInError(null))}
+                noValidate
+                style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}
               >
-                <Text as="h1" fontSize="3xl" bold>
-                  {t("login.signInTitle")}
-                </Text>
-
-                <LanguageSwitcher label={t("common.changeLanguage")} />
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
-                  <Input placeholder={t("login.emailPlaceholder")} title={t("login.emailLabel")} type="email" />
+                  <Input
+                    autoComplete="username"
+                    error={errors.email?.message}
+                    placeholder={t("login.emailPlaceholder")}
+                    title={t("login.emailLabel")}
+                    type="email"
+                    required
+                    {...register("email", {
+                      pattern: { message: t("login.emailInvalid"), value: emailPattern },
+                      required: t("login.emailRequired"),
+                    })}
+                  />
 
                   <Input
+                    autoComplete="current-password"
+                    error={errors.password?.message}
                     placeholder={t("login.passwordPlaceholder")}
                     title={t("login.passwordLabel")}
                     type="password"
+                    required
+                    {...register("password", { required: t("login.passwordRequired") })}
                   />
                 </div>
+
+                {signInError && (
+                  <Text as="p" color="danger" fontSize="sm" role="alert">
+                    {t(`login.${signInError}`)}
+                  </Text>
+                )}
 
                 <div
                   style={{ alignItems: "center", display: "flex", gap: spacing[16], justifyContent: "space-between" }}
                 >
-                  <Button startIcon={<Icon color="inverse" name="lock-outline" size={16} />}>
+                  <Button
+                    disabled={isSubmitting}
+                    startIcon={<Icon color="inverse" name="lock-outline" size={16} />}
+                    type="submit"
+                  >
                     {t("login.signIn")}
                   </Button>
 
+                  {/* Password recovery comes in a later step; the link stays as its entry point. */}
                   <Button variant="link">{t("login.forgotPassword")}</Button>
                 </div>
-              </div>
+              </form>
             </Card>
           </Grid.Col>
         </Grid.Row>

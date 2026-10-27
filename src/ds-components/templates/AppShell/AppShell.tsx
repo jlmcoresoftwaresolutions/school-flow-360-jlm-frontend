@@ -2,23 +2,21 @@ import { useTranslation } from "react-i18next"
 import { Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
-import { LanguageSwitcher } from "@/components"
 import type { BreadcrumbItem } from "@/ds-components/molecules"
 import { Breadcrumb } from "@/ds-components/molecules"
 import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-components/organisms"
 import { Sidebar, Topbar } from "@/ds-components/organisms"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
+import { paths } from "@/routes/paths"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
 type NavKey = keyof TranslationResource["shell"]["nav"]
 
-const minhaEscolaPath = "/administracao/minha-escola"
-
 // The trail shown in the topbar for each page, as nav keys; a route not listed here shows no
 // breadcrumb. The group (Administração) has no page of its own, so it is plain text, not a link.
 const breadcrumbByPath: Record<string, NavKey[]> = {
-  [minhaEscolaPath]: ["administration", "minhaEscola"],
+  [paths.minhaEscola]: ["administration", "minhaEscola"],
 }
 
 // This template is the app's own shell rather than a reusable piece, so - like the pages - it
@@ -68,10 +66,10 @@ export const AppShell = () => {
     {
       children: [
         {
-          active: location.pathname === minhaEscolaPath,
+          active: location.pathname === paths.minhaEscola,
           key: "minhaEscola",
           label: navLabel("minhaEscola"),
-          onClick: () => navigate(minhaEscolaPath),
+          onClick: () => navigate(paths.minhaEscola),
         },
         ...placeholderChildren("units"),
       ],
@@ -134,7 +132,7 @@ export const AppShell = () => {
       />
 
       <AppShellBody>
-        <Topbar actions={topbarActions} extraActions={<LanguageSwitcher label={t("common.changeLanguage")} />}>
+        <Topbar actions={topbarActions}>
           {breadcrumbItems && <Breadcrumb items={breadcrumbItems} label={t("shell.breadcrumbLabel")} />}
         </Topbar>
 

@@ -9,6 +9,8 @@ export default defineConfig({
   reporter: "html",
   use: {
     baseURL: "http://localhost:5174",
+    // The app detects the browser language; the specs are written against the pt-BR copy.
+    locale: "pt-BR",
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

@@ -5,7 +5,6 @@ import type { TranslationResource } from "./ptBR"
 export const en: TranslationResource = {
   common: {
     cancel: "Cancel",
-    changeLanguage: "Change language",
     edit: "Edit",
     loading: "Loading...",
     poweredBy: "Powered by JLM Core",
@@ -13,17 +12,22 @@ export const en: TranslationResource = {
     tryAgain: "Try again",
   },
   login: {
+    emailInvalid: "Enter a valid email.",
     emailLabel: "Email",
     emailPlaceholder: "Enter your email",
+    emailRequired: "Enter your email.",
     forgotPassword: "Forgot my password",
     heroSubtitle:
       "An executive experience for principals, school staff, teachers and families: every profile gets its own visual journey, with adaptive navigation, clear indicators and welcoming interactions.",
     heroTitle: "School management that feels simple, yet runs in 360º.",
+    invalidCredentials: "Incorrect email or password.",
     logoAlt: "SchoolFlow360 icon",
     passwordLabel: "Password",
     passwordPlaceholder: "Enter your password",
+    passwordRequired: "Enter your password.",
     signIn: "Sign in",
     signInTitle: "Access your SchoolFlow360º journey",
+    signInUnavailable: "We couldn't sign you in right now. Please try again shortly.",
     tagAi: "AI",
     tagDashboard: "360º Dashboard",
     tagFinance: "Finance",

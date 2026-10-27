@@ -122,13 +122,8 @@ describe("AppShell", () => {
     expect(screen.queryByRole("navigation", { name: "Você está em" })).not.toBeInTheDocument()
   })
 
-  it("puts a language switcher in the topbar", () => {
-    renderAppShell("/outra")
-
-    expect(within(screen.getByRole("banner")).getByRole("button", { name: "Alterar idioma" })).toBeInTheDocument()
-  })
-
-  describe("in another language", () => {
+  // The language comes from the browser (see i18n.ts); changeLanguage stands in for an English one.
+  describe("in a browser set to another language", () => {
     afterEach(async () => {
       await act(() => i18n.changeLanguage("pt-BR"))
     })

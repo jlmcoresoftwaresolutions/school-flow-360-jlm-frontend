@@ -4,7 +4,6 @@
 export const ptBR = {
   common: {
     cancel: "Cancelar",
-    changeLanguage: "Alterar idioma",
     edit: "Editar",
     loading: "Carregando...",
     poweredBy: "Powered by JLM Core",
@@ -12,17 +11,22 @@ export const ptBR = {
     tryAgain: "Tentar novamente",
   },
   login: {
+    emailInvalid: "Informe um e-mail válido.",
     emailLabel: "E-mail",
     emailPlaceholder: "Digite seu e-mail",
+    emailRequired: "Informe seu e-mail.",
     forgotPassword: "Esqueci minha senha",
     heroSubtitle:
       "Uma experiência executiva para diretores, escola, professores e famílias: cada perfil entra em uma jornada visual própria, com navegação adaptativa, indicadores claros e interações acolhedoras.",
     heroTitle: "Gestão escolar que parece simples, mas opera em 360º.",
+    invalidCredentials: "E-mail ou senha incorretos.",
     logoAlt: "Ícone do SchoolFlow360",
     passwordLabel: "Senha",
     passwordPlaceholder: "Digite sua senha",
+    passwordRequired: "Informe sua senha.",
     signIn: "Entrar",
     signInTitle: "Acesse sua jornada SchoolFlow360º",
+    signInUnavailable: "Não foi possível entrar agora. Tente novamente em instantes.",
     tagAi: "IA",
     tagDashboard: "Dashboard 360º",
     tagFinance: "Financeiro",
