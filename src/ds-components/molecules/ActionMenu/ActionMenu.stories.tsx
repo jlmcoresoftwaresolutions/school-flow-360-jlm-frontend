@@ -83,14 +83,14 @@ export const InTableRow: Story = {
   ),
 }
 
-// The triggerIcon prop and checked items turning the menu into a single-choice picker, as a language switcher
+// The triggerIcon prop and checked items turning the menu into a single-choice picker, e.g. a sort order
 export const SingleChoice: Story = {
   args: {
     items: [
-      { checked: true, key: "pt-BR", label: "Português (Brasil)" },
-      { checked: false, key: "en", label: "English" },
+      { checked: true, key: "nome", label: "Ordenar por nome" },
+      { checked: false, key: "cidade", label: "Ordenar por cidade" },
     ],
-    triggerIcon: "language",
-    triggerLabel: "Alterar idioma",
+    triggerIcon: "dots-horizontal",
+    triggerLabel: "Ordenação",
   },
 }

@@ -253,7 +253,7 @@ describe("ActionMenu", () => {
 
   it("shows triggerIcon on the trigger instead of the kebab", () => {
     const { container } = render(
-      <ActionMenu items={[{ key: "a", label: "A" }]} triggerIcon="language" triggerLabel="Idioma" />,
+      <ActionMenu items={[{ key: "a", label: "A" }]} triggerIcon="dots-horizontal" triggerLabel="Ordenação" />,
     )
     const { container: kebab } = render(<ActionMenu items={[{ key: "a", label: "A" }]} triggerLabel="Ações" />)
 
@@ -261,52 +261,54 @@ describe("ActionMenu", () => {
   })
 
   describe("checked items", () => {
-    const languageItems: ActionMenuItem[] = [
-      { checked: true, key: "pt-BR", label: "Português (Brasil)" },
-      { checked: false, key: "en", label: "English" },
+    const sortItems: ActionMenuItem[] = [
+      { checked: true, key: "nome", label: "Ordenar por nome" },
+      { checked: false, key: "cidade", label: "Ordenar por cidade" },
     ]
 
     it("renders items with checked set as menuitemradio, announcing which is checked", () => {
-      render(<ActionMenu items={languageItems} triggerLabel="Idioma" />)
+      render(<ActionMenu items={sortItems} triggerLabel="Ordenação" />)
 
-      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+      fireEvent.click(screen.getByRole("button", { name: "Ordenação" }))
 
-      expect(screen.getByRole("menuitemradio", { name: "Português (Brasil)" })).toHaveAttribute("aria-checked", "true")
-      expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveAttribute("aria-checked", "false")
+      expect(screen.getByRole("menuitemradio", { name: "Ordenar por nome" })).toHaveAttribute("aria-checked", "true")
+      expect(screen.getByRole("menuitemradio", { name: "Ordenar por cidade" })).toHaveAttribute("aria-checked", "false")
     })
 
     it("moves focus to the checked item when it opens", () => {
       render(
         <ActionMenu
           items={[
-            { checked: false, key: "pt-BR", label: "Português (Brasil)" },
-            { checked: true, key: "en", label: "English" },
+            { checked: false, key: "nome", label: "Ordenar por nome" },
+            { checked: true, key: "cidade", label: "Ordenar por cidade" },
           ]}
-          triggerLabel="Idioma"
+          triggerLabel="Ordenação"
         />,
       )
 
-      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+      fireEvent.click(screen.getByRole("button", { name: "Ordenação" }))
 
-      expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveFocus()
+      expect(screen.getByRole("menuitemradio", { name: "Ordenar por cidade" })).toHaveFocus()
     })
 
     it("moves between radio items with the arrows", () => {
-      render(<ActionMenu items={languageItems} triggerLabel="Idioma" />)
+      render(<ActionMenu items={sortItems} triggerLabel="Ordenação" />)
 
-      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+      fireEvent.click(screen.getByRole("button", { name: "Ordenação" }))
       fireEvent.keyDown(screen.getByRole("menu"), { key: "ArrowDown" })
 
-      expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveFocus()
+      expect(screen.getByRole("menuitemradio", { name: "Ordenar por cidade" })).toHaveFocus()
     })
 
     it("shows a check mark only on the checked item", () => {
-      render(<ActionMenu items={languageItems} triggerLabel="Idioma" />)
+      render(<ActionMenu items={sortItems} triggerLabel="Ordenação" />)
 
-      fireEvent.click(screen.getByRole("button", { name: "Idioma" }))
+      fireEvent.click(screen.getByRole("button", { name: "Ordenação" }))
 
-      expect(screen.getByRole("menuitemradio", { name: "Português (Brasil)" }).querySelector("svg")).toBeInTheDocument()
-      expect(screen.getByRole("menuitemradio", { name: "English" }).querySelector("svg")).not.toBeInTheDocument()
+      expect(screen.getByRole("menuitemradio", { name: "Ordenar por nome" }).querySelector("svg")).toBeInTheDocument()
+      expect(
+        screen.getByRole("menuitemradio", { name: "Ordenar por cidade" }).querySelector("svg"),
+      ).not.toBeInTheDocument()
     })
   })
 })

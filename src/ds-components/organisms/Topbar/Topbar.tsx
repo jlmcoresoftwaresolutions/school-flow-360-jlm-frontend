@@ -35,7 +35,6 @@ export type TopbarProps = {
   actions?: TopbarAction[]
   children?: ReactNode
   className?: string
-  extraActions?: ReactNode
   style?: CSSProperties
   user?: TopbarUser
 }
@@ -66,15 +65,14 @@ const TopbarActionButton = (props: TopbarActionButtonProps) => {
 }
 
 // The bar across the top of the app shell. `children` fills its leading side (typically a
-// Breadcrumb); on the trailing side come icon-only `actions` (e.g. notifications, help), any
-// `extraActions` that need more than a button (e.g. a menu such as a language switcher) and the
+// Breadcrumb); on the trailing side come icon-only `actions` (e.g. notifications, help) and the
 // signed-in `user`, shown as an avatar - the photo, or the name's initials without one - beside
 // the name and role. On a narrow screen the name and role are hidden visually but stay available to
 // screen readers. It owns no copy: every label comes in through props.
 export const Topbar = (props: TopbarProps) => {
-  const { actions = [], children, className, extraActions, style, user } = props
+  const { actions = [], children, className, style, user } = props
 
-  const hasTrailingContent = actions.length > 0 || extraActions !== undefined || user !== undefined
+  const hasTrailingContent = actions.length > 0 || user !== undefined
 
   return (
     <StyledTopbar className={className} style={style}>
@@ -85,8 +83,6 @@ export const Topbar = (props: TopbarProps) => {
           {actions.map((action) => (
             <TopbarActionButton action={action} key={action.key} />
           ))}
-
-          {extraActions}
 
           {user && (
             <StyledTopbarUser>

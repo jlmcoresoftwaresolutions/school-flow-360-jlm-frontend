@@ -19,6 +19,10 @@ describe("i18n", () => {
     expect(i18n.options.fallbackLng).toEqual(["pt-BR"])
   })
 
+  it("detects the language from the browser only, without remembering it", () => {
+    expect(i18n.options.detection).toMatchObject({ caches: [], order: ["navigator"] })
+  })
+
   it("exposes pt-BR and en as the supported languages", () => {
     expect(supportedLanguages).toEqual(["pt-BR", "en"])
   })

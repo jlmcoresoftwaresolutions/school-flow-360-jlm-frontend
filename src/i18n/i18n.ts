@@ -21,8 +21,11 @@ declare module "i18next" {
 
 export const supportedLanguages = ["pt-BR", "en"]
 
-// LanguageDetector picks the viewer's language (persisted choice in localStorage, then the browser's
-// own language) and initReactI18next wires the useTranslation hook up to it. Resources are bundled
+// The language is the browser's own (navigator.languages - the language the viewer's system or
+// browser is set to), detected on every visit: there is no language picker, so nothing is
+// remembered between visits (caches: []) and nothing else (query string, cookie, storage) is
+// consulted. A language that isn't supported (e.g. es) falls back to pt-BR. initReactI18next wires
+// the useTranslation hook up to it. Resources are bundled
 // directly instead of loaded from a backend - the catalog is small enough that a network round trip
 // to fetch it isn't worth it. useSuspense is off since nothing else in the project renders through
 // Suspense yet: a component can render once before init() settles (useTranslation then returns the
@@ -32,7 +35,7 @@ i18next
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    detection: { caches: ["localStorage"] },
+    detection: { caches: [], order: ["navigator"] },
     fallbackLng: "pt-BR",
     interpolation: { escapeValue: false },
     react: { useSuspense: false },
@@ -56,5 +59,9 @@ const syncDocumentLanguage = (language: string) => {
 
 if (i18next.resolvedLanguage) syncDocumentLanguage(i18next.resolvedLanguage)
 i18next.on("languageChanged", syncDocumentLanguage)
+
+// A choice remembered by the language picker this app used to have; it's no longer read, so it is
+// just cleared away.
+localStorage.removeItem("i18nextLng")
 
 export const i18n = i18next
