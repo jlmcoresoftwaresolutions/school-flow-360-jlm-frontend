@@ -1,14 +1,14 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Text } from "@/ds-components/atoms"
 import { Input } from "@/ds-components/molecules"
 import { colors, spacing } from "@/foundation"
 import type { LoginRequest } from "@/models"
-import { homePath } from "@/routes/paths"
+import { homePath, paths } from "@/routes/paths"
 import { getErrorStatus, login } from "@/services"
 import { saveSession } from "@/utils/session"
 
@@ -196,8 +196,9 @@ export const Login = () => {
                     {t("login.signIn")}
                   </Button>
 
-                  {/* Password recovery comes in a later step; the link stays as its entry point. */}
-                  <Button variant="link">{t("login.forgotPassword")}</Button>
+                  <Button as={Link} to={paths.forgotPassword} variant="link">
+                    {t("login.forgotPassword")}
+                  </Button>
                 </div>
               </form>
             </Card>

@@ -48,7 +48,7 @@ test.describe("login page", () => {
     await expect(page.getByRole("textbox", { name: "E-mail" })).toHaveAttribute("autocomplete", "username")
     await expect(page.getByLabel(/^Senha/)).toHaveAttribute("autocomplete", "current-password")
     await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible()
-    await expect(page.getByRole("button", { name: "Esqueci minha senha" })).toBeVisible()
+    await expect(page.getByRole("link", { name: "Esqueci minha senha" })).toHaveAttribute("href", "/recuperar-senha")
     await expect(page.getByText(/cadastr|criar conta/i)).toHaveCount(0)
   })
 

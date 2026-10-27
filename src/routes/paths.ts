@@ -1,6 +1,7 @@
 // Every route path in one place, imported directly (@/routes/paths) by whatever needs to navigate,
 // so a page doesn't have to import the router itself.
 export const paths = {
+  forgotPassword: "/recuperar-senha",
   login: "/login",
   minhaEscola: "/administracao/minha-escola",
 }

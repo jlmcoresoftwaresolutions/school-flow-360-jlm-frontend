@@ -1,3 +1,7 @@
+export type PasswordRecoveryRequest = {
+  email: string
+}
+
 export type LoginRequest = {
   email: string
   password: string

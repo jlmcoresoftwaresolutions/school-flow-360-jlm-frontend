@@ -74,6 +74,9 @@ export const StyledButton = styled.button<StyledButtonProps>`
       font-weight: ${typography.fontWeight.semibold};
       gap: ${spacing[8]};
       justify-content: center;
+      // Rendered as a link (as="a"/Link), it would otherwise carry the browser's default underline;
+      // the link variant underlines on hover only, like a <button>.
+      text-decoration: none;
       transition:
         background ${motion.duration.fast} ${motion.easing.ease},
         opacity ${motion.duration.fast} ${motion.easing.ease};

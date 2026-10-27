@@ -15,6 +15,9 @@ import { homePath, paths } from "./paths"
 // Access is decided by the loaders, before anything renders: the AppShell routes (every page behind
 // the login) send a visitor without a session to /login, and /login sends a signed-in user home.
 // Any other path also lands on /login, which then forwards a signed-in user home.
+// The pages for signing in (login, password recovery) are pointless with a session already open.
+const redirectSignedInUserHome = async () => ((await hasSession()) ? redirect(homePath) : null)
+
 export const router = createBrowserRouter([
   { element: <Navigate to={paths.login} replace />, path: "/" },
   {
@@ -23,8 +26,17 @@ export const router = createBrowserRouter([
       const { Login } = await import("@/pages/Login")
       return { Component: Login }
     },
-    loader: async () => ((await hasSession()) ? redirect(homePath) : null),
+    loader: redirectSignedInUserHome,
     path: paths.login,
+  },
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
+      const { ForgotPassword } = await import("@/pages/ForgotPassword")
+      return { Component: ForgotPassword }
+    },
+    loader: redirectSignedInUserHome,
+    path: paths.forgotPassword,
   },
   {
     children: [

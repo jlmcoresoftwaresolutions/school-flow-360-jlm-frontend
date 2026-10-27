@@ -1,4 +1,4 @@
-import type { ApiResponse, AuthData, LoginRequest } from "@/models"
+import type { ApiResponse, AuthData, LoginRequest, PasswordRecoveryRequest } from "@/models"
 
 import type { RequestConfig } from "../httpClient"
 import { httpClient } from "../httpClient"
@@ -12,4 +12,14 @@ export const login = async (credentials: LoginRequest, config?: RequestConfig): 
   if (!authData?.token) throw new Error("The login response has no token.")
 
   return authData
+}
+
+// Asks the backend to e-mail a password reset link. The backend answers the same way (202, a generic
+// message) whether or not the address has an account, so nothing about the account is learned here;
+// only a failure to reach it (network, 5xx) rejects.
+export const requestPasswordRecovery = async (
+  request: PasswordRecoveryRequest,
+  config?: RequestConfig,
+): Promise<void> => {
+  await httpClient.post<ApiResponse<null>>("/api/auth/password-recovery/request", request, config)
 }

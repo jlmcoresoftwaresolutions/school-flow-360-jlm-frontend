@@ -158,6 +158,16 @@ describe("Button", () => {
     expect(element).toHaveAttribute("href", "/experimental")
   })
 
+  it("drops the browser's default link underline when rendered as a link", () => {
+    render(
+      <Button as="a" href="https://example.com" variant="link">
+        Click me
+      </Button>,
+    )
+
+    expect(screen.getByRole("link", { name: "Click me" })).toHaveStyle({ textDecoration: "none" })
+  })
+
   it("applies the className passed as a prop", () => {
     render(<Button className="custom">Click me</Button>)
 
