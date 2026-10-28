@@ -16,7 +16,7 @@ export const ptBR = {
       "Informe o e-mail da sua conta. Se ele estiver cadastrado, enviaremos um link para você criar uma nova senha.",
     resendIn: "Reenviar em {{seconds}}s",
     sent: "Se houver uma conta com este e-mail, você receberá um link para redefinir sua senha. Confira também a caixa de spam.",
-    submit: "Enviar link",
+    submit: "Enviar",
     title: "Recuperar acesso",
     unavailable: "Não foi possível enviar agora. Tente novamente em instantes.",
   },

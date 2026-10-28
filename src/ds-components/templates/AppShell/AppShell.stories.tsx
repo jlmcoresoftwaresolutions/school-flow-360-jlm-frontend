@@ -19,7 +19,7 @@ type Story = StoryObj<typeof AppShell>
 // Default rendering: sidebar, topbar with the page breadcrumb, and a placeholder routed page shown through the Outlet
 export const Default: Story = {
   render: () => (
-    <MemoryRouter initialEntries={["/administracao/minha-escola"]}>
+    <MemoryRouter initialEntries={["/administration/my-school"]}>
       <Routes>
         <Route element={<AppShell />}>
           <Route
@@ -28,7 +28,7 @@ export const Default: Story = {
                 Conteúdo da página roteada
               </Text>
             }
-            path="/administracao/minha-escola"
+            path="/administration/my-school"
           />
         </Route>
       </Routes>

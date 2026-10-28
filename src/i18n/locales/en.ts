@@ -16,7 +16,7 @@ export const en: TranslationResource = {
     description: "Enter your account's email. If it's registered, we'll send you a link to create a new password.",
     resendIn: "Send again in {{seconds}}s",
     sent: "If there's an account with this email, you'll receive a link to reset your password. Check your spam folder too.",
-    submit: "Send link",
+    submit: "Send",
     title: "Recover access",
     unavailable: "We couldn't send it right now. Please try again shortly.",
   },

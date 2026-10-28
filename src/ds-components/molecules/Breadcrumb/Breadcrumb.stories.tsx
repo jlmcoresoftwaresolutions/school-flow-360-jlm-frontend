@@ -6,7 +6,7 @@ const meta: Meta<typeof Breadcrumb> = {
   args: {
     items: [
       { key: "administracao", label: "Administração" },
-      { href: "#minha-escola", key: "minha-escola", label: "Minha Escola" },
+      { href: "#my-school", key: "minha-escola", label: "Minha Escola" },
       { key: "unidades", label: "Unidades" },
     ],
     label: "Você está em",

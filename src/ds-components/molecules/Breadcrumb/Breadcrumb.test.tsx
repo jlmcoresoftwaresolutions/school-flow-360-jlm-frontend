@@ -5,7 +5,7 @@ import { Breadcrumb, type BreadcrumbItem, type BreadcrumbProps } from "./Breadcr
 
 const items: BreadcrumbItem[] = [
   { key: "administracao", label: "Administração" },
-  { href: "/administracao/minha-escola", key: "minha-escola", label: "Minha Escola" },
+  { href: "/administration/my-school", key: "minha-escola", label: "Minha Escola" },
   { key: "unidades", label: "Unidades" },
 ]
 
@@ -39,7 +39,7 @@ describe("Breadcrumb", () => {
   it("renders an earlier entry with an href as a link", () => {
     renderBreadcrumb()
 
-    expect(screen.getByRole("link", { name: "Minha Escola" })).toHaveAttribute("href", "/administracao/minha-escola")
+    expect(screen.getByRole("link", { name: "Minha Escola" })).toHaveAttribute("href", "/administration/my-school")
   })
 
   it("renders an earlier entry with only an onClick as a button that calls it", () => {

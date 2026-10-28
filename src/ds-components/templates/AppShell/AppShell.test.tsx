@@ -12,7 +12,7 @@ const renderAppShell = (initialEntry: string) =>
       <Routes>
         <Route element={<AppShell />}>
           <Route element={<div>Outra página</div>} path="/outra" />
-          <Route element={<div>Página Minha Escola</div>} path="/administracao/minha-escola" />
+          <Route element={<div>Página Minha Escola</div>} path="/administration/my-school" />
         </Route>
       </Routes>
     </MemoryRouter>,
@@ -82,7 +82,7 @@ describe("AppShell", () => {
   })
 
   it("opens the Administração group and marks Minha Escola as the current page on its route", () => {
-    renderAppShell("/administracao/minha-escola")
+    renderAppShell("/administration/my-school")
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
     expect(screen.getByRole("button", { name: "Minha Escola" })).toHaveAttribute("aria-current", "page")
@@ -108,7 +108,7 @@ describe("AppShell", () => {
   })
 
   it("shows the breadcrumb for Minha Escola, with the current page marked", () => {
-    renderAppShell("/administracao/minha-escola")
+    renderAppShell("/administration/my-school")
 
     const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
 
@@ -129,7 +129,7 @@ describe("AppShell", () => {
     })
 
     it("translates the menu, the breadcrumb and the topbar", async () => {
-      renderAppShell("/administracao/minha-escola")
+      renderAppShell("/administration/my-school")
 
       await act(() => i18n.changeLanguage("en"))
 

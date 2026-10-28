@@ -31,7 +31,7 @@ const signIn = async (page: Page) => {
   await page.goto("/login")
   await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
-  await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
+  await expect(page).toHaveURL(/\/administration\/my-school$/)
 }
 
 test.describe("login page", () => {
@@ -48,7 +48,7 @@ test.describe("login page", () => {
     await expect(page.getByRole("textbox", { name: "E-mail" })).toHaveAttribute("autocomplete", "username")
     await expect(page.getByLabel(/^Senha/)).toHaveAttribute("autocomplete", "current-password")
     await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible()
-    await expect(page.getByRole("link", { name: "Esqueci minha senha" })).toHaveAttribute("href", "/recuperar-senha")
+    await expect(page.getByRole("link", { name: "Esqueci minha senha" })).toHaveAttribute("href", "/forgot-password")
     await expect(page.getByText(/cadastr|criar conta/i)).toHaveCount(0)
   })
 
@@ -84,7 +84,7 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
     await page.getByLabel(/^Senha/).press("Enter")
 
-    await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
+    await expect(page).toHaveURL(/\/administration\/my-school$/)
   })
 
   test("sends e-mail, password and the tenant to the backend", async ({ page }) => {
@@ -100,7 +100,7 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
     await page.getByRole("button", { name: "Entrar" }).click()
 
-    await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
+    await expect(page).toHaveURL(/\/administration\/my-school$/)
     expect(body).toEqual({ email: "diretor@schoolflow360.com.br", password: "senha-correta" })
     expect(tenantHeader).toBe("schoolflow_demo")
   })
@@ -155,7 +155,7 @@ test.describe("login page", () => {
 
 test.describe("access control", () => {
   test("sends a visitor without a session from an inner page to the login", async ({ page }) => {
-    await page.goto("/administracao/minha-escola")
+    await page.goto("/administration/my-school")
 
     await expect(page).toHaveURL(/\/login$/)
   })
@@ -171,7 +171,7 @@ test.describe("access control", () => {
 
     await page.reload()
 
-    await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
+    await expect(page).toHaveURL(/\/administration\/my-school$/)
     await expect(page.getByRole("heading", { level: 1, name: "Minha Escola" })).toBeVisible()
   })
 
@@ -180,7 +180,7 @@ test.describe("access control", () => {
 
     await page.goto("/login")
 
-    await expect(page).toHaveURL(/\/administracao\/minha-escola$/)
+    await expect(page).toHaveURL(/\/administration\/my-school$/)
   })
 
   test("doesn't keep the token in storage as plain text", async ({ page }) => {

@@ -188,15 +188,11 @@ export const Login = () => {
                 <div
                   style={{ alignItems: "center", display: "flex", gap: spacing[16], justifyContent: "space-between" }}
                 >
-                  <Button
-                    disabled={isSubmitting}
-                    startIcon={<Icon color="inverse" name="lock-outline" size={16} />}
-                    type="submit"
-                  >
+                  <Button disabled={isSubmitting} type="submit">
                     {t("login.signIn")}
                   </Button>
 
-                  <Button as={Link} to={paths.forgotPassword} variant="link">
+                  <Button as={Link} size="small" to={paths.forgotPassword} variant="link">
                     {t("login.forgotPassword")}
                   </Button>
                 </div>

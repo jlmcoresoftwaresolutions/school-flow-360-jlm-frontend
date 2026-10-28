@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Link } from "react-router-dom"
 
 import { toast } from "@/components"
-import { Button, Card, Grid, Icon, Text } from "@/ds-components/atoms"
+import { Button, Card, Grid, Text } from "@/ds-components/atoms"
 import { Input } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import { useCountdown } from "@/hooks"
@@ -54,7 +54,7 @@ export const ForgotPassword = () => {
               borderRadius="high"
               color="surface"
               elevated
-              style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
+              style={{ display: "flex", flexDirection: "column", gap: spacing[16], padding: spacing[40] }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: spacing[8] }}>
                 <Text as="h1" fontSize="3xl" bold>
@@ -99,13 +99,13 @@ export const ForgotPassword = () => {
                     justifyContent: "space-between",
                   }}
                 >
-                  <Button disabled={isLocked} startIcon={<Icon color="inverse" name="check" size={16} />} type="submit">
+                  <Button disabled={isLocked} type="submit">
                     {resendCooldown.isRunning
                       ? t("forgotPassword.resendIn", { seconds: resendCooldown.secondsLeft })
                       : t("forgotPassword.submit")}
                   </Button>
 
-                  <Button as={Link} to={paths.login} variant="link">
+                  <Button as={Link} size="small" to={paths.login} variant="link">
                     {t("forgotPassword.backToLogin")}
                   </Button>
                 </div>
