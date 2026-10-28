@@ -37,7 +37,7 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
       cursor: state.isDisabled ? "not-allowed" : "pointer",
       minHeight: "unset",
       padding: `${spacing[12]} ${spacing[4]}`,
-      transition: `border-color ${motion.duration.fast} ${motion.easing.ease}`,
+      transition: `border-color ${motion.duration.normal} ${motion.easing.ease}`,
     }),
     dropdownIndicator: (base) => ({
       ...base,

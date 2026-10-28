@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components"
 
-import { colors, shadows, spacing, typography } from "@/foundation"
+import { colors, motion, shadows, spacing, typography } from "@/foundation"
 
 export const InputWrapper = styled.div`
   display: flex;
@@ -73,6 +73,11 @@ export const StyledInput = styled.input<StyledInputProps>`
       color: ${colors.neutral[900]};
       font-family: ${typography.fontFamily.sans};
       width: 100%;
+      transition: border-color ${motion.duration.normal} ${motion.easing.ease};
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
 
       ${sizeStyles[$size]}
 

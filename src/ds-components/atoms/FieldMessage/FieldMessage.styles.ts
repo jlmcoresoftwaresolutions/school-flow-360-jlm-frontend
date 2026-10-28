@@ -1,6 +1,21 @@
-import styled from "styled-components"
+import styled, { keyframes } from "styled-components"
 
-import { colors, typography } from "@/foundation"
+import { colors, motion, opacity, spacing, typography } from "@/foundation"
+
+// Fades in while dropping into place from just above, so a message (an error above all) shows up
+// instead of popping in. It plays on mount, and FieldMessage remounts the element whenever the text
+// changes, so helper text turning into an error animates too.
+const appear = keyframes`
+  from {
+    opacity: ${opacity.hidden};
+    transform: translateY(-${spacing[4]});
+  }
+
+  to {
+    opacity: ${opacity.visible};
+    transform: translateY(0);
+  }
+`
 
 export type StyledFieldMessageProps = {
   $error: boolean
@@ -14,4 +29,9 @@ export const StyledFieldMessage = styled.span<StyledFieldMessageProps>`
   font-family: ${typography.fontFamily.sans};
   font-size: ${typography.fontSize.xs}px;
   line-height: ${typography.lineHeight.xs};
+  animation: ${appear} ${motion.duration.normal} ${motion.easing.out};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `

@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components"
 
-import { colors, shadows, spacing, typography } from "@/foundation"
+import { colors, motion, shadows, spacing, typography } from "@/foundation"
 
 export const TextareaWrapper = styled.div`
   display: flex;
@@ -30,6 +30,11 @@ export const StyledTextarea = styled.textarea<StyledTextareaProps>`
       padding: ${spacing[12]};
       resize: none;
       width: 100%;
+      transition: border-color ${motion.duration.normal} ${motion.easing.ease};
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
 
       &::placeholder {
         color: ${colors.neutral[500]};

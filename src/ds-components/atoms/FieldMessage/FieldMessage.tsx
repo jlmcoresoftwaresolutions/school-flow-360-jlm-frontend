@@ -21,7 +21,8 @@ export const FieldMessage = (props: FieldMessageProps) => {
   if (!message) return null
 
   return (
-    <StyledFieldMessage $error={Boolean(error)} className={className} id={id} style={style}>
+    // Keyed by the text, so a new message is a new element and plays the appear animation again.
+    <StyledFieldMessage $error={Boolean(error)} className={className} id={id} key={message} style={style}>
       {message}
     </StyledFieldMessage>
   )

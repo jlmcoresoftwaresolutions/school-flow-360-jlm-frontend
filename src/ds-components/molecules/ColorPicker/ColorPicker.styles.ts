@@ -1,7 +1,7 @@
 import { HexColorInput } from "react-colorful"
 import styled, { css } from "styled-components"
 
-import { colors, radius, shadows, spacing, typography, zIndex } from "@/foundation"
+import { colors, motion, radius, shadows, spacing, typography, zIndex } from "@/foundation"
 
 export const ColorPickerWrapper = styled.div`
   display: flex;
@@ -30,6 +30,11 @@ export const SwatchButton = styled.button<StyledSwatchButtonProps>`
   height: ${spacing[40]};
   padding: 0;
   width: ${spacing[40]};
+  transition: border-color ${motion.duration.normal} ${motion.easing.ease};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 
   &:disabled {
     cursor: not-allowed;
@@ -65,6 +70,11 @@ export const StyledHexColorInput = styled(HexColorInput)<StyledHexColorInputProp
       font-size: ${typography.fontSize.md}px;
       padding: ${spacing[12]};
       width: 100%;
+      transition: border-color ${motion.duration.normal} ${motion.easing.ease};
+
+      @media (prefers-reduced-motion: reduce) {
+        transition: none;
+      }
 
       &::placeholder {
         color: ${colors.neutral[500]};

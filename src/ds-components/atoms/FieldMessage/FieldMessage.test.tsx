@@ -44,4 +44,24 @@ describe("FieldMessage", () => {
     expect(screen.getByText("Ajuda")).toHaveClass("custom")
     expect(screen.getByText("Ajuda")).toHaveStyle({ margin: "4px" })
   })
+
+  // A fresh element is what replays the appear animation, e.g. when helper text turns into an error.
+  it("renders a new element when the message changes", () => {
+    const { rerender } = render(<FieldMessage helperText="Use o nome oficial." id="campo-mensagem" />)
+    const helper = screen.getByText("Use o nome oficial.")
+
+    rerender(<FieldMessage error="Campo obrigatório." helperText="Use o nome oficial." id="campo-mensagem" />)
+
+    expect(helper).not.toBeInTheDocument()
+    expect(screen.getByText("Campo obrigatório.")).not.toBe(helper)
+  })
+
+  it("keeps the same element while the message stays the same", () => {
+    const { rerender } = render(<FieldMessage error="Campo obrigatório." id="campo-mensagem" />)
+    const message = screen.getByText("Campo obrigatório.")
+
+    rerender(<FieldMessage className="outra" error="Campo obrigatório." id="campo-mensagem" />)
+
+    expect(screen.getByText("Campo obrigatório.")).toBe(message)
+  })
 })

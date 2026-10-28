@@ -1,6 +1,6 @@
 import styled from "styled-components"
 
-import { colors, opacity, radius, spacing, typography } from "@/foundation"
+import { colors, motion, opacity, radius, spacing, typography } from "@/foundation"
 
 export const FileUploadWrapper = styled.div`
   display: flex;
@@ -26,6 +26,11 @@ export const DropZone = styled.div<DropZoneProps>`
   padding: ${spacing[24]};
   position: relative;
   text-align: center;
+  transition: border-color ${motion.duration.normal} ${motion.easing.ease};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 
   &:hover {
     border-color: ${(props) => (props.$hasError ? colors.danger[500] : colors.primary[500])};
