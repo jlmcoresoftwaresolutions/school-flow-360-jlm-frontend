@@ -38,6 +38,7 @@ export const ptPT: TranslationResource = {
     passwordLabel: "Palavra-passe",
     passwordPlaceholder: "Introduza a sua palavra-passe",
     passwordRequired: "Introduza a sua palavra-passe.",
+    sessionExpired: "A sua sessão expirou. Inicie sessão novamente para continuar.",
     signIn: "Iniciar sessão",
     signInTitle: "Aceda ao seu percurso SchoolFlow360º",
     signInUnavailable: "Não foi possível iniciar sessão neste momento. Tente novamente dentro de instantes.",

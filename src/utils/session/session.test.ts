@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest"
 
-import { clearSession, getSession, getSessionToken, hasSession, saveSession } from "./session"
+import { clearSession, getSession, getSessionState, getSessionToken, hasSession, saveSession } from "./session"
 
 const inOneHour = () => new Date(Date.now() + 60 * 60 * 1000).toISOString()
 
@@ -48,6 +48,22 @@ describe("session", () => {
     await saveSession({ expiresAt: "", refreshToken: "r", token: "t" })
 
     expect(await getSessionToken()).toBe("t")
+  })
+
+  it("tells an expired session apart from no session, once", async () => {
+    expect(await getSessionState()).toEqual({ session: null, status: "none" })
+
+    await saveSession({ expiresAt: new Date(Date.now() - 1000).toISOString(), refreshToken: "r", token: "t" })
+
+    expect(await getSessionState()).toEqual({ session: null, status: "expired" })
+    expect(await getSessionState()).toEqual({ session: null, status: "none" })
+  })
+
+  it("reports an unexpired session as active", async () => {
+    const expiresAt = inOneHour()
+    await saveSession({ expiresAt, refreshToken: "r", token: "t" })
+
+    expect(await getSessionState()).toEqual({ session: { expiresAt, refreshToken: "r", token: "t" }, status: "active" })
   })
 
   it("forgets the session on clearSession", async () => {

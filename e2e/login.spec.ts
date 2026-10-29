@@ -157,7 +157,7 @@ test.describe("access control", () => {
   test("sends a visitor without a session from an inner page to the login", async ({ page }) => {
     await page.goto("/administration/my-school")
 
-    await expect(page).toHaveURL(/\/login$/)
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-school$/)
   })
 
   test("sends an unknown address to the login", async ({ page }) => {

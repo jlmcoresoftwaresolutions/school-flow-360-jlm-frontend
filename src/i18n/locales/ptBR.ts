@@ -36,6 +36,7 @@ export const ptBR = {
     passwordLabel: "Senha",
     passwordPlaceholder: "Digite sua senha",
     passwordRequired: "Informe sua senha.",
+    sessionExpired: "Sua sessão expirou. Entre novamente para continuar.",
     signIn: "Entrar",
     signInTitle: "Acesse sua jornada SchoolFlow360º",
     signInUnavailable: "Não foi possível entrar agora. Tente novamente em instantes.",

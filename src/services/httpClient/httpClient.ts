@@ -1,9 +1,11 @@
 import type { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios"
 import axios, { isAxiosError } from "axios"
 
+import { paths } from "@/routes/paths"
+import { endExpiredSession } from "@/utils/authRedirect"
 import { markBackendResponse } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
-import { clearSession, getSessionToken } from "@/utils/session"
+import { getSessionToken } from "@/utils/session"
 import { getTenantId } from "@/utils/tenant"
 
 declare module "axios" {
@@ -25,10 +27,6 @@ export type RequestConfig = Pick<AxiosRequestConfig, "showLoading" | "tenantId">
 // importing axios itself.
 export const getErrorStatus = (error: unknown): number | undefined =>
   isAxiosError(error) ? error.response?.status : undefined
-
-// Where the user lands when their session is no longer accepted. Kept as a literal here (rather
-// than imported from @/routes) so this module doesn't depend on the router.
-const loginPath = "/login"
 
 // A relative URL ("/api/...") goes to the SchoolFlow360 backend through baseURL; an absolute one is
 // a third-party API (e.g. ViaCEP), which must never receive the user's token.
@@ -71,14 +69,11 @@ httpClient.interceptors.response.use(
     if (error.response && isBackendRequest(error.config?.url)) markBackendResponse()
 
     // A 401 on a request that carried a token means the session is no longer valid (expired or
-    // revoked): drop it and send the user back to the login. A 401 without a token - wrong
-    // credentials on the login itself - is left for the caller to handle.
+    // revoked): drop it and send the user to the login, which says so and offers to come back here.
+    // A 401 without a token - wrong credentials on the login itself - is left for the caller.
     const sentToken = Boolean(error.config?.headers?.Authorization)
 
-    if (error.response?.status === 401 && sentToken) {
-      clearSession()
-      if (window.location.pathname !== loginPath) window.location.replace(loginPath)
-    }
+    if (error.response?.status === 401 && sentToken) endExpiredSession(paths.login)
 
     return Promise.reject(error)
   },

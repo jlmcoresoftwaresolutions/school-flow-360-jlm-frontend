@@ -1,7 +1,9 @@
+import type { LoaderFunctionArgs } from "react-router-dom"
 import { createBrowserRouter, Navigate, redirect } from "react-router-dom"
 
 import { GlobalLoading } from "@/components"
-import { hasSession } from "@/utils/session"
+import { buildLoginUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/authRedirect"
+import { getSessionState, hasSession } from "@/utils/session"
 
 import { homePath, paths } from "./paths"
 
@@ -13,10 +15,33 @@ import { homePath, paths } from "./paths"
 // until the next is in.
 //
 // Access is decided by the loaders, before anything renders: the AppShell routes (every page behind
-// the login) send a visitor without a session to /login, and /login sends a signed-in user home.
-// Any other path also lands on /login, which then forwards a signed-in user home.
+// the login) send a visitor without a session to /login (and back after signing in), and /login
+// sends a signed-in user home. Any other path also lands on /login, which then forwards a signed-in
+// user home.
 // The pages for signing in (login, password recovery) are pointless with a session already open.
 const redirectSignedInUserHome = async () => ((await hasSession()) ? redirect(homePath) : null)
+
+// The login does the same, but honors the page the user was sent from (?redirect=), if it is one of
+// this app's own paths.
+const redirectSignedInUserBack = async (args: LoaderFunctionArgs) => {
+  if (!(await hasSession())) return null
+
+  const redirectPath = getSafeRedirectPath(new URL(args.request.url).searchParams.get(loginRedirectParam))
+
+  return redirect(redirectPath ?? homePath)
+}
+
+// Every page behind the login: without a valid session the user goes to the login, carrying the page
+// they asked for (to come back to it after signing in) and whether their session had just expired.
+// Coming back still goes through this same check, so a page they can no longer open stays closed.
+const requireSession = async (args: LoaderFunctionArgs) => {
+  const { status } = await getSessionState()
+  if (status === "active") return null
+
+  const { pathname, search } = new URL(args.request.url)
+
+  return redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired: status === "expired" }))
+}
 
 export const router = createBrowserRouter([
   { element: <Navigate to={paths.login} replace />, path: "/" },
@@ -26,7 +51,7 @@ export const router = createBrowserRouter([
       const { Login } = await import("@/pages/Login")
       return { Component: Login }
     },
-    loader: redirectSignedInUserHome,
+    loader: redirectSignedInUserBack,
     path: paths.login,
   },
   {
@@ -62,7 +87,7 @@ export const router = createBrowserRouter([
       const { AppShell } = await import("@/ds-components/templates/AppShell")
       return { Component: AppShell }
     },
-    loader: async () => ((await hasSession()) ? null : redirect(paths.login)),
+    loader: requireSession,
   },
   { element: <Navigate to={paths.login} replace />, path: "*" },
 ])

@@ -6,8 +6,10 @@ import type { BreadcrumbItem } from "@/ds-components/molecules"
 import { Breadcrumb } from "@/ds-components/molecules"
 import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-components/organisms"
 import { Sidebar, Topbar } from "@/ds-components/organisms"
+import { useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
 import { paths } from "@/routes/paths"
+import { endExpiredSession } from "@/utils/authRedirect"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
@@ -27,6 +29,9 @@ export const AppShell = () => {
   const navigate = useNavigate()
 
   const { t } = useTranslation()
+  // Ends the session at its expiry time even if the page sits idle, instead of waiting for the next
+  // request to be refused.
+  useSessionExpiry(() => endExpiredSession(paths.login))
 
   const navLabel = (key: NavKey) => t(`shell.nav.${key}`)
 

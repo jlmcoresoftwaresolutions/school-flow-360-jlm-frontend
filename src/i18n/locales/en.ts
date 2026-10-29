@@ -36,6 +36,7 @@ export const en: TranslationResource = {
     passwordLabel: "Password",
     passwordPlaceholder: "Enter your password",
     passwordRequired: "Enter your password.",
+    sessionExpired: "Your session has expired. Sign in again to continue.",
     signIn: "Sign in",
     signInTitle: "Access your SchoolFlow360º journey",
     signInUnavailable: "We couldn't sign you in right now. Please try again shortly.",

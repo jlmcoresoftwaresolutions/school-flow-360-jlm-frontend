@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useSearchParams } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Text } from "@/ds-components/atoms"
@@ -10,6 +10,7 @@ import { colors, spacing } from "@/foundation"
 import type { LoginRequest } from "@/models"
 import { homePath, paths } from "@/routes/paths"
 import { getErrorStatus, login } from "@/services"
+import { getSafeRedirectPath, loginRedirectParam, sessionExpiredParam } from "@/utils/authRedirect"
 import { saveSession } from "@/utils/session"
 
 import { LoginWrapper } from "./Login.styles"
@@ -41,17 +42,21 @@ const signInErrorId = "login-sign-in-error"
 type SignInError = "invalidCredentials" | "signInUnavailable"
 
 // The entry page of the app. There is no sign-up here on purpose: accounts are created for users,
-// never by them. On success the session is stored (see utils/session) and the user goes home; the
-// router keeps a signed-in user from coming back here (see routes.tsx).
+// never by them. On success the session is stored (see utils/session) and the user goes back to the
+// page they were sent from (?redirect=, only an in-app path) or home; the router keeps a signed-in
+// user from coming back here (see routes.tsx). Arriving with ?expired=1 says the session ended.
 export const Login = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { formState, handleSubmit, register } = useForm<LoginRequest>({ defaultValues: { email: "", password: "" } })
 
   const [signInError, setSignInError] = useState<SignInError | null>(null)
 
   const { errors, isSubmitting } = formState
   const credentialsRejected = signInError === "invalidCredentials"
+  const sessionExpired = searchParams.get(sessionExpiredParam) === "1"
+  const redirectPath = getSafeRedirectPath(searchParams.get(loginRedirectParam)) ?? homePath
 
   const clearSignInError = () => setSignInError(null)
 
@@ -63,7 +68,7 @@ export const Login = () => {
     try {
       const authData = await login(credentials)
       await saveSession(authData)
-      navigate(homePath, { replace: true })
+      navigate(redirectPath, { replace: true })
     } catch (error) {
       // 401 is the backend's answer to a wrong e-mail/password; anything else (no response, a 5xx)
       // isn't the user's fault, so they are told to try again instead.
@@ -139,6 +144,12 @@ export const Login = () => {
               <Text as="h1" fontSize="3xl" bold>
                 {t("login.signInTitle")}
               </Text>
+
+              {sessionExpired && (
+                <Text as="p" color="warning" fontSize="sm" role="status" semibold>
+                  {t("login.sessionExpired")}
+                </Text>
+              )}
 
               {/* noValidate: the browser's own validation bubbles are replaced by the messages under
                   each field, which match the rest of the design system and are translated. */}
