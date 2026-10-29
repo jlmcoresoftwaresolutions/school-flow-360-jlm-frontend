@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { markBackendResponse, resetBackendActivity } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 
 import { GlobalLoading } from "./GlobalLoading"
@@ -40,5 +41,55 @@ describe("GlobalLoading", () => {
     render(<GlobalLoading visible />)
 
     expect(screen.getByRole("status", { name: "Carregando..." })).toBeInTheDocument()
+  })
+
+  describe("on a long wait", () => {
+    const slowServerMessage = "Conectando ao servidor. Isso pode levar até um minuto."
+
+    beforeEach(() => {
+      vi.useFakeTimers()
+      resetBackendActivity()
+    })
+
+    afterEach(() => {
+      act(() => stopLoading())
+      vi.useRealTimers()
+    })
+
+    it("blames the backend waking up after 5 seconds, not before, while it hasn't answered yet", () => {
+      render(<GlobalLoading />)
+
+      act(() => startLoading())
+      act(() => vi.advanceTimersByTime(4999))
+      expect(screen.getByRole("status").textContent).toBe("")
+
+      act(() => vi.advanceTimersByTime(1))
+      expect(screen.getByRole("status")).toHaveTextContent(slowServerMessage)
+    })
+
+    it("shows a neutral message instead when the backend answered recently", () => {
+      markBackendResponse()
+      render(<GlobalLoading />)
+
+      act(() => startLoading())
+      act(() => vi.advanceTimersByTime(5000))
+
+      expect(screen.getByRole("status")).toHaveTextContent(
+        "Isso está levando mais tempo que o normal. Aguarde um instante.",
+      )
+      expect(screen.getByRole("status")).not.toHaveTextContent(slowServerMessage)
+    })
+
+    it("starts counting again from zero on the next wait", () => {
+      render(<GlobalLoading />)
+
+      act(() => startLoading())
+      act(() => vi.advanceTimersByTime(5000))
+      act(() => stopLoading())
+
+      act(() => startLoading())
+      act(() => vi.advanceTimersByTime(1000))
+      expect(screen.getByRole("status").textContent).toBe("")
+    })
   })
 })

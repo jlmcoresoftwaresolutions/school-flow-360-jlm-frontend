@@ -1,6 +1,7 @@
 import type { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios"
 import axios, { isAxiosError } from "axios"
 
+import { markBackendResponse } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { clearSession, getSessionToken } from "@/utils/session"
 import { getTenantId } from "@/utils/tenant"
@@ -60,11 +61,14 @@ httpClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =
 httpClient.interceptors.response.use(
   (response) => {
     if (response.config.showLoading !== false) stopLoading()
+    if (isBackendRequest(response.config.url)) markBackendResponse()
 
     return response
   },
   async (error) => {
     if (error.config?.showLoading !== false) stopLoading()
+    // Any answer, even an error status, means the backend is awake; no response at all doesn't.
+    if (error.response && isBackendRequest(error.config?.url)) markBackendResponse()
 
     // A 401 on a request that carried a token means the session is no longer valid (expired or
     // revoked): drop it and send the user back to the login. A 401 without a token - wrong

@@ -11,6 +11,10 @@ const meta: Meta<typeof Loading> = {
       control: "text",
       description: "Accessible name of the loading status, announced by screen readers. Defaults to a pt-BR label.",
     },
+    message: {
+      control: "text",
+      description: "Visible text under the spinner, for a wait long enough to need an explanation. Omitted by default.",
+    },
   },
   component: Loading,
   decorators: [
@@ -45,5 +49,12 @@ export const Default: Story = {}
 export const CustomLabel: Story = {
   args: {
     label: "Salvando alterações...",
+  },
+}
+
+// The message prop explaining a long wait under the spinner
+export const WithMessage: Story = {
+  args: {
+    message: "Conectando ao servidor. Isso pode levar até um minuto.",
   },
 }

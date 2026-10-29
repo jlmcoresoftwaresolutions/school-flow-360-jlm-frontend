@@ -24,6 +24,18 @@ describe("Loading", () => {
     expect(screen.getByRole("status", { name: "Loading..." })).toBeInTheDocument()
   })
 
+  it("shows no visible text by default", () => {
+    render(<Loading />)
+
+    expect(screen.getByRole("status").textContent).toBe("")
+  })
+
+  it("shows message under the spinner, inside the status region", () => {
+    render(<Loading message="Conectando ao servidor." />)
+
+    expect(screen.getByRole("status")).toHaveTextContent("Conectando ao servidor.")
+  })
+
   it("applies the className passed as a prop", () => {
     render(<Loading className="custom" />)
 

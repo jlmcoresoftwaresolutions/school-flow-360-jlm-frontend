@@ -9,6 +9,8 @@ export const fr: TranslationResource = {
     loading: "Chargement...",
     poweredBy: "Powered by JLM Core",
     save: "Enregistrer",
+    slowServer: "Connexion au serveur. Cela peut prendre jusqu'à une minute.",
+    slowWait: "Cela prend plus de temps que d'habitude. Patientez un instant.",
     tryAgain: "Réessayer",
   },
   forgotPassword: {

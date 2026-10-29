@@ -8,6 +8,8 @@ export const ptBR = {
     loading: "Carregando...",
     poweredBy: "Powered by JLM Core",
     save: "Salvar",
+    slowServer: "Conectando ao servidor. Isso pode levar até um minuto.",
+    slowWait: "Isso está levando mais tempo que o normal. Aguarde um instante.",
     tryAgain: "Tentar novamente",
   },
   forgotPassword: {

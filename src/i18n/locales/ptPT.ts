@@ -10,6 +10,8 @@ export const ptPT: TranslationResource = {
     loading: "A carregar...",
     poweredBy: "Powered by JLM Core",
     save: "Guardar",
+    slowServer: "A ligar ao servidor. Isto pode demorar até um minuto.",
+    slowWait: "Isto está a demorar mais do que o habitual. Aguarde um momento.",
     tryAgain: "Tentar novamente",
   },
   forgotPassword: {

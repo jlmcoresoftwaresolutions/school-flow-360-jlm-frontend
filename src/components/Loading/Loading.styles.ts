@@ -42,12 +42,23 @@ export const LoadingOverlay = styled.div`
   background: ${translucency.low.background};
   bottom: 0;
   display: flex;
+  flex-direction: column;
+  gap: ${spacing[16]};
   justify-content: center;
   left: 0;
   position: fixed;
   right: 0;
   top: 0;
   z-index: ${zIndex.overlay};
+`
+
+export const LoadingMessage = styled.div`
+  animation: ${fadeIn} ${motion.duration.normal} ${motion.easing.out};
+  padding: 0 ${spacing[24]};
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `
 
 export const LoadingSpinner = styled.div`
