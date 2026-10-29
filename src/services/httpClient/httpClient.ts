@@ -8,13 +8,16 @@ import { getTenantId } from "@/utils/tenant"
 declare module "axios" {
   interface AxiosRequestConfig {
     showLoading?: boolean
+    tenantId?: string
   }
 }
 
 // The single config object every service function accepts, on top of its own arguments - kept
 // as its own type (rather than exposing all of AxiosRequestConfig) so callers only ever see the
 // options this app actually wants to offer, with room to grow (e.g. a future skipErrorToast).
-export type RequestConfig = Pick<AxiosRequestConfig, "showLoading">
+// tenantId overrides the deploy's tenant for one call, for a request that names its own school (the
+// password reset link carries the tenant it was issued for).
+export type RequestConfig = Pick<AxiosRequestConfig, "showLoading" | "tenantId">
 
 // The HTTP status of a failed call (e.g. 401 for wrong credentials), or undefined when there was no
 // response at all (network down, CORS refusal, timeout) - so a page can tell the two apart without
@@ -42,7 +45,7 @@ httpClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =
   if (isBackendRequest(config.url)) {
     // The backend separates each school's data by tenant and needs it on every call, the login
     // included - without it, it looks in the "public" tenant and rejects valid accounts.
-    const tenantId = getTenantId()
+    const tenantId = config.tenantId ?? getTenantId()
     if (tenantId && !config.headers["X-Tenant-ID"]) config.headers["X-Tenant-ID"] = tenantId
 
     if (!config.headers.Authorization) {

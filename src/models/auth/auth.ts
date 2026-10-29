@@ -2,6 +2,16 @@ export type PasswordRecoveryRequest = {
   email: string
 }
 
+// `token` is the one from the reset link e-mailed by /password-recovery/request.
+export type PasswordRecoveryTokenValidationRequest = {
+  token: string
+}
+
+export type PasswordRecoveryConfirmationRequest = {
+  newPassword: string
+  token: string
+}
+
 export type LoginRequest = {
   email: string
   password: string

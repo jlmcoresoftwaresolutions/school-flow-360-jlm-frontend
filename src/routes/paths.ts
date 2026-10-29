@@ -5,6 +5,8 @@ export const paths = {
   forgotPassword: "/forgot-password",
   login: "/login",
   minhaEscola: "/administration/my-school",
+  // Opened from the reset e-mail, as /reset-password?token=...&tenant=... (the backend builds the link).
+  resetPassword: "/reset-password",
 }
 
 // Where a signed-in user lands: after the login, and when they open /login while already signed in.

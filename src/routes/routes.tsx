@@ -38,6 +38,15 @@ export const router = createBrowserRouter([
     loader: redirectSignedInUserHome,
     path: paths.forgotPassword,
   },
+  // No redirect here: a reset link stays usable even in a browser where someone is signed in.
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
+      const { ResetPassword } = await import("@/pages/ResetPassword")
+      return { Component: ResetPassword }
+    },
+    path: paths.resetPassword,
+  },
   {
     children: [
       {
