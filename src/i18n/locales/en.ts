@@ -36,6 +36,7 @@ export const en: TranslationResource = {
     passwordLabel: "Password",
     passwordPlaceholder: "Enter your password",
     passwordRequired: "Enter your password.",
+    retryIn: "Try again in {{time}}",
     sessionExpired: "Your session has expired. Sign in again to continue.",
     signIn: "Sign in",
     signInTitle: "Access your SchoolFlow360º journey",
@@ -45,6 +46,8 @@ export const en: TranslationResource = {
     tagFinance: "Finance",
     tagStudents: "Students",
     tagWhiteLabel: "White Label",
+    tooManyAttempts_one: "Too many incorrect attempts. Wait {{count}} minute to try again.",
+    tooManyAttempts_other: "Too many incorrect attempts. Wait {{count}} minutes to try again.",
   },
   minhaEscola: {
     address: "Address",

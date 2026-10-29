@@ -37,6 +37,7 @@ export const fr: TranslationResource = {
     passwordLabel: "Mot de passe",
     passwordPlaceholder: "Saisissez votre mot de passe",
     passwordRequired: "Saisissez votre mot de passe.",
+    retryIn: "Réessayer dans {{time}}",
     sessionExpired: "Votre session a expiré. Reconnectez-vous pour continuer.",
     signIn: "Se connecter",
     signInTitle: "Accédez à votre parcours SchoolFlow360º",
@@ -46,6 +47,8 @@ export const fr: TranslationResource = {
     tagFinance: "Finances",
     tagStudents: "Élèves",
     tagWhiteLabel: "Marque blanche",
+    tooManyAttempts_one: "Trop de tentatives incorrectes. Patientez {{count}} minute avant de réessayer.",
+    tooManyAttempts_other: "Trop de tentatives incorrectes. Patientez {{count}} minutes avant de réessayer.",
   },
   minhaEscola: {
     address: "Adresse",

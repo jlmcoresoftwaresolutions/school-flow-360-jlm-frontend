@@ -38,6 +38,7 @@ export const ptPT: TranslationResource = {
     passwordLabel: "Palavra-passe",
     passwordPlaceholder: "Introduza a sua palavra-passe",
     passwordRequired: "Introduza a sua palavra-passe.",
+    retryIn: "Tentar dentro de {{time}}",
     sessionExpired: "A sua sessão expirou. Inicie sessão novamente para continuar.",
     signIn: "Iniciar sessão",
     signInTitle: "Aceda ao seu percurso SchoolFlow360º",
@@ -47,6 +48,8 @@ export const ptPT: TranslationResource = {
     tagFinance: "Financeiro",
     tagStudents: "Alunos",
     tagWhiteLabel: "Marca branca",
+    tooManyAttempts_one: "Demasiadas tentativas incorretas. Aguarde {{count}} minuto para tentar novamente.",
+    tooManyAttempts_other: "Demasiadas tentativas incorretas. Aguarde {{count}} minutos para tentar novamente.",
   },
   minhaEscola: {
     address: "Morada",

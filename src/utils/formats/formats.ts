@@ -84,3 +84,10 @@ export const formatPhone = (value: string): string => {
 
   return secondPart ? `(${ddd}) ${firstPart}-${secondPart}` : `(${ddd}) ${firstPart}`
 }
+
+// A countdown in seconds as minutes:seconds ("1:00", "0:05", "12:30") for a wait shown on screen.
+export const formatCountdown = (totalSeconds: number): string => {
+  const seconds = Math.max(0, Math.ceil(totalSeconds))
+
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+}

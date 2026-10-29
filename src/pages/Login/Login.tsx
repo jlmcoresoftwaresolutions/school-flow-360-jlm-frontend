@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 
@@ -7,10 +7,13 @@ import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Text } from "@/ds-components/atoms"
 import { Input } from "@/ds-components/molecules"
 import { colors, spacing } from "@/foundation"
+import { useCountdown } from "@/hooks"
 import type { LoginRequest } from "@/models"
 import { homePath, paths } from "@/routes/paths"
 import { getErrorStatus, login } from "@/services"
 import { getSafeRedirectPath, loginRedirectParam, sessionExpiredParam } from "@/utils/authRedirect"
+import { formatCountdown } from "@/utils/formats"
+import { clearFailedLogins, getLoginLockRemainingMs, normalizeEmail, registerFailedLogin } from "@/utils/loginThrottle"
 import { saveSession } from "@/utils/session"
 
 import { LoginWrapper } from "./Login.styles"
@@ -41,38 +44,73 @@ const signInErrorId = "login-sign-in-error"
 
 type SignInError = "invalidCredentials" | "signInUnavailable"
 
+// Sign-in held back after repeated wrong passwords (see utils/loginThrottle): for which e-mail, and
+// the wait announced when it started, in whole minutes.
+type SignInLock = {
+  email: string
+  minutes: number
+}
+
 // The entry page of the app. There is no sign-up here on purpose: accounts are created for users,
 // never by them. On success the session is stored (see utils/session) and the user goes back to the
 // page they were sent from (?redirect=, only an in-app path) or home; the router keeps a signed-in
 // user from coming back here (see routes.tsx). Arriving with ?expired=1 says the session ended.
+// Every 5th wrong password for the same e-mail locks it for a while, with a countdown on the button.
 export const Login = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { formState, handleSubmit, register } = useForm<LoginRequest>({ defaultValues: { email: "", password: "" } })
+  const { control, formState, handleSubmit, register } = useForm<LoginRequest>({
+    defaultValues: { email: "", password: "" },
+  })
+  const typedEmail = useWatch({ control, name: "email" })
+  const lockCountdown = useCountdown()
 
   const [signInError, setSignInError] = useState<SignInError | null>(null)
+  const [signInLock, setSignInLock] = useState<SignInLock | null>(null)
 
   const { errors, isSubmitting } = formState
   const credentialsRejected = signInError === "invalidCredentials"
   const sessionExpired = searchParams.get(sessionExpiredParam) === "1"
   const redirectPath = getSafeRedirectPath(searchParams.get(loginRedirectParam)) ?? homePath
+  // Only the locked e-mail is held back: typing another one frees the button.
+  const isLocked = lockCountdown.isRunning && signInLock?.email === normalizeEmail(typedEmail)
 
   const clearSignInError = () => setSignInError(null)
+
+  const startLock = (email: string, lockMs: number) => {
+    setSignInLock({ email: normalizeEmail(email), minutes: Math.ceil(lockMs / 60_000) })
+    lockCountdown.start(Math.ceil(lockMs / 1000))
+  }
 
   // A new attempt always clears the previous one's error, whether it reaches the backend or stops at
   // the field validation (handleSubmit's second callback).
   const onSubmit = async (credentials: LoginRequest) => {
     setSignInError(null)
 
+    // A lock still running for this e-mail (e.g. set before a reload) stops the attempt here.
+    const remainingLockMs = await getLoginLockRemainingMs(credentials.email)
+    if (remainingLockMs > 0) {
+      startLock(credentials.email, remainingLockMs)
+      return
+    }
+
     try {
       const authData = await login(credentials)
       await saveSession(authData)
+      await clearFailedLogins(credentials.email)
       navigate(redirectPath, { replace: true })
     } catch (error) {
       // 401 is the backend's answer to a wrong e-mail/password; anything else (no response, a 5xx)
-      // isn't the user's fault, so they are told to try again instead.
-      setSignInError(getErrorStatus(error) === 401 ? "invalidCredentials" : "signInUnavailable")
+      // isn't the user's fault, so they are told to try again instead and it doesn't count.
+      if (getErrorStatus(error) !== 401) {
+        setSignInError("signInUnavailable")
+        return
+      }
+
+      const lockMs = await registerFailedLogin(credentials.email)
+      if (lockMs > 0) startLock(credentials.email, lockMs)
+      else setSignInError("invalidCredentials")
     }
   }
 
@@ -190,7 +228,13 @@ export const Login = () => {
                   />
                 </div>
 
-                {signInError && (
+                {isLocked && signInLock && (
+                  <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
+                    {t("login.tooManyAttempts", { count: signInLock.minutes })}
+                  </Text>
+                )}
+
+                {!isLocked && signInError && (
                   <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
                     {t(`login.${signInError}`)}
                   </Text>
@@ -199,8 +243,12 @@ export const Login = () => {
                 <div
                   style={{ alignItems: "center", display: "flex", gap: spacing[16], justifyContent: "space-between" }}
                 >
-                  <Button disabled={isSubmitting} type="submit">
-                    {t("login.signIn")}
+                  {/* The countdown lives on the button, not in the alert above, so screen readers don't
+                      re-announce the message every second. */}
+                  <Button disabled={isSubmitting || isLocked} type="submit">
+                    {isLocked
+                      ? t("login.retryIn", { time: formatCountdown(lockCountdown.secondsLeft) })
+                      : t("login.signIn")}
                   </Button>
 
                   <Button as={Link} size="small" to={paths.forgotPassword} variant="link">

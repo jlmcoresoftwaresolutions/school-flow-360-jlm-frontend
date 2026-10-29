@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   formatCep,
   formatCnpj,
+  formatCountdown,
   formatCpf,
   formatCreditCard,
   formatCurrency,
@@ -119,5 +120,23 @@ describe("formatCurrency", () => {
 
   it("does not truncate, unlike the fixed-length formats", () => {
     expect(formatCurrency("123456789012")).toBe("R$ 1.234.567.890,12")
+  })
+})
+
+describe("formatCountdown", () => {
+  it.each([
+    [60, "1:00"],
+    [59, "0:59"],
+    [5, "0:05"],
+    [180, "3:00"],
+    [750, "12:30"],
+    [0, "0:00"],
+  ])("shows %i seconds as %s", (seconds, expected) => {
+    expect(formatCountdown(seconds)).toBe(expected)
+  })
+
+  it("never shows a negative or fractional wait", () => {
+    expect(formatCountdown(-3)).toBe("0:00")
+    expect(formatCountdown(4.2)).toBe("0:05")
   })
 })

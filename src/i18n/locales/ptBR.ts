@@ -36,6 +36,7 @@ export const ptBR = {
     passwordLabel: "Senha",
     passwordPlaceholder: "Digite sua senha",
     passwordRequired: "Informe sua senha.",
+    retryIn: "Tentar em {{time}}",
     sessionExpired: "Sua sessão expirou. Entre novamente para continuar.",
     signIn: "Entrar",
     signInTitle: "Acesse sua jornada SchoolFlow360º",
@@ -45,6 +46,8 @@ export const ptBR = {
     tagFinance: "Financeiro",
     tagStudents: "Alunos",
     tagWhiteLabel: "White Label",
+    tooManyAttempts_one: "Muitas tentativas incorretas. Aguarde {{count}} minuto para tentar de novo.",
+    tooManyAttempts_other: "Muitas tentativas incorretas. Aguarde {{count}} minutos para tentar de novo.",
   },
   minhaEscola: {
     address: "Endereço",
