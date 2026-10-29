@@ -160,5 +160,6 @@ export const es: TranslationResource = {
       users: "Usuarios",
     },
     notifications: "Notificaciones",
+    signOut: "Cerrar sesión",
   },
 }

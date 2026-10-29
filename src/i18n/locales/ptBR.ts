@@ -159,6 +159,7 @@ export const ptBR = {
       users: "Usuários",
     },
     notifications: "Notificações",
+    signOut: "Sair",
   },
 }
 

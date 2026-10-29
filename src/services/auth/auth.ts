@@ -50,3 +50,12 @@ export const confirmPasswordRecovery = async (
 ): Promise<void> => {
   await httpClient.post<ApiResponse<null>>("/api/auth/password-recovery/confirm", request, config)
 }
+
+// Tells the backend to end the session of this access token. It takes the token explicitly so the
+// caller can clear the stored session first and still sign this request.
+export const logout = async (token: string, config?: RequestConfig): Promise<void> => {
+  await httpClient.post<ApiResponse<null>>("/api/auth/logout", undefined, {
+    ...config,
+    headers: { Authorization: `Bearer ${token}` },
+  })
+}

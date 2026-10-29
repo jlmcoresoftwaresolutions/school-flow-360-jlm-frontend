@@ -9,7 +9,9 @@ import { Sidebar, Topbar } from "@/ds-components/organisms"
 import { useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
 import { paths } from "@/routes/paths"
+import { logout } from "@/services"
 import { endExpiredSession } from "@/utils/authRedirect"
+import { clearSession, getSessionToken } from "@/utils/session"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
@@ -111,11 +113,30 @@ export const AppShell = () => {
     },
   ]
 
+  // Signing out ends the session here first and goes straight to the login, then tells the backend in
+  // the background: the user never waits on it (it may be waking up), and a failure there changes
+  // nothing for them.
+  const handleSignOut = async () => {
+    const token = await getSessionToken()
+
+    clearSession()
+    navigate(paths.login, { replace: true })
+
+    if (!token) return
+
+    try {
+      await logout(token, { showLoading: false })
+    } catch {
+      // Best effort: the session is already gone from this browser.
+    }
+  }
+
   // The art puts notifications and help in the topbar, but neither feature exists yet, so - like the
   // menu entries without a page - they are rendered disabled instead of as buttons that do nothing.
   const topbarActions: TopbarAction[] = [
     { disabled: true, icon: "bell-outline", key: "notifications", label: t("shell.notifications") },
     { disabled: true, icon: "help-outline", key: "help", label: t("shell.help") },
+    { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => void handleSignOut() },
   ]
 
   const breadcrumbItems: BreadcrumbItem[] | undefined = breadcrumbByPath[location.pathname]?.map((key) => ({

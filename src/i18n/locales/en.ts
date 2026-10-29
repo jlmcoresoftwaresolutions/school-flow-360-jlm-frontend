@@ -158,5 +158,6 @@ export const en: TranslationResource = {
       users: "Users",
     },
     notifications: "Notifications",
+    signOut: "Sign out",
   },
 }

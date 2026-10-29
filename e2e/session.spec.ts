@@ -65,6 +65,45 @@ test("brings a visitor back to the page they opened, without saying a session ex
   await expect(page).toHaveURL(/\/administration\/my-school$/)
 })
 
+test("signs out from the header, ending the session here and on the backend", async ({ page }) => {
+  await mockLogin(page, [oneHour])
+  const logoutRequests: (string | undefined)[] = []
+  await page.route("**/api/auth/logout", (route) => {
+    logoutRequests.push(route.request().headers().authorization)
+    return route.fulfill({
+      body: JSON.stringify({ data: null, message: "Logged out.", status: "Success", tenantId: "schoolflow_demo" }),
+      contentType: "application/json",
+    })
+  })
+  await page.goto("/login")
+  await signIn(page)
+  await expect(minhaEscolaHeading(page)).toBeVisible()
+
+  await page.getByRole("banner").getByRole("button", { name: "Sair" }).click()
+
+  await expect(page).toHaveURL(/\/login$/)
+  await expect(page.getByText(expiredNotice)).toHaveCount(0)
+  await expect.poll(() => logoutRequests).toEqual(["Bearer access-token"])
+  expect(await page.evaluate(() => localStorage.getItem("sf360.session"))).toBeNull()
+
+  // The inner pages are closed again.
+  await page.goto("/administration/my-school")
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-school$/)
+})
+
+test("signs out at once even when the backend doesn't answer", async ({ page }) => {
+  await mockLogin(page, [oneHour])
+  await page.route("**/api/auth/logout", () => undefined)
+  await page.goto("/login")
+  await signIn(page)
+  await expect(minhaEscolaHeading(page)).toBeVisible()
+
+  await page.getByRole("banner").getByRole("button", { name: "Sair" }).click()
+
+  await expect(page).toHaveURL(/\/login$/)
+  await expect(page.getByRole("status", { name: "Carregando..." })).toHaveCount(0)
+})
+
 test("ignores a return address outside the app", async ({ page }) => {
   await mockLogin(page, [oneHour])
 

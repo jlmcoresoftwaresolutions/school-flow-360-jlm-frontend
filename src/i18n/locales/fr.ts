@@ -160,5 +160,6 @@ export const fr: TranslationResource = {
       users: "Utilisateurs",
     },
     notifications: "Notifications",
+    signOut: "Se déconnecter",
   },
 }

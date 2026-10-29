@@ -1,15 +1,23 @@
-import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import { MemoryRouter, Route, Routes } from "react-router-dom"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { i18n } from "@/i18n"
+import { logout } from "@/services"
+import { getSession, saveSession } from "@/utils/session"
 
 import { AppShell } from "./AppShell"
+
+vi.mock("@/services", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/services")>()),
+  logout: vi.fn(async () => undefined),
+}))
 
 const renderAppShell = (initialEntry: string) =>
   render(
     <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
+        <Route element={<div>Página de login</div>} path="/login" />
         <Route element={<AppShell />}>
           <Route element={<div>Outra página</div>} path="/outra" />
           <Route element={<div>Página Minha Escola</div>} path="/administration/my-school" />
@@ -105,6 +113,37 @@ describe("AppShell", () => {
 
     expect(topbar.getByRole("button", { name: "Notificações" })).toBeDisabled()
     expect(topbar.getByRole("button", { name: "Ajuda" })).toBeDisabled()
+  })
+
+  describe("signing out", () => {
+    afterEach(() => {
+      localStorage.clear()
+      vi.mocked(logout).mockClear()
+    })
+
+    it("ends the session, goes to the login and tells the backend", async () => {
+      await saveSession({
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        refreshToken: "r",
+        token: "t",
+      })
+      renderAppShell("/outra")
+
+      fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
+
+      expect(await screen.findByText("Página de login")).toBeInTheDocument()
+      expect(await getSession()).toBeNull()
+      await waitFor(() => expect(logout).toHaveBeenCalledWith("t", { showLoading: false }))
+    })
+
+    it("still goes to the login when there is no stored session to end", async () => {
+      renderAppShell("/outra")
+
+      fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
+
+      expect(await screen.findByText("Página de login")).toBeInTheDocument()
+      expect(logout).not.toHaveBeenCalled()
+    })
   })
 
   it("shows the breadcrumb for Minha Escola, with the current page marked", () => {

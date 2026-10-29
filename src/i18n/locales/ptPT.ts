@@ -161,5 +161,6 @@ export const ptPT: TranslationResource = {
       users: "Utilizadores",
     },
     notifications: "Notificações",
+    signOut: "Terminar sessão",
   },
 }
