@@ -1,29 +1,38 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
-import { MemoryRouter, Route, Routes } from "react-router-dom"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import { createMemoryRouter, RouterProvider } from "react-router-dom"
+import { afterEach, describe, expect, it } from "vitest"
 
+import { useUnsavedChanges } from "@/components"
 import { i18n } from "@/i18n"
-import { logout } from "@/services"
-import { getSession, saveSession } from "@/utils/session"
 
 import { AppShell } from "./AppShell"
 
-vi.mock("@/services", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/services")>()),
-  logout: vi.fn(async () => undefined),
-}))
+// A page with a form that has unsaved changes.
+const EditingPage = () => {
+  useUnsavedChanges(true)
 
+  return <div>Página em edição</div>
+}
+
+// A data router (createMemoryRouter), like the app's own: the unsaved-changes guard needs one.
 const renderAppShell = (initialEntry: string) =>
   render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route element={<div>Página de login</div>} path="/login" />
-        <Route element={<AppShell />}>
-          <Route element={<div>Outra página</div>} path="/outra" />
-          <Route element={<div>Página Minha Escola</div>} path="/administration/my-school" />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+    <RouterProvider
+      router={createMemoryRouter(
+        [
+          { element: <div>Saindo da conta</div>, path: "/sign-out" },
+          {
+            children: [
+              { element: <div>Outra página</div>, path: "/outra" },
+              { element: <div>Página Minha Escola</div>, path: "/administration/my-school" },
+              { element: <EditingPage />, path: "/editando" },
+            ],
+            element: <AppShell />,
+          },
+        ],
+        { initialEntries: [initialEntry] },
+      )}
+    />,
   )
 
 describe("AppShell", () => {
@@ -115,35 +124,24 @@ describe("AppShell", () => {
     expect(topbar.getByRole("button", { name: "Ajuda" })).toBeDisabled()
   })
 
-  describe("signing out", () => {
-    afterEach(() => {
-      localStorage.clear()
-      vi.mocked(logout).mockClear()
-    })
+  it("signs out through the sign-out route, so it goes through the unsaved-changes warning", async () => {
+    renderAppShell("/outra")
 
-    it("ends the session, goes to the login and tells the backend", async () => {
-      await saveSession({
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-        refreshToken: "r",
-        token: "t",
-      })
-      renderAppShell("/outra")
+    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
 
-      fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
+    expect(await screen.findByText("Saindo da conta")).toBeInTheDocument()
+  })
 
-      expect(await screen.findByText("Página de login")).toBeInTheDocument()
-      expect(await getSession()).toBeNull()
-      await waitFor(() => expect(logout).toHaveBeenCalledWith("t", { showLoading: false }))
-    })
+  it("asks before leaving a page with unsaved changes, and stays when told to", async () => {
+    renderAppShell("/editando")
 
-    it("still goes to the login when there is no stored session to end", async () => {
-      renderAppShell("/outra")
+    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
 
-      fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
+    const dialog = await screen.findByRole("dialog", { name: "Descartar alterações?" })
+    fireEvent.click(within(dialog).getByRole("button", { name: "Continuar editando" }))
 
-      expect(await screen.findByText("Página de login")).toBeInTheDocument()
-      expect(logout).not.toHaveBeenCalled()
-    })
+    expect(await screen.findByText("Página em edição")).toBeInTheDocument()
+    expect(screen.queryByText("Saindo da conta")).not.toBeInTheDocument()
   })
 
   it("shows the breadcrumb for Minha Escola, with the current page marked", () => {

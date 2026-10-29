@@ -3,11 +3,12 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
-import { Loading, toast } from "@/components"
+import { Loading, toast, useUnsavedChanges } from "@/components"
 import { Button, Card, Grid, Icon, Image, Tag, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import { ColorPicker, FileUpload, Input, Select, Textarea } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
+import { isShallowEqual } from "@/utils/objects"
 
 import type {
   OperationModel,
@@ -62,6 +63,9 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
 
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState<OrganizationDetails>(details)
+
+  // Leaving the page while an edit has changed something asks first (see UnsavedChangesGuard).
+  useUnsavedChanges(isEditing && !isShallowEqual(draft, details))
 
   const handleEdit = () => {
     setDraft(details)
@@ -248,6 +252,8 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
 
   const [isEditing, setIsEditing] = useState(false)
   const [draft, setDraft] = useState<OrganizationBranding>(branding)
+
+  useUnsavedChanges(isEditing && !isShallowEqual(draft, branding))
 
   const handleEdit = () => {
     setDraft(branding)

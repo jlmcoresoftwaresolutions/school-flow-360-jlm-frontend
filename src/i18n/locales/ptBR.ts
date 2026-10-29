@@ -4,6 +4,7 @@
 export const ptBR = {
   common: {
     cancel: "Cancelar",
+    close: "Fechar",
     edit: "Editar",
     hidePassword: "Ocultar senha",
     loading: "Carregando...",
@@ -160,6 +161,12 @@ export const ptBR = {
     },
     notifications: "Notificações",
     signOut: "Sair",
+  },
+  unsavedChanges: {
+    description: "Você tem alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.",
+    leave: "Sair sem salvar",
+    stay: "Continuar editando",
+    title: "Descartar alterações?",
   },
 }
 

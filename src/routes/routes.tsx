@@ -3,7 +3,7 @@ import { createBrowserRouter, Navigate, redirect } from "react-router-dom"
 
 import { GlobalLoading } from "@/components"
 import { buildLoginUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/authRedirect"
-import { getSessionState, hasSession } from "@/utils/session"
+import { clearSession, getSessionState, getSessionToken, hasSession } from "@/utils/session"
 
 import { homePath, paths } from "./paths"
 
@@ -41,6 +41,28 @@ const requireSession = async (args: LoaderFunctionArgs) => {
   const { pathname, search } = new URL(args.request.url)
 
   return redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired: status === "expired" }))
+}
+
+// Tells the backend the session ended, without anyone waiting for it: the user is already on the
+// login, and a failure there changes nothing for them. The service is imported here, on demand, so the
+// HTTP client stays out of the app's first chunk.
+const notifyBackendOfSignOut = async (token: string) => {
+  try {
+    const { logout } = await import("@/services/auth")
+    await logout(token, { showLoading: false })
+  } catch {
+    // Best effort: the session is already gone from this browser.
+  }
+}
+
+// Signing out ends the session here and goes straight to the login; the backend is told afterwards.
+const signOut = async () => {
+  const token = await getSessionToken()
+
+  clearSession()
+  if (token) void notifyBackendOfSignOut(token)
+
+  return redirect(paths.login)
 }
 
 export const router = createBrowserRouter([
@@ -89,5 +111,6 @@ export const router = createBrowserRouter([
     },
     loader: requireSession,
   },
+  { loader: signOut, path: paths.signOut },
   { element: <Navigate to={paths.login} replace />, path: "*" },
 ])

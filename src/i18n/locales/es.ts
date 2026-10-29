@@ -5,6 +5,7 @@ import type { TranslationResource } from "./ptBR"
 export const es: TranslationResource = {
   common: {
     cancel: "Cancelar",
+    close: "Cerrar",
     edit: "Editar",
     hidePassword: "Ocultar contraseña",
     loading: "Cargando...",
@@ -161,5 +162,11 @@ export const es: TranslationResource = {
     },
     notifications: "Notificaciones",
     signOut: "Cerrar sesión",
+  },
+  unsavedChanges: {
+    description: "Tienes cambios que aún no se han guardado. Si sales ahora, se perderán.",
+    leave: "Salir sin guardar",
+    stay: "Seguir editando",
+    title: "¿Descartar los cambios?",
   },
 }

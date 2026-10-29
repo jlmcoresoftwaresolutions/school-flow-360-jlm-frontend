@@ -6,6 +6,7 @@ import type { TranslationResource } from "./ptBR"
 export const ptPT: TranslationResource = {
   common: {
     cancel: "Cancelar",
+    close: "Fechar",
     edit: "Editar",
     hidePassword: "Ocultar palavra-passe",
     loading: "A carregar...",
@@ -162,5 +163,11 @@ export const ptPT: TranslationResource = {
     },
     notifications: "Notificações",
     signOut: "Terminar sessão",
+  },
+  unsavedChanges: {
+    description: "Tem alterações que ainda não foram guardadas. Se sair agora, serão perdidas.",
+    leave: "Sair sem guardar",
+    stay: "Continuar a editar",
+    title: "Descartar alterações?",
   },
 }

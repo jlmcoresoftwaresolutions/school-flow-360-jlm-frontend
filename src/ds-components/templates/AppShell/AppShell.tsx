@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
+import { UnsavedChangesGuard } from "@/components"
 import type { BreadcrumbItem } from "@/ds-components/molecules"
 import { Breadcrumb } from "@/ds-components/molecules"
 import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-components/organisms"
@@ -9,9 +10,7 @@ import { Sidebar, Topbar } from "@/ds-components/organisms"
 import { useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
 import { paths } from "@/routes/paths"
-import { logout } from "@/services"
 import { endExpiredSession } from "@/utils/authRedirect"
-import { clearSession, getSessionToken } from "@/utils/session"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
@@ -113,30 +112,12 @@ export const AppShell = () => {
     },
   ]
 
-  // Signing out ends the session here first and goes straight to the login, then tells the backend in
-  // the background: the user never waits on it (it may be waking up), and a failure there changes
-  // nothing for them.
-  const handleSignOut = async () => {
-    const token = await getSessionToken()
-
-    clearSession()
-    navigate(paths.login, { replace: true })
-
-    if (!token) return
-
-    try {
-      await logout(token, { showLoading: false })
-    } catch {
-      // Best effort: the session is already gone from this browser.
-    }
-  }
-
   // The art puts notifications and help in the topbar, but neither feature exists yet, so - like the
   // menu entries without a page - they are rendered disabled instead of as buttons that do nothing.
   const topbarActions: TopbarAction[] = [
     { disabled: true, icon: "bell-outline", key: "notifications", label: t("shell.notifications") },
     { disabled: true, icon: "help-outline", key: "help", label: t("shell.help") },
-    { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => void handleSignOut() },
+    { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => navigate(paths.signOut) },
   ]
 
   const breadcrumbItems: BreadcrumbItem[] | undefined = breadcrumbByPath[location.pathname]?.map((key) => ({
@@ -157,15 +138,19 @@ export const AppShell = () => {
         title="SchoolFlow360º"
       />
 
-      <AppShellBody>
-        <Topbar actions={topbarActions}>
-          {breadcrumbItems && <Breadcrumb items={breadcrumbItems} label={t("shell.breadcrumbLabel")} />}
-        </Topbar>
+      {/* Covers every way out of a page with unsaved changes: the menu, the topbar (signing out) and
+          the page's own links. */}
+      <UnsavedChangesGuard>
+        <AppShellBody>
+          <Topbar actions={topbarActions}>
+            {breadcrumbItems && <Breadcrumb items={breadcrumbItems} label={t("shell.breadcrumbLabel")} />}
+          </Topbar>
 
-        <AppShellContent>
-          <Outlet />
-        </AppShellContent>
-      </AppShellBody>
+          <AppShellContent>
+            <Outlet />
+          </AppShellContent>
+        </AppShellBody>
+      </UnsavedChangesGuard>
     </AppShellWrapper>
   )
 }
