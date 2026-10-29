@@ -32,3 +32,6 @@ storybook-static
 /playwright-report
 /test-results
 /blob-report
+
+# Claude Code personal settings (the shared .claude/settings.json, if any, stays tracked)
+.claude/settings.local.json
