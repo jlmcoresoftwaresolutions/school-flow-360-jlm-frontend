@@ -13,8 +13,28 @@ test.describe("in a browser set to English", () => {
   })
 })
 
+// Each browser language with its login heading and the <html lang> the app sets.
+const localized = [
+  { heading: "Aceda ao seu percurso SchoolFlow360º", lang: "pt-PT", locale: "pt-PT" },
+  { heading: "Accede a tu experiencia SchoolFlow360º", lang: "es", locale: "es-MX" },
+  { heading: "Accédez à votre parcours SchoolFlow360º", lang: "fr", locale: "fr-FR" },
+]
+
+for (const { heading, lang, locale } of localized) {
+  test.describe(`in a browser set to ${locale}`, () => {
+    test.use({ locale })
+
+    test("shows the login in that language", async ({ page }) => {
+      await page.goto("/login")
+
+      await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible()
+      await expect(page.locator("html")).toHaveAttribute("lang", lang)
+    })
+  })
+}
+
 test.describe("in a browser set to a language the app doesn't have", () => {
-  test.use({ locale: "es-ES" })
+  test.use({ locale: "de-DE" })
 
   test("falls back to pt-BR", async ({ page }) => {
     await page.goto("/login")

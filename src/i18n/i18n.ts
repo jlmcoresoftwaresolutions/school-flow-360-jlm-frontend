@@ -3,8 +3,11 @@ import LanguageDetector from "i18next-browser-languagedetector"
 import { initReactI18next } from "react-i18next"
 
 import { en } from "./locales/en"
+import { es } from "./locales/es"
+import { fr } from "./locales/fr"
 import type { TranslationResource } from "./locales/ptBR"
 import { ptBR } from "./locales/ptBR"
+import { ptPT } from "./locales/ptPT"
 
 // Augments i18next's own types with this app's actual resource shape, so `t("login.emailLabel")`
 // is autocompleted and a typo'd or removed key fails `tsc`, the same safety net the rest of the
@@ -19,12 +22,16 @@ declare module "i18next" {
   }
 }
 
-export const supportedLanguages = ["pt-BR", "en"]
+// en, es and fr cover every region of their language (en-GB, es-MX, fr-CA...). Portuguese is split
+// by region, and pt-BR is listed first on purpose: a browser that says just "pt", or another
+// Portuguese-speaking country (pt-AO, pt-MZ...), gets the first supported "pt-*" - pt-BR, the
+// product's own language - and only pt-PT gets European Portuguese.
+export const supportedLanguages = ["pt-BR", "pt-PT", "en", "es", "fr"]
 
 // The language is the browser's own (navigator.languages - the language the viewer's system or
 // browser is set to), detected on every visit: there is no language picker, so nothing is
 // remembered between visits (caches: []) and nothing else (query string, cookie, storage) is
-// consulted. A language that isn't supported (e.g. es) falls back to pt-BR. initReactI18next wires
+// consulted. A language that isn't supported (e.g. de) falls back to pt-BR. initReactI18next wires
 // the useTranslation hook up to it. Resources are bundled
 // directly instead of loaded from a backend - the catalog is small enough that a network round trip
 // to fetch it isn't worth it. useSuspense is off since nothing else in the project renders through
@@ -41,7 +48,10 @@ i18next
     react: { useSuspense: false },
     resources: {
       "pt-BR": { translation: ptBR },
+      "pt-PT": { translation: ptPT },
       en: { translation: en },
+      es: { translation: es },
+      fr: { translation: fr },
     },
     // Deliberately NOT paired with `nonExplicitSupportedLngs: true`: that option is meant to accept
     // a detected code like "en-US" for a supported "en", but with a region-qualified code already in

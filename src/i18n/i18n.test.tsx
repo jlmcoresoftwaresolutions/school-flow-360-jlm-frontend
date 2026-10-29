@@ -23,8 +23,41 @@ describe("i18n", () => {
     expect(i18n.options.detection).toMatchObject({ caches: [], order: ["navigator"] })
   })
 
-  it("exposes pt-BR and en as the supported languages", () => {
-    expect(supportedLanguages).toEqual(["pt-BR", "en"])
+  it("exposes Portuguese (Brazil and Portugal), English, Spanish and French as the supported languages", () => {
+    expect(supportedLanguages).toEqual(["pt-BR", "pt-PT", "en", "es", "fr"])
+  })
+
+  // What the browser reports (navigator.languages) -> the catalog the app picks.
+  it.each([
+    ["pt-BR", "pt-BR"],
+    ["pt-PT", "pt-PT"],
+    ["pt", "pt-BR"],
+    ["pt-AO", "pt-BR"],
+    ["en-US", "en"],
+    ["en-GB", "en"],
+    ["es-ES", "es"],
+    ["es-MX", "es"],
+    ["fr-FR", "fr"],
+    ["fr-CA", "fr"],
+  ])("picks %s as %s", (browserLanguage, expected) => {
+    expect(i18n.services.languageUtils.getBestMatchFromCodes([browserLanguage])).toBe(expected)
+  })
+
+  it("translates the same key in every supported language", async () => {
+    const signIn: Record<string, string> = {}
+
+    for (const language of supportedLanguages) {
+      await i18n.changeLanguage(language)
+      signIn[language] = i18n.t("login.signIn")
+    }
+
+    expect(signIn).toEqual({
+      en: "Sign in",
+      es: "Iniciar sesión",
+      fr: "Se connecter",
+      "pt-BR": "Entrar",
+      "pt-PT": "Iniciar sessão",
+    })
   })
 
   // findByText, not getByText: react-i18next can render once before a changeLanguage call settles
