@@ -54,7 +54,7 @@ export const ForgotPassword = () => {
               borderRadius="high"
               color="surface"
               elevated
-              style={{ display: "flex", flexDirection: "column", gap: spacing[16], padding: spacing[40] }}
+              style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
             >
               <div style={{ display: "flex", flexDirection: "column", gap: spacing[8] }}>
                 <Text as="h1" fontSize="3xl" bold>
