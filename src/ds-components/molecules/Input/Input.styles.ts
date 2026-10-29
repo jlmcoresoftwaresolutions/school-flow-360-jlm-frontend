@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components"
 
-import { colors, motion, shadows, spacing, typography } from "@/foundation"
+import { colors, motion, radius, shadows, spacing, typography } from "@/foundation"
 
 export const InputWrapper = styled.div`
   display: flex;
@@ -8,7 +8,7 @@ export const InputWrapper = styled.div`
   gap: ${spacing[4]};
 `
 
-// Positions the optional start icon over the input's left padding.
+// Positions the optional start icon and the password toggle over the input's side padding.
 export const InputControl = styled.div`
   position: relative;
 `
@@ -53,17 +53,46 @@ export const InputStartIcon = styled.span<InputStartIconProps>`
   transform: translateY(-50%);
 `
 
+export type InputPasswordToggleProps = {
+  $size: InputSize
+}
+
+// The show/hide password button at the input's right edge. Its own padding widens the click area
+// beyond the icon, so it sits that much closer to the edge to line the icon up with the text.
+export const InputPasswordToggle = styled.button<InputPasswordToggleProps>`
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: ${radius.sm};
+  cursor: pointer;
+  display: inline-flex;
+  padding: ${spacing[4]};
+  position: absolute;
+  right: calc(${(props) => sidePadding[props.$size]} - ${spacing[4]});
+  top: 50%;
+  transform: translateY(-50%);
+
+  &:focus-visible {
+    outline: 2px solid ${colors.primary[500]};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+`
+
 export type StyledInputProps = {
   $borderRadius: string
   $size: InputSize
   $elevated?: boolean
+  $hasEndButton?: boolean
   $hasError?: boolean
   $hasStartIcon?: boolean
 }
 
 export const StyledInput = styled.input<StyledInputProps>`
   ${(props) => {
-    const { $borderRadius, $elevated, $hasError, $hasStartIcon, $size } = props
+    const { $borderRadius, $elevated, $hasEndButton, $hasError, $hasStartIcon, $size } = props
 
     return css`
       background: ${colors.neutral[0]};
@@ -84,6 +113,11 @@ export const StyledInput = styled.input<StyledInputProps>`
       ${$hasStartIcon &&
       css`
         padding-left: calc(${sidePadding[$size]} * 2 + ${$size === "small" ? spacing[16] : spacing[20]});
+      `}
+
+      ${$hasEndButton &&
+      css`
+        padding-right: calc(${sidePadding[$size]} * 2 + ${$size === "small" ? spacing[16] : spacing[20]});
       `}
 
       &::placeholder {

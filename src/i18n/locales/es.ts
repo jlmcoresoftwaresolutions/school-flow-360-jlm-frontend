@@ -6,9 +6,11 @@ export const es: TranslationResource = {
   common: {
     cancel: "Cancelar",
     edit: "Editar",
+    hidePassword: "Ocultar contraseña",
     loading: "Cargando...",
     poweredBy: "Powered by JLM Core",
     save: "Guardar",
+    showPassword: "Mostrar contraseña",
     slowServer: "Conectando con el servidor. Esto puede tardar hasta un minuto.",
     slowWait: "Esto está tardando más de lo habitual. Espera un momento.",
     tryAgain: "Intentar de nuevo",

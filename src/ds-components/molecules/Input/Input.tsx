@@ -1,5 +1,5 @@
 import type { ChangeEvent, ComponentPropsWithoutRef, CSSProperties } from "react"
-import { forwardRef, useId } from "react"
+import { forwardRef, useId, useState } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
 import { FieldLabel, FieldMessage, Icon } from "@/ds-components/atoms"
@@ -10,7 +10,7 @@ import { joinIds } from "@/utils/strings"
 import type { MaskType } from "./Input.masks"
 import { applyMask } from "./Input.masks"
 import type { InputSize } from "./Input.styles"
-import { InputControl, InputStartIcon, InputWrapper, StyledInput } from "./Input.styles"
+import { InputControl, InputPasswordToggle, InputStartIcon, InputWrapper, StyledInput } from "./Input.styles"
 
 // Deliberately not derived from React's own HTMLInputTypeAttribute: that type ends in a
 // `(string & {})` catch-all for forward compatibility, which would let "date" back in through
@@ -45,9 +45,11 @@ type InputOwnProps = {
   elevated?: boolean
   error?: string
   helperText?: string
+  hidePasswordLabel?: string
   invalid?: boolean
   mask?: MaskType
   numeric?: boolean
+  showPasswordLabel?: string
   size?: InputSize
   startIcon?: IconName
   style?: CSSProperties
@@ -65,20 +67,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
     elevated = true,
     error,
     helperText,
+    hidePasswordLabel = "Ocultar senha",
     id,
     invalid,
     mask,
     numeric,
     onChange,
     required,
+    showPasswordLabel = "Mostrar senha",
     size = "medium",
     startIcon,
     style,
     title,
+    type,
     ...rest
   } = props
 
   const generatedId = useId()
+
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
 
   const inputId = id ?? generatedId
   const messageId = `${inputId}-message`
@@ -87,6 +94,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
   const hasError = Boolean(error) || Boolean(invalid)
   // A caller's own aria-describedby is kept, with the message appended to it.
   const describedBy = joinIds(ariaDescribedBy, (error || helperText) && messageId)
+  // A password field gets a button to show what was typed, which switches it to a plain text field.
+  const isPassword = type === "password"
+  const inputType = isPassword && isPasswordVisible ? "text" : type
 
   // type stays "text" (rather than "number") so digits can be masked without the native
   // number input's quirks (spinners, "e"/"+"/"-", no leading zeros); inputMode still gives
@@ -113,6 +123,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
         <StyledInput
           $borderRadius={borderRadiusLevels[borderRadius]}
           $elevated={elevated}
+          $hasEndButton={isPassword}
           $hasError={hasError}
           $hasStartIcon={Boolean(startIcon)}
           $size={size}
@@ -125,7 +136,24 @@ export const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => {
           inputMode={mask || numeric ? "numeric" : undefined}
           onChange={handleChange}
           pattern={numeric && !mask ? "[0-9]*" : undefined}
+          type={inputType}
         />
+        {isPassword && (
+          <InputPasswordToggle
+            $size={size}
+            aria-controls={inputId}
+            aria-label={isPasswordVisible ? hidePasswordLabel : showPasswordLabel}
+            disabled={rest.disabled}
+            onClick={() => setIsPasswordVisible((visible) => !visible)}
+            type="button"
+          >
+            <Icon
+              color="secondary"
+              name={isPasswordVisible ? "eye-off-outline" : "eye-outline"}
+              size={size === "small" ? 16 : 20}
+            />
+          </InputPasswordToggle>
+        )}
       </InputControl>
       <FieldMessage error={error} helperText={helperText} id={messageId} />
     </InputWrapper>

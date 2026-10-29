@@ -422,4 +422,63 @@ describe("Input", () => {
       expect(screen.getByLabelText("E-mail")).not.toHaveAttribute("aria-invalid")
     })
   })
+
+  describe("password toggle", () => {
+    it("shows and hides what was typed in a password field", () => {
+      render(<Input defaultValue="segredo-123" title="Senha" type="password" />)
+
+      const input = screen.getByLabelText("Senha")
+      expect(input).toHaveAttribute("type", "password")
+
+      fireEvent.click(screen.getByRole("button", { name: "Mostrar senha" }))
+      expect(input).toHaveAttribute("type", "text")
+      expect(input).toHaveValue("segredo-123")
+
+      fireEvent.click(screen.getByRole("button", { name: "Ocultar senha" }))
+      expect(input).toHaveAttribute("type", "password")
+    })
+
+    it("points the toggle at its input", () => {
+      render(<Input title="Senha" type="password" />)
+
+      expect(screen.getByRole("button", { name: "Mostrar senha" })).toHaveAttribute(
+        "aria-controls",
+        screen.getByLabelText("Senha").id,
+      )
+    })
+
+    it("uses showPasswordLabel and hidePasswordLabel as the toggle's names", () => {
+      render(
+        <Input hidePasswordLabel="Hide password" showPasswordLabel="Show password" title="Senha" type="password" />,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: "Show password" }))
+      expect(screen.getByRole("button", { name: "Hide password" })).toBeInTheDocument()
+    })
+
+    it("doesn't submit the form it sits in", () => {
+      const handleSubmit = vi.fn((event: Event) => event.preventDefault())
+      render(
+        <form onSubmit={(event) => handleSubmit(event.nativeEvent)}>
+          <Input title="Senha" type="password" />
+        </form>,
+      )
+
+      fireEvent.click(screen.getByRole("button", { name: "Mostrar senha" }))
+
+      expect(handleSubmit).not.toHaveBeenCalled()
+    })
+
+    it("is disabled along with the input", () => {
+      render(<Input title="Senha" type="password" disabled />)
+
+      expect(screen.getByRole("button", { name: "Mostrar senha" })).toBeDisabled()
+    })
+
+    it("only appears on password fields", () => {
+      render(<Input title="E-mail" type="email" />)
+
+      expect(screen.queryByRole("button")).not.toBeInTheDocument()
+    })
+  })
 })

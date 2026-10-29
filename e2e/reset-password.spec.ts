@@ -48,6 +48,19 @@ test("checks the link's token against the link's tenant before showing the form"
   for (const request of requests) expect(request).toEqual({ body: { token: "token-do-link" }, tenant: linkTenant })
 })
 
+test("lets each new-password field show what was typed, on its own", async ({ page }) => {
+  await mockValidate(page, true)
+  await page.goto(resetUrl)
+
+  const showButtons = page.getByRole("button", { name: "Mostrar senha" })
+  await expect(showButtons).toHaveCount(2)
+
+  await showButtons.first().click()
+
+  await expect(newPasswordField(page)).toHaveAttribute("type", "text")
+  await expect(confirmPasswordField(page)).toHaveAttribute("type", "password")
+})
+
 test("says the link is no longer valid when the token was used or expired", async ({ page }) => {
   await mockValidate(page, false)
   await page.goto(resetUrl)

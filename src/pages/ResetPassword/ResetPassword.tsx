@@ -138,7 +138,9 @@ export const ResetPassword = () => {
               autoComplete="new-password"
               error={errors.newPassword?.message}
               helperText={t("resetPassword.passwordHelper", passwordLength)}
+              hidePasswordLabel={t("common.hidePassword")}
               placeholder={t("resetPassword.passwordPlaceholder")}
+              showPasswordLabel={t("common.showPassword")}
               title={t("resetPassword.passwordLabel")}
               type="password"
               required
@@ -152,7 +154,9 @@ export const ResetPassword = () => {
             <Input
               autoComplete="new-password"
               error={errors.confirmPassword?.message}
+              hidePasswordLabel={t("common.hidePassword")}
               placeholder={t("resetPassword.confirmPasswordPlaceholder")}
+              showPasswordLabel={t("common.showPassword")}
               title={t("resetPassword.confirmPasswordLabel")}
               type="password"
               required

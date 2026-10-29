@@ -52,6 +52,18 @@ test.describe("login page", () => {
     await expect(page.getByText(/cadastr|criar conta/i)).toHaveCount(0)
   })
 
+  test("shows and hides the typed password", async ({ page }) => {
+    await page.goto("/login")
+    await page.getByLabel(/^Senha/).fill("senha-correta")
+
+    await page.getByRole("button", { name: "Mostrar senha" }).click()
+    await expect(page.getByLabel(/^Senha/)).toHaveAttribute("type", "text")
+    await expect(page.getByLabel(/^Senha/)).toHaveValue("senha-correta")
+
+    await page.getByRole("button", { name: "Ocultar senha" }).click()
+    await expect(page.getByLabel(/^Senha/)).toHaveAttribute("type", "password")
+  })
+
   test("points out missing fields instead of calling the backend", async ({ page }) => {
     let called = false
     await page.route(loginEndpoint, (route) => {

@@ -219,7 +219,9 @@ export const Login = () => {
                     aria-describedby={credentialsRejected ? signInErrorId : undefined}
                     autoComplete="current-password"
                     error={errors.password?.message}
+                    hidePasswordLabel={t("common.hidePassword")}
                     placeholder={t("login.passwordPlaceholder")}
+                    showPasswordLabel={t("common.showPassword")}
                     title={t("login.passwordLabel")}
                     type="password"
                     invalid={credentialsRejected}

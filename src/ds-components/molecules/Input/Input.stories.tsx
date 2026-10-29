@@ -29,6 +29,11 @@ const meta: Meta<typeof Input> = {
         "Error message shown below the input in red, replacing helperText. Also turns the border red and sets aria-invalid.",
     },
     helperText: { control: "text", description: "Text rendered below the input to provide extra context" },
+    hidePasswordLabel: {
+      control: "text",
+      description:
+        'Accessible name of the password toggle while the password is shown (type="password" only). Defaults to a pt-BR label.',
+    },
     invalid: {
       control: "boolean",
       description:
@@ -48,6 +53,11 @@ const meta: Meta<typeof Input> = {
       control: "boolean",
       description: "Native required attribute, forwarded to the input. Also adds a red asterisk to the title.",
     },
+    showPasswordLabel: {
+      control: "text",
+      description:
+        'Accessible name of the password toggle while the password is hidden (type="password" only). Defaults to a pt-BR label.',
+    },
     size: {
       control: "select",
       description: "Font size and padding level of the input: small, medium or large. Defaults to medium.",
@@ -61,7 +71,7 @@ const meta: Meta<typeof Input> = {
     type: {
       control: "text",
       description:
-        "Native type attribute, forwarded to the input element. Excludes date — use DateInput for date fields instead.",
+        "Native type attribute, forwarded to the input element. Excludes date — use DateInput for date fields instead. password adds a button that shows/hides what was typed.",
     },
   },
   component: Input,
@@ -75,6 +85,11 @@ type Story = StoryObj<typeof Input>
 
 // Default rendering with no title or helperText set
 export const Default: Story = {}
+
+// A password field, with the eye button that shows and hides what was typed
+export const Password: Story = {
+  args: { placeholder: "Digite sua senha", title: "Senha", type: "password" },
+}
 
 // The title prop rendering a label above the input, linked via htmlFor/id
 export const WithTitle: Story = {
