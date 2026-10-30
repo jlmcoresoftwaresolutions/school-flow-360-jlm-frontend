@@ -13,3 +13,13 @@ export const getInitials = (name: string) => {
 
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toLocaleUpperCase()
 }
+
+// The first and the last word of a name ("Maria Aparecida da Silva Santos" -> "Maria Santos"), to keep
+// a long name short where space is tight. A name of one or two words comes back as is (trimmed).
+export const getShortName = (name: string) => {
+  const words = name.trim().split(/\s+/).filter(Boolean)
+
+  if (words.length <= 2) return words.join(" ")
+
+  return `${words[0]} ${words[words.length - 1]}`
+}

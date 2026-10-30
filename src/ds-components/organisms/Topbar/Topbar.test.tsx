@@ -69,14 +69,14 @@ describe("Topbar", () => {
     it("shows the name and the role", () => {
       renderTopbar({ user: { name: "Maria da Silva", role: "Diretora" } })
 
-      expect(screen.getByText("Maria da Silva")).toBeInTheDocument()
+      expect(screen.getByText("Maria Silva")).toBeInTheDocument()
       expect(screen.getByText("Diretora")).toBeInTheDocument()
     })
 
     it("omits the role when none is given", () => {
       renderTopbar({ user: { name: "Maria da Silva" } })
 
-      expect(screen.getByText("Maria da Silva")).toBeInTheDocument()
+      expect(screen.getByText("Maria Silva")).toBeInTheDocument()
       expect(screen.queryByText("Diretora")).not.toBeInTheDocument()
     })
 
@@ -97,7 +97,7 @@ describe("Topbar", () => {
     it("is not a button when there is no user menu", () => {
       renderTopbar({ user: { name: "Maria da Silva", role: "Diretora" } })
 
-      expect(screen.queryByRole("button", { name: /Maria da Silva/ })).not.toBeInTheDocument()
+      expect(screen.queryByRole("button", { name: /Maria Silva/ })).not.toBeInTheDocument()
     })
 
     it("becomes a button, named by the user's name, that opens the user menu with its items", () => {
@@ -107,7 +107,7 @@ describe("Topbar", () => {
         userMenuItems: [{ icon: "logout-outline", key: "sair", label: "Sair", onClick: onSignOut }],
       })
 
-      const trigger = screen.getByRole("button", { name: /^Maria da Silva/ })
+      const trigger = screen.getByRole("button", { name: /^Maria Silva/ })
       expect(trigger).toHaveAttribute("aria-haspopup", "menu")
 
       fireEvent.click(trigger)
@@ -118,6 +118,23 @@ describe("Topbar", () => {
       expect(onSignOut).toHaveBeenCalledOnce()
     })
 
+    it("turns the chevron upside down while the user menu is open, and back when it closes", () => {
+      const { container } = renderTopbar({
+        user: { name: "Maria Silva" },
+        userMenuItems: [{ key: "sair", label: "Sair" }],
+      })
+      const trigger = screen.getByRole("button", { name: /^Maria Silva/ })
+      const chevron = container.querySelector("svg")?.closest("span")?.parentElement as HTMLElement
+
+      expect(getComputedStyle(chevron).transform).not.toBe("rotate(180deg)")
+
+      fireEvent.click(trigger)
+      expect(getComputedStyle(chevron).transform).toBe("rotate(180deg)")
+
+      fireEvent.click(trigger)
+      expect(getComputedStyle(chevron).transform).not.toBe("rotate(180deg)")
+    })
+
     it("names the user menu with userMenuLabel", () => {
       renderTopbar({
         user: { name: "Maria da Silva" },
@@ -125,7 +142,7 @@ describe("Topbar", () => {
         userMenuLabel: "User menu",
       })
 
-      fireEvent.click(screen.getByRole("button", { name: /^Maria da Silva/ }))
+      fireEvent.click(screen.getByRole("button", { name: /^Maria Silva/ }))
 
       expect(screen.getByRole("menu", { name: "User menu" })).toBeInTheDocument()
     })

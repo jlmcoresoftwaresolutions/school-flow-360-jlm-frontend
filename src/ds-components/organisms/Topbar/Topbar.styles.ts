@@ -1,6 +1,7 @@
-import styled, { css } from "styled-components"
+import styled from "styled-components"
 
-import { colors, media, motion, opacity, radius, spacing, typography } from "@/foundation"
+import { ActionMenu } from "@/ds-components/molecules"
+import { colors, media, motion, opacity, radius, spacing } from "@/foundation"
 
 export const StyledTopbar = styled.header`
   align-items: center;
@@ -65,62 +66,28 @@ export const StyledTopbarAction = styled.button`
 export const StyledTopbarUser = styled.span`
   align-items: center;
   display: flex;
-  gap: ${spacing[12]};
+  gap: ${spacing[8]};
   margin-left: ${spacing[8]};
 `
 
-const avatarSize = css`
-  border-radius: ${radius.full};
-  flex-shrink: 0;
-  height: ${spacing[40]};
-  width: ${spacing[40]};
-`
-
-export const StyledTopbarAvatarImage = styled.img`
-  ${avatarSize}
-  object-fit: cover;
-`
-
-export const StyledTopbarAvatarInitials = styled.span`
-  ${avatarSize}
-  align-items: center;
-  background: ${colors.info[50]};
-  color: ${colors.info[700]};
+// The chevron beside the user block: it turns upside down while the user menu is open (see below).
+export const StyledTopbarUserChevron = styled.span`
   display: inline-flex;
-  font-family: ${typography.fontFamily.sans};
-  font-size: ${typography.fontSize.sm}px;
-  font-weight: ${typography.fontWeight.semibold};
-  justify-content: center;
-`
+  transition: transform ${motion.duration.fast} ${motion.easing.inOut};
 
-// On a narrow screen the name and role are hidden to leave the bar room for the breadcrumb. They are
-// clipped rather than display:none, so a screen reader still announces who is signed in.
-export const StyledTopbarUserText = styled.span`
-  display: flex;
-  text-align: left;
-  flex-direction: column;
-
-  @media not all and ${media.md} {
-    clip: rect(0 0 0 0);
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    width: 1px;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 `
 
-export const StyledTopbarUserName = styled.span`
-  color: ${colors.neutral[900]};
-  font-family: ${typography.fontFamily.sans};
-  font-size: ${typography.fontSize.sm}px;
-  font-weight: ${typography.fontWeight.semibold};
-  line-height: ${typography.lineHeight.sm};
-`
+// The user menu's trigger, with a tighter padding than the ActionMenu's own around the user block.
+// Its aria-expanded (set by ActionMenu while the menu is open) is what turns the chevron.
+export const StyledTopbarUserMenu = styled(ActionMenu)`
+  && {
+    padding: ${spacing[4]};
+  }
 
-export const StyledTopbarUserRole = styled.span`
-  color: ${colors.neutral[600]};
-  font-family: ${typography.fontFamily.sans};
-  font-size: ${typography.fontSize.xs}px;
-  line-height: ${typography.lineHeight.xs};
+  &[aria-expanded="true"] ${StyledTopbarUserChevron} {
+    transform: rotate(180deg);
+  }
 `

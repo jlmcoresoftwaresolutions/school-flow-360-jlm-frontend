@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getInitials, joinIds } from "./strings"
+import { getInitials, getShortName, joinIds } from "./strings"
 
 describe("joinIds", () => {
   it("joins the ids with spaces", () => {
@@ -35,5 +35,21 @@ describe("getInitials", () => {
 
   it("returns an empty string for a blank name", () => {
     expect(getInitials("   ")).toBe("")
+  })
+})
+
+describe("getShortName", () => {
+  it("keeps only the first and last words of a long name", () => {
+    expect(getShortName("Maria Aparecida da Silva Santos")).toBe("Maria Santos")
+  })
+
+  it("keeps a name of one or two words as is", () => {
+    expect(getShortName("Maria")).toBe("Maria")
+    expect(getShortName("Maria Santos")).toBe("Maria Santos")
+  })
+
+  it("ignores extra whitespace around and between words", () => {
+    expect(getShortName("  Maria   da  Silva ")).toBe("Maria Silva")
+    expect(getShortName("   ")).toBe("")
   })
 })
