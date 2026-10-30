@@ -29,6 +29,15 @@ const signIn = async (page: Page) => {
   await page.getByRole("button", { name: "Entrar" }).click()
 }
 
+// Signing out is in the menu the user block (in the topbar) opens.
+const signOut = async (page: Page) => {
+  await page
+    .getByRole("banner")
+    .getByRole("button", { name: /^João Silva/ })
+    .click()
+  await page.getByRole("menuitem", { name: "Sair" }).click()
+}
+
 const oneHour = 60 * 60 * 1000
 const expiredNotice = "Sua sessão expirou. Entre novamente para continuar."
 const minhaUnidadeHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
@@ -79,7 +88,7 @@ test("signs out from the header, ending the session here and on the backend", as
   await signIn(page)
   await expect(page).toHaveURL(/\/home$/)
 
-  await page.getByRole("banner").getByRole("button", { name: "Sair" }).click()
+  await signOut(page)
 
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByText(expiredNotice)).toHaveCount(0)
@@ -98,7 +107,7 @@ test("signs out at once even when the backend doesn't answer", async ({ page }) 
   await signIn(page)
   await expect(page).toHaveURL(/\/home$/)
 
-  await page.getByRole("banner").getByRole("button", { name: "Sair" }).click()
+  await signOut(page)
 
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole("status", { name: "Carregando..." })).toHaveCount(0)

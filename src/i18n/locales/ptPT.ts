@@ -164,7 +164,12 @@ export const ptPT: TranslationResource = {
       users: "Utilizadores",
     },
     notifications: "Notificações",
+    roles: {
+      ADMIN: "Administrador",
+      USER: "Utilizador",
+    },
     signOut: "Terminar sessão",
+    userMenu: "Menu do utilizador",
   },
   unsavedChanges: {
     description: "Tem alterações que ainda não foram guardadas. Se sair agora, serão perdidas.",

@@ -34,14 +34,21 @@ const openDetailsForm = async (page: Page) => {
 }
 
 const displayNameField = (page: Page) => page.getByRole("textbox", { name: "Nome exibido" })
-const signOutButton = (page: Page) => page.getByRole("banner").getByRole("button", { name: "Sair" })
+// Signing out is in the menu the user block (in the topbar) opens.
+const signOut = async (page: Page) => {
+  await page
+    .getByRole("banner")
+    .getByRole("button", { name: /^João Silva/ })
+    .click()
+  await page.getByRole("menuitem", { name: "Sair" }).click()
+}
 const warning = (page: Page) => page.getByRole("dialog", { name: "Descartar alterações?" })
 
 test("warns in a centered dialog before leaving a form with unsaved changes, and keeps them", async ({ page }) => {
   await openDetailsForm(page)
   await displayNameField(page).fill("Colégio Horizonte Novo")
 
-  await signOutButton(page).click()
+  await signOut(page)
 
   await expect(warning(page)).toBeVisible()
   await expect(warning(page)).toContainText("Se sair agora, elas serão perdidas.")
@@ -61,7 +68,7 @@ test("leaves, dropping the changes, when the user confirms", async ({ page }) =>
   await openDetailsForm(page)
   await displayNameField(page).fill("Colégio Horizonte Novo")
 
-  await signOutButton(page).click()
+  await signOut(page)
   await warning(page).getByRole("button", { name: "Sair sem salvar" }).click()
 
   await expect(page).toHaveURL(/\/login$/)
@@ -70,7 +77,7 @@ test("leaves, dropping the changes, when the user confirms", async ({ page }) =>
 test("doesn't warn when the form was opened but nothing changed", async ({ page }) => {
   await openDetailsForm(page)
 
-  await signOutButton(page).click()
+  await signOut(page)
 
   await expect(page).toHaveURL(/\/login$/)
   await expect(warning(page)).toHaveCount(0)

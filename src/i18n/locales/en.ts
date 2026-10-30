@@ -161,7 +161,12 @@ export const en: TranslationResource = {
       users: "Users",
     },
     notifications: "Notifications",
+    roles: {
+      ADMIN: "Administrator",
+      USER: "User",
+    },
     signOut: "Sign out",
+    userMenu: "User menu",
   },
   unsavedChanges: {
     description: "You have changes that haven't been saved yet. If you leave now, they will be lost.",

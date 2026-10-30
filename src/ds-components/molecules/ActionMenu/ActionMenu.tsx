@@ -1,4 +1,4 @@
-import type { CSSProperties, KeyboardEvent } from "react"
+import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { useEffect, useId, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
@@ -30,6 +30,7 @@ export type ActionMenuProps = {
   className?: string
   disabled?: boolean
   style?: CSSProperties
+  trigger?: ReactNode
   triggerIcon?: IconName
 }
 
@@ -49,8 +50,19 @@ const estimatedItemHeight = parseInt(spacing[40])
 // and returns focus to the trigger. It owns no copy: triggerLabel is the trigger's accessible name.
 // An item with `checked` set (true or false) is a menuitemradio instead, for picking one option out
 // of several (e.g. a language): the checked one shows a check mark and is announced as checked.
+// `trigger` replaces the trigger's icon with any content (e.g. the signed-in user, in the Topbar); the
+// button is then named by that visible content, and triggerLabel names only the menu.
 export const ActionMenu = (props: ActionMenuProps) => {
-  const { align = "end", className, disabled, items, style, triggerIcon = "dots-vertical", triggerLabel } = props
+  const {
+    align = "end",
+    className,
+    disabled,
+    items,
+    style,
+    trigger,
+    triggerIcon = "dots-vertical",
+    triggerLabel,
+  } = props
 
   const triggerRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -87,16 +99,27 @@ export const ActionMenu = (props: ActionMenuProps) => {
 
     const handleDetach = () => setMenuStyle(null)
 
+    // Only a scroll that moves the trigger detaches the menu: the page, or a container around the
+    // trigger. Others don't - e.g. a text field elsewhere scrolling its own text back when it loses
+    // focus to the menu.
+    const handleScroll = (event: Event) => {
+      const target = event.target
+
+      if (target instanceof Node && triggerRef.current && !target.contains(triggerRef.current)) return
+
+      handleDetach()
+    }
+
     document.addEventListener("mousedown", handleMouseDown)
     document.addEventListener("keydown", handleKeyDown)
     window.addEventListener("resize", handleDetach)
-    window.addEventListener("scroll", handleDetach, true)
+    window.addEventListener("scroll", handleScroll, true)
 
     return () => {
       document.removeEventListener("mousedown", handleMouseDown)
       document.removeEventListener("keydown", handleKeyDown)
       window.removeEventListener("resize", handleDetach)
-      window.removeEventListener("scroll", handleDetach, true)
+      window.removeEventListener("scroll", handleScroll, true)
     }
   }, [isOpen])
 
@@ -150,7 +173,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
         aria-controls={isOpen ? menuId : undefined}
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        aria-label={triggerLabel}
+        aria-label={trigger ? undefined : triggerLabel}
         className={className}
         disabled={disabled}
         onClick={isOpen ? () => setMenuStyle(null) : open}
@@ -158,7 +181,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
         style={style}
         type="button"
       >
-        <Icon color="secondary" name={triggerIcon} size={20} />
+        {trigger ?? <Icon color="secondary" name={triggerIcon} size={20} />}
       </StyledActionMenuTrigger>
 
       {isOpen &&

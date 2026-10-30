@@ -163,7 +163,12 @@ export const es: TranslationResource = {
       users: "Usuarios",
     },
     notifications: "Notificaciones",
+    roles: {
+      ADMIN: "Administrador",
+      USER: "Usuario",
+    },
     signOut: "Cerrar sesión",
+    userMenu: "Menú del usuario",
   },
   unsavedChanges: {
     description: "Tienes cambios que aún no se han guardado. Si sales ahora, se perderán.",

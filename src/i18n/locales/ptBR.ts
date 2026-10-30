@@ -162,7 +162,12 @@ export const ptBR = {
       users: "Usuários",
     },
     notifications: "Notificações",
+    roles: {
+      ADMIN: "Administrador",
+      USER: "Usuário",
+    },
     signOut: "Sair",
+    userMenu: "Menu do usuário",
   },
   unsavedChanges: {
     description: "Você tem alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.",

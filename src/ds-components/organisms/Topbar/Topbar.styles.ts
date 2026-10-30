@@ -61,7 +61,8 @@ export const StyledTopbarAction = styled.button`
   }
 `
 
-export const StyledTopbarUser = styled.div`
+// Spans, not divs: with a user menu the whole block sits inside the menu's trigger <button>.
+export const StyledTopbarUser = styled.span`
   align-items: center;
   display: flex;
   gap: ${spacing[12]};
@@ -94,8 +95,9 @@ export const StyledTopbarAvatarInitials = styled.span`
 
 // On a narrow screen the name and role are hidden to leave the bar room for the breadcrumb. They are
 // clipped rather than display:none, so a screen reader still announces who is signed in.
-export const StyledTopbarUserText = styled.div`
+export const StyledTopbarUserText = styled.span`
   display: flex;
+  text-align: left;
   flex-direction: column;
 
   @media not all and ${media.md} {

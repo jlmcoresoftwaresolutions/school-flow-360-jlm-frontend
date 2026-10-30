@@ -4,7 +4,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom"
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { UnsavedChangesGuard } from "@/components"
 import type { IconName } from "@/ds-components/atoms"
-import type { BreadcrumbItem } from "@/ds-components/molecules"
+import type { ActionMenuItem, BreadcrumbItem } from "@/ds-components/molecules"
 import { Breadcrumb } from "@/ds-components/molecules"
 import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-components/organisms"
 import { Sidebar, Topbar } from "@/ds-components/organisms"
@@ -14,6 +14,7 @@ import type { PathsType } from "@/routes/paths"
 import { paths } from "@/routes/paths"
 import { endExpiredSession } from "@/utils/authRedirect"
 
+import { currentUserMock } from "./AppShell.mock"
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
 type NavKey = keyof TranslationResource["shell"]["nav"]
@@ -100,6 +101,10 @@ export const AppShell = () => {
   const topbarActions: TopbarAction[] = [
     { disabled: true, icon: "bell-outline", key: "notifications", label: t("shell.notifications") },
     { disabled: true, icon: "help-outline", key: "help", label: t("shell.help") },
+  ]
+
+  // Signing out lives in the menu the user block opens.
+  const userMenuItems: ActionMenuItem[] = [
     { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => navigate(paths.signOut) },
   ]
 
@@ -127,7 +132,12 @@ export const AppShell = () => {
           the page's own links. */}
       <UnsavedChangesGuard>
         <AppShellBody>
-          <Topbar actions={topbarActions}>
+          <Topbar
+            actions={topbarActions}
+            user={{ ...currentUserMock, role: t(`shell.roles.${currentUserMock.role}`) }}
+            userMenuItems={userMenuItems}
+            userMenuLabel={t("shell.userMenu")}
+          >
             {breadcrumbItems && <Breadcrumb items={breadcrumbItems} label={t("shell.breadcrumbLabel")} />}
           </Topbar>
 

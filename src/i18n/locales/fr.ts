@@ -163,7 +163,12 @@ export const fr: TranslationResource = {
       users: "Utilisateurs",
     },
     notifications: "Notifications",
+    roles: {
+      ADMIN: "Administrateur",
+      USER: "Utilisateur",
+    },
     signOut: "Se déconnecter",
+    userMenu: "Menu de l'utilisateur",
   },
   unsavedChanges: {
     description:

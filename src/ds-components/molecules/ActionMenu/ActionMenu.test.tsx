@@ -143,6 +143,19 @@ describe("ActionMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument()
   })
 
+  it("stays open when something that doesn't hold the trigger scrolls, e.g. a text field elsewhere", () => {
+    renderMenu()
+    const field = document.createElement("input")
+    document.body.appendChild(field)
+
+    openMenu()
+    fireEvent.scroll(field)
+
+    expect(screen.getByRole("menu")).toBeInTheDocument()
+
+    field.remove()
+  })
+
   describe("keyboard", () => {
     it("moves between the enabled items with the arrows, skipping disabled ones and wrapping", () => {
       renderMenu()
@@ -258,6 +271,23 @@ describe("ActionMenu", () => {
     const { container: kebab } = render(<ActionMenu items={[{ key: "a", label: "A" }]} triggerLabel="Ações" />)
 
     expect(container.querySelector("svg")?.innerHTML).not.toBe(kebab.querySelector("svg")?.innerHTML)
+  })
+
+  it("shows custom trigger content instead of the icon, named by it, with triggerLabel naming the menu", () => {
+    render(
+      <ActionMenu
+        items={[{ key: "sair", label: "Sair" }]}
+        trigger={<span>Maria da Silva</span>}
+        triggerLabel="Menu do usuário"
+      />,
+    )
+
+    const trigger = screen.getByRole("button", { name: "Maria da Silva" })
+    expect(trigger.querySelector("svg")).not.toBeInTheDocument()
+
+    fireEvent.click(trigger)
+
+    expect(screen.getByRole("menu", { name: "Menu do usuário" })).toBeInTheDocument()
   })
 
   describe("checked items", () => {

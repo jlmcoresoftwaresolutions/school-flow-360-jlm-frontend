@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
+import { spacing } from "@/foundation"
+
+import { Icon } from "../../atoms"
 import { Table } from "../../organisms"
 import { ActionMenu } from "./ActionMenu"
 
@@ -26,6 +29,11 @@ const meta: Meta<typeof ActionMenu> = {
       control: "object",
       description:
         "The actions: key, label and optionally icon, tone (danger paints it red), disabled, onClick and checked. Selecting one runs its onClick and closes the menu. An item with checked set (true or false) becomes a menuitemradio, for picking one option out of several.",
+    },
+    trigger: {
+      control: false,
+      description:
+        "Content shown on the trigger instead of the icon (e.g. a user's avatar and name). The button is then named by that content, and triggerLabel names only the menu.",
     },
     triggerIcon: {
       control: "text",
@@ -81,6 +89,20 @@ export const InTableRow: Story = {
       <Table.Column align="right" body={() => <ActionMenu {...args} />} field="id" header="Ações" />
     </Table>
   ),
+}
+
+// The trigger prop showing custom content on the button instead of an icon
+export const WithCustomTrigger: Story = {
+  args: {
+    items: [{ icon: "logout-outline", key: "sair", label: "Sair" }],
+    trigger: (
+      <span style={{ alignItems: "center", display: "inline-flex", gap: spacing[8] }}>
+        Maria da Silva
+        <Icon color="secondary" name="chevron-down" size={16} />
+      </span>
+    ),
+    triggerLabel: "Menu do usuário",
+  },
 }
 
 // The triggerIcon prop and checked items turning the menu into a single-choice picker, e.g. a sort order

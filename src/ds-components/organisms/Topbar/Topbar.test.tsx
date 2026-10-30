@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { Topbar, type TopbarAction, type TopbarProps } from "./Topbar"
@@ -92,6 +92,42 @@ describe("Topbar", () => {
 
       expect(container.querySelector("img")).toHaveAttribute("src", "/maria.png")
       expect(screen.queryByText("MS")).not.toBeInTheDocument()
+    })
+
+    it("is not a button when there is no user menu", () => {
+      renderTopbar({ user: { name: "Maria da Silva", role: "Diretora" } })
+
+      expect(screen.queryByRole("button", { name: /Maria da Silva/ })).not.toBeInTheDocument()
+    })
+
+    it("becomes a button, named by the user's name, that opens the user menu with its items", () => {
+      const onSignOut = vi.fn()
+      renderTopbar({
+        user: { name: "Maria da Silva", role: "Diretora" },
+        userMenuItems: [{ icon: "logout-outline", key: "sair", label: "Sair", onClick: onSignOut }],
+      })
+
+      const trigger = screen.getByRole("button", { name: /^Maria da Silva/ })
+      expect(trigger).toHaveAttribute("aria-haspopup", "menu")
+
+      fireEvent.click(trigger)
+      fireEvent.click(
+        within(screen.getByRole("menu", { name: "Menu do usuário" })).getByRole("menuitem", { name: "Sair" }),
+      )
+
+      expect(onSignOut).toHaveBeenCalledOnce()
+    })
+
+    it("names the user menu with userMenuLabel", () => {
+      renderTopbar({
+        user: { name: "Maria da Silva" },
+        userMenuItems: [{ key: "sair", label: "Sair" }],
+        userMenuLabel: "User menu",
+      })
+
+      fireEvent.click(screen.getByRole("button", { name: /^Maria da Silva/ }))
+
+      expect(screen.getByRole("menu", { name: "User menu" })).toBeInTheDocument()
     })
 
     it("gives the photo an empty alt, since the name is already next to it", () => {

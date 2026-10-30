@@ -37,6 +37,12 @@ const renderAppShell = (initialEntry: string) =>
     />,
   )
 
+// Signing out is in the menu the user block (in the topbar) opens.
+const signOut = () => {
+  fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: /^João Silva/ }))
+  fireEvent.click(screen.getByRole("menuitem", { name: "Sair" }))
+}
+
 describe("AppShell", () => {
   it("renders the sidebar brand", () => {
     renderAppShell("/outra")
@@ -159,10 +165,28 @@ describe("AppShell", () => {
     expect(topbar.getByRole("button", { name: "Ajuda" })).toBeDisabled()
   })
 
+  it("shows the signed-in user with their role, and a menu with only signing out", () => {
+    renderAppShell("/outra")
+
+    const banner = within(screen.getByRole("banner"))
+    expect(banner.getByText("João Silva")).toBeInTheDocument()
+    expect(banner.getByText("Administrador")).toBeInTheDocument()
+    expect(banner.queryByRole("button", { name: "Sair" })).not.toBeInTheDocument()
+
+    fireEvent.click(banner.getByRole("button", { name: /^João Silva/ }))
+
+    const menu = screen.getByRole("menu", { name: "Menu do usuário" })
+    expect(
+      within(menu)
+        .getAllByRole("menuitem")
+        .map((item) => item.textContent),
+    ).toEqual(["Sair"])
+  })
+
   it("signs out through the sign-out route, so it goes through the unsaved-changes warning", async () => {
     renderAppShell("/outra")
 
-    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
+    signOut()
 
     expect(await screen.findByText("Saindo da conta")).toBeInTheDocument()
   })
@@ -170,7 +194,7 @@ describe("AppShell", () => {
   it("asks before leaving a page with unsaved changes, and stays when told to", async () => {
     renderAppShell("/editando")
 
-    fireEvent.click(within(screen.getByRole("banner")).getByRole("button", { name: "Sair" }))
+    signOut()
 
     const dialog = await screen.findByRole("dialog", { name: "Descartar alterações?" })
     fireEvent.click(within(dialog).getByRole("button", { name: "Continuar editando" }))

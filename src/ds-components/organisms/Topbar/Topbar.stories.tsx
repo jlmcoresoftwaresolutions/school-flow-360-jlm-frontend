@@ -40,6 +40,15 @@ const meta: Meta<typeof Topbar> = {
       description:
         "The signed-in user: name, and optionally role and avatarSrc. Without a photo the avatar shows the name's initials.",
     },
+    userMenuItems: {
+      control: "object",
+      description:
+        "Items of the menu the user block opens (key, label and optionally icon, tone, disabled and onClick). With any, the user block becomes a button with a chevron.",
+    },
+    userMenuLabel: {
+      control: "text",
+      description: 'Accessible name of the user menu. Defaults to "Menu do usuário".',
+    },
   },
   component: Topbar,
   parameters: { layout: "fullscreen" },
@@ -66,6 +75,14 @@ export const BreadcrumbOnly: Story = {
   args: {
     actions: undefined,
     user: undefined,
+  },
+}
+
+// The userMenuItems prop turning the user block into a button that opens a menu, here with signing out
+export const WithUserMenu: Story = {
+  args: {
+    user: { avatarSrc: photo, name: "Maria da Silva", role: "Diretora" },
+    userMenuItems: [{ icon: "logout-outline", key: "sair", label: "Sair" }],
   },
 }
 
