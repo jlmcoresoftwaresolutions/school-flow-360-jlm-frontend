@@ -18,7 +18,7 @@ const meta: Meta<typeof Topbar> = {
       <Breadcrumb
         items={[
           { key: "administracao", label: "Administração" },
-          { key: "minha-escola", label: "Minha Escola" },
+          { key: "minha-unidade", label: "Minha Unidade" },
         ]}
         label="Você está em"
       />

@@ -24,7 +24,7 @@ const renderAppShell = (initialEntry: string) =>
           {
             children: [
               { element: <div>Outra página</div>, path: "/outra" },
-              { element: <div>Página Minha Unidade</div>, path: "/administration/my-school" },
+              { element: <div>Página Minha Unidade</div>, path: "/administration/my-unit" },
               { element: <div>Página Início</div>, path: "/home" },
               { element: <div>Página Mensalidades</div>, path: "/finance/tuition" },
               { element: <EditingPage />, path: "/editando" },
@@ -134,7 +134,7 @@ describe("AppShell", () => {
   })
 
   it("opens the Administração group and marks Minha Unidade as the current page on its route", () => {
-    renderAppShell("/administration/my-school")
+    renderAppShell("/administration/my-unit")
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
     expect(screen.getByRole("button", { name: "Minha Unidade" })).toHaveAttribute("aria-current", "page")
@@ -180,7 +180,7 @@ describe("AppShell", () => {
   })
 
   it("shows the breadcrumb for Minha Unidade, with the current page marked", () => {
-    renderAppShell("/administration/my-school")
+    renderAppShell("/administration/my-unit")
 
     const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
 
@@ -214,7 +214,7 @@ describe("AppShell", () => {
     })
 
     it("translates the menu, the breadcrumb and the topbar", async () => {
-      renderAppShell("/administration/my-school")
+      renderAppShell("/administration/my-unit")
 
       await act(() => i18n.changeLanguage("en"))
 

@@ -20,7 +20,7 @@ export const paths = {
   invites: "/users/invites",
   login: "/login",
   messages: "/communication/messages",
-  minhaEscola: "/administration/my-school",
+  minhaUnidade: "/administration/my-unit",
   notices: "/communication/notices",
   notifications: "/communication/notifications",
   preferences: "/settings/preferences",
@@ -36,7 +36,6 @@ export const paths = {
   signOut: "/sign-out",
   subjects: "/academic/subjects",
   tuition: "/finance/tuition",
-  units: "/administration/units",
   userList: "/users/list",
 }
 

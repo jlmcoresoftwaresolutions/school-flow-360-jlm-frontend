@@ -53,7 +53,7 @@ type Story = StoryObj<typeof AppShell>
 
 // Default rendering: sidebar, topbar with the page breadcrumb, and a placeholder routed page shown through the Outlet
 export const Default: Story = {
-  render: () => <AppShellExample initialPath="/administration/my-school" pageText="Conteúdo da página roteada" />,
+  render: () => <AppShellExample initialPath="/administration/my-unit" pageText="Conteúdo da página roteada" />,
 }
 
 // A route with no matching nav item leaves every Sidebar item inactive and every group collapsed

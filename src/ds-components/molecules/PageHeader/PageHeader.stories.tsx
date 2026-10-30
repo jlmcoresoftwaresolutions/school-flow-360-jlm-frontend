@@ -6,7 +6,7 @@ const meta: Meta<typeof PageHeader> = {
   args: {
     description: "Visão geral da sua organização, com informações institucionais e configurações principais.",
     icon: "building-outline",
-    title: "Minha Escola",
+    title: "Minha Unidade",
   },
   argTypes: {
     className: {
@@ -40,7 +40,7 @@ export default meta
 
 type Story = StoryObj<typeof PageHeader>
 
-// Default rendering: icon, title and description, as at the top of Minha Escola
+// Default rendering: icon, title and description, as at the top of Minha Unidade
 export const Default: Story = {}
 
 // Without the optional icon, the title and description start at the left edge

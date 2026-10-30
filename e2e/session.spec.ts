@@ -31,38 +31,38 @@ const signIn = async (page: Page) => {
 
 const oneHour = 60 * 60 * 1000
 const expiredNotice = "Sua sessão expirou. Entre novamente para continuar."
-const minhaEscolaHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
+const minhaUnidadeHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
 
 test("ends the session when it expires, even on an idle page, and brings the user back after signing in", async ({
   page,
 }) => {
   await mockLogin(page, [4000, oneHour])
-  await page.goto("/administration/my-school")
+  await page.goto("/administration/my-unit")
   await signIn(page)
-  await expect(minhaEscolaHeading(page)).toBeVisible()
+  await expect(minhaUnidadeHeading(page)).toBeVisible()
 
   // Nothing is clicked: the expiry alone ends the session and the page's data leaves the screen.
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-school&expired=1$/, { timeout: 15_000 })
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit&expired=1$/, { timeout: 15_000 })
   await expect(page.getByRole("status").filter({ hasText: expiredNotice })).toBeVisible()
-  await expect(minhaEscolaHeading(page)).toHaveCount(0)
+  await expect(minhaUnidadeHeading(page)).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem("sf360.session"))).toBeNull()
 
   await signIn(page)
 
-  await expect(page).toHaveURL(/\/administration\/my-school$/)
-  await expect(minhaEscolaHeading(page)).toBeVisible()
+  await expect(page).toHaveURL(/\/administration\/my-unit$/)
+  await expect(minhaUnidadeHeading(page)).toBeVisible()
 })
 
 test("brings a visitor back to the page they opened, without saying a session expired", async ({ page }) => {
   await mockLogin(page, [oneHour])
-  await page.goto("/administration/my-school")
+  await page.goto("/administration/my-unit")
 
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-school$/)
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit$/)
   await expect(page.getByText(expiredNotice)).toHaveCount(0)
 
   await signIn(page)
 
-  await expect(page).toHaveURL(/\/administration\/my-school$/)
+  await expect(page).toHaveURL(/\/administration\/my-unit$/)
 })
 
 test("signs out from the header, ending the session here and on the backend", async ({ page }) => {
@@ -87,8 +87,8 @@ test("signs out from the header, ending the session here and on the backend", as
   expect(await page.evaluate(() => localStorage.getItem("sf360.session"))).toBeNull()
 
   // The inner pages are closed again.
-  await page.goto("/administration/my-school")
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-school$/)
+  await page.goto("/administration/my-unit")
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit$/)
 })
 
 test("signs out at once even when the backend doesn't answer", async ({ page }) => {

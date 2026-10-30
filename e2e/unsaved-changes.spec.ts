@@ -53,7 +53,7 @@ test("warns in a centered dialog before leaving a form with unsaved changes, and
   await warning(page).getByRole("button", { name: "Continuar editando" }).click()
 
   await expect(warning(page)).toBeHidden()
-  await expect(page).toHaveURL(/\/administration\/my-school$/)
+  await expect(page).toHaveURL(/\/administration\/my-unit$/)
   await expect(displayNameField(page)).toHaveValue("Colégio Horizonte Novo")
 })
 

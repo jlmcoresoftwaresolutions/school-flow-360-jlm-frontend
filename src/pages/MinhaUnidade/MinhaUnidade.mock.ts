@@ -27,7 +27,7 @@ export type Organization = OrganizationDetails & {
 // Order matches the private/public operation-model field already used across the project
 // (see erp-vision-scope memory) - not itself a stand-in for DP-02, which is about which fields
 // are mandatory, not this list of values.
-// Only the values live here; their labels are copy, translated by the page (minhaEscola.operationModels).
+// Only the values live here; their labels are copy, translated by the page (minhaUnidade.operationModels).
 export const operationModelValues = [
   "PRIVADA",
   "PUBLICA_MUNICIPAL",
@@ -40,7 +40,7 @@ export type OperationModel = (typeof operationModelValues)[number]
 
 // DP-03 (final status taxonomy for Organização/Unidade) is still open - this two-value set is
 // only good enough to demo the screen, not a proposal for the real taxonomy.
-// Labels translated by the page (minhaEscola.statuses).
+// Labels translated by the page (minhaUnidade.statuses).
 export const statusValues = ["ATIVA", "INATIVA"] as const
 
 export type OrganizationStatus = (typeof statusValues)[number]

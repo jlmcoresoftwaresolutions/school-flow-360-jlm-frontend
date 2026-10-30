@@ -55,7 +55,7 @@ export const ptBR = {
     tooManyAttempts_one: "Muitas tentativas incorretas. Aguarde {{count}} minuto para tentar de novo.",
     tooManyAttempts_other: "Muitas tentativas incorretas. Aguarde {{count}} minutos para tentar de novo.",
   },
-  minhaEscola: {
+  minhaUnidade: {
     address: "Endereço",
     brandingSaved: "Identidade visual atualizada.",
     brandingTitle: "Identidade visual",
@@ -145,7 +145,7 @@ export const ptBR = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      minhaEscola: "Minha Unidade",
+      minhaUnidade: "Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
       preferences: "Preferências",
@@ -158,7 +158,6 @@ export const ptBR = {
       settings: "Configurações",
       subjects: "Disciplinas",
       tuition: "Mensalidades",
-      units: "Unidades",
       userList: "Lista de usuários",
       users: "Usuários",
     },

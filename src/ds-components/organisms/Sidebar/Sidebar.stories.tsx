@@ -75,7 +75,7 @@ const items: SidebarNavItem[] = [
     label: "Relatórios",
   },
   {
-    children: childrenOf("Minha Escola", "Unidades"),
+    children: childrenOf("Minha Unidade", "Unidades"),
     icon: "gear-outline",
     key: "administracao",
     label: "Administração",
@@ -160,15 +160,15 @@ export default meta
 
 type Story = StoryObj<typeof Sidebar>
 
-// Default rendering: clicking a leaf or a child moves the active highlight, and clicking a group header expands it (Minha Escola starts active, so Administração starts open)
+// Default rendering: clicking a leaf or a child moves the active highlight, and clicking a group header expands it (Minha Unidade starts active, so Administração starts open)
 export const Default: Story = {
-  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Escola" />,
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
 }
 
 // Below the md breakpoint (768px) the sidebar is an icon-only rail with a button that opens it over the content - the viewport is set to a phone here, and the toolbar can resize it
 export const Mobile: Story = {
   globals: { viewport: { value: "mobile2" } },
-  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Escola" />,
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
 }
 
 // With no active child every group starts collapsed; opening one group closes whichever other was open, so only one is ever open

@@ -57,7 +57,7 @@ export const ptPT: TranslationResource = {
     tooManyAttempts_one: "Demasiadas tentativas incorretas. Aguarde {{count}} minuto para tentar novamente.",
     tooManyAttempts_other: "Demasiadas tentativas incorretas. Aguarde {{count}} minutos para tentar novamente.",
   },
-  minhaEscola: {
+  minhaUnidade: {
     address: "Morada",
     brandingSaved: "Identidade visual atualizada.",
     brandingTitle: "Identidade visual",
@@ -147,7 +147,7 @@ export const ptPT: TranslationResource = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      minhaEscola: "A Minha Unidade",
+      minhaUnidade: "A Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
       preferences: "Preferências",
@@ -160,7 +160,6 @@ export const ptPT: TranslationResource = {
       settings: "Definições",
       subjects: "Disciplinas",
       tuition: "Propinas",
-      units: "Unidades",
       userList: "Lista de utilizadores",
       users: "Utilizadores",
     },

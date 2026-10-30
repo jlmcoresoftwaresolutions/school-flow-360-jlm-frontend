@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { buildLoginUrl, getSafeRedirectPath } from "./authRedirect"
 
 describe("getSafeRedirectPath", () => {
-  it.each(["/administration/my-school", "/administration/my-school?tab=2#branding", "/"])("keeps %s", (path) => {
+  it.each(["/administration/my-unit", "/administration/my-unit?tab=2#branding", "/"])("keeps %s", (path) => {
     expect(getSafeRedirectPath(path)).toBe(path)
   })
 
@@ -12,7 +12,7 @@ describe("getSafeRedirectPath", () => {
     "//other.site",
     "/\\other.site",
     "javascript:alert(1)",
-    "administration/my-school",
+    "administration/my-unit",
     "",
     null,
     undefined,
@@ -27,14 +27,14 @@ describe("buildLoginUrl", () => {
   })
 
   it("carries the page to return to", () => {
-    expect(buildLoginUrl("/login", { from: "/administration/my-school?tab=2" })).toBe(
-      "/login?redirect=%2Fadministration%2Fmy-school%3Ftab%3D2",
+    expect(buildLoginUrl("/login", { from: "/administration/my-unit?tab=2" })).toBe(
+      "/login?redirect=%2Fadministration%2Fmy-unit%3Ftab%3D2",
     )
   })
 
   it("flags an expired session", () => {
-    expect(buildLoginUrl("/login", { from: "/administration/my-school", sessionExpired: true })).toBe(
-      "/login?redirect=%2Fadministration%2Fmy-school&expired=1",
+    expect(buildLoginUrl("/login", { from: "/administration/my-unit", sessionExpired: true })).toBe(
+      "/login?redirect=%2Fadministration%2Fmy-unit&expired=1",
     )
   })
 

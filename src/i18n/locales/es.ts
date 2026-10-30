@@ -56,7 +56,7 @@ export const es: TranslationResource = {
     tooManyAttempts_one: "Demasiados intentos incorrectos. Espera {{count}} minuto para volver a intentarlo.",
     tooManyAttempts_other: "Demasiados intentos incorrectos. Espera {{count}} minutos para volver a intentarlo.",
   },
-  minhaEscola: {
+  minhaUnidade: {
     address: "Dirección",
     brandingSaved: "Identidad visual actualizada.",
     brandingTitle: "Identidad visual",
@@ -146,7 +146,7 @@ export const es: TranslationResource = {
       integrations: "Integraciones",
       invites: "Invitaciones",
       messages: "Mensajes",
-      minhaEscola: "Mi Sede",
+      minhaUnidade: "Mi Sede",
       notices: "Avisos",
       notifications: "Notificaciones",
       preferences: "Preferencias",
@@ -159,7 +159,6 @@ export const es: TranslationResource = {
       settings: "Configuración",
       subjects: "Asignaturas",
       tuition: "Mensualidades",
-      units: "Sedes",
       userList: "Lista de usuarios",
       users: "Usuarios",
     },

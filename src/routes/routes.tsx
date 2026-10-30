@@ -8,7 +8,7 @@ import { clearSession, getSessionState, getSessionToken, hasSession } from "@/ut
 import { homePath, paths } from "./paths"
 
 // Every page (and the AppShell layout) is loaded on demand through `lazy`, so each one becomes its own
-// chunk: opening /login doesn't download Minha Escola's date/color pickers, and vice versa. They are
+// chunk: opening /login doesn't download Minha Unidade's date/color pickers, and vice versa. They are
 // imported from their own folders rather than the @/pages barrel, which would pull every page into
 // whichever chunk imported it. hydrateFallbackElement covers the first load, while the matched
 // route's loader runs and its chunk is still on its way; later navigations keep the current page up
@@ -98,10 +98,10 @@ export const router = createBrowserRouter([
     children: [
       {
         lazy: async () => {
-          const { MinhaEscola } = await import("@/pages/MinhaEscola")
-          return { Component: MinhaEscola }
+          const { MinhaUnidade } = await import("@/pages/MinhaUnidade")
+          return { Component: MinhaUnidade }
         },
-        path: paths.minhaEscola,
+        path: paths.minhaUnidade,
       },
       {
         lazy: async () => {
@@ -207,13 +207,6 @@ export const router = createBrowserRouter([
           return { Component: Exports }
         },
         path: paths.exports,
-      },
-      {
-        lazy: async () => {
-          const { Units } = await import("@/pages/Units")
-          return { Component: Units }
-        },
-        path: paths.units,
       },
       {
         lazy: async () => {
