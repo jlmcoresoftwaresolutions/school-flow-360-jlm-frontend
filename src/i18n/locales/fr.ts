@@ -9,6 +9,9 @@ export const fr: TranslationResource = {
     edit: "Modifier",
     hidePassword: "Masquer le mot de passe",
     loading: "Chargement...",
+    // Placeholder for a page whose description isn't defined yet.
+    placeholderDescription:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
     poweredBy: "Powered by JLM Core",
     save: "Enregistrer",
     showPassword: "Afficher le mot de passe",
@@ -87,7 +90,7 @@ export const fr: TranslationResource = {
       INATIVA: "Inactive",
     },
     subtitle: "Configurez l'identité institutionnelle de l'organisation actuelle.",
-    title: "Mon École",
+    title: "Mon Établissement",
   },
   resetPassword: {
     backToLogin: "Retour à la connexion",
@@ -143,7 +146,7 @@ export const fr: TranslationResource = {
       integrations: "Intégrations",
       invites: "Invitations",
       messages: "Messages",
-      minhaEscola: "Mon École",
+      minhaEscola: "Mon Établissement",
       notices: "Annonces",
       notifications: "Notifications",
       preferences: "Préférences",

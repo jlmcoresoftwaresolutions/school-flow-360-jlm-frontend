@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 
-// Signs in (backend mocked) and opens the edit form of Minha Escola's organization details.
+// Signs in (backend mocked) and opens the edit form of Minha Unidade's organization details.
 const openDetailsForm = async (page: Page) => {
   await page.route("**/api/auth/login", (route) =>
     route.fulfill({
@@ -24,7 +24,11 @@ const openDetailsForm = async (page: Page) => {
   await page.getByRole("textbox", { name: "E-mail" }).fill("diretor@schoolflow360.com.br")
   await page.getByLabel(/^Senha/).fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "Minha Escola" })).toBeVisible()
+  await expect(page).toHaveURL(/\/home$/)
+
+  await page.getByRole("complementary").getByRole("button", { name: "Administração" }).click()
+  await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
 
   await page.getByRole("button", { name: "Editar" }).first().click()
 }

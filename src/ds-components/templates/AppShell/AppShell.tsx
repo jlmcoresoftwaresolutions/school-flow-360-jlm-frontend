@@ -44,11 +44,22 @@ const menuGroups: NavGroup[] = [
 const bottomGroups: NavGroup[] = [{ children: ["helpCenter", "contactSupport"], icon: "help-outline", key: "help" }]
 
 // The trail shown in the topbar for each page, as nav keys: its group, then the page. A group has no
-// page of its own, so it is plain text, not a link. A route not listed here shows no breadcrumb.
-const breadcrumbByPath: Record<string, NavKey[]> = Object.fromEntries([
-  [paths.home, ["home"]],
+// page of its own, so it is plain text, not a link. The first entry carries the icon of its menu
+// entry. A route not listed here shows no breadcrumb.
+type BreadcrumbTrail = {
+  icon: IconName
+  keys: NavKey[]
+}
+
+const homeIcon: IconName = "home-outline"
+
+const breadcrumbByPath: Record<string, BreadcrumbTrail> = Object.fromEntries([
+  [paths.home, { icon: homeIcon, keys: ["home"] }],
   ...[...menuGroups, ...bottomGroups].flatMap((group) =>
-    group.children.map((child): [string, NavKey[]] => [paths[child], [group.key, child]]),
+    group.children.map((child): [string, BreadcrumbTrail] => [
+      paths[child],
+      { icon: group.icon, keys: [group.key, child] },
+    ]),
   ),
 ])
 
@@ -80,7 +91,7 @@ export const AppShell = () => {
     label: navLabel(group.key),
   })
 
-  const items: SidebarNavItem[] = [{ ...toNavLink("home"), icon: "home-outline" }, ...menuGroups.map(toNavItem)]
+  const items: SidebarNavItem[] = [{ ...toNavLink("home"), icon: homeIcon }, ...menuGroups.map(toNavItem)]
 
   const bottomItems: SidebarNavItem[] = bottomGroups.map(toNavItem)
 
@@ -92,7 +103,9 @@ export const AppShell = () => {
     { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => navigate(paths.signOut) },
   ]
 
-  const breadcrumbItems: BreadcrumbItem[] | undefined = breadcrumbByPath[location.pathname]?.map((key) => ({
+  const breadcrumbTrail = breadcrumbByPath[location.pathname]
+  const breadcrumbItems: BreadcrumbItem[] | undefined = breadcrumbTrail?.keys.map((key, index) => ({
+    icon: index === 0 ? breadcrumbTrail.icon : undefined,
     key,
     label: navLabel(key),
   }))

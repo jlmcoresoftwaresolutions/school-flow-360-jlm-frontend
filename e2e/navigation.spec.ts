@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 
-// Signs in with the backend mocked, landing on Minha Escola.
+// Signs in with the backend mocked, landing on Início.
 const signIn = async (page: Page) => {
   await page.route("**/api/auth/login", (route) =>
     route.fulfill({
@@ -23,7 +23,7 @@ const signIn = async (page: Page) => {
   await page.getByRole("textbox", { name: "E-mail" }).fill("diretor@schoolflow360.com.br")
   await page.getByLabel(/^Senha/).fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "Minha Escola" })).toBeVisible()
+  await expect(page).toHaveURL(/\/home$/)
 }
 
 const sidebar = (page: Page) => page.getByRole("complementary")
@@ -36,18 +36,23 @@ test("opens a menu page from its group, with the breadcrumb showing where it is"
   await sidebar(page).getByRole("button", { name: "Turmas" }).click()
 
   await expect(page).toHaveURL(/\/academic\/classes$/)
+  await expect(page.getByRole("heading", { level: 1, name: "Turmas" })).toBeVisible()
   await expect(breadcrumb(page)).toContainText("Acadêmico")
   await expect(breadcrumb(page).getByText("Turmas")).toHaveAttribute("aria-current", "page")
   await expect(sidebar(page).getByRole("button", { name: "Turmas" })).toHaveAttribute("aria-current", "page")
 })
 
-test("opens Início, a top-level entry", async ({ page }) => {
+test("lands on Início after signing in, and comes back to it from the menu", async ({ page }) => {
   await signIn(page)
 
+  await expect(sidebar(page).getByRole("button", { name: "Início" })).toHaveAttribute("aria-current", "page")
+  await expect(breadcrumb(page).getByText("Início")).toHaveAttribute("aria-current", "page")
+
+  await sidebar(page).getByRole("button", { name: "Acadêmico" }).click()
+  await sidebar(page).getByRole("button", { name: "Turmas" }).click()
   await sidebar(page).getByRole("button", { name: "Início" }).click()
 
   await expect(page).toHaveURL(/\/home$/)
-  await expect(breadcrumb(page).getByText("Início")).toHaveAttribute("aria-current", "page")
 })
 
 test("opens a menu page straight from its address", async ({ page }) => {

@@ -8,6 +8,9 @@ export const ptBR = {
     edit: "Editar",
     hidePassword: "Ocultar senha",
     loading: "Carregando...",
+    // Placeholder for a page whose description isn't defined yet.
+    placeholderDescription:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
     poweredBy: "Powered by JLM Core",
     save: "Salvar",
     showPassword: "Mostrar senha",
@@ -86,7 +89,7 @@ export const ptBR = {
       INATIVA: "Inativa",
     },
     subtitle: "Configure a identidade institucional da organização corrente.",
-    title: "Minha Escola",
+    title: "Minha Unidade",
   },
   resetPassword: {
     backToLogin: "Voltar para o login",
@@ -142,7 +145,7 @@ export const ptBR = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      minhaEscola: "Minha Escola",
+      minhaEscola: "Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
       preferences: "Preferências",

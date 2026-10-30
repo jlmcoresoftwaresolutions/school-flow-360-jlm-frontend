@@ -6,7 +6,7 @@ import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Loading, toast, useUnsavedChanges } from "@/components"
 import { Button, Card, Grid, Icon, Image, Tag, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { ColorPicker, FileUpload, Input, Select, Textarea } from "@/ds-components/molecules"
+import { ColorPicker, FileUpload, Input, PageHeader, Select, Textarea } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import { isShallowEqual } from "@/utils/objects"
 
@@ -24,7 +24,6 @@ import {
   ColorSwatch,
   FieldGroup,
   FormActions,
-  PageHeader,
   ReadOnlyField,
   ReadOnlyGrid,
 } from "./MinhaEscola.styles"
@@ -419,14 +418,7 @@ export const MinhaEscola = () => {
     <>
       {isLoading && <Loading label={t("common.loading")} />}
 
-      <PageHeader>
-        <Text as="h1" fontSize="2xl" bold>
-          {t("minhaEscola.title")}
-        </Text>
-        <Text color="secondary" fontSize="sm">
-          {t("minhaEscola.subtitle")}
-        </Text>
-      </PageHeader>
+      <PageHeader description={t("minhaEscola.subtitle")} icon="building-outline" title={t("minhaEscola.title")} />
 
       {hasError && (
         <Card

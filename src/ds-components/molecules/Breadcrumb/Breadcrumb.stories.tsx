@@ -15,7 +15,7 @@ const meta: Meta<typeof Breadcrumb> = {
     items: {
       control: "object",
       description:
-        "The trail, in order: key, label and optionally href (a link) or onClick (a button). The last item is the current page and is never interactive; an earlier item with neither is plain text.",
+        "The trail, in order: key, label and optionally href (a link) or onClick (a button), and an icon shown before the label. The last item is the current page and is never interactive; an earlier item with neither is plain text.",
     },
     label: {
       control: "text",
@@ -34,6 +34,16 @@ type Story = StoryObj<typeof Breadcrumb>
 
 // Default rendering: a group with no page of its own, a link and the current page
 export const Default: Story = {}
+
+// An icon before the first entry, as the app shows the menu entry the page belongs to
+export const WithIcon: Story = {
+  args: {
+    items: [
+      { icon: "gear-outline", key: "administracao", label: "Administração" },
+      { key: "minha-escola", label: "Minha Escola" },
+    ],
+  },
+}
 
 // Entries with an onClick (and no href) rendered as buttons, for a client-side router
 export const WithButtons: Story = {

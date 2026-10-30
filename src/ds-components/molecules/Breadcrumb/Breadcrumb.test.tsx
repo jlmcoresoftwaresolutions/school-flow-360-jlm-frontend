@@ -109,6 +109,23 @@ describe("Breadcrumb", () => {
     expect(container.querySelectorAll("svg")).toHaveLength(2)
   })
 
+  it("renders an entry's icon before its label, inside the same list item", () => {
+    const { container } = renderBreadcrumb({
+      items: [
+        { icon: "gear-outline", key: "administracao", label: "Administração" },
+        { key: "minha-escola", label: "Minha Escola" },
+      ],
+    })
+
+    const [first, last] = screen.getAllByRole("listitem")
+
+    // The icon, the label and the separator.
+    expect(first.firstElementChild?.querySelector("svg")).toBeInTheDocument()
+    expect(first).toHaveTextContent("Administração")
+    expect(last.querySelector("svg")).not.toBeInTheDocument()
+    expect(container.querySelectorAll("svg")).toHaveLength(2)
+  })
+
   it("forwards className and style to the nav", () => {
     renderBreadcrumb({ className: "custom", style: { margin: "4px" } })
 

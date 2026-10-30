@@ -24,7 +24,7 @@ const renderAppShell = (initialEntry: string) =>
           {
             children: [
               { element: <div>Outra página</div>, path: "/outra" },
-              { element: <div>Página Minha Escola</div>, path: "/administration/my-school" },
+              { element: <div>Página Minha Unidade</div>, path: "/administration/my-school" },
               { element: <div>Página Início</div>, path: "/home" },
               { element: <div>Página Mensalidades</div>, path: "/finance/tuition" },
               { element: <EditingPage />, path: "/editando" },
@@ -78,7 +78,9 @@ describe("AppShell", () => {
   it("enables every child of every group, as each one has its own page", () => {
     renderAppShell("/outra")
 
-    const sidebar = within(screen.getByRole("complementary"))
+    // Plain DOM queries for the disabled check: role queries over the whole menu, nine times, are slow.
+    const sidebarElement = screen.getByRole("complementary")
+    const sidebar = within(sidebarElement)
     const groups = [
       "Acadêmico",
       "Financeiro",
@@ -94,7 +96,7 @@ describe("AppShell", () => {
     groups.forEach((name) => {
       fireEvent.click(sidebar.getByRole("button", { name }))
 
-      expect(sidebar.getAllByRole("button").filter((button) => button.hasAttribute("disabled"))).toHaveLength(0)
+      expect(sidebarElement.querySelectorAll("button:disabled")).toHaveLength(0)
     })
   })
 
@@ -128,24 +130,24 @@ describe("AppShell", () => {
     renderAppShell("/outra")
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "false")
-    expect(screen.queryByRole("button", { name: "Minha Escola" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Minha Unidade" })).not.toBeInTheDocument()
   })
 
-  it("opens the Administração group and marks Minha Escola as the current page on its route", () => {
+  it("opens the Administração group and marks Minha Unidade as the current page on its route", () => {
     renderAppShell("/administration/my-school")
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
-    expect(screen.getByRole("button", { name: "Minha Escola" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("button", { name: "Minha Unidade" })).toHaveAttribute("aria-current", "page")
   })
 
-  it("navigates to Minha Escola after expanding the group and clicking its item", () => {
+  it("navigates to Minha Unidade after expanding the group and clicking its item", () => {
     renderAppShell("/outra")
 
     fireEvent.click(screen.getByRole("button", { name: "Administração" }))
-    fireEvent.click(screen.getByRole("button", { name: "Minha Escola" }))
+    fireEvent.click(screen.getByRole("button", { name: "Minha Unidade" }))
 
-    expect(screen.getByText("Página Minha Escola")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Minha Escola" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByText("Página Minha Unidade")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Minha Unidade" })).toHaveAttribute("aria-current", "page")
   })
 
   it("renders the topbar with notifications and help disabled, as those features don't exist yet", () => {
@@ -177,13 +179,26 @@ describe("AppShell", () => {
     expect(screen.queryByText("Saindo da conta")).not.toBeInTheDocument()
   })
 
-  it("shows the breadcrumb for Minha Escola, with the current page marked", () => {
+  it("shows the breadcrumb for Minha Unidade, with the current page marked", () => {
     renderAppShell("/administration/my-school")
 
     const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
 
     expect(within(breadcrumb).getByText("Administração")).toBeInTheDocument()
-    expect(within(breadcrumb).getByText("Minha Escola")).toHaveAttribute("aria-current", "page")
+    expect(within(breadcrumb).getByText("Minha Unidade")).toHaveAttribute("aria-current", "page")
+  })
+
+  it("shows the icon of the page's menu entry before the first breadcrumb entry only", () => {
+    renderAppShell("/finance/tuition")
+
+    const [first, last] = within(screen.getByRole("navigation", { name: "Você está em" })).getAllByRole("listitem")
+    const groupIcon = within(screen.getByRole("complementary"))
+      .getByRole("button", { name: "Financeiro" })
+      .querySelector("svg")
+
+    // Same drawing (paths), at the breadcrumb's smaller size.
+    expect(first.querySelector("svg")?.innerHTML).toBe(groupIcon?.innerHTML)
+    expect(last.querySelector("svg")).not.toBeInTheDocument()
   })
 
   it("shows no breadcrumb on a route that has no trail", () => {
@@ -204,7 +219,7 @@ describe("AppShell", () => {
       await act(() => i18n.changeLanguage("en"))
 
       expect(await screen.findByRole("button", { name: "Administration" })).toBeInTheDocument()
-      expect(within(screen.getByRole("navigation", { name: "You are here" })).getByText("My School")).toHaveAttribute(
+      expect(within(screen.getByRole("navigation", { name: "You are here" })).getByText("My Unit")).toHaveAttribute(
         "aria-current",
         "page",
       )

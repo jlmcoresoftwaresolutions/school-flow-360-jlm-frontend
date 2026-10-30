@@ -2,10 +2,6 @@ import styled from "styled-components"
 
 import { colors, radius, spacing } from "@/foundation"
 
-export const PageHeader = styled.div`
-  margin-bottom: ${spacing[24]};
-`
-
 export const CardHeader = styled.div`
   align-items: center;
   display: flex;

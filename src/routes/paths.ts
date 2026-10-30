@@ -41,7 +41,6 @@ export const paths = {
 }
 
 // Where a signed-in user lands: after the login, and when they open /login while already signed in.
-// Minha Escola for now, the only page with content so far (the other menu pages are still blank).
-export const homePath = paths.minhaEscola
+export const homePath = paths.home
 
 export type PathsType = typeof paths

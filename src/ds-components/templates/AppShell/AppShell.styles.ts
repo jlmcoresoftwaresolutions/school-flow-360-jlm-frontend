@@ -26,7 +26,8 @@ export const AppShellContent = styled.main`
   overflow-y: auto;
   padding: ${spacing[16]};
 
+  // A shorter top than the rest: the page header sits closer to the topbar's breadcrumb.
   @media ${media.md} {
-    padding: ${spacing[32]};
+    padding: ${spacing[24]} ${spacing[32]} ${spacing[32]};
   }
 `

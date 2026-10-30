@@ -31,13 +31,13 @@ const signIn = async (page: Page) => {
 
 const oneHour = 60 * 60 * 1000
 const expiredNotice = "Sua sessão expirou. Entre novamente para continuar."
-const minhaEscolaHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Escola" })
+const minhaEscolaHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
 
 test("ends the session when it expires, even on an idle page, and brings the user back after signing in", async ({
   page,
 }) => {
   await mockLogin(page, [4000, oneHour])
-  await page.goto("/login")
+  await page.goto("/administration/my-school")
   await signIn(page)
   await expect(minhaEscolaHeading(page)).toBeVisible()
 
@@ -77,7 +77,7 @@ test("signs out from the header, ending the session here and on the backend", as
   })
   await page.goto("/login")
   await signIn(page)
-  await expect(minhaEscolaHeading(page)).toBeVisible()
+  await expect(page).toHaveURL(/\/home$/)
 
   await page.getByRole("banner").getByRole("button", { name: "Sair" }).click()
 
@@ -96,7 +96,7 @@ test("signs out at once even when the backend doesn't answer", async ({ page }) 
   await page.route("**/api/auth/logout", () => undefined)
   await page.goto("/login")
   await signIn(page)
-  await expect(minhaEscolaHeading(page)).toBeVisible()
+  await expect(page).toHaveURL(/\/home$/)
 
   await page.getByRole("banner").getByRole("button", { name: "Sair" }).click()
 
@@ -111,7 +111,7 @@ test("ignores a return address outside the app", async ({ page }) => {
     await page.goto(`/login?redirect=${encodeURIComponent(redirect)}`)
     await signIn(page)
 
-    await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/administration\/my-school$/)
+    await expect(page).toHaveURL(/^http:\/\/localhost:\d+\/home$/)
     await page.evaluate(() => localStorage.clear())
   }
 })

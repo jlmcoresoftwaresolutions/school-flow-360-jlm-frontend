@@ -1,5 +1,6 @@
 import type { CSSProperties, MouseEvent } from "react"
 
+import type { IconName } from "@/ds-components/atoms"
 import { Icon } from "@/ds-components/atoms"
 
 import {
@@ -15,6 +16,7 @@ export type BreadcrumbItem = {
   key: string
   label: string
   href?: string
+  icon?: IconName
   onClick?: () => void
 }
 
@@ -32,7 +34,8 @@ const isModifiedClick = (event: MouseEvent) =>
 // The trail of pages leading to the current one. The last item is the current page: plain text marked
 // aria-current="page", never a link. An earlier item is a link when it has an href, a button when it
 // has only an onClick, and plain text (e.g. a menu group that has no page of its own) when it has
-// neither. When an item has both, a plain click runs onClick instead of following the href - so a
+// neither. An item's icon shows before its label (the AppShell gives the first one the icon of its menu
+// entry). When an item has both, a plain click runs onClick instead of following the href - so a
 // client-side router can navigate - while a modified click (new tab) still follows it.
 // It owns no copy: `label` is the accessible name of the <nav>.
 export const Breadcrumb = (props: BreadcrumbProps) => {
@@ -75,6 +78,7 @@ export const Breadcrumb = (props: BreadcrumbProps) => {
 
           return (
             <StyledBreadcrumbItem key={item.key}>
+              {item.icon && <Icon color="secondary" name={item.icon} size={16} />}
               {renderItem(item, isLast)}
               {!isLast && <Icon color="muted" name="chevron-right" size={16} />}
             </StyledBreadcrumbItem>

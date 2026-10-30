@@ -31,7 +31,7 @@ const signIn = async (page: Page) => {
   await page.goto("/login")
   await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
-  await expect(page).toHaveURL(/\/administration\/my-school$/)
+  await expect(page).toHaveURL(/\/home$/)
 }
 
 test.describe("login page", () => {
@@ -96,7 +96,7 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
     await page.getByLabel(/^Senha/).press("Enter")
 
-    await expect(page).toHaveURL(/\/administration\/my-school$/)
+    await expect(page).toHaveURL(/\/home$/)
   })
 
   test("sends e-mail, password and the tenant to the backend", async ({ page }) => {
@@ -112,7 +112,7 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
     await page.getByRole("button", { name: "Entrar" }).click()
 
-    await expect(page).toHaveURL(/\/administration\/my-school$/)
+    await expect(page).toHaveURL(/\/home$/)
     expect(body).toEqual({ email: "diretor@schoolflow360.com.br", password: "senha-correta" })
     expect(tenantHeader).toBe("schoolflow_demo")
   })
@@ -183,8 +183,11 @@ test.describe("access control", () => {
 
     await page.reload()
 
-    await expect(page).toHaveURL(/\/administration\/my-school$/)
-    await expect(page.getByRole("heading", { level: 1, name: "Minha Escola" })).toBeVisible()
+    await expect(page).toHaveURL(/\/home$/)
+    await expect(page.getByRole("complementary").getByRole("button", { name: "Início" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    )
   })
 
   test("sends a signed-in user away from the login page", async ({ page }) => {
@@ -192,7 +195,7 @@ test.describe("access control", () => {
 
     await page.goto("/login")
 
-    await expect(page).toHaveURL(/\/administration\/my-school$/)
+    await expect(page).toHaveURL(/\/home$/)
   })
 
   test("doesn't keep the token in storage as plain text", async ({ page }) => {

@@ -10,6 +10,9 @@ export const ptPT: TranslationResource = {
     edit: "Editar",
     hidePassword: "Ocultar palavra-passe",
     loading: "A carregar...",
+    // Placeholder for a page whose description isn't defined yet.
+    placeholderDescription:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
     poweredBy: "Powered by JLM Core",
     save: "Guardar",
     showPassword: "Mostrar palavra-passe",
@@ -88,7 +91,7 @@ export const ptPT: TranslationResource = {
       INATIVA: "Inativa",
     },
     subtitle: "Configure a identidade institucional da organização atual.",
-    title: "A Minha Escola",
+    title: "A Minha Unidade",
   },
   resetPassword: {
     backToLogin: "Voltar ao início de sessão",
@@ -144,7 +147,7 @@ export const ptPT: TranslationResource = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      minhaEscola: "A Minha Escola",
+      minhaEscola: "A Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
       preferences: "Preferências",

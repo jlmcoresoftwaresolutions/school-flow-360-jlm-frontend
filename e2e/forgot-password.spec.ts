@@ -125,9 +125,9 @@ test("sends a signed-in user home", async ({ page }) => {
   await emailField(page).fill("diretor@schoolflow360.com.br")
   await page.getByLabel(/^Senha/).fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
-  await expect(page).toHaveURL(/\/administration\/my-school$/)
+  await expect(page).toHaveURL(/\/home$/)
 
   await page.goto("/forgot-password")
 
-  await expect(page).toHaveURL(/\/administration\/my-school$/)
+  await expect(page).toHaveURL(/\/home$/)
 })
