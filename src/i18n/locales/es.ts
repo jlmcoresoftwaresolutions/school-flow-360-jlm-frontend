@@ -84,6 +84,7 @@ export const es: TranslationResource = {
     },
     primaryColor: "Color primario",
     secondaryColor: "Color secundario",
+    sectionsLabel: "Secciones de la sede",
     status: "Estado",
     statuses: {
       ATIVA: "Activa",

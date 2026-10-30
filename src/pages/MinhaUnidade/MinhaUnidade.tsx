@@ -6,7 +6,7 @@ import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { Loading, toast, useUnsavedChanges } from "@/components"
 import { Button, Card, Grid, Icon, Image, Tag, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { ColorPicker, FileUpload, Input, PageHeader, Select, Textarea } from "@/ds-components/molecules"
+import { ColorPicker, FileUpload, Input, PageHeader, Select, Tabs, Textarea } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import { isShallowEqual } from "@/utils/objects"
 
@@ -86,7 +86,7 @@ export const OrganizationDetailsCard = (props: OrganizationDetailsCardProps) => 
   }
 
   return (
-    <Card color="surface" elevated style={{ padding: spacing[32] }}>
+    <Card elevated style={{ padding: spacing[32] }}>
       <CardHeader>
         <Text as="h2" fontSize="lg" bold>
           {t("minhaUnidade.detailsTitle")}
@@ -283,7 +283,7 @@ export const OrganizationBrandingCard = (props: OrganizationBrandingCardProps) =
   }
 
   return (
-    <Card color="surface" elevated style={{ padding: spacing[32] }}>
+    <Card elevated style={{ padding: spacing[32] }}>
       <CardHeader>
         <Text as="h2" fontSize="lg" bold>
           {t("minhaUnidade.brandingTitle")}
@@ -385,6 +385,7 @@ export const MinhaUnidade = () => {
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [reloadToken, setReloadToken] = useState(0)
+  const [section, setSection] = useState("details")
 
   // The fetch is defined inline inside the effect, rather than as an outer useCallback referenced
   // here, so react-hooks/set-state-in-effect doesn't flag it - a function it can see is local to
@@ -445,15 +446,29 @@ export const MinhaUnidade = () => {
         </Card>
       )}
 
+      <Tabs
+        items={[
+          { icon: "info-outline", key: "details", label: t("minhaUnidade.detailsTitle") },
+          { icon: "palette-outline", key: "branding", label: t("minhaUnidade.brandingTitle") },
+        ]}
+        label={t("minhaUnidade.sectionsLabel")}
+        onChange={setSection}
+        value={section}
+        attached
+      />
+
+      {/* Both cards stay mounted and only the other tab's is hidden, so an edit in progress survives
+          switching tabs. The tabs are attached: the shown card sits right below them, joined to the
+          selected tab. */}
       {organization && (
-        <Grid.Row>
-          <Grid.Col xs={12} md={6}>
+        <>
+          <div hidden={section !== "details"}>
             <OrganizationDetailsCard details={organization} onSave={handleSaveDetails} />
-          </Grid.Col>
-          <Grid.Col xs={12} md={6}>
+          </div>
+          <div hidden={section !== "branding"}>
             <OrganizationBrandingCard branding={organization.branding} onSave={handleSaveBranding} />
-          </Grid.Col>
-        </Grid.Row>
+          </div>
+        </>
       )}
     </>
   )

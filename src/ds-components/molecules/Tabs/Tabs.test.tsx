@@ -38,8 +38,8 @@ describe("Tabs", () => {
   it("highlights the selected tab", () => {
     renderTabs()
 
-    expect(screen.getByRole("tab", { name: "Aba A" })).toHaveStyle({ color: colors.info[700] })
-    expect(screen.getByRole("tab", { name: "Aba B" })).toHaveStyle({ color: colors.neutral[600] })
+    expect(screen.getByRole("tab", { name: "Aba A" })).toHaveStyle({ color: colors.primary[600] })
+    expect(screen.getByRole("tab", { name: "Aba B" })).toHaveStyle({ color: colors.neutral[700] })
   })
 
   it("renders only the selected tab's panel, labelled by that tab", () => {
@@ -156,6 +156,32 @@ describe("Tabs", () => {
       expect(first).toHaveFocus()
       expect(first).toHaveAttribute("aria-selected", "true")
     })
+  })
+
+  it("shows a tab's icon before its label", () => {
+    render(
+      <Tabs
+        items={[
+          { icon: "info-outline", key: "a", label: "Aba A" },
+          { key: "b", label: "Aba B" },
+        ]}
+        onChange={vi.fn()}
+        value="a"
+      />,
+    )
+
+    expect(screen.getByRole("tab", { name: "Aba A" }).firstElementChild?.querySelector("svg")).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Aba B" }).querySelector("svg")).not.toBeInTheDocument()
+  })
+
+  it("stacks the bar over the content below and drops its baseline when attached", () => {
+    const { rerender } = render(<Tabs items={[{ key: "a", label: "Aba A" }]} onChange={vi.fn()} value="a" />)
+
+    expect(screen.getByRole("tablist")).not.toHaveStyle({ zIndex: "1" })
+
+    rerender(<Tabs items={[{ key: "a", label: "Aba A" }]} onChange={vi.fn()} value="a" attached />)
+
+    expect(screen.getByRole("tablist")).toHaveStyle({ borderBottomStyle: "none", position: "relative", zIndex: "1" })
   })
 
   it("forwards className and style to the root element", () => {

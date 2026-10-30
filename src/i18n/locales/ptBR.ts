@@ -83,6 +83,7 @@ export const ptBR = {
     },
     primaryColor: "Cor primária",
     secondaryColor: "Cor secundária",
+    sectionsLabel: "Seções da unidade",
     status: "Situação",
     statuses: {
       ATIVA: "Ativa",

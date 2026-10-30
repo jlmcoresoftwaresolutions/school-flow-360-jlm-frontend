@@ -85,6 +85,7 @@ export const ptPT: TranslationResource = {
     },
     primaryColor: "Cor primária",
     secondaryColor: "Cor secundária",
+    sectionsLabel: "Secções da unidade",
     status: "Estado",
     statuses: {
       ATIVA: "Ativa",

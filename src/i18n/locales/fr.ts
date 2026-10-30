@@ -84,6 +84,7 @@ export const fr: TranslationResource = {
     },
     primaryColor: "Couleur principale",
     secondaryColor: "Couleur secondaire",
+    sectionsLabel: "Sections de l'établissement",
     status: "Statut",
     statuses: {
       ATIVA: "Active",
