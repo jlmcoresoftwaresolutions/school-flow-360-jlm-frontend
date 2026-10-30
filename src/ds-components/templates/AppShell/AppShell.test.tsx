@@ -25,6 +25,8 @@ const renderAppShell = (initialEntry: string) =>
             children: [
               { element: <div>Outra página</div>, path: "/outra" },
               { element: <div>Página Minha Escola</div>, path: "/administration/my-school" },
+              { element: <div>Página Início</div>, path: "/home" },
+              { element: <div>Página Mensalidades</div>, path: "/finance/tuition" },
               { element: <EditingPage />, path: "/editando" },
             ],
             element: <AppShell />,
@@ -48,7 +50,7 @@ describe("AppShell", () => {
     expect(screen.getByText("Outra página")).toBeInTheDocument()
   })
 
-  it("renders every menu entry, with only Início being a plain item with no page yet", () => {
+  it("renders every menu entry, with Início as a plain item and the rest as groups", () => {
     renderAppShell("/outra")
 
     const groups = [
@@ -66,29 +68,60 @@ describe("AppShell", () => {
     // Scoped to the sidebar: the topbar has its own "Ajuda" button.
     const sidebar = within(screen.getByRole("complementary"))
 
-    expect(sidebar.getByRole("button", { name: "Início" })).toBeDisabled()
+    expect(sidebar.getByRole("button", { name: "Início" })).toBeEnabled()
 
     groups.forEach((name) => {
       expect(sidebar.getByRole("button", { name })).toHaveAttribute("aria-expanded", "false")
     })
   })
 
-  it("expands a group to reveal disabled placeholder children for pages that don't exist yet", () => {
+  it("enables every child of every group, as each one has its own page", () => {
+    renderAppShell("/outra")
+
+    const sidebar = within(screen.getByRole("complementary"))
+    const groups = [
+      "Acadêmico",
+      "Financeiro",
+      "Comunicação",
+      "Relatórios",
+      "Administração",
+      "Usuários",
+      "Configurações",
+      "Logs de Acesso",
+      "Ajuda",
+    ]
+
+    groups.forEach((name) => {
+      fireEvent.click(sidebar.getByRole("button", { name }))
+
+      expect(sidebar.getAllByRole("button").filter((button) => button.hasAttribute("disabled"))).toHaveLength(0)
+    })
+  })
+
+  it("navigates to Início, marking it as the current page with its breadcrumb", () => {
+    renderAppShell("/outra")
+
+    fireEvent.click(screen.getByRole("button", { name: "Início" }))
+
+    expect(screen.getByText("Página Início")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Início" })).toHaveAttribute("aria-current", "page")
+    expect(within(screen.getByRole("navigation", { name: "Você está em" })).getByText("Início")).toHaveAttribute(
+      "aria-current",
+      "page",
+    )
+  })
+
+  it("navigates to a page of another group, showing its group and page in the breadcrumb", () => {
     renderAppShell("/outra")
 
     fireEvent.click(screen.getByRole("button", { name: "Financeiro" }))
+    fireEvent.click(screen.getByRole("button", { name: "Mensalidades" }))
 
-    expect(screen.getByRole("button", { name: "Mensalidades" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Cobranças" })).toBeDisabled()
-  })
+    expect(screen.getByText("Página Mensalidades")).toBeInTheDocument()
 
-  it("lists Minha Escola as the only enabled child under Administração", () => {
-    renderAppShell("/outra")
-
-    fireEvent.click(screen.getByRole("button", { name: "Administração" }))
-
-    expect(screen.getByRole("button", { name: "Minha Escola" })).toBeEnabled()
-    expect(screen.getByRole("button", { name: "Unidades" })).toBeDisabled()
+    const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
+    expect(within(breadcrumb).getByText("Financeiro")).toBeInTheDocument()
+    expect(within(breadcrumb).getByText("Mensalidades")).toHaveAttribute("aria-current", "page")
   })
 
   it("keeps the Administração group collapsed when the current route is not one of its pages", () => {

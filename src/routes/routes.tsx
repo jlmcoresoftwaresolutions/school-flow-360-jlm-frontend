@@ -103,6 +103,195 @@ export const router = createBrowserRouter([
         },
         path: paths.minhaEscola,
       },
+      {
+        lazy: async () => {
+          const { Home } = await import("@/pages/Home")
+          return { Component: Home }
+        },
+        path: paths.home,
+      },
+      {
+        lazy: async () => {
+          const { Classes } = await import("@/pages/Classes")
+          return { Component: Classes }
+        },
+        path: paths.classes,
+      },
+      {
+        lazy: async () => {
+          const { Subjects } = await import("@/pages/Subjects")
+          return { Component: Subjects }
+        },
+        path: paths.subjects,
+      },
+      {
+        lazy: async () => {
+          const { ClassDiary } = await import("@/pages/ClassDiary")
+          return { Component: ClassDiary }
+        },
+        path: paths.classDiary,
+      },
+      {
+        lazy: async () => {
+          const { ReportCards } = await import("@/pages/ReportCards")
+          return { Component: ReportCards }
+        },
+        path: paths.reportCards,
+      },
+      {
+        lazy: async () => {
+          const { Tuition } = await import("@/pages/Tuition")
+          return { Component: Tuition }
+        },
+        path: paths.tuition,
+      },
+      {
+        lazy: async () => {
+          const { Billing } = await import("@/pages/Billing")
+          return { Component: Billing }
+        },
+        path: paths.billing,
+      },
+      {
+        lazy: async () => {
+          const { Contracts } = await import("@/pages/Contracts")
+          return { Component: Contracts }
+        },
+        path: paths.contracts,
+      },
+      {
+        lazy: async () => {
+          const { Reconciliation } = await import("@/pages/Reconciliation")
+          return { Component: Reconciliation }
+        },
+        path: paths.reconciliation,
+      },
+      {
+        lazy: async () => {
+          const { Notices } = await import("@/pages/Notices")
+          return { Component: Notices }
+        },
+        path: paths.notices,
+      },
+      {
+        lazy: async () => {
+          const { Messages } = await import("@/pages/Messages")
+          return { Component: Messages }
+        },
+        path: paths.messages,
+      },
+      {
+        lazy: async () => {
+          const { Notifications } = await import("@/pages/Notifications")
+          return { Component: Notifications }
+        },
+        path: paths.notifications,
+      },
+      {
+        lazy: async () => {
+          const { AcademicReports } = await import("@/pages/AcademicReports")
+          return { Component: AcademicReports }
+        },
+        path: paths.academicReports,
+      },
+      {
+        lazy: async () => {
+          const { FinancialReports } = await import("@/pages/FinancialReports")
+          return { Component: FinancialReports }
+        },
+        path: paths.financialReports,
+      },
+      {
+        lazy: async () => {
+          const { Exports } = await import("@/pages/Exports")
+          return { Component: Exports }
+        },
+        path: paths.exports,
+      },
+      {
+        lazy: async () => {
+          const { Units } = await import("@/pages/Units")
+          return { Component: Units }
+        },
+        path: paths.units,
+      },
+      {
+        lazy: async () => {
+          const { UserList } = await import("@/pages/UserList")
+          return { Component: UserList }
+        },
+        path: paths.userList,
+      },
+      {
+        lazy: async () => {
+          const { ProfilesAndPermissions } = await import("@/pages/ProfilesAndPermissions")
+          return { Component: ProfilesAndPermissions }
+        },
+        path: paths.profilesAndPermissions,
+      },
+      {
+        lazy: async () => {
+          const { Invites } = await import("@/pages/Invites")
+          return { Component: Invites }
+        },
+        path: paths.invites,
+      },
+      {
+        lazy: async () => {
+          const { Preferences } = await import("@/pages/Preferences")
+          return { Component: Preferences }
+        },
+        path: paths.preferences,
+      },
+      {
+        lazy: async () => {
+          const { Integrations } = await import("@/pages/Integrations")
+          return { Component: Integrations }
+        },
+        path: paths.integrations,
+      },
+      {
+        lazy: async () => {
+          const { Security } = await import("@/pages/Security")
+          return { Component: Security }
+        },
+        path: paths.security,
+      },
+      {
+        lazy: async () => {
+          const { RecentAccess } = await import("@/pages/RecentAccess")
+          return { Component: RecentAccess }
+        },
+        path: paths.recentAccess,
+      },
+      {
+        lazy: async () => {
+          const { Audit } = await import("@/pages/Audit")
+          return { Component: Audit }
+        },
+        path: paths.audit,
+      },
+      {
+        lazy: async () => {
+          const { ActiveSessions } = await import("@/pages/ActiveSessions")
+          return { Component: ActiveSessions }
+        },
+        path: paths.activeSessions,
+      },
+      {
+        lazy: async () => {
+          const { HelpCenter } = await import("@/pages/HelpCenter")
+          return { Component: HelpCenter }
+        },
+        path: paths.helpCenter,
+      },
+      {
+        lazy: async () => {
+          const { ContactSupport } = await import("@/pages/ContactSupport")
+          return { Component: ContactSupport }
+        },
+        path: paths.contactSupport,
+      },
     ],
     hydrateFallbackElement: <GlobalLoading visible />,
     lazy: async () => {

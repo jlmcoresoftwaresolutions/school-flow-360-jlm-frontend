@@ -3,12 +3,14 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { UnsavedChangesGuard } from "@/components"
+import type { IconName } from "@/ds-components/atoms"
 import type { BreadcrumbItem } from "@/ds-components/molecules"
 import { Breadcrumb } from "@/ds-components/molecules"
 import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-components/organisms"
 import { Sidebar, Topbar } from "@/ds-components/organisms"
 import { useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
+import type { PathsType } from "@/routes/paths"
 import { paths } from "@/routes/paths"
 import { endExpiredSession } from "@/utils/authRedirect"
 
@@ -16,11 +18,39 @@ import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.style
 
 type NavKey = keyof TranslationResource["shell"]["nav"]
 
-// The trail shown in the topbar for each page, as nav keys; a route not listed here shows no
-// breadcrumb. The group (Administração) has no page of its own, so it is plain text, not a link.
-const breadcrumbByPath: Record<string, NavKey[]> = {
-  [paths.minhaEscola]: ["administration", "minhaEscola"],
+// A menu entry that opens a page: its nav key is also its key in paths.
+type PageKey = NavKey & keyof PathsType
+
+type NavGroup = {
+  children: PageKey[]
+  icon: IconName
+  key: NavKey
 }
+
+// The groups mirror the menu in the P1 "Especificação Visual Final"; the art doesn't specify their
+// children, so those are plausible placeholders, each with its own page (blank for now, except
+// Minha Escola).
+const menuGroups: NavGroup[] = [
+  { children: ["classes", "subjects", "classDiary", "reportCards"], icon: "school-outline", key: "academic" },
+  { children: ["tuition", "billing", "contracts", "reconciliation"], icon: "money-outline", key: "finance" },
+  { children: ["notices", "messages", "notifications"], icon: "chat-outline", key: "communication" },
+  { children: ["academicReports", "financialReports", "exports"], icon: "file-outline", key: "reports" },
+  { children: ["minhaEscola", "units"], icon: "gear-outline", key: "administration" },
+  { children: ["userList", "profilesAndPermissions", "invites"], icon: "users-outline", key: "users" },
+  { children: ["preferences", "integrations", "security"], icon: "gear-outline", key: "settings" },
+  { children: ["recentAccess", "audit", "activeSessions"], icon: "history", key: "accessLogs" },
+]
+
+const bottomGroups: NavGroup[] = [{ children: ["helpCenter", "contactSupport"], icon: "help-outline", key: "help" }]
+
+// The trail shown in the topbar for each page, as nav keys: its group, then the page. A group has no
+// page of its own, so it is plain text, not a link. A route not listed here shows no breadcrumb.
+const breadcrumbByPath: Record<string, NavKey[]> = Object.fromEntries([
+  [paths.home, ["home"]],
+  ...[...menuGroups, ...bottomGroups].flatMap((group) =>
+    group.children.map((child): [string, NavKey[]] => [paths[child], [group.key, child]]),
+  ),
+])
 
 // This template is the app's own shell rather than a reusable piece, so - like the pages - it
 // translates its copy instead of taking it through props. Nav keys double as React keys, so they
@@ -36,81 +66,23 @@ export const AppShell = () => {
 
   const navLabel = (key: NavKey) => t(`shell.nav.${key}`)
 
-  const placeholderChildren = (...keys: NavKey[]): SidebarNavChild[] =>
-    keys.map((key) => ({ disabled: true, key, label: navLabel(key) }))
+  const toNavLink = (key: PageKey): SidebarNavChild => ({
+    active: location.pathname === paths[key],
+    key,
+    label: navLabel(key),
+    onClick: () => navigate(paths[key]),
+  })
 
-  // The top-level entries mirror the menu in the P1 "Especificação Visual Final"; the art doesn't
-  // specify their children, so those are plausible placeholders. Only Minha Escola has a page so
-  // far, so every other entry is rendered disabled instead of as a link that goes nowhere -
-  // enabling one is just adding its onClick once its page exists.
-  const items: SidebarNavItem[] = [
-    { disabled: true, icon: "home-outline", key: "home", label: navLabel("home") },
-    {
-      children: placeholderChildren("classes", "subjects", "classDiary", "reportCards"),
-      icon: "school-outline",
-      key: "academic",
-      label: navLabel("academic"),
-    },
-    {
-      children: placeholderChildren("tuition", "billing", "contracts", "reconciliation"),
-      icon: "money-outline",
-      key: "finance",
-      label: navLabel("finance"),
-    },
-    {
-      children: placeholderChildren("notices", "messages", "notifications"),
-      icon: "chat-outline",
-      key: "communication",
-      label: navLabel("communication"),
-    },
-    {
-      children: placeholderChildren("academicReports", "financialReports", "exports"),
-      icon: "file-outline",
-      key: "reports",
-      label: navLabel("reports"),
-    },
-    {
-      children: [
-        {
-          active: location.pathname === paths.minhaEscola,
-          key: "minhaEscola",
-          label: navLabel("minhaEscola"),
-          onClick: () => navigate(paths.minhaEscola),
-        },
-        ...placeholderChildren("units"),
-      ],
-      icon: "gear-outline",
-      key: "administration",
-      label: navLabel("administration"),
-    },
-    {
-      children: placeholderChildren("userList", "profilesAndPermissions", "invites"),
-      icon: "users-outline",
-      key: "users",
-      label: navLabel("users"),
-    },
-    {
-      children: placeholderChildren("preferences", "integrations", "security"),
-      icon: "gear-outline",
-      key: "settings",
-      label: navLabel("settings"),
-    },
-    {
-      children: placeholderChildren("recentAccess", "audit", "activeSessions"),
-      icon: "history",
-      key: "accessLogs",
-      label: navLabel("accessLogs"),
-    },
-  ]
+  const toNavItem = (group: NavGroup): SidebarNavItem => ({
+    children: group.children.map(toNavLink),
+    icon: group.icon,
+    key: group.key,
+    label: navLabel(group.key),
+  })
 
-  const bottomItems: SidebarNavItem[] = [
-    {
-      children: placeholderChildren("helpCenter", "contactSupport"),
-      icon: "help-outline",
-      key: "help",
-      label: navLabel("help"),
-    },
-  ]
+  const items: SidebarNavItem[] = [{ ...toNavLink("home"), icon: "home-outline" }, ...menuGroups.map(toNavItem)]
+
+  const bottomItems: SidebarNavItem[] = bottomGroups.map(toNavItem)
 
   // The art puts notifications and help in the topbar, but neither feature exists yet, so - like the
   // menu entries without a page - they are rendered disabled instead of as buttons that do nothing.
