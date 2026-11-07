@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test"
 
-// Signs in (backend mocked) and opens the edit form of Minha Unidade's organization details.
+// Signs in (backend mocked) and opens the edit form of Minha Unidade's institutional data.
 const openDetailsForm = async (page: Page) => {
   await page.route("**/api/auth/login", (route) =>
     route.fulfill({
@@ -30,10 +30,10 @@ const openDetailsForm = async (page: Page) => {
   await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
   await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
 
-  await page.getByRole("button", { name: "Editar" }).first().click()
+  await page.getByRole("button", { name: "Editar Dados institucionais" }).click()
 }
 
-const displayNameField = (page: Page) => page.getByRole("textbox", { name: "Nome exibido" })
+const institutionalNameField = (page: Page) => page.getByRole("textbox", { name: "Nome institucional" })
 // Signing out is in the menu the user block (in the topbar) opens.
 const signOut = async (page: Page) => {
   await page
@@ -46,7 +46,7 @@ const warning = (page: Page) => page.getByRole("dialog", { name: "Descartar alte
 
 test("warns in a centered dialog before leaving a form with unsaved changes, and keeps them", async ({ page }) => {
   await openDetailsForm(page)
-  await displayNameField(page).fill("Colégio Horizonte Novo")
+  await institutionalNameField(page).fill("Associação Educacional Horizonte Nova")
 
   await signOut(page)
 
@@ -61,12 +61,12 @@ test("warns in a centered dialog before leaving a form with unsaved changes, and
 
   await expect(warning(page)).toBeHidden()
   await expect(page).toHaveURL(/\/administration\/my-unit$/)
-  await expect(displayNameField(page)).toHaveValue("Colégio Horizonte Novo")
+  await expect(institutionalNameField(page)).toHaveValue("Associação Educacional Horizonte Nova")
 })
 
 test("leaves, dropping the changes, when the user confirms", async ({ page }) => {
   await openDetailsForm(page)
-  await displayNameField(page).fill("Colégio Horizonte Novo")
+  await institutionalNameField(page).fill("Associação Educacional Horizonte Nova")
 
   await signOut(page)
   await warning(page).getByRole("button", { name: "Sair sem salvar" }).click()
