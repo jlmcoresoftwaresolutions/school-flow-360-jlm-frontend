@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { getInitials, getShortName, joinIds } from "./strings"
+import { getInitials, getShortName, joinIds, normalizeForSearch } from "./strings"
 
 describe("joinIds", () => {
   it("joins the ids with spaces", () => {
@@ -51,5 +51,12 @@ describe("getShortName", () => {
   it("ignores extra whitespace around and between words", () => {
     expect(getShortName("  Maria   da  Silva ")).toBe("Maria Silva")
     expect(getShortName("   ")).toBe("")
+  })
+})
+
+describe("normalizeForSearch", () => {
+  it("lowercases and removes accents", () => {
+    expect(normalizeForSearch("  São José  ")).toBe("sao jose")
+    expect(normalizeForSearch("AÇÃO")).toBe("acao")
   })
 })

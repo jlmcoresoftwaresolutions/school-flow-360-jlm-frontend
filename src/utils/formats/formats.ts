@@ -91,3 +91,13 @@ export const formatCountdown = (totalSeconds: number): string => {
 
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
 }
+
+// A file size for display, in the given locale's number format: "512 B", "340 KB", "1,5 MB".
+export const formatFileSize = (bytes: number, locale = "pt-BR"): string => {
+  const number = (value: number) => new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value)
+
+  if (bytes < 1024) return `${number(bytes)} B`
+  if (bytes < 1024 * 1024) return `${number(bytes / 1024)} KB`
+
+  return `${number(bytes / (1024 * 1024))} MB`
+}

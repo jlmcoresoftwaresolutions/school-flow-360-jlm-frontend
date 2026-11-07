@@ -23,3 +23,12 @@ export const getShortName = (name: string) => {
 
   return `${words[0]} ${words[words.length - 1]}`
 }
+
+// A text made comparable for a search: trimmed, lowercased and without accents, so "São José" matches
+// "sao jose".
+export const normalizeForSearch = (text: string) =>
+  text
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase()

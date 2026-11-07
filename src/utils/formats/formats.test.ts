@@ -8,6 +8,7 @@ import {
   formatCreditCard,
   formatCurrency,
   formatExpiry,
+  formatFileSize,
   formatPhone,
 } from "./formats"
 
@@ -138,5 +139,17 @@ describe("formatCountdown", () => {
   it("never shows a negative or fractional wait", () => {
     expect(formatCountdown(-3)).toBe("0:00")
     expect(formatCountdown(4.2)).toBe("0:05")
+  })
+})
+
+describe("formatFileSize", () => {
+  it("uses bytes, kilobytes or megabytes depending on the size", () => {
+    expect(formatFileSize(512)).toBe("512 B")
+    expect(formatFileSize(340 * 1024)).toBe("340 KB")
+    expect(formatFileSize(1.5 * 1024 * 1024)).toBe("1,5 MB")
+  })
+
+  it("follows the given locale's number format", () => {
+    expect(formatFileSize(1.5 * 1024 * 1024, "en")).toBe("1.5 MB")
   })
 })
