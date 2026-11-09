@@ -1,5 +1,5 @@
 import type { ChangeEvent, CSSProperties } from "react"
-import { useEffect, useId, useRef, useState } from "react"
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import { HexColorPicker } from "react-colorful"
 import { createPortal } from "react-dom"
 
@@ -20,10 +20,11 @@ import {
 
 const hexPattern = /^#[0-9a-fA-F]{6}$/
 
-// Gap between the control row (swatch + hex input) and the popover once open, numeric because it
-// feeds a getBoundingClientRect()-based position rather than a CSS rule - see Grid.tsx's own
-// defaultGutterWidth for the same spacing-token-to-number precedent.
+// Gap between the control row (swatch + hex input) and the popover once open, and the least it keeps
+// from the viewport's edges - numeric because they feed a getBoundingClientRect()-based position
+// rather than a CSS rule (see Tooltip.tsx for the same precedent).
 const popoverGap = Number.parseInt(spacing[8], 10)
+const viewportMargin = Number.parseInt(spacing[8], 10)
 
 type ColorPickerOwnProps = {
   value: string
@@ -41,11 +42,6 @@ type ColorPickerOwnProps = {
 }
 
 export type ColorPickerProps = ColorPickerOwnProps
-
-type PopoverPosition = {
-  left: number
-  top: number
-}
 
 export const ColorPicker = (props: ColorPickerProps) => {
   const {
@@ -70,7 +66,6 @@ export const ColorPicker = (props: ColorPickerProps) => {
   const generatedId = useId()
 
   const [isOpen, setIsOpen] = useState(false)
-  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null)
 
   const colorPickerId = id ?? generatedId
   const messageId = `${colorPickerId}-message`
@@ -99,16 +94,49 @@ export const ColorPicker = (props: ColorPickerProps) => {
     }
   }, [isOpen])
 
+  // The popover's size is only known once rendered, so it is placed in a layout effect, before the
+  // browser paints: below the control, or above it when there is no room below (and there is above),
+  // and shifted sideways to stay on screen. It follows the control while the page scrolls or the
+  // window resizes, since it is fixed-positioned in document.body.
+  useLayoutEffect(() => {
+    if (!isOpen) return
+
+    const placePopover = () => {
+      const control = controlRef.current
+      const popover = popoverRef.current
+      if (!control || !popover) return
+
+      const anchor = control.getBoundingClientRect()
+      const { height, width } = popover.getBoundingClientRect()
+
+      const below = anchor.bottom + popoverGap
+      const above = anchor.top - popoverGap - height
+      const fitsBelow = below + height <= window.innerHeight - viewportMargin
+      const top = fitsBelow || above < viewportMargin ? below : above
+
+      const left = Math.max(viewportMargin, Math.min(anchor.left, window.innerWidth - viewportMargin - width))
+
+      popover.style.top = `${top}px`
+      popover.style.left = `${left}px`
+      popover.style.visibility = "visible"
+    }
+
+    placePopover()
+
+    window.addEventListener("resize", placePopover)
+    window.addEventListener("scroll", placePopover, true)
+
+    return () => {
+      window.removeEventListener("resize", placePopover)
+      window.removeEventListener("scroll", placePopover, true)
+    }
+  }, [isOpen])
+
   const safeValue = hexPattern.test(value) ? value : "#000000"
   const rgb = hexToRgb(safeValue) ?? { b: 0, g: 0, r: 0 }
 
   const handleToggle = () => {
     if (disabled) return
-
-    if (!isOpen && controlRef.current) {
-      const rect = controlRef.current.getBoundingClientRect()
-      setPopoverPosition({ left: rect.left, top: rect.bottom + popoverGap })
-    }
 
     setIsOpen((current) => !current)
   }
@@ -149,9 +177,8 @@ export const ColorPicker = (props: ColorPickerProps) => {
       </ColorPickerControl>
 
       {isOpen &&
-        popoverPosition &&
         createPortal(
-          <ColorPickerPopover ref={popoverRef} style={{ left: popoverPosition.left, top: popoverPosition.top }}>
+          <ColorPickerPopover ref={popoverRef}>
             <HexColorPicker color={safeValue} onChange={onChange} />
 
             <RgbFieldsRow>

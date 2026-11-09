@@ -100,6 +100,8 @@ export const ColorPickerPopover = styled.div`
   box-shadow: ${shadows.lg};
   padding: ${spacing[12]};
   position: fixed;
+  /* Hidden until ColorPicker measures and places it, so it never flashes at the wrong spot. */
+  visibility: hidden;
   z-index: ${zIndex.popover};
 
   /* react-colorful injects its own functional CSS (sizing, pointer positioning) at runtime - these
