@@ -289,6 +289,7 @@ export const Example = (props: ExampleProps) => {
 - Mantenha a **primeira linha com menos de 72 caracteres**. Coloque qualquer detalhe adicional no corpo do commit depois de uma linha em branco, em vez de deixar o assunto ficar longo demais.
 - **Sempre execute `bun run test` antes de commitar** — nunca commite com a suíte de testes falhando.
 - **O trabalho entra por Pull Request, nunca por push direto no `master`**: crie uma branch (`feat/...`, `fix/...`, `ci/...`), faça os commits nela, dê push e abra o PR. O merge no `master` é o que publica (ver abaixo).
+- **O repositório só aceita squash merge**, e o commit gerado no `master` leva sempre o **título do PR** (mais ` (#<número>)`), com as mensagens dos commits do PR no corpo. Por isso **o título do PR segue o Conventional Commits** como uma mensagem de commit (ex.: `fix: keep the ColorPicker popover on screen`), e cabe nos 72 caracteres já com o sufixo — a checagem `pr-title` (ver abaixo) barra o merge quando não segue.
 
 ### CI/CD com GitHub Actions
 
