@@ -1,11 +1,12 @@
 import type { Organization, OrganizationBranding, OrganizationUpdate, SchoolUnit } from "@/models"
 
-import { CardGrid, TabPanel } from "../MinhaUnidade.styles"
+import { CardGrid } from "../MinhaUnidade.styles"
+import { TabCard } from "../shared/TabCard"
 import { AddressSection } from "./AddressSection"
 import { ContactSection } from "./ContactSection"
 import { InstitutionalSection } from "./InstitutionalSection"
 import { NotesSection } from "./NotesSection"
-import { OrganizationSummaryCard } from "./OrganizationSummaryCard"
+import { OrganizationSummary } from "./OrganizationSummary"
 import { UnitsSummaryCard } from "./UnitsSummaryCard"
 
 export type OverviewTabProps = {
@@ -17,14 +18,14 @@ export type OverviewTabProps = {
   onSeeAllUnits: () => void
 }
 
-// Minha Unidade's first tab (JLM-11): which organization is in use, its current data - each section
-// read first and edited in place - and a summary of its units.
+// Minha Unidade's first tab (JLM-11), one main card: which organization is in use at its top, then its
+// current data in sub-cards - each read first and edited in place - and a summary of its units.
 export const OverviewTab = (props: OverviewTabProps) => {
   const { branding, onCreateUnit, onSaveOrganization, onSeeAllUnits, organization, units } = props
 
   return (
-    <TabPanel>
-      <OrganizationSummaryCard branding={branding} organization={organization} />
+    <TabCard>
+      <OrganizationSummary branding={branding} organization={organization} />
 
       <InstitutionalSection branding={branding} onSave={onSaveOrganization} organization={organization} />
 
@@ -36,6 +37,6 @@ export const OverviewTab = (props: OverviewTabProps) => {
       <AddressSection onSave={onSaveOrganization} organization={organization} />
 
       <NotesSection onSave={onSaveOrganization} organization={organization} />
-    </TabPanel>
+    </TabCard>
   )
 }

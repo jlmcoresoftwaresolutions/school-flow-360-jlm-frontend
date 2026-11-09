@@ -1,12 +1,21 @@
 import styled from "styled-components"
 
-import { colors, media, radius, shadows, spacing, typography } from "@/foundation"
+import { borderRadiusLevels, colors, media, radius, shadows, spacing, typography } from "@/foundation"
 
-// The tab panels: cards stacked with a steady gap.
+// Inside a tab's main card: its sub-cards stacked with a steady gap.
 export const TabPanel = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${spacing[24]};
+`
+
+// A section inside the main card: bordered instead of elevated, so only the main card casts a shadow.
+export const SubCard = styled.section`
+  background: ${colors.neutral[0]};
+  border: 1px solid ${colors.neutral[200]};
+  border-radius: ${borderRadiusLevels.medium};
+  min-width: 0;
+  padding: ${spacing[24]};
 `
 
 export const SectionHeader = styled.div`
@@ -51,7 +60,7 @@ export const CardGrid = styled.div`
 `
 
 // The organization in use, at the top of the overview.
-export const OrganizationSummary = styled.div`
+export const OrganizationSummaryLayout = styled.div`
   align-items: center;
   display: flex;
   flex-wrap: wrap;

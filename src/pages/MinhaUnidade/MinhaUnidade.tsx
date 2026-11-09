@@ -26,8 +26,9 @@ import {
 
 import { BrandingTab } from "./branding/BrandingTab"
 import type { MinhaUnidadeTab } from "./MinhaUnidade.constants"
-import { TabPanel } from "./MinhaUnidade.styles"
+import { SubCard } from "./MinhaUnidade.styles"
 import { OverviewTab } from "./overview/OverviewTab"
+import { TabCard } from "./shared/TabCard"
 import { UnitsTab } from "./units/UnitsTab"
 
 type PageData = {
@@ -45,26 +46,26 @@ const toOrganizationUpdate = (organization: Organization): OrganizationUpdate =>
   operationModel: organization.operationModel,
 })
 
+// The same shape as a tab: one main card with its sub-cards, each a few placeholder lines.
 const LoadingState = () => (
-  <TabPanel aria-hidden="true">
-    {[0, 1, 2].map((index) => (
-      <Card
-        key={index}
-        elevated
-        style={{ display: "flex", flexDirection: "column", gap: spacing[12], padding: spacing[32] }}
-      >
-        <Skeleton height={spacing[24]} width="40%" />
-        <Skeleton height={spacing[16]} width="90%" />
-        <Skeleton height={spacing[16]} width="70%" />
-      </Card>
-    ))}
-  </TabPanel>
+  <div aria-hidden="true">
+    <TabCard>
+      {[0, 1, 2].map((index) => (
+        <SubCard key={index} style={{ display: "flex", flexDirection: "column", gap: spacing[12] }}>
+          <Skeleton height={spacing[24]} width="40%" />
+          <Skeleton height={spacing[16]} width="90%" />
+          <Skeleton height={spacing[16]} width="70%" />
+        </SubCard>
+      ))}
+    </TabCard>
+  </div>
 )
 
 // Minha Unidade: the organization the user works in (JLM-11), in three tabs - its overview, its
 // visual identity and its units. The data comes from services/organization, mocked until the API
 // offers the signed-in user's organization. Every tab stays mounted and only the others are hidden, so
-// an edit in progress survives switching tabs; the tabs are attached to the card right below them.
+// an edit in progress survives switching tabs. Each tab is one main card (TabCard), attached to the tabs
+// above it, with its sections inside as sub-cards (SectionCard).
 export const MinhaUnidade = () => {
   const { t } = useTranslation()
 

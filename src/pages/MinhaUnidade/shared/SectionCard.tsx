@@ -1,9 +1,8 @@
 import type { ReactNode } from "react"
 
-import { Card, Text } from "@/ds-components/atoms"
-import { spacing } from "@/foundation"
+import { Text } from "@/ds-components/atoms"
 
-import { SectionHeader, SectionHeading } from "../MinhaUnidade.styles"
+import { SectionHeader, SectionHeading, SubCard } from "../MinhaUnidade.styles"
 
 export type SectionCardProps = {
   children: ReactNode
@@ -12,16 +11,16 @@ export type SectionCardProps = {
   description?: string
 }
 
-// A white card with its title (an h2), an optional description below it and an optional action on
-// the right - the building block of every Minha Unidade tab.
+// A sub-card inside a tab's main card (TabCard): bordered, without a shadow of its own, with its title
+// (an h2), an optional description below it and an optional action on the right.
 export const SectionCard = (props: SectionCardProps) => {
   const { action, children, description, title } = props
 
   return (
-    <Card elevated style={{ padding: spacing[32] }}>
+    <SubCard>
       <SectionHeader>
         <SectionHeading>
-          <Text as="h2" fontSize="lg" bold>
+          <Text as="h2" fontSize="md" bold>
             {title}
           </Text>
           {description && (
@@ -34,6 +33,6 @@ export const SectionCard = (props: SectionCardProps) => {
       </SectionHeader>
 
       {children}
-    </Card>
+    </SubCard>
   )
 }

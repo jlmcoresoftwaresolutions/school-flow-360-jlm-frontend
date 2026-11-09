@@ -10,8 +10,8 @@ import { formatCityState } from "@/utils/address"
 import { normalizeForSearch } from "@/utils/strings"
 
 import { unitsPageSize } from "../MinhaUnidade.constants"
-import { FieldGroup, TabPanel } from "../MinhaUnidade.styles"
-import { SectionCard } from "../shared/SectionCard"
+import { FieldGroup } from "../MinhaUnidade.styles"
+import { TabCard } from "../shared/TabCard"
 import { useStatusLabels } from "../shared/useStatusLabels"
 import { InactivateUnitDialog } from "./InactivateUnitDialog"
 import { UnitDetailsModal } from "./UnitDetailsModal"
@@ -116,8 +116,8 @@ export const UnitsTab = (props: UnitsTabProps) => {
   }
 
   return (
-    <TabPanel>
-      <SectionCard
+    <>
+      <TabCard
         action={units.length > 0 ? createButton : undefined}
         description={t("minhaUnidade.units.description")}
         title={t("minhaUnidade.units.title")}
@@ -197,7 +197,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
             </Table>
           </FieldGroup>
         )}
-      </SectionCard>
+      </TabCard>
 
       {isCreating && <UnitFormModal onClose={() => onCreatingChange(false)} onSave={onCreate} />}
 
@@ -220,6 +220,6 @@ export const UnitsTab = (props: UnitsTabProps) => {
           unit={dialog.unit}
         />
       )}
-    </TabPanel>
+    </>
   )
 }
