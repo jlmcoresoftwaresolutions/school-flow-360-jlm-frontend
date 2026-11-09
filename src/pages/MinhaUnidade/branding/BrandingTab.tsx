@@ -207,10 +207,16 @@ export const BrandingTab = (props: BrandingTabProps) => {
             </FieldGroup>
 
             <FormActions>
-              <Button disabled={!hasChanges || isSubmitting} onClick={handleDiscard} type="button" variant="outlined">
+              <Button
+                disabled={!hasChanges || isSubmitting}
+                onClick={handleDiscard}
+                size="small"
+                type="button"
+                variant="outlined"
+              >
                 {t("minhaUnidade.branding.discard")}
               </Button>
-              <Button disabled={!hasChanges || isSubmitting} type="submit">
+              <Button disabled={!hasChanges || isSubmitting} size="small" type="submit">
                 {t("minhaUnidade.branding.save")}
               </Button>
             </FormActions>

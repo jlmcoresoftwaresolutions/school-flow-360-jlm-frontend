@@ -1,9 +1,32 @@
 import { fireEvent, render, screen } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { colors } from "@/foundation"
 
 import { ColorPicker } from "./ColorPicker"
+
+type Box = { height: number; left: number; top: number; width: number }
+
+const toRect = (box: Box) =>
+  ({
+    ...box,
+    bottom: box.top + box.height,
+    right: box.left + box.width,
+    toJSON: () => box,
+    x: box.left,
+    y: box.top,
+  }) as DOMRect
+
+// jsdom has no layout, so the control row and the popover report the boxes a real browser would.
+const mockLayout = (control: Box, popover: Box) => {
+  vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+    if (this.querySelector(".react-colorful")) return toRect(popover)
+    if (this.querySelector("button")) return toRect(control)
+    return toRect({ height: 0, left: 0, top: 0, width: 0 })
+  })
+}
+
+const getPopover = () => document.querySelector(".react-colorful")!.parentElement!
 
 describe("ColorPicker", () => {
   it("renders the title label", () => {
@@ -147,5 +170,54 @@ describe("ColorPicker", () => {
     render(<ColorPicker openLabel="Open color picker" value="#4B87D6" />)
 
     expect(screen.getByRole("button", { name: "Open color picker" })).toBeInTheDocument()
+  })
+
+  describe("popover placement", () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it("opens the popover below the control when it fits", () => {
+      mockLayout({ height: 40, left: 100, top: 100, width: 300 }, { height: 280, left: 0, top: 0, width: 230 })
+      render(<ColorPicker value="#4B87D6" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Abrir seletor de cor" }))
+
+      expect(getPopover()).toHaveStyle({ left: "100px", top: "148px", visibility: "visible" })
+    })
+
+    it("opens the popover above the control when there is no room below", () => {
+      const top = window.innerHeight - 60
+      mockLayout({ height: 40, left: 100, top, width: 300 }, { height: 280, left: 0, top: 0, width: 230 })
+      render(<ColorPicker value="#4B87D6" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Abrir seletor de cor" }))
+
+      expect(getPopover()).toHaveStyle({ top: `${top - 8 - 280}px` })
+    })
+
+    it("shifts the popover left so it does not overflow the right edge of the screen", () => {
+      mockLayout(
+        { height: 40, left: window.innerWidth - 100, top: 100, width: 90 },
+        { height: 280, left: 0, top: 0, width: 230 },
+      )
+      render(<ColorPicker value="#4B87D6" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Abrir seletor de cor" }))
+
+      expect(getPopover()).toHaveStyle({ left: `${window.innerWidth - 8 - 230}px` })
+    })
+
+    it("follows the control when the page scrolls", () => {
+      const control = { height: 40, left: 100, top: 100, width: 300 }
+      mockLayout(control, { height: 280, left: 0, top: 0, width: 230 })
+      render(<ColorPicker value="#4B87D6" />)
+
+      fireEvent.click(screen.getByRole("button", { name: "Abrir seletor de cor" }))
+      control.top = 50
+      fireEvent.scroll(window)
+
+      expect(getPopover()).toHaveStyle({ top: "98px" })
+    })
   })
 })

@@ -31,6 +31,7 @@ export const EditableSectionCard = (props: EditableSectionCardProps) => {
     <Button
       aria-label={t("minhaUnidade.editSection", { section: title })}
       onClick={onEdit}
+      size="small"
       startIcon={<Icon color="brand" name="pen-outline" size={16} />}
       variant="outlined"
     >
@@ -45,10 +46,10 @@ export const EditableSectionCard = (props: EditableSectionCardProps) => {
           <FieldGroup>{form}</FieldGroup>
 
           <FormActions>
-            <Button disabled={isSubmitting} onClick={onCancel} type="button" variant="outlined">
+            <Button disabled={isSubmitting} onClick={onCancel} size="small" type="button" variant="outlined">
               {t("common.cancel")}
             </Button>
-            <Button disabled={!isDirty || isSubmitting} type="submit">
+            <Button disabled={!isDirty || isSubmitting} size="small" type="submit">
               {t("common.save")}
             </Button>
           </FormActions>

@@ -35,7 +35,11 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
     return (
       <SectionCard title={t("minhaUnidade.overview.unitsTitle")}>
         <StateMessage
-          action={<Button onClick={onCreateUnit}>{t("minhaUnidade.units.createFirst")}</Button>}
+          action={
+            <Button onClick={onCreateUnit} size="small">
+              {t("minhaUnidade.units.createFirst")}
+            </Button>
+          }
           description={t("minhaUnidade.units.emptyDescription")}
           icon="location-outline"
           title={t("minhaUnidade.units.emptyTitle")}
@@ -47,7 +51,12 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
   return (
     <SectionCard
       action={
-        <Button endIcon={<Icon color="brand" name="chevron-right" size={16} />} onClick={onSeeAllUnits} variant="link">
+        <Button
+          endIcon={<Icon color="brand" name="chevron-right" size={16} />}
+          onClick={onSeeAllUnits}
+          size="small"
+          variant="link"
+        >
           {t("minhaUnidade.overview.seeAllUnits")}
         </Button>
       }
