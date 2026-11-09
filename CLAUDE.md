@@ -298,6 +298,8 @@ export const Example = (props: ExampleProps) => {
 - **`preview`** — só em PR (e não de forks, que não recebem os secrets): publica o app e o Storybook em canais de preview do Firebase, que valem 7 dias, e comenta os links no PR.
 - **`deploy`** — só em push no `master`, depois de `checks` passar: publica o app (`school-flow-360.web.app`) e o Storybook no canal `live`. **Não rode `bun run deploy`/`deploy-storybook` no dia a dia** — publicar é fazer o merge; os scripts ficam para uma emergência.
 
+Um segundo workflow, `.github/workflows/pr-title.yml` (job **`pr-title`**), passa o **título do PR** pelo mesmo `commitlint` do hook `commit-msg`, já com o ` (#<número>)` que o squash merge acrescenta: é esse título que vira o commit no `master`, e nenhum hook local o vê. Fica separado da esteira para editar o título rodar só essa checagem. Também é exigido pela proteção do `master`.
+
 As credenciais são os secrets `FIREBASE_SERVICE_ACCOUNT_SCHOOL_FLOW_360` (app) e `FIREBASE_SERVICE_ACCOUNT_SCHOOL_FLOW_360_STORYBOOK` (Storybook), contas de serviço criadas pelo `firebase init hosting:github` com permissão só de Hosting. A versão do bun da esteira (`BUN_VERSION`) acompanha a usada localmente.
 
 ### Estas regras são impostas pelo Husky, não apenas documentadas
