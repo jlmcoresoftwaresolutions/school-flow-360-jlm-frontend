@@ -187,7 +187,7 @@ Cada pasta de componente também recebe um `ComponentName.stories.tsx` co-locali
 - `.storybook/preview.tsx` envolve toda story em `<GlobalStyle />` (de `src/styles/GlobalStyle.ts`) via um decorator, para que as stories renderizem com o mesmo reset da aplicação real.
 - Toda story exportada (incluindo `Default`) recebe um comentário de uma linha logo acima descrevendo o que ela demonstra, ex.: `// The elevated prop adding a drop shadow and removing the border` — descreva a prop/comportamento/variante mostrada, não apenas repita o nome da story.
 - **Este design system é voltado a um produto em português do Brasil (pt-BR)** — o conteúdo de exemplo renderizado pelas stories (valores de `args` como `children`/`title`/`placeholder`/`helperText`, e qualquer texto fixo dentro de um `render()` customizado) deve ser escrito em pt-BR, ex.: `title: "E-mail"`, `placeholder: "Digite algo..."` (ver `Input.stories.tsx`). Isso **não** se estende às strings de `argTypes[...].description`, aos comentários de story, nem a nada mais no código — esses permanecem em inglês, como o resto do código. Também não traduza valores que fazem parte, literalmente, da superfície de API do componente (ex.: `color="default"`/`color="brand"` demonstrados renderizando o próprio nome do token, ou o slug `name` de um `Icon`) — traduzir esses faria o rótulo exibido mentir sobre o valor real da prop.
-- **Sempre que um componente de `src/ds-components/` (ou de `src/components/`) for implementado ou modificado, republique o Storybook rodando `bun run deploy-storybook`** (build + `firebase deploy --only hosting` para o projeto `school-flow-360-storybook`, ver a seção Comandos) como parte da mesma unidade de trabalho — não um follow-up opcional, no mesmo espírito da regra de "Adicionando ou alterando props" acima. O link publicado (`https://school-flow-360-storybook.web.app`) é a forma como o time revisa os componentes fora do código, e fica desatualizado silenciosamente se o deploy não for refeito a cada mudança no DS.
+- **O Storybook publicado (`https://school-flow-360-storybook.web.app`) é atualizado pela esteira** (ver "CI/CD com GitHub Actions" abaixo): todo merge no `master` o republica, e todo PR ganha um preview dele com as mudanças. É assim que o time revisa os componentes fora do código. `bun run deploy-storybook` continua existindo para uma emergência, mas não é mais um passo do dia a dia.
 
 ### Testes unitários com Vitest + React Testing Library
 
@@ -288,6 +288,17 @@ export const Example = (props: ExampleProps) => {
 - As mensagens de commit seguem **Conventional Commits**: prefixe o assunto com um tipo (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`, `style:`, `perf:`, `build:`, `ci:`, `revert:`, opcionalmente `type(scope):`) dependendo da mudança (ex.: `feat: add Text atom`, `fix: correct zIndex layer gaps`).
 - Mantenha a **primeira linha com menos de 72 caracteres**. Coloque qualquer detalhe adicional no corpo do commit depois de uma linha em branco, em vez de deixar o assunto ficar longo demais.
 - **Sempre execute `bun run test` antes de commitar** — nunca commite com a suíte de testes falhando.
+- **O trabalho entra por Pull Request, nunca por push direto no `master`**: crie uma branch (`feat/...`, `fix/...`, `ci/...`), faça os commits nela, dê push e abra o PR. O merge no `master` é o que publica (ver abaixo).
+
+### CI/CD com GitHub Actions
+
+`.github/workflows/ci.yml` é a esteira única, com três jobs:
+
+- **`checks`** — em todo PR e todo push no `master`: `bun install --frozen-lockfile`, lint, `format:check`, `tsc -b`, testes unitários, build do app, build do Storybook e o E2E do Playwright (o relatório fica como artefato quando algo falha). Os builds viram artefatos, então o que é publicado é exatamente o que foi testado. É a checagem exigida pela proteção do `master`: um PR só entra com ela verde.
+- **`preview`** — só em PR (e não de forks, que não recebem os secrets): publica o app e o Storybook em canais de preview do Firebase, que valem 7 dias, e comenta os links no PR.
+- **`deploy`** — só em push no `master`, depois de `checks` passar: publica o app (`school-flow-360.web.app`) e o Storybook no canal `live`. **Não rode `bun run deploy`/`deploy-storybook` no dia a dia** — publicar é fazer o merge; os scripts ficam para uma emergência.
+
+As credenciais são os secrets `FIREBASE_SERVICE_ACCOUNT_SCHOOL_FLOW_360` (app) e `FIREBASE_SERVICE_ACCOUNT_SCHOOL_FLOW_360_STORYBOOK` (Storybook), contas de serviço criadas pelo `firebase init hosting:github` com permissão só de Hosting. A versão do bun da esteira (`BUN_VERSION`) acompanha a usada localmente.
 
 ### Estas regras são impostas pelo Husky, não apenas documentadas
 
