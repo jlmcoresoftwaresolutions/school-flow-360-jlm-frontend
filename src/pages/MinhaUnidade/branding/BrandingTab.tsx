@@ -12,6 +12,7 @@ import { formatFileSize } from "@/utils/formats"
 import { displayNameMaxLength, faviconRules, logoRules } from "../MinhaUnidade.constants"
 import { BrandingLayout, FieldGroup, FilePreview, FileThumb, FormActions, InlineGroup } from "../MinhaUnidade.styles"
 import { SectionCard } from "../shared/SectionCard"
+import { TabCard } from "../shared/TabCard"
 import type { FileProblem, FileRules } from "./brandingFiles"
 import { getFileProblem, readAsDataUrl } from "./brandingFiles"
 import { BrandingPreview } from "./BrandingPreview"
@@ -137,96 +138,98 @@ export const BrandingTab = (props: BrandingTabProps) => {
   }
 
   return (
-    <BrandingLayout>
-      <SectionCard description={t("minhaUnidade.branding.description")} title={t("minhaUnidade.branding.title")}>
-        <form aria-label={t("minhaUnidade.branding.title")} onSubmit={handleSubmit} noValidate>
-          <FieldGroup>
-            <Input
-              error={errors.displayName?.message}
-              helperText={t("minhaUnidade.branding.displayNameHelper")}
-              maxLength={displayNameMaxLength}
-              title={t("minhaUnidade.branding.displayName")}
-              required
-              {...form.register("displayName", {
-                validate: (value) => value.trim() !== "" || t("minhaUnidade.validation.required"),
-              })}
-            />
-
-            <FieldGroup key={`logo-${fileInputsKey}`}>
-              <FileUpload
-                accept={logoRules.extensions.join(",")}
-                error={fileProblemMessage(fileProblems.logo, logoRules)}
-                helperText={t("minhaUnidade.branding.logoHelper")}
-                onChange={(event) => void handleFileChange("logo", logoRules)(event)}
-                placeholder={t("minhaUnidade.branding.filePlaceholder")}
-                title={t("minhaUnidade.branding.logo")}
+    <TabCard>
+      <BrandingLayout>
+        <SectionCard description={t("minhaUnidade.branding.description")} title={t("minhaUnidade.branding.title")}>
+          <form aria-label={t("minhaUnidade.branding.title")} onSubmit={handleSubmit} noValidate>
+            <FieldGroup>
+              <Input
+                error={errors.displayName?.message}
+                helperText={t("minhaUnidade.branding.displayNameHelper")}
+                maxLength={displayNameMaxLength}
+                title={t("minhaUnidade.branding.displayName")}
+                required
+                {...form.register("displayName", {
+                  validate: (value) => value.trim() !== "" || t("minhaUnidade.validation.required"),
+                })}
               />
-              {renderFilePreview("logo", branding.logoUrl)}
+
+              <FieldGroup key={`logo-${fileInputsKey}`}>
+                <FileUpload
+                  accept={logoRules.extensions.join(",")}
+                  error={fileProblemMessage(fileProblems.logo, logoRules)}
+                  helperText={t("minhaUnidade.branding.logoHelper")}
+                  onChange={(event) => void handleFileChange("logo", logoRules)(event)}
+                  placeholder={t("minhaUnidade.branding.filePlaceholder")}
+                  title={t("minhaUnidade.branding.logo")}
+                />
+                {renderFilePreview("logo", branding.logoUrl)}
+              </FieldGroup>
+
+              <FieldGroup key={`favicon-${fileInputsKey}`}>
+                <FileUpload
+                  accept={faviconRules.extensions.join(",")}
+                  error={fileProblemMessage(fileProblems.favicon, faviconRules)}
+                  helperText={t("minhaUnidade.branding.faviconHelper")}
+                  onChange={(event) => void handleFileChange("favicon", faviconRules)(event)}
+                  placeholder={t("minhaUnidade.branding.filePlaceholder")}
+                  title={t("minhaUnidade.branding.favicon")}
+                />
+                {renderFilePreview("favicon", branding.faviconUrl)}
+              </FieldGroup>
+
+              <InlineGroup>
+                <Controller
+                  control={form.control}
+                  name="primaryColor"
+                  render={(controller) => (
+                    <ColorPicker
+                      onChange={controller.field.onChange}
+                      openLabel={t("minhaUnidade.branding.openColorPicker")}
+                      title={t("minhaUnidade.branding.primaryColor")}
+                      value={controller.field.value}
+                    />
+                  )}
+                />
+                <Controller
+                  control={form.control}
+                  name="secondaryColor"
+                  render={(controller) => (
+                    <ColorPicker
+                      onChange={controller.field.onChange}
+                      openLabel={t("minhaUnidade.branding.openColorPicker")}
+                      title={t("minhaUnidade.branding.secondaryColor")}
+                      value={controller.field.value}
+                    />
+                  )}
+                />
+              </InlineGroup>
             </FieldGroup>
 
-            <FieldGroup key={`favicon-${fileInputsKey}`}>
-              <FileUpload
-                accept={faviconRules.extensions.join(",")}
-                error={fileProblemMessage(fileProblems.favicon, faviconRules)}
-                helperText={t("minhaUnidade.branding.faviconHelper")}
-                onChange={(event) => void handleFileChange("favicon", faviconRules)(event)}
-                placeholder={t("minhaUnidade.branding.filePlaceholder")}
-                title={t("minhaUnidade.branding.favicon")}
-              />
-              {renderFilePreview("favicon", branding.faviconUrl)}
-            </FieldGroup>
+            <FormActions>
+              <Button disabled={!hasChanges || isSubmitting} onClick={handleDiscard} type="button" variant="outlined">
+                {t("minhaUnidade.branding.discard")}
+              </Button>
+              <Button disabled={!hasChanges || isSubmitting} type="submit">
+                {t("minhaUnidade.branding.save")}
+              </Button>
+            </FormActions>
+          </form>
+        </SectionCard>
 
-            <InlineGroup>
-              <Controller
-                control={form.control}
-                name="primaryColor"
-                render={(controller) => (
-                  <ColorPicker
-                    onChange={controller.field.onChange}
-                    openLabel={t("minhaUnidade.branding.openColorPicker")}
-                    title={t("minhaUnidade.branding.primaryColor")}
-                    value={controller.field.value}
-                  />
-                )}
-              />
-              <Controller
-                control={form.control}
-                name="secondaryColor"
-                render={(controller) => (
-                  <ColorPicker
-                    onChange={controller.field.onChange}
-                    openLabel={t("minhaUnidade.branding.openColorPicker")}
-                    title={t("minhaUnidade.branding.secondaryColor")}
-                    value={controller.field.value}
-                  />
-                )}
-              />
-            </InlineGroup>
-          </FieldGroup>
-
-          <FormActions>
-            <Button disabled={!hasChanges || isSubmitting} onClick={handleDiscard} type="button" variant="outlined">
-              {t("minhaUnidade.branding.discard")}
-            </Button>
-            <Button disabled={!hasChanges || isSubmitting} type="submit">
-              {t("minhaUnidade.branding.save")}
-            </Button>
-          </FormActions>
-        </form>
-      </SectionCard>
-
-      <SectionCard
-        description={t("minhaUnidade.branding.previewDescription")}
-        title={t("minhaUnidade.branding.previewTitle")}
-      >
-        <BrandingPreview
-          displayName={draft.displayName ?? ""}
-          faviconUrl={chosenFiles.favicon?.url ?? branding.faviconUrl}
-          logoUrl={chosenFiles.logo?.url ?? branding.logoUrl}
-          primaryColor={draft.primaryColor ?? branding.primaryColor}
-          secondaryColor={draft.secondaryColor ?? branding.secondaryColor}
-        />
-      </SectionCard>
-    </BrandingLayout>
+        <SectionCard
+          description={t("minhaUnidade.branding.previewDescription")}
+          title={t("minhaUnidade.branding.previewTitle")}
+        >
+          <BrandingPreview
+            displayName={draft.displayName ?? ""}
+            faviconUrl={chosenFiles.favicon?.url ?? branding.faviconUrl}
+            logoUrl={chosenFiles.logo?.url ?? branding.logoUrl}
+            primaryColor={draft.primaryColor ?? branding.primaryColor}
+            secondaryColor={draft.secondaryColor ?? branding.secondaryColor}
+          />
+        </SectionCard>
+      </BrandingLayout>
+    </TabCard>
   )
 }
