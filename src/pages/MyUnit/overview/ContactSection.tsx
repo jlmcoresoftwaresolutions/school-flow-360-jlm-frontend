@@ -4,7 +4,7 @@ import { DescriptionList, Input } from "@/ds-components/molecules"
 import type { Organization, OrganizationUpdate } from "@/models"
 import { stripNonDigits } from "@/utils/formats"
 
-import { emailPattern } from "../MinhaUnidade.constants"
+import { emailPattern } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
 import { useSectionForm } from "../shared/useSectionForm"
 
@@ -34,21 +34,21 @@ export const ContactSection = (props: ContactSectionProps) => {
         <>
           <Input
             error={errors.contactEmail?.message}
-            title={t("minhaUnidade.overview.contactEmail")}
+            title={t("myUnit.overview.contactEmail")}
             type="email"
             required
             {...section.form.register("contactEmail", {
-              pattern: { message: t("minhaUnidade.validation.email"), value: emailPattern },
-              validate: (value) => value.trim() !== "" || t("minhaUnidade.validation.required"),
+              pattern: { message: t("myUnit.validation.email"), value: emailPattern },
+              validate: (value) => value.trim() !== "" || t("myUnit.validation.required"),
             })}
           />
           <Input
             error={errors.contactPhone?.message}
             mask="phone"
-            title={t("minhaUnidade.overview.contactPhone")}
+            title={t("myUnit.overview.contactPhone")}
             required
             {...section.form.register("contactPhone", {
-              validate: (value) => stripNonDigits(value).length >= 10 || t("minhaUnidade.validation.phone"),
+              validate: (value) => stripNonDigits(value).length >= 10 || t("myUnit.validation.phone"),
             })}
           />
         </>
@@ -58,14 +58,14 @@ export const ContactSection = (props: ContactSectionProps) => {
       onCancel={section.cancelEditing}
       onEdit={section.startEditing}
       onSubmit={section.onSubmit}
-      title={t("minhaUnidade.overview.contactTitle")}
+      title={t("myUnit.overview.contactTitle")}
       view={
         <DescriptionList
           columns={1}
           emptyValue={t("common.notInformed")}
           items={[
-            { key: "contactEmail", label: t("minhaUnidade.overview.contactEmail"), value: organization.contactEmail },
-            { key: "contactPhone", label: t("minhaUnidade.overview.contactPhone"), value: organization.contactPhone },
+            { key: "contactEmail", label: t("myUnit.overview.contactEmail"), value: organization.contactEmail },
+            { key: "contactPhone", label: t("myUnit.overview.contactPhone"), value: organization.contactPhone },
           ]}
         />
       }

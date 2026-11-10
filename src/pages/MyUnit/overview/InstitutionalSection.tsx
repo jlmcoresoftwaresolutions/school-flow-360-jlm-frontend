@@ -30,7 +30,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
   )
 
   const { errors } = section.form.formState
-  const requiredMessage = t("minhaUnidade.validation.required")
+  const requiredMessage = t("myUnit.validation.required")
 
   return (
     <EditableSectionCard
@@ -39,7 +39,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
         <>
           <Input
             error={errors.institutionalName?.message}
-            title={t("minhaUnidade.overview.institutionalName")}
+            title={t("myUnit.overview.institutionalName")}
             required
             {...section.form.register("institutionalName", {
               validate: (value) => value.trim() !== "" || requiredMessage,
@@ -54,7 +54,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
                 onBlur={controller.field.onBlur}
                 onChange={(option) => option && controller.field.onChange(option.value)}
                 options={operationModelOptions}
-                title={t("minhaUnidade.overview.operationModel")}
+                title={t("myUnit.overview.operationModel")}
                 value={operationModelOptions.find((option) => option.value === controller.field.value) ?? null}
                 required
               />
@@ -67,25 +67,25 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
       onCancel={section.cancelEditing}
       onEdit={section.startEditing}
       onSubmit={section.onSubmit}
-      title={t("minhaUnidade.overview.institutionalTitle")}
+      title={t("myUnit.overview.institutionalTitle")}
       view={
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[
             {
               key: "institutionalName",
-              label: t("minhaUnidade.overview.institutionalName"),
+              label: t("myUnit.overview.institutionalName"),
               value: organization.institutionalName,
             },
-            { key: "displayName", label: t("minhaUnidade.overview.displayName"), value: branding.displayName },
+            { key: "displayName", label: t("myUnit.overview.displayName"), value: branding.displayName },
             {
               key: "operationModel",
-              label: t("minhaUnidade.overview.operationModel"),
+              label: t("myUnit.overview.operationModel"),
               value: operationModelLabel(organization.operationModel),
             },
             {
               key: "status",
-              label: t("minhaUnidade.overview.status"),
+              label: t("myUnit.overview.status"),
               value: (
                 <Badge tone={statusTone(organization.status)}>{organizationStatusLabel(organization.status)}</Badge>
               ),

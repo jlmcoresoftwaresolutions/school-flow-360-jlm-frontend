@@ -5,12 +5,13 @@ import { Badge, Button, Icon, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import { ActionMenu, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
+import { spacing } from "@/foundation"
 import type { SchoolUnit, SchoolUnitInput, SchoolUnitStatus } from "@/models"
 import { formatCityState } from "@/utils/address"
 import { normalizeForSearch } from "@/utils/strings"
 
-import { unitsPageSize } from "../MinhaUnidade.constants"
-import { FieldGroup } from "../MinhaUnidade.styles"
+import { unitsPageSize } from "../MyUnit.constants"
+import { FieldGroup } from "../MyUnit.styles"
 import { TabCard } from "../shared/TabCard"
 import { useStatusLabels } from "../shared/useStatusLabels"
 import { InactivateUnitDialog } from "./InactivateUnitDialog"
@@ -64,9 +65,9 @@ export const UnitsTab = (props: UnitsTabProps) => {
   )
 
   const statusOptions: SelectOption[] = [
-    { label: t("minhaUnidade.units.filterAll"), value: "all" },
-    { label: t("minhaUnidade.units.filterActive"), value: "ATIVA" },
-    { label: t("minhaUnidade.units.filterInactive"), value: "INATIVA" },
+    { label: t("myUnit.units.filterAll"), value: "all" },
+    { label: t("myUnit.units.filterActive"), value: "ACTIVE" },
+    { label: t("myUnit.units.filterInactive"), value: "INACTIVE" },
   ]
 
   const closeDialog = () => setDialog(null)
@@ -78,12 +79,12 @@ export const UnitsTab = (props: UnitsTabProps) => {
 
   const createButton = (
     <Button onClick={() => onCreatingChange(true)} startIcon={<Icon color="inverse" name="plus" size={16} />}>
-      {t("minhaUnidade.units.create")}
+      {t("myUnit.units.create")}
     </Button>
   )
 
   const renderActions = (unit: SchoolUnit) => {
-    const isActive = unit.status === "ATIVA"
+    const isActive = unit.status === "ACTIVE"
 
     return (
       <ActionMenu
@@ -91,7 +92,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
           {
             icon: "eye-outline",
             key: "view",
-            label: t("minhaUnidade.units.view"),
+            label: t("myUnit.units.view"),
             onClick: () => setDialog({ kind: "details", unit }),
           },
           {
@@ -105,12 +106,12 @@ export const UnitsTab = (props: UnitsTabProps) => {
             disabled: !isActive,
             icon: "x-circle-outline",
             key: "inactivate",
-            label: t("minhaUnidade.units.inactivate"),
+            label: t("myUnit.units.inactivate"),
             onClick: () => setDialog({ kind: "inactivate", unit }),
             tone: "danger",
           },
         ]}
-        triggerLabel={t("minhaUnidade.units.actionsFor", { name: unit.name })}
+        triggerLabel={t("myUnit.units.actionsFor", { name: unit.name })}
       />
     )
   }
@@ -119,39 +120,39 @@ export const UnitsTab = (props: UnitsTabProps) => {
     <>
       <TabCard
         action={units.length > 0 ? createButton : undefined}
-        description={t("minhaUnidade.units.description")}
-        title={t("minhaUnidade.units.title")}
+        description={t("myUnit.units.description")}
+        title={t("myUnit.units.title")}
       >
         {units.length === 0 ? (
           <StateMessage
-            action={<Button onClick={() => onCreatingChange(true)}>{t("minhaUnidade.units.createFirst")}</Button>}
-            description={t("minhaUnidade.units.emptyDescription")}
+            action={<Button onClick={() => onCreatingChange(true)}>{t("myUnit.units.createFirst")}</Button>}
+            description={t("myUnit.units.emptyDescription")}
             icon="location-outline"
-            title={t("minhaUnidade.units.emptyTitle")}
+            title={t("myUnit.units.emptyTitle")}
           />
         ) : (
           <FieldGroup>
             <FilterBar
               clearDisabled={!hasFilters}
-              clearLabel={t("minhaUnidade.units.clearFilters")}
-              label={t("minhaUnidade.units.filtersLabel")}
+              clearLabel={t("myUnit.units.clearFilters")}
+              label={t("myUnit.units.filtersLabel")}
               onClear={clearFilters}
               onSearchChange={setSearch}
-              searchLabel={t("minhaUnidade.units.searchLabel")}
-              searchPlaceholder={t("minhaUnidade.units.searchPlaceholder")}
+              searchLabel={t("myUnit.units.searchLabel")}
+              searchPlaceholder={t("myUnit.units.searchPlaceholder")}
               searchValue={search}
             >
               <Select
                 onChange={(option) => setStatusFilter((option?.value as StatusFilter | undefined) ?? "all")}
                 options={statusOptions}
-                title={t("minhaUnidade.units.status")}
+                title={t("myUnit.units.status")}
                 value={statusOptions.find((option) => option.value === statusFilter) ?? null}
               />
             </FilterBar>
 
             <Table
               dataKey="id"
-              emptyMessage={t("minhaUnidade.units.noResults")}
+              emptyMessage={t("myUnit.units.noResults")}
               nextPageLabel={t("common.nextPage")}
               pageLabel={(page) => t("common.pageLabel", { page })}
               pageSummary={(page, totalPages) => t("common.pageSummary", { page, totalPages })}
@@ -167,31 +168,54 @@ export const UnitsTab = (props: UnitsTabProps) => {
                   </Text>
                 )}
                 field="name"
-                header={t("minhaUnidade.units.name")}
+                header={t("myUnit.units.name")}
                 sortable
               />
               <Table.Column
                 body={(unit: SchoolUnit) => formatCityState(unit.address) || t("common.notInformed")}
                 field="address"
-                header={t("minhaUnidade.units.cityState")}
+                header={t("myUnit.units.cityState")}
               />
               <Table.Column
                 body={(unit: SchoolUnit) => unit.contactPhone || t("common.notInformed")}
                 field="contactPhone"
-                header={t("minhaUnidade.units.contactPhone")}
+                header={t("myUnit.units.contactPhone")}
+              />
+              <Table.Column
+                body={(unit: SchoolUnit) =>
+                  unit.contactEmail ? (
+                    <Text
+                      fontSize="sm"
+                      tooltip={unit.contactEmail}
+                      style={{
+                        display: "block",
+                        maxWidth: spacing[224],
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {unit.contactEmail}
+                    </Text>
+                  ) : (
+                    t("common.notInformed")
+                  )
+                }
+                field="contactEmail"
+                header={t("myUnit.units.contactEmail")}
               />
               <Table.Column
                 body={(unit: SchoolUnit) => (
                   <Badge tone={statusTone(unit.status)}>{unitStatusLabel(unit.status)}</Badge>
                 )}
                 field="status"
-                header={t("minhaUnidade.units.status")}
+                header={t("myUnit.units.status")}
               />
               <Table.Column
                 align="right"
                 body={(unit: SchoolUnit) => renderActions(unit)}
                 field="id"
-                header={t("minhaUnidade.units.actions")}
+                header={t("myUnit.units.actions")}
                 width="1%"
               />
             </Table>

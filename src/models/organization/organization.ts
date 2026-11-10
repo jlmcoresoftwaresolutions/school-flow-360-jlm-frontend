@@ -1,6 +1,7 @@
 // The frontend's own shape for Minha Unidade's data. The backend uses other names (orgInstName,
 // orgAddressStreet, ...) and lacks some fields (the city, for one), so the service maps between the
-// two once it calls the real API; until then it answers from a mock (see services/organization).
+// two (the Api* types below are the backend's); what isn't wired yet answers from a mock (see
+// services/organization).
 
 // A structured address, shared by the organization and its units.
 export type Address = {
@@ -15,10 +16,10 @@ export type Address = {
 
 // The operation-model codes the project already uses (the backend has only PRIVATE | PUBLIC so far -
 // not reconciled yet). Their labels are copy, translated by the page.
-export type OperationModel = "MISTA" | "PRIVADA" | "PUBLICA_ESTADUAL" | "PUBLICA_FEDERAL" | "PUBLICA_MUNICIPAL"
+export type OperationModel = "MIXED" | "PRIVATE" | "PUBLIC_FEDERAL" | "PUBLIC_MUNICIPAL" | "PUBLIC_STATE"
 
 // DP-P1-03 (the organization's status taxonomy) is still open: only these two for now.
-export type OrganizationStatus = "ATIVA" | "INATIVA"
+export type OrganizationStatus = "ACTIVE" | "INACTIVE"
 
 export type Organization = {
   address: Address
@@ -56,7 +57,7 @@ export type OrganizationBrandingUpdate = {
 
 // DP-P1-04 (the unit's status taxonomy) is still open: only these two for now. Inactivating isn't
 // deleting, and there is no reactivation (DP-P1-06).
-export type SchoolUnitStatus = "ATIVA" | "INATIVA"
+export type SchoolUnitStatus = "ACTIVE" | "INACTIVE"
 
 export type SchoolUnit = {
   address: Address
@@ -76,4 +77,28 @@ export type SchoolUnitInput = Omit<SchoolUnit, "id" | "inactivatedAt" | "inactiv
 
 export type SchoolUnitInactivation = {
   reason: string
+}
+
+// The backend's school unit, as GET /api/school-units lists it. Its address is one free-text string,
+// not the structured Address.
+export type ApiSchoolUnitStatus = "ACTIVE" | "INACTIVE"
+
+export type ApiSchoolUnit = {
+  address: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  operationalStatus: ApiSchoolUnitStatus
+  schoolUnitId: number
+  unitName: string
+  version: number
+}
+
+// GET /api/school-units's query: a name search, a status filter, sorting and paging (size 1-100).
+export type ApiSchoolUnitListParams = {
+  direction?: "ASC" | "DESC"
+  page?: number
+  search?: string
+  size?: number
+  sortBy?: "operationalStatus" | "unitName"
+  status?: ApiSchoolUnitStatus
 }

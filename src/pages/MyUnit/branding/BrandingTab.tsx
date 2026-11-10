@@ -9,8 +9,8 @@ import { ColorPicker, FileUpload, Input } from "@/ds-components/molecules"
 import type { OrganizationBranding, OrganizationBrandingUpdate } from "@/models"
 import { formatFileSize } from "@/utils/formats"
 
-import { displayNameMaxLength, faviconRules, logoRules } from "../MinhaUnidade.constants"
-import { BrandingLayout, FieldGroup, FilePreview, FileThumb, FormActions, InlineGroup } from "../MinhaUnidade.styles"
+import { displayNameMaxLength, faviconRules, logoRules } from "../MyUnit.constants"
+import { BrandingLayout, FieldGroup, FilePreview, FileThumb, FormActions, InlineGroup } from "../MyUnit.styles"
 import { SectionCard } from "../shared/SectionCard"
 import { TabCard } from "../shared/TabCard"
 import type { FileProblem, FileRules } from "./brandingFiles"
@@ -102,9 +102,9 @@ export const BrandingTab = (props: BrandingTabProps) => {
   })
 
   const fileProblemMessage = (problem: FileProblem | undefined, rules: FileRules) => {
-    if (problem === "wrongType") return t("minhaUnidade.branding.fileWrongType")
+    if (problem === "wrongType") return t("myUnit.branding.fileWrongType")
     if (problem === "tooLarge") {
-      return t("minhaUnidade.branding.fileTooLarge", { max: formatFileSize(rules.maxBytes, i18n.language) })
+      return t("myUnit.branding.fileTooLarge", { max: formatFileSize(rules.maxBytes, i18n.language) })
     }
 
     return undefined
@@ -117,7 +117,7 @@ export const BrandingTab = (props: BrandingTabProps) => {
     if (!url) {
       return (
         <Text color="secondary" fontSize="xs">
-          {t("minhaUnidade.branding.noFile")}
+          {t("myUnit.branding.noFile")}
         </Text>
       )
     }
@@ -127,11 +127,11 @@ export const BrandingTab = (props: BrandingTabProps) => {
         <FileThumb alt="" src={url} />
         <Text color="secondary" fontSize="xs">
           {chosen
-            ? t("minhaUnidade.branding.newFile", {
+            ? t("myUnit.branding.newFile", {
                 name: chosen.file.name,
                 size: formatFileSize(chosen.file.size, i18n.language),
               })
-            : t("minhaUnidade.branding.currentFile")}
+            : t("myUnit.branding.currentFile")}
         </Text>
       </FilePreview>
     )
@@ -140,17 +140,17 @@ export const BrandingTab = (props: BrandingTabProps) => {
   return (
     <TabCard>
       <BrandingLayout>
-        <SectionCard description={t("minhaUnidade.branding.description")} title={t("minhaUnidade.branding.title")}>
-          <form aria-label={t("minhaUnidade.branding.title")} onSubmit={handleSubmit} noValidate>
+        <SectionCard description={t("myUnit.branding.description")} title={t("myUnit.branding.title")}>
+          <form aria-label={t("myUnit.branding.title")} onSubmit={handleSubmit} noValidate>
             <FieldGroup>
               <Input
                 error={errors.displayName?.message}
-                helperText={t("minhaUnidade.branding.displayNameHelper")}
+                helperText={t("myUnit.branding.displayNameHelper")}
                 maxLength={displayNameMaxLength}
-                title={t("minhaUnidade.branding.displayName")}
+                title={t("myUnit.branding.displayName")}
                 required
                 {...form.register("displayName", {
-                  validate: (value) => value.trim() !== "" || t("minhaUnidade.validation.required"),
+                  validate: (value) => value.trim() !== "" || t("myUnit.validation.required"),
                 })}
               />
 
@@ -158,10 +158,10 @@ export const BrandingTab = (props: BrandingTabProps) => {
                 <FileUpload
                   accept={logoRules.extensions.join(",")}
                   error={fileProblemMessage(fileProblems.logo, logoRules)}
-                  helperText={t("minhaUnidade.branding.logoHelper")}
+                  helperText={t("myUnit.branding.logoHelper")}
                   onChange={(event) => void handleFileChange("logo", logoRules)(event)}
-                  placeholder={t("minhaUnidade.branding.filePlaceholder")}
-                  title={t("minhaUnidade.branding.logo")}
+                  placeholder={t("myUnit.branding.filePlaceholder")}
+                  title={t("myUnit.branding.logo")}
                 />
                 {renderFilePreview("logo", branding.logoUrl)}
               </FieldGroup>
@@ -170,10 +170,10 @@ export const BrandingTab = (props: BrandingTabProps) => {
                 <FileUpload
                   accept={faviconRules.extensions.join(",")}
                   error={fileProblemMessage(fileProblems.favicon, faviconRules)}
-                  helperText={t("minhaUnidade.branding.faviconHelper")}
+                  helperText={t("myUnit.branding.faviconHelper")}
                   onChange={(event) => void handleFileChange("favicon", faviconRules)(event)}
-                  placeholder={t("minhaUnidade.branding.filePlaceholder")}
-                  title={t("minhaUnidade.branding.favicon")}
+                  placeholder={t("myUnit.branding.filePlaceholder")}
+                  title={t("myUnit.branding.favicon")}
                 />
                 {renderFilePreview("favicon", branding.faviconUrl)}
               </FieldGroup>
@@ -185,8 +185,8 @@ export const BrandingTab = (props: BrandingTabProps) => {
                   render={(controller) => (
                     <ColorPicker
                       onChange={controller.field.onChange}
-                      openLabel={t("minhaUnidade.branding.openColorPicker")}
-                      title={t("minhaUnidade.branding.primaryColor")}
+                      openLabel={t("myUnit.branding.openColorPicker")}
+                      title={t("myUnit.branding.primaryColor")}
                       value={controller.field.value}
                     />
                   )}
@@ -197,8 +197,8 @@ export const BrandingTab = (props: BrandingTabProps) => {
                   render={(controller) => (
                     <ColorPicker
                       onChange={controller.field.onChange}
-                      openLabel={t("minhaUnidade.branding.openColorPicker")}
-                      title={t("minhaUnidade.branding.secondaryColor")}
+                      openLabel={t("myUnit.branding.openColorPicker")}
+                      title={t("myUnit.branding.secondaryColor")}
                       value={controller.field.value}
                     />
                   )}
@@ -214,19 +214,16 @@ export const BrandingTab = (props: BrandingTabProps) => {
                 type="button"
                 variant="outlined"
               >
-                {t("minhaUnidade.branding.discard")}
+                {t("myUnit.branding.discard")}
               </Button>
               <Button disabled={!hasChanges || isSubmitting} size="small" type="submit">
-                {t("minhaUnidade.branding.save")}
+                {t("myUnit.branding.save")}
               </Button>
             </FormActions>
           </form>
         </SectionCard>
 
-        <SectionCard
-          description={t("minhaUnidade.branding.previewDescription")}
-          title={t("minhaUnidade.branding.previewTitle")}
-        >
+        <SectionCard description={t("myUnit.branding.previewDescription")} title={t("myUnit.branding.previewTitle")}>
           <BrandingPreview
             displayName={draft.displayName ?? ""}
             faviconUrl={chosenFiles.favicon?.url ?? branding.faviconUrl}

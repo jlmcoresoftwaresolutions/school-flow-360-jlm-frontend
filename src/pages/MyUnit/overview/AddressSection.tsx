@@ -36,7 +36,7 @@ export const AddressSection = (props: AddressSectionProps) => {
       onCancel={section.cancelEditing}
       onEdit={section.startEditing}
       onSubmit={section.onSubmit}
-      title={t("minhaUnidade.overview.addressTitle")}
+      title={t("myUnit.overview.addressTitle")}
       view={
         <DescriptionList
           columns={1}
@@ -44,7 +44,7 @@ export const AddressSection = (props: AddressSectionProps) => {
           items={[
             {
               key: "address",
-              label: t("minhaUnidade.overview.addressLabel"),
+              label: t("myUnit.overview.addressLabel"),
               value: formatAddress(organization.address),
             },
           ]}

@@ -60,7 +60,7 @@ export const en: TranslationResource = {
     tooManyAttempts_one: "Too many incorrect attempts. Wait {{count}} minute to try again.",
     tooManyAttempts_other: "Too many incorrect attempts. Wait {{count}} minutes to try again.",
   },
-  minhaUnidade: {
+  myUnit: {
     address: {
       cep: "Postal code (CEP)",
       cepHelper: "Enter the postal code to fill in the address.",
@@ -106,15 +106,15 @@ export const en: TranslationResource = {
     loadError: "Couldn't load the organization's data.",
     loadErrorDescription: "Check your connection and try again.",
     operationModels: {
-      MISTA: "Mixed",
-      PRIVADA: "Private",
-      PUBLICA_ESTADUAL: "Public (state)",
-      PUBLICA_FEDERAL: "Public (federal)",
-      PUBLICA_MUNICIPAL: "Public (municipal)",
+      MIXED: "Mixed",
+      PRIVATE: "Private",
+      PUBLIC_FEDERAL: "Public (federal)",
+      PUBLIC_MUNICIPAL: "Public (municipal)",
+      PUBLIC_STATE: "Public (state)",
     },
     organizationStatuses: {
-      ATIVA: "Active organization",
-      INATIVA: "Inactive organization",
+      ACTIVE: "Active organization",
+      INACTIVE: "Inactive organization",
     },
     overview: {
       addressLabel: "Institutional address",
@@ -182,8 +182,8 @@ export const en: TranslationResource = {
       searchPlaceholder: "Search by name, city or address",
       status: "Status",
       statuses: {
-        ATIVA: "Active",
-        INATIVA: "Inactive",
+        ACTIVE: "Active",
+        INACTIVE: "Inactive",
       },
       title: "Units",
       updated: "Unit updated.",
@@ -249,7 +249,7 @@ export const en: TranslationResource = {
       integrations: "Integrations",
       invites: "Invitations",
       messages: "Messages",
-      minhaUnidade: "My Unit",
+      myUnit: "My Unit",
       notices: "Announcements",
       notifications: "Notifications",
       preferences: "Preferences",

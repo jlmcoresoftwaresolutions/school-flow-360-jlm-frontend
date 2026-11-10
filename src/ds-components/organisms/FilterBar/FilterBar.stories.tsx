@@ -6,18 +6,18 @@ import { Select, type SelectOption } from "../../molecules"
 import { Table } from "../Table"
 import { FilterBar, type FilterBarProps } from "./FilterBar"
 
-type Unidade = {
-  cidade: string
+type Unit = {
+  city: string
   id: string
-  nome: string
+  name: string
   status: "Ativa" | "Inativa"
 }
 
-const unidades: Unidade[] = [
-  { cidade: "Belo Horizonte", id: "1", nome: "Unidade Centro", status: "Ativa" },
-  { cidade: "Contagem", id: "2", nome: "Unidade Norte", status: "Ativa" },
-  { cidade: "Betim", id: "3", nome: "Unidade Oeste", status: "Inativa" },
-  { cidade: "Belo Horizonte", id: "4", nome: "Unidade Pampulha", status: "Ativa" },
+const units: Unit[] = [
+  { city: "Belo Horizonte", id: "1", name: "Unidade Centro", status: "Ativa" },
+  { city: "Contagem", id: "2", name: "Unidade Norte", status: "Ativa" },
+  { city: "Betim", id: "3", name: "Unidade Oeste", status: "Inativa" },
+  { city: "Belo Horizonte", id: "4", name: "Unidade Pampulha", status: "Ativa" },
 ]
 
 const statusOptions: SelectOption[] = [
@@ -25,7 +25,7 @@ const statusOptions: SelectOption[] = [
   { label: "Inativa", value: "Inativa" },
 ]
 
-const cidadeOptions: SelectOption[] = [
+const cityOptions: SelectOption[] = [
   { label: "Belo Horizonte", value: "Belo Horizonte" },
   { label: "Betim", value: "Betim" },
   { label: "Contagem", value: "Contagem" },
@@ -36,20 +36,20 @@ const cidadeOptions: SelectOption[] = [
 const FilteredListing = (props: Partial<FilterBarProps>) => {
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<SelectOption | null>(null)
-  const [cidade, setCidade] = useState<SelectOption | null>(null)
+  const [city, setCity] = useState<SelectOption | null>(null)
 
-  const hasFilters = search !== "" || status !== null || cidade !== null
-  const filtered = unidades.filter(
-    (unidade) =>
-      unidade.nome.toLowerCase().includes(search.toLowerCase()) &&
-      (!status || unidade.status === status.value) &&
-      (!cidade || unidade.cidade === cidade.value),
+  const hasFilters = search !== "" || status !== null || city !== null
+  const filtered = units.filter(
+    (unit) =>
+      unit.name.toLowerCase().includes(search.toLowerCase()) &&
+      (!status || unit.status === status.value) &&
+      (!city || unit.city === city.value),
   )
 
   const clear = () => {
     setSearch("")
     setStatus(null)
-    setCidade(null)
+    setCity(null)
   }
 
   return (
@@ -67,14 +67,14 @@ const FilteredListing = (props: Partial<FilterBarProps>) => {
         {...props}
       >
         <Select onChange={setStatus} options={statusOptions} placeholder="Todos" title="Status" value={status} />
-        <Select onChange={setCidade} options={cidadeOptions} placeholder="Todas" title="Cidade" value={cidade} />
+        <Select onChange={setCity} options={cityOptions} placeholder="Todas" title="Cidade" value={city} />
       </FilterBar>
 
       <Table dataKey="id" emptyMessage="Nenhuma unidade encontrada para os filtros escolhidos." value={filtered}>
-        <Table.Column field="nome" header="Unidade" />
-        <Table.Column field="cidade" header="Cidade" />
+        <Table.Column field="name" header="Unidade" />
+        <Table.Column field="city" header="Cidade" />
         <Table.Column
-          body={(row: Unidade) => <Badge tone={row.status === "Ativa" ? "success" : "neutral"}>{row.status}</Badge>}
+          body={(row: Unit) => <Badge tone={row.status === "Ativa" ? "success" : "neutral"}>{row.status}</Badge>}
           field="status"
           header="Status"
         />

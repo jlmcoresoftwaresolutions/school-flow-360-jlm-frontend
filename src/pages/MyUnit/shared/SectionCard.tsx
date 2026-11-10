@@ -2,7 +2,7 @@ import type { ReactNode } from "react"
 
 import { Text } from "@/ds-components/atoms"
 
-import { SectionHeader, SectionHeading, SubCard } from "../MinhaUnidade.styles"
+import { SectionHeader, SectionHeading, SubCard } from "../MyUnit.styles"
 
 export type SectionCardProps = {
   children: ReactNode

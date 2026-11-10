@@ -5,7 +5,7 @@ import { Breadcrumb, type BreadcrumbItem, type BreadcrumbProps } from "./Breadcr
 
 const items: BreadcrumbItem[] = [
   { key: "administracao", label: "Administração" },
-  { href: "/administration/my-unit", key: "minha-unidade", label: "Minha Unidade" },
+  { href: "/administration/my-unit", key: "my-unit", label: "Minha Unidade" },
   { key: "unidades", label: "Unidades" },
 ]
 
@@ -113,7 +113,7 @@ describe("Breadcrumb", () => {
     const { container } = renderBreadcrumb({
       items: [
         { icon: "gear-outline", key: "administracao", label: "Administração" },
-        { key: "minha-unidade", label: "Minha Unidade" },
+        { key: "my-unit", label: "Minha Unidade" },
       ],
     })
 

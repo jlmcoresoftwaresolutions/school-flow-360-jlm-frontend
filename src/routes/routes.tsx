@@ -98,10 +98,10 @@ export const router = createBrowserRouter([
     children: [
       {
         lazy: async () => {
-          const { MinhaUnidade } = await import("@/pages/MinhaUnidade")
-          return { Component: MinhaUnidade }
+          const { MyUnit } = await import("@/pages/MyUnit")
+          return { Component: MyUnit }
         },
-        path: paths.minhaUnidade,
+        path: paths.myUnit,
       },
       {
         lazy: async () => {

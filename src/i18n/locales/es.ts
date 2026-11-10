@@ -61,7 +61,7 @@ export const es: TranslationResource = {
     tooManyAttempts_one: "Demasiados intentos incorrectos. Espera {{count}} minuto para volver a intentarlo.",
     tooManyAttempts_other: "Demasiados intentos incorrectos. Espera {{count}} minutos para volver a intentarlo.",
   },
-  minhaUnidade: {
+  myUnit: {
     address: {
       cep: "Código postal (CEP)",
       cepHelper: "Escribe el código postal para completar la dirección.",
@@ -107,15 +107,15 @@ export const es: TranslationResource = {
     loadError: "No se pudieron cargar los datos de la organización.",
     loadErrorDescription: "Revisa tu conexión e inténtalo de nuevo.",
     operationModels: {
-      MISTA: "Mixta",
-      PRIVADA: "Privada",
-      PUBLICA_ESTADUAL: "Pública estatal",
-      PUBLICA_FEDERAL: "Pública federal",
-      PUBLICA_MUNICIPAL: "Pública municipal",
+      MIXED: "Mixta",
+      PRIVATE: "Privada",
+      PUBLIC_FEDERAL: "Pública federal",
+      PUBLIC_MUNICIPAL: "Pública municipal",
+      PUBLIC_STATE: "Pública estatal",
     },
     organizationStatuses: {
-      ATIVA: "Organización activa",
-      INATIVA: "Organización inactiva",
+      ACTIVE: "Organización activa",
+      INACTIVE: "Organización inactiva",
     },
     overview: {
       addressLabel: "Dirección institucional",
@@ -183,8 +183,8 @@ export const es: TranslationResource = {
       searchPlaceholder: "Buscar por nombre, ciudad o dirección",
       status: "Situación",
       statuses: {
-        ATIVA: "Activa",
-        INATIVA: "Inactiva",
+        ACTIVE: "Activa",
+        INACTIVE: "Inactiva",
       },
       title: "Sedes",
       updated: "Sede actualizada.",
@@ -251,7 +251,7 @@ export const es: TranslationResource = {
       integrations: "Integraciones",
       invites: "Invitaciones",
       messages: "Mensajes",
-      minhaUnidade: "Mi Sede",
+      myUnit: "Mi Sede",
       notices: "Avisos",
       notifications: "Notificaciones",
       preferences: "Preferencias",

@@ -1,6 +1,6 @@
 import type { Organization, OrganizationBranding, OrganizationUpdate, SchoolUnit } from "@/models"
 
-import { CardGrid } from "../MinhaUnidade.styles"
+import { CardGrid } from "../MyUnit.styles"
 import { TabCard } from "../shared/TabCard"
 import { AddressSection } from "./AddressSection"
 import { ContactSection } from "./ContactSection"

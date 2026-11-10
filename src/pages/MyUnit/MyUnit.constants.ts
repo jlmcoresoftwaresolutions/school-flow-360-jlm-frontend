@@ -1,17 +1,17 @@
 import type { OperationModel } from "@/models"
 
-// Only the codes live here; their labels are copy, translated by the page (minhaUnidade.operationModels).
+// Only the codes live here; their labels are copy, translated by the page (myUnit.operationModels).
 export const operationModelValues = [
-  "PRIVADA",
-  "PUBLICA_MUNICIPAL",
-  "PUBLICA_ESTADUAL",
-  "PUBLICA_FEDERAL",
-  "MISTA",
+  "PRIVATE",
+  "PUBLIC_MUNICIPAL",
+  "PUBLIC_STATE",
+  "PUBLIC_FEDERAL",
+  "MIXED",
 ] as const satisfies readonly OperationModel[]
 
-export const minhaUnidadeTabs = ["overview", "branding", "units"] as const
+export const myUnitTabs = ["overview", "branding", "units"] as const
 
-export type MinhaUnidadeTab = (typeof minhaUnidadeTabs)[number]
+export type MyUnitTab = (typeof myUnitTabs)[number]
 
 export const unitsPageSize = 10
 

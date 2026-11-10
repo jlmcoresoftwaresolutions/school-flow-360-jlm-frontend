@@ -8,7 +8,7 @@ const items: SidebarNavItem[] = [
   { icon: "home-outline", key: "inicio", label: "Início" },
   {
     children: [
-      { key: "minha-unidade", label: "Minha Unidade" },
+      { key: "my-unit", label: "Minha Unidade" },
       { key: "unidades", label: "Unidades" },
     ],
     icon: "gear-outline",
@@ -148,7 +148,7 @@ describe("Sidebar", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "minha-unidade", label: "Minha Unidade" }],
+          children: [{ active: true, key: "my-unit", label: "Minha Unidade" }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -174,7 +174,7 @@ describe("Sidebar", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "minha-unidade", label: "Minha Unidade" }],
+          children: [{ active: true, key: "my-unit", label: "Minha Unidade" }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -191,7 +191,7 @@ describe("Sidebar", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "minha-unidade", label: "Minha Unidade", onClick: handleClick }],
+          children: [{ active: true, key: "my-unit", label: "Minha Unidade", onClick: handleClick }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -398,7 +398,7 @@ describe("Sidebar on a compact screen", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "minha-unidade", label: "Minha Unidade", onClick: handleClick }],
+          children: [{ active: true, key: "my-unit", label: "Minha Unidade", onClick: handleClick }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",

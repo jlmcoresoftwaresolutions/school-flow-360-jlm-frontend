@@ -3,24 +3,24 @@ import { describe, expect, it } from "vitest"
 
 import { Table } from "./Table"
 
-type Aluno = {
+type Student = {
   id: number
-  nome: string
-  turma: string
+  name: string
+  schoolClass: string
 }
 
-const alunos: Aluno[] = [
-  { id: 1, nome: "Beatriz", turma: "9º A" },
-  { id: 2, nome: "Ana", turma: "8º B" },
-  { id: 3, nome: "Carlos", turma: "7º C" },
+const students: Student[] = [
+  { id: 1, name: "Beatriz", schoolClass: "9º A" },
+  { id: 2, name: "Ana", schoolClass: "8º B" },
+  { id: 3, name: "Carlos", schoolClass: "7º C" },
 ]
 
 describe("Table", () => {
   it("renders a header cell for each column", () => {
     render(
-      <Table value={alunos}>
-        <Table.Column field="nome" header="Nome" />
-        <Table.Column field="turma" header="Turma" />
+      <Table value={students}>
+        <Table.Column field="name" header="Nome" />
+        <Table.Column field="schoolClass" header="Turma" />
       </Table>,
     )
 
@@ -30,8 +30,8 @@ describe("Table", () => {
 
   it("renders a row for each item in value", () => {
     render(
-      <Table value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -42,8 +42,8 @@ describe("Table", () => {
 
   it("renders a column's body renderer instead of the raw field value", () => {
     render(
-      <Table value={alunos}>
-        <Table.Column body={(aluno) => `Turma: ${aluno.turma}`} field="turma" header="Turma" />
+      <Table value={students}>
+        <Table.Column body={(student) => `Turma: ${student.schoolClass}`} field="schoolClass" header="Turma" />
       </Table>,
     )
 
@@ -53,7 +53,7 @@ describe("Table", () => {
   it("shows the emptyMessage when value is empty", () => {
     render(
       <Table emptyMessage="Nenhum aluno encontrado." value={[]}>
-        <Table.Column field="nome" header="Nome" />
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -62,8 +62,8 @@ describe("Table", () => {
 
   it("shows a loading row instead of the data rows when loading is set", () => {
     render(
-      <Table loading value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table loading value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -73,8 +73,8 @@ describe("Table", () => {
 
   it("sorts ascending, then descending, then back to unsorted when a sortable header is clicked repeatedly", () => {
     render(
-      <Table value={alunos}>
-        <Table.Column field="nome" header="Nome" sortable />
+      <Table value={students}>
+        <Table.Column field="name" header="Nome" sortable />
       </Table>,
     )
 
@@ -95,8 +95,8 @@ describe("Table", () => {
 
   it("does not sort when clicking a non-sortable header", () => {
     render(
-      <Table value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -109,8 +109,8 @@ describe("Table", () => {
 
   it("paginates value into pages of rows items, navigable via the footer buttons", () => {
     render(
-      <Table paginator rows={2} value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table paginator rows={2} value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -133,8 +133,8 @@ describe("Table", () => {
 
   it("does not render the paginator footer when paginator is not set", () => {
     render(
-      <Table value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -143,8 +143,8 @@ describe("Table", () => {
 
   it("numbers the page buttons and marks the current page", () => {
     render(
-      <Table paginator rows={1} value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table paginator rows={1} value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -165,9 +165,9 @@ describe("Table", () => {
         paginator
         previousPageLabel="Previous"
         rows={2}
-        value={alunos}
+        value={students}
       >
-        <Table.Column field="nome" header="Nome" />
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -179,8 +179,8 @@ describe("Table", () => {
 
   it("shows loadingMessage in the loading row", () => {
     render(
-      <Table loading loadingMessage="Loading..." value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table loading loadingMessage="Loading..." value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 
@@ -189,8 +189,8 @@ describe("Table", () => {
 
   it("applies the className passed as a prop", () => {
     const { container } = render(
-      <Table className="custom" value={alunos}>
-        <Table.Column field="nome" header="Nome" />
+      <Table className="custom" value={students}>
+        <Table.Column field="name" header="Nome" />
       </Table>,
     )
 

@@ -19,6 +19,18 @@ const openDetailsForm = async (page: Page) => {
     }),
   )
   await page.route("**/api/auth/logout", (route) => route.fulfill({ body: "{}", contentType: "application/json" }))
+  // Minha Unidade lists the units from the backend; an empty list is enough here.
+  await page.route("**/api/school-units?*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({
+        data: { content: [], number: 0, size: 100, totalElements: 0, totalPages: 0 },
+        message: "",
+        status: "Success",
+        tenantId: "schoolflow_demo",
+      }),
+      contentType: "application/json",
+    }),
+  )
 
   await page.goto("/login")
   await page.getByRole("textbox", { name: "E-mail" }).fill("diretor@schoolflow360.com.br")

@@ -1,4 +1,4 @@
-import type { Organization, OrganizationBranding, SchoolUnit } from "@/models"
+import type { Organization, OrganizationBranding } from "@/models"
 
 // Demo data for Minha Unidade until the real API is wired (see organization.ts). It is a fictional
 // school, kept only in memory: every change is lost on reload, and nothing here is a real client's.
@@ -29,8 +29,8 @@ export const mockOrganization: Organization = {
   id: 1,
   institutionalName: "Associação Educacional Horizonte",
   internalNotes: "",
-  operationModel: "PRIVADA",
-  status: "ATIVA",
+  operationModel: "PRIVATE",
+  status: "ACTIVE",
 }
 
 export const mockBranding: OrganizationBranding = {
@@ -40,76 +40,3 @@ export const mockBranding: OrganizationBranding = {
   primaryColor: "#00285B",
   secondaryColor: "#F58220",
 }
-
-export const mockSchoolUnits: SchoolUnit[] = [
-  {
-    address: {
-      cep: "60150-161",
-      city: "Fortaleza",
-      complement: "",
-      district: "Aldeota",
-      number: "1500",
-      state: "CE",
-      street: "Avenida Santos Dumont",
-    },
-    contactEmail: "aldeota@horizonte.edu.br",
-    contactPhone: "(85) 3333-1100",
-    id: 1,
-    name: "Unidade Aldeota",
-    notes: "",
-    status: "ATIVA",
-  },
-  {
-    address: {
-      cep: "60811-341",
-      city: "Fortaleza",
-      complement: "Bloco B",
-      district: "Edson Queiroz",
-      number: "2200",
-      state: "CE",
-      street: "Avenida Washington Soares",
-    },
-    contactEmail: "edsonqueiroz@horizonte.edu.br",
-    contactPhone: "(85) 3333-1200",
-    id: 2,
-    name: "Unidade Edson Queiroz",
-    notes: "",
-    status: "ATIVA",
-  },
-  {
-    address: {
-      cep: "61600-000",
-      city: "Caucaia",
-      complement: "",
-      district: "Centro",
-      number: "45",
-      state: "CE",
-      street: "Rua Coronel Correia",
-    },
-    contactEmail: "caucaia@horizonte.edu.br",
-    contactPhone: "(85) 3342-0400",
-    id: 3,
-    name: "Unidade Caucaia",
-    notes: "",
-    status: "ATIVA",
-  },
-  {
-    address: {
-      cep: "60325-000",
-      city: "Fortaleza",
-      complement: "",
-      district: "Benfica",
-      number: "830",
-      state: "CE",
-      street: "Avenida da Universidade",
-    },
-    contactEmail: "",
-    contactPhone: "(85) 3281-0900",
-    id: 4,
-    inactivatedAt: "2026-08-14T12:00:00.000Z",
-    inactivationReason: "Prédio devolvido ao fim do contrato de locação.",
-    name: "Unidade Benfica",
-    notes: "",
-    status: "INATIVA",
-  },
-]
