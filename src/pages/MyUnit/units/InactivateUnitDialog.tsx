@@ -5,7 +5,7 @@ import { Textarea } from "@/ds-components/molecules"
 import { ConfirmDialog } from "@/ds-components/organisms"
 import type { SchoolUnit } from "@/models"
 
-import { notesMaxLength } from "../MinhaUnidade.constants"
+import { notesMaxLength } from "../MyUnit.constants"
 
 export type InactivateUnitDialogProps = {
   unit: SchoolUnit
@@ -37,20 +37,20 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
     <ConfirmDialog
       cancelLabel={t("common.cancel")}
       closeLabel={t("common.close")}
-      confirmLabel={t("minhaUnidade.units.inactivate")}
-      description={t("minhaUnidade.units.inactivateDescription", { name: unit.name })}
+      confirmLabel={t("myUnit.units.inactivate")}
+      description={t("myUnit.units.inactivateDescription", { name: unit.name })}
       loading={isSubmitting}
       onClose={onClose}
       onConfirm={() => void handleConfirm()}
-      title={t("minhaUnidade.units.inactivateTitle")}
+      title={t("myUnit.units.inactivateTitle")}
       tone="danger"
       open
     >
       <Textarea
-        helperText={t("minhaUnidade.validation.maxLength", { max: notesMaxLength })}
+        helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}
         maxLength={notesMaxLength}
         onChange={(event) => setReason(event.target.value)}
-        title={t("minhaUnidade.units.inactivationReason")}
+        title={t("myUnit.units.inactivationReason")}
         value={reason}
       />
     </ConfirmDialog>

@@ -25,8 +25,8 @@ import {
 } from "@/services/organization"
 
 import { BrandingTab } from "./branding/BrandingTab"
-import type { MinhaUnidadeTab } from "./MinhaUnidade.constants"
-import { SubCard } from "./MinhaUnidade.styles"
+import type { MyUnitTab } from "./MyUnit.constants"
+import { SubCard } from "./MyUnit.styles"
 import { OverviewTab } from "./overview/OverviewTab"
 import { TabCard } from "./shared/TabCard"
 import { UnitsTab } from "./units/UnitsTab"
@@ -66,13 +66,13 @@ const LoadingState = () => (
 // offers the signed-in user's organization. Every tab stays mounted and only the others are hidden, so
 // an edit in progress survives switching tabs. Each tab is one main card (TabCard), attached to the tabs
 // above it, with its sections inside as sub-cards (SectionCard).
-export const MinhaUnidade = () => {
+export const MyUnit = () => {
   const { t } = useTranslation()
 
   const [data, setData] = useState<PageData | null>(null)
   const [hasError, setHasError] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
-  const [tab, setTab] = useState<MinhaUnidadeTab>("overview")
+  const [tab, setTab] = useState<MyUnitTab>("overview")
   const [isCreatingUnit, setIsCreatingUnit] = useState(false)
 
   // The fetch is defined inline inside the effect, rather than as an outer useCallback referenced
@@ -117,7 +117,7 @@ export const MinhaUnidade = () => {
       toast.success(successMessage)
       return true
     } catch {
-      toast.error(t("minhaUnidade.saveError"))
+      toast.error(t("myUnit.saveError"))
       return false
     }
   }
@@ -131,28 +131,28 @@ export const MinhaUnidade = () => {
     runSave(
       () => updateOrganization({ ...toOrganizationUpdate(data!.organization), ...update }),
       (organization) => setData((current) => (current ? { ...current, organization } : current)),
-      t("minhaUnidade.overview.saved"),
+      t("myUnit.overview.saved"),
     )
 
   const handleSaveBranding = (update: OrganizationBrandingUpdate) =>
     runSave(
       () => updateBranding(update),
       (branding) => setData((current) => (current ? { ...current, branding } : current)),
-      t("minhaUnidade.branding.saved"),
+      t("myUnit.branding.saved"),
     )
 
   const handleCreateUnit = (input: SchoolUnitInput) =>
     runSave(
       () => createSchoolUnit(input),
       (unit) => setData((current) => (current ? { ...current, units: [...current.units, unit] } : current)),
-      t("minhaUnidade.units.created"),
+      t("myUnit.units.created"),
     )
 
   const handleUpdateUnit = (unit: SchoolUnit, input: SchoolUnitInput) =>
-    runSave(() => updateSchoolUnit(unit.id, input), replaceUnit, t("minhaUnidade.units.updated"))
+    runSave(() => updateSchoolUnit(unit.id, input), replaceUnit, t("myUnit.units.updated"))
 
   const handleInactivateUnit = (unit: SchoolUnit, reason: string) =>
-    runSave(() => inactivateSchoolUnit(unit.id, { reason }), replaceUnit, t("minhaUnidade.units.inactivated"))
+    runSave(() => inactivateSchoolUnit(unit.id, { reason }), replaceUnit, t("myUnit.units.inactivated"))
 
   // From the overview's empty units summary: straight to the units tab, with the form open.
   const handleCreateFromOverview = () => {
@@ -166,8 +166,8 @@ export const MinhaUnidade = () => {
         <Card elevated style={{ padding: spacing[32] }}>
           <StateMessage
             action={<Button onClick={handleRetry}>{t("common.tryAgain")}</Button>}
-            description={t("minhaUnidade.loadErrorDescription")}
-            title={t("minhaUnidade.loadError")}
+            description={t("myUnit.loadErrorDescription")}
+            title={t("myUnit.loadError")}
             variant="error"
           />
         </Card>
@@ -207,16 +207,16 @@ export const MinhaUnidade = () => {
 
   return (
     <>
-      <PageHeader description={t("minhaUnidade.subtitle")} icon="building-outline" title={t("minhaUnidade.title")} />
+      <PageHeader description={t("myUnit.subtitle")} icon="building-outline" title={t("myUnit.title")} />
 
       <Tabs
         items={[
-          { icon: "info-outline", key: "overview", label: t("minhaUnidade.tabs.overview") },
-          { icon: "palette-outline", key: "branding", label: t("minhaUnidade.tabs.branding") },
-          { icon: "location-outline", key: "units", label: t("minhaUnidade.tabs.units") },
+          { icon: "info-outline", key: "overview", label: t("myUnit.tabs.overview") },
+          { icon: "palette-outline", key: "branding", label: t("myUnit.tabs.branding") },
+          { icon: "location-outline", key: "units", label: t("myUnit.tabs.units") },
         ]}
-        label={t("minhaUnidade.sectionsLabel")}
-        onChange={(key) => setTab(key as MinhaUnidadeTab)}
+        label={t("myUnit.sectionsLabel")}
+        onChange={(key) => setTab(key as MyUnitTab)}
         value={tab}
         attached
       />

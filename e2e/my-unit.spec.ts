@@ -1,12 +1,67 @@
 import { expect, type Page, test } from "@playwright/test"
 
-// Minha Unidade answers from the mocked organization service (services/organization), not the
-// backend: only the login and the CEP lookup go through the network, and both are mocked here. The
-// service's mock reads a sessionStorage key to simulate the empty and error states.
+// Minha Unidade is being wired to the backend a call at a time: the unit list comes from
+// GET /api/school-units, the rest still from the mocked organization service (services/organization).
+// Everything on the network (login, the unit list, the CEP lookup) is mocked here. The service's mock
+// reads a sessionStorage key to fail its calls (the error state); the empty state is an empty list.
 const mockScenarioKey = "sf360.mockScenario"
 
+// The backend's units: one free-text address, ACTIVE/INACTIVE.
+const apiSchoolUnits = [
+  {
+    address: "Avenida Santos Dumont, 1500 - Aldeota, Fortaleza/CE",
+    contactEmail: "aldeota@horizonte.edu.br",
+    contactPhone: "(85) 3333-1100",
+    operationalStatus: "ACTIVE",
+    schoolUnitId: 1,
+    unitName: "Unidade Aldeota",
+    version: 0,
+  },
+  {
+    address: "Avenida Washington Soares, 2200, Bloco B - Edson Queiroz, Fortaleza/CE",
+    contactEmail: "secretaria.unidade.edsonqueiroz@horizonte.edu.br",
+    contactPhone: "(85) 3333-1200",
+    operationalStatus: "ACTIVE",
+    schoolUnitId: 2,
+    unitName: "Unidade Edson Queiroz",
+    version: 0,
+  },
+  {
+    address: "Rua Coronel Correia, 45 - Centro, Caucaia/CE",
+    contactEmail: "caucaia@horizonte.edu.br",
+    contactPhone: "(85) 3342-0400",
+    operationalStatus: "ACTIVE",
+    schoolUnitId: 3,
+    unitName: "Unidade Caucaia",
+    version: 0,
+  },
+  {
+    address: "Avenida da Universidade, 830 - Benfica, Fortaleza/CE",
+    contactEmail: "",
+    contactPhone: "(85) 3281-0900",
+    operationalStatus: "INACTIVE",
+    schoolUnitId: 4,
+    unitName: "Unidade Benfica",
+    version: 1,
+  },
+]
+
 const signInAndOpen = async (page: Page, scenario?: "error" | "no-units") => {
-  if (scenario) {
+  const units = scenario === "no-units" ? [] : apiSchoolUnits
+
+  await page.route("**/api/school-units?*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({
+        data: { content: units, number: 0, size: 100, totalElements: units.length, totalPages: 1 },
+        message: "",
+        status: "Success",
+        tenantId: "schoolflow_demo",
+      }),
+      contentType: "application/json",
+    }),
+  )
+
+  if (scenario === "error") {
     await page.addInitScript(
       (entry) => {
         if (!sessionStorage.getItem("sf360.scenarioSet")) {
@@ -14,7 +69,7 @@ const signInAndOpen = async (page: Page, scenario?: "error" | "no-units") => {
           sessionStorage.setItem("sf360.scenarioSet", "1")
         }
       },
-      { key: mockScenarioKey, value: scenario },
+      { key: mockScenarioKey, value: "error" },
     )
   }
 
@@ -184,6 +239,21 @@ test.describe("units", () => {
     await page.getByRole("searchbox", { name: "Buscar unidade" }).fill("Recife")
     await expect(page.getByText("Nenhuma unidade encontrada para a busca ou o filtro.")).toBeVisible()
     await expect(page.getByText("Nenhuma unidade cadastrada")).toHaveCount(0)
+  })
+
+  test("shows each unit's e-mail, cutting a long one short", async ({ page }) => {
+    await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    const longEmail = page.getByText("secretaria.unidade.edsonqueiroz@horizonte.edu.br")
+    await expect(longEmail).toBeVisible()
+    expect(await longEmail.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true)
+    await expect(
+      page
+        .getByRole("row", { name: /Unidade Benfica/ })
+        .getByText("Não informado")
+        .first(),
+    ).toBeVisible()
   })
 
   test("registers a unit, which then appears in the list and the overview", async ({ page }) => {

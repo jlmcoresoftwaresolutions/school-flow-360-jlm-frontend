@@ -4,7 +4,7 @@ import { isShallowEqual } from "./objects"
 
 describe("isShallowEqual", () => {
   it("is true for the same values under the same keys", () => {
-    expect(isShallowEqual({ name: "Escola", status: "ATIVA" }, { name: "Escola", status: "ATIVA" })).toBe(true)
+    expect(isShallowEqual({ name: "Escola", status: "ACTIVE" }, { name: "Escola", status: "ACTIVE" })).toBe(true)
   })
 
   it("is false when a value changed", () => {

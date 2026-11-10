@@ -10,8 +10,8 @@ import type { SchoolUnit, SchoolUnitInput } from "@/models"
 import { emptyAddress } from "@/utils/address"
 import { stripNonDigits } from "@/utils/formats"
 
-import { emailPattern, notesMaxLength } from "../MinhaUnidade.constants"
-import { FieldGroup } from "../MinhaUnidade.styles"
+import { emailPattern, notesMaxLength } from "../MyUnit.constants"
+import { FieldGroup } from "../MyUnit.styles"
 import { AddressFields } from "../shared/AddressFields"
 
 export type UnitFormModalProps = {
@@ -59,13 +59,13 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
             {t("common.cancel")}
           </Button>
           <Button disabled={!isDirty || isSubmitting} form={formId} type="submit">
-            {isEditing ? t("common.save") : t("minhaUnidade.units.createFirst")}
+            {isEditing ? t("common.save") : t("myUnit.units.createFirst")}
           </Button>
         </>
       }
       onClose={onClose}
       size="lg"
-      title={isEditing ? t("minhaUnidade.units.editTitle") : t("minhaUnidade.units.createTitle")}
+      title={isEditing ? t("myUnit.units.editTitle") : t("myUnit.units.createTitle")}
       open
     >
       <FormProvider {...form}>
@@ -73,10 +73,10 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
           <FieldGroup>
             <Input
               error={errors.name?.message}
-              title={t("minhaUnidade.units.name")}
+              title={t("myUnit.units.name")}
               required
               {...form.register("name", {
-                validate: (value) => value.trim() !== "" || t("minhaUnidade.validation.required"),
+                validate: (value) => value.trim() !== "" || t("myUnit.validation.required"),
               })}
             />
 
@@ -84,11 +84,11 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
               <Grid.Col xs={12} md={6}>
                 <Input
                   error={errors.contactEmail?.message}
-                  title={t("minhaUnidade.units.contactEmail")}
+                  title={t("myUnit.units.contactEmail")}
                   type="email"
                   {...form.register("contactEmail", {
                     validate: (value) =>
-                      value.trim() === "" || emailPattern.test(value) || t("minhaUnidade.validation.email"),
+                      value.trim() === "" || emailPattern.test(value) || t("myUnit.validation.email"),
                   })}
                 />
               </Grid.Col>
@@ -96,10 +96,10 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                 <Input
                   error={errors.contactPhone?.message}
                   mask="phone"
-                  title={t("minhaUnidade.units.contactPhone")}
+                  title={t("myUnit.units.contactPhone")}
                   {...form.register("contactPhone", {
                     validate: (value) =>
-                      value.trim() === "" || stripNonDigits(value).length >= 10 || t("minhaUnidade.validation.phone"),
+                      value.trim() === "" || stripNonDigits(value).length >= 10 || t("myUnit.validation.phone"),
                   })}
                 />
               </Grid.Col>
@@ -108,9 +108,9 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
             <AddressFields />
 
             <Textarea
-              helperText={t("minhaUnidade.validation.maxLength", { max: notesMaxLength })}
+              helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}
               maxLength={notesMaxLength}
-              title={t("minhaUnidade.units.notes")}
+              title={t("myUnit.units.notes")}
               {...form.register("notes")}
             />
           </FieldGroup>

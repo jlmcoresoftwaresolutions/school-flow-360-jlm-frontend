@@ -61,7 +61,7 @@ export const fr: TranslationResource = {
     tooManyAttempts_one: "Trop de tentatives incorrectes. Patientez {{count}} minute avant de réessayer.",
     tooManyAttempts_other: "Trop de tentatives incorrectes. Patientez {{count}} minutes avant de réessayer.",
   },
-  minhaUnidade: {
+  myUnit: {
     address: {
       cep: "Code postal (CEP)",
       cepHelper: "Saisissez le code postal pour remplir l'adresse.",
@@ -107,15 +107,15 @@ export const fr: TranslationResource = {
     loadError: "Impossible de charger les données de l'organisation.",
     loadErrorDescription: "Vérifiez votre connexion et réessayez.",
     operationModels: {
-      MISTA: "Mixte",
-      PRIVADA: "Privée",
-      PUBLICA_ESTADUAL: "Publique (État)",
-      PUBLICA_FEDERAL: "Publique (fédérale)",
-      PUBLICA_MUNICIPAL: "Publique (municipale)",
+      MIXED: "Mixte",
+      PRIVATE: "Privée",
+      PUBLIC_FEDERAL: "Publique (fédérale)",
+      PUBLIC_MUNICIPAL: "Publique (municipale)",
+      PUBLIC_STATE: "Publique (État)",
     },
     organizationStatuses: {
-      ATIVA: "Organisation active",
-      INATIVA: "Organisation inactive",
+      ACTIVE: "Organisation active",
+      INACTIVE: "Organisation inactive",
     },
     overview: {
       addressLabel: "Adresse institutionnelle",
@@ -183,8 +183,8 @@ export const fr: TranslationResource = {
       searchPlaceholder: "Rechercher par nom, ville ou adresse",
       status: "Statut",
       statuses: {
-        ATIVA: "Actif",
-        INATIVA: "Inactif",
+        ACTIVE: "Actif",
+        INACTIVE: "Inactif",
       },
       title: "Établissements",
       updated: "Établissement mis à jour.",
@@ -251,7 +251,7 @@ export const fr: TranslationResource = {
       integrations: "Intégrations",
       invites: "Invitations",
       messages: "Messages",
-      minhaUnidade: "Mon Établissement",
+      myUnit: "Mon Établissement",
       notices: "Annonces",
       notifications: "Notifications",
       preferences: "Préférences",

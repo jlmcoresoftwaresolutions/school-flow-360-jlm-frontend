@@ -20,7 +20,7 @@ export const paths = {
   invites: "/users/invites",
   login: "/login",
   messages: "/communication/messages",
-  minhaUnidade: "/administration/my-unit",
+  myUnit: "/administration/my-unit",
   notices: "/communication/notices",
   notifications: "/communication/notifications",
   preferences: "/settings/preferences",

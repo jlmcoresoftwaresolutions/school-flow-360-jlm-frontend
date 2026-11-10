@@ -30,7 +30,7 @@ export const AddressFields = () => {
   const [cepLookup, setCepLookup] = useState<CepLookup>("idle")
 
   const { errors } = formState
-  const requiredMessage = t("minhaUnidade.validation.required")
+  const requiredMessage = t("myUnit.validation.required")
 
   const lookUpCep = async (cep: string) => {
     if (stripNonDigits(cep).length !== 8) {
@@ -60,10 +60,10 @@ export const AddressFields = () => {
   }
 
   const cepHelperByLookup: Record<CepLookup, string> = {
-    idle: t("minhaUnidade.address.cepHelper"),
-    notFound: t("minhaUnidade.address.cepNotFound"),
-    searching: t("minhaUnidade.address.cepSearching"),
-    unavailable: t("minhaUnidade.address.cepUnavailable"),
+    idle: t("myUnit.address.cepHelper"),
+    notFound: t("myUnit.address.cepNotFound"),
+    searching: t("myUnit.address.cepSearching"),
+    unavailable: t("myUnit.address.cepUnavailable"),
   }
 
   return (
@@ -73,32 +73,32 @@ export const AddressFields = () => {
           <Input
             helperText={cepHelperByLookup[cepLookup]}
             mask="cep"
-            title={t("minhaUnidade.address.cep")}
+            title={t("myUnit.address.cep")}
             {...register("address.cep", { onChange: (event) => void lookUpCep(event.target.value) })}
           />
         </Grid.Col>
         <Grid.Col xs={12} md={8}>
-          <Input title={t("minhaUnidade.address.street")} {...register("address.street")} />
+          <Input title={t("myUnit.address.street")} {...register("address.street")} />
         </Grid.Col>
       </Grid.Row>
 
       <Grid.Row>
         <Grid.Col xs={12} md={4}>
-          <Input title={t("minhaUnidade.address.number")} {...register("address.number")} />
+          <Input title={t("myUnit.address.number")} {...register("address.number")} />
         </Grid.Col>
         <Grid.Col xs={12} md={8}>
-          <Input title={t("minhaUnidade.address.complement")} {...register("address.complement")} />
+          <Input title={t("myUnit.address.complement")} {...register("address.complement")} />
         </Grid.Col>
       </Grid.Row>
 
       <Grid.Row>
         <Grid.Col xs={12} md={4}>
-          <Input title={t("minhaUnidade.address.district")} {...register("address.district")} />
+          <Input title={t("myUnit.address.district")} {...register("address.district")} />
         </Grid.Col>
         <Grid.Col xs={12} md={5}>
           <Input
             error={errors.address?.city?.message}
-            title={t("minhaUnidade.address.city")}
+            title={t("myUnit.address.city")}
             required
             {...register("address.city", { validate: (value) => value.trim() !== "" || requiredMessage })}
           />
@@ -114,8 +114,8 @@ export const AddressFields = () => {
                 onBlur={controller.field.onBlur}
                 onChange={(option) => controller.field.onChange(option?.value ?? "")}
                 options={stateOptions}
-                placeholder={t("minhaUnidade.address.statePlaceholder")}
-                title={t("minhaUnidade.address.state")}
+                placeholder={t("myUnit.address.statePlaceholder")}
+                title={t("myUnit.address.state")}
                 value={stateOptions.find((option) => option.value === controller.field.value) ?? null}
                 required
               />

@@ -62,7 +62,7 @@ export const ptPT: TranslationResource = {
     tooManyAttempts_one: "Demasiadas tentativas incorretas. Aguarde {{count}} minuto para tentar novamente.",
     tooManyAttempts_other: "Demasiadas tentativas incorretas. Aguarde {{count}} minutos para tentar novamente.",
   },
-  minhaUnidade: {
+  myUnit: {
     address: {
       cep: "CEP",
       cepHelper: "Introduza o CEP para preencher a morada.",
@@ -108,15 +108,15 @@ export const ptPT: TranslationResource = {
     loadError: "Não foi possível carregar os dados da organização.",
     loadErrorDescription: "Verifique a sua ligação e tente novamente.",
     operationModels: {
-      MISTA: "Mista",
-      PRIVADA: "Privada",
-      PUBLICA_ESTADUAL: "Pública Estadual",
-      PUBLICA_FEDERAL: "Pública Federal",
-      PUBLICA_MUNICIPAL: "Pública Municipal",
+      MIXED: "Mista",
+      PRIVATE: "Privada",
+      PUBLIC_FEDERAL: "Pública Federal",
+      PUBLIC_MUNICIPAL: "Pública Municipal",
+      PUBLIC_STATE: "Pública Estadual",
     },
     organizationStatuses: {
-      ATIVA: "Organização ativa",
-      INATIVA: "Organização inativa",
+      ACTIVE: "Organização ativa",
+      INACTIVE: "Organização inativa",
     },
     overview: {
       addressLabel: "Morada institucional",
@@ -184,8 +184,8 @@ export const ptPT: TranslationResource = {
       searchPlaceholder: "Pesquisar por nome, cidade ou morada",
       status: "Situação",
       statuses: {
-        ATIVA: "Ativa",
-        INATIVA: "Inativa",
+        ACTIVE: "Ativa",
+        INACTIVE: "Inativa",
       },
       title: "Unidades",
       updated: "Unidade atualizada.",
@@ -252,7 +252,7 @@ export const ptPT: TranslationResource = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      minhaUnidade: "A Minha Unidade",
+      myUnit: "A Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
       preferences: "Preferências",

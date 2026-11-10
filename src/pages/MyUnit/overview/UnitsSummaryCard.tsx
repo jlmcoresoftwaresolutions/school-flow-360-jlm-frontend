@@ -5,8 +5,8 @@ import { StateMessage } from "@/ds-components/molecules"
 import type { SchoolUnit } from "@/models"
 import { formatCityState } from "@/utils/address"
 
-import { unitsSummaryLimit } from "../MinhaUnidade.constants"
-import { CountBlock, CountValue, UnitsSummaryCounts, UnitsSummaryItem, UnitsSummaryList } from "../MinhaUnidade.styles"
+import { unitsSummaryLimit } from "../MyUnit.constants"
+import { CountBlock, CountValue, UnitsSummaryCounts, UnitsSummaryItem, UnitsSummaryList } from "../MyUnit.styles"
 import { SectionCard } from "../shared/SectionCard"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
@@ -25,24 +25,24 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
   const { t } = useTranslation()
   const { statusTone, unitStatusLabel } = useStatusLabels()
 
-  const activeCount = units.filter((unit) => unit.status === "ATIVA").length
+  const activeCount = units.filter((unit) => unit.status === "ACTIVE").length
   const inactiveCount = units.length - activeCount
   const listedUnits = [...units]
-    .sort((a, b) => Number(b.status === "ATIVA") - Number(a.status === "ATIVA"))
+    .sort((a, b) => Number(b.status === "ACTIVE") - Number(a.status === "ACTIVE"))
     .slice(0, unitsSummaryLimit)
 
   if (units.length === 0) {
     return (
-      <SectionCard title={t("minhaUnidade.overview.unitsTitle")}>
+      <SectionCard title={t("myUnit.overview.unitsTitle")}>
         <StateMessage
           action={
             <Button onClick={onCreateUnit} size="small">
-              {t("minhaUnidade.units.createFirst")}
+              {t("myUnit.units.createFirst")}
             </Button>
           }
-          description={t("minhaUnidade.units.emptyDescription")}
+          description={t("myUnit.units.emptyDescription")}
           icon="location-outline"
-          title={t("minhaUnidade.units.emptyTitle")}
+          title={t("myUnit.units.emptyTitle")}
         />
       </SectionCard>
     )
@@ -57,33 +57,33 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
           size="small"
           variant="link"
         >
-          {t("minhaUnidade.overview.seeAllUnits")}
+          {t("myUnit.overview.seeAllUnits")}
         </Button>
       }
-      title={t("minhaUnidade.overview.unitsTitle")}
+      title={t("myUnit.overview.unitsTitle")}
     >
       <UnitsSummaryCounts>
         <CountBlock>
           <CountValue>{units.length}</CountValue>
           <Text color="secondary" fontSize="xs">
-            {t("minhaUnidade.overview.unitsTotal")}
+            {t("myUnit.overview.unitsTotal")}
           </Text>
         </CountBlock>
         <CountBlock>
           <CountValue>{activeCount}</CountValue>
           <Text color="secondary" fontSize="xs">
-            {t("minhaUnidade.overview.unitsActive")}
+            {t("myUnit.overview.unitsActive")}
           </Text>
         </CountBlock>
         <CountBlock>
           <CountValue>{inactiveCount}</CountValue>
           <Text color="secondary" fontSize="xs">
-            {t("minhaUnidade.overview.unitsInactive")}
+            {t("myUnit.overview.unitsInactive")}
           </Text>
         </CountBlock>
       </UnitsSummaryCounts>
 
-      <UnitsSummaryList aria-label={t("minhaUnidade.overview.unitsTitle")}>
+      <UnitsSummaryList aria-label={t("myUnit.overview.unitsTitle")}>
         {listedUnits.map((unit) => (
           <UnitsSummaryItem key={unit.id}>
             <div>

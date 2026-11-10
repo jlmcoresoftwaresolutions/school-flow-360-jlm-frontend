@@ -3,13 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Badge, Icon, Text } from "@/ds-components/atoms"
 import type { Organization, OrganizationBranding } from "@/models"
 
-import {
-  InlineGroup,
-  LogoBox,
-  LogoImage,
-  OrganizationSummaryLayout,
-  OrganizationSummaryText,
-} from "../MinhaUnidade.styles"
+import { InlineGroup, LogoBox, LogoImage, OrganizationSummaryLayout, OrganizationSummaryText } from "../MyUnit.styles"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
 export type OrganizationSummaryProps = {
@@ -31,7 +25,7 @@ export const OrganizationSummary = (props: OrganizationSummaryProps) => {
     <OrganizationSummaryLayout>
       <LogoBox>
         {branding.logoUrl ? (
-          <LogoImage alt={t("minhaUnidade.overview.logoAlt", { name: branding.displayName })} src={branding.logoUrl} />
+          <LogoImage alt={t("myUnit.overview.logoAlt", { name: branding.displayName })} src={branding.logoUrl} />
         ) : (
           <Icon color="muted" name="building-outline" size={40} />
         )}
@@ -39,7 +33,7 @@ export const OrganizationSummary = (props: OrganizationSummaryProps) => {
 
       <OrganizationSummaryText>
         <Text color="secondary" fontSize="xs" semibold uppercase>
-          {t("minhaUnidade.overview.currentOrganization")}
+          {t("myUnit.overview.currentOrganization")}
         </Text>
         <Text as="h2" fontSize="2xl" bold>
           {branding.displayName}

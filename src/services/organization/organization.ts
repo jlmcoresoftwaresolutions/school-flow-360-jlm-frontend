@@ -1,4 +1,8 @@
 import type {
+  ApiPage,
+  ApiResponse,
+  ApiSchoolUnit,
+  ApiSchoolUnitListParams,
   Organization,
   OrganizationBranding,
   OrganizationBrandingUpdate,
@@ -7,26 +11,29 @@ import type {
   SchoolUnitInactivation,
   SchoolUnitInput,
 } from "@/models"
+import { emptyAddress } from "@/utils/address"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 
 import type { RequestConfig } from "../httpClient"
-import { mockBranding, mockOrganization, mockSchoolUnits } from "./organization.mock"
+import { httpClient } from "../httpClient"
+import { mockBranding, mockOrganization } from "./organization.mock"
 
-// MOCK: Minha Unidade's calls answer from in-memory demo data (organization.mock.ts), with a
-// simulated delay, until the backend offers the signed-in user's organization (there is no "current
-// organization" endpoint yet). The signatures are the final ones: wiring the real API only changes
-// these function bodies (through httpClient, mapping the backend's field names), not the page.
+// Minha Unidade's calls are being wired to the real API one at a time. Wired: listing the units
+// (listSchoolUnits). Still MOCK: everything else answers from in-memory demo data
+// (organization.mock.ts) with a simulated delay. The signatures are the final ones: wiring a call only
+// changes its body (through httpClient, mapping the backend's field names), not the page.
 
 // Copies, so a caller changing what it got never changes the "stored" data.
 let organization = structuredClone(mockOrganization)
 let branding = structuredClone(mockBranding)
-let schoolUnits = structuredClone(mockSchoolUnits)
+// The units the mocked create/edit/inactivate work on: the real list, as last fetched, so those
+// actions apply to the units on screen (locally only - lost on reload) until they are wired too.
+let schoolUnits: SchoolUnit[] = []
 
 const mockDelayMs = 600
 
-// MOCK-ONLY test hook: the E2E suite sets this sessionStorage key to see the page's empty and error
-// states ("error" fails every call, "no-units" answers an empty unit list). The real service won't
-// read it.
+// MOCK-ONLY test hook: the E2E suite sets this sessionStorage key to see the page's error state
+// ("error" fails every mocked call). The wired calls never read it.
 const mockScenarioKey = "sf360.mockScenario"
 
 const readMockScenario = (): string | null => {
@@ -97,14 +104,52 @@ export const updateBranding = async (
   }, config)
 }
 
-// Only the units the user may access - in the mock, all of the organization's.
-export const listSchoolUnits = (config?: RequestConfig): Promise<SchoolUnit[]> =>
-  mockRequest(() => (readMockScenario() === "no-units" ? [] : schoolUnits), config)
+// The backend's largest page: the whole list comes in as few requests as possible.
+const unitsPageSize = 100
+
+// The backend keeps the address as one free-text string; until we know its format, all of it goes in
+// the street, so it is shown whole and nothing is guessed (the city stays empty).
+const toSchoolUnit = (unit: ApiSchoolUnit): SchoolUnit => ({
+  address: { ...emptyAddress, street: unit.address ?? "" },
+  contactEmail: unit.contactEmail ?? "",
+  contactPhone: unit.contactPhone ?? "",
+  id: unit.schoolUnitId,
+  name: unit.unitName,
+  notes: "",
+  status: unit.operationalStatus,
+})
+
+// Only the units the user may access (the backend applies that). The list is paged on the backend;
+// every page is fetched, since the page searches, filters and pages the list on its own for now.
+export const listSchoolUnits = async (config?: RequestConfig): Promise<SchoolUnit[]> => {
+  const units: ApiSchoolUnit[] = []
+  let page = 0
+  let totalPages = 1
+
+  while (page < totalPages) {
+    const params: ApiSchoolUnitListParams = { direction: "ASC", page, size: unitsPageSize, sortBy: "unitName" }
+    const response = await httpClient.get<ApiResponse<ApiPage<ApiSchoolUnit>>>("/api/school-units", {
+      ...config,
+      params,
+    })
+    const data = response.data.data
+
+    if (!data) throw new Error("The school units response has no data.")
+
+    units.push(...data.content)
+    totalPages = data.totalPages
+    page += 1
+  }
+
+  schoolUnits = units.map(toSchoolUnit)
+
+  return structuredClone(schoolUnits)
+}
 
 export const createSchoolUnit = (input: SchoolUnitInput, config?: RequestConfig): Promise<SchoolUnit> =>
   mockRequest(() => {
     const id = Math.max(0, ...schoolUnits.map((unit) => unit.id)) + 1
-    const unit: SchoolUnit = { ...structuredClone(input), id, status: "ATIVA" }
+    const unit: SchoolUnit = { ...structuredClone(input), id, status: "ACTIVE" }
 
     schoolUnits = [...schoolUnits, unit]
     return unit
@@ -135,7 +180,7 @@ export const inactivateSchoolUnit = (
         ...unit,
         inactivatedAt: new Date().toISOString(),
         inactivationReason: inactivation.reason,
-        status: "INATIVA",
+        status: "INACTIVE",
       })),
     config,
   )

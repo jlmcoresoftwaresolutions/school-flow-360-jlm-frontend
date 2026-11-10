@@ -4,6 +4,18 @@ import { expect, type Page, test } from "@playwright/test"
 // it is sent, so a test can hand out a session that ends a few seconds later.
 const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
   const lengths = [...sessionLengthsMs]
+  // Minha Unidade lists the units from the backend; an empty list is enough here.
+  await page.route("**/api/school-units?*", (route) =>
+    route.fulfill({
+      body: JSON.stringify({
+        data: { content: [], number: 0, size: 100, totalElements: 0, totalPages: 0 },
+        message: "",
+        status: "Success",
+        tenantId: "schoolflow_demo",
+      }),
+      contentType: "application/json",
+    }),
+  )
   await page.route("**/api/auth/login", (route) => {
     const lengthMs = lengths.length > 1 ? lengths.shift()! : lengths[0]
     return route.fulfill({
@@ -40,7 +52,7 @@ const signOut = async (page: Page) => {
 
 const oneHour = 60 * 60 * 1000
 const expiredNotice = "Sua sessão expirou. Entre novamente para continuar."
-const minhaUnidadeHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
+const myUnitHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
 
 test("ends the session when it expires, even on an idle page, and brings the user back after signing in", async ({
   page,
@@ -48,18 +60,18 @@ test("ends the session when it expires, even on an idle page, and brings the use
   await mockLogin(page, [4000, oneHour])
   await page.goto("/administration/my-unit")
   await signIn(page)
-  await expect(minhaUnidadeHeading(page)).toBeVisible()
+  await expect(myUnitHeading(page)).toBeVisible()
 
   // Nothing is clicked: the expiry alone ends the session and the page's data leaves the screen.
   await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit&expired=1$/, { timeout: 15_000 })
   await expect(page.getByRole("status").filter({ hasText: expiredNotice })).toBeVisible()
-  await expect(minhaUnidadeHeading(page)).toHaveCount(0)
+  await expect(myUnitHeading(page)).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem("sf360.session"))).toBeNull()
 
   await signIn(page)
 
   await expect(page).toHaveURL(/\/administration\/my-unit$/)
-  await expect(minhaUnidadeHeading(page)).toBeVisible()
+  await expect(myUnitHeading(page)).toBeVisible()
 })
 
 test("brings a visitor back to the page they opened, without saying a session expired", async ({ page }) => {

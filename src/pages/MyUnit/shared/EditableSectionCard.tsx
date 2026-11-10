@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { Button, Icon } from "@/ds-components/atoms"
 
-import { FieldGroup, FormActions } from "../MinhaUnidade.styles"
+import { FieldGroup, FormActions } from "../MyUnit.styles"
 import { SectionCard } from "./SectionCard"
 
 export type EditableSectionCardProps = {
@@ -29,7 +29,7 @@ export const EditableSectionCard = (props: EditableSectionCardProps) => {
   const editButton = (
     // Named after its section, since the page has one "Editar" per section.
     <Button
-      aria-label={t("minhaUnidade.editSection", { section: title })}
+      aria-label={t("myUnit.editSection", { section: title })}
       onClick={onEdit}
       size="small"
       startIcon={<Icon color="brand" name="pen-outline" size={16} />}

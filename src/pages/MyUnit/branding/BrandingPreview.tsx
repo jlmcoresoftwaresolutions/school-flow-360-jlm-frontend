@@ -12,7 +12,7 @@ import {
   PreviewFrame,
   PreviewHeader,
   PreviewLogo,
-} from "../MinhaUnidade.styles"
+} from "../MyUnit.styles"
 
 export type BrandingPreviewProps = {
   displayName: string
@@ -30,10 +30,10 @@ export const BrandingPreview = (props: BrandingPreviewProps) => {
 
   const { t } = useTranslation()
 
-  const name = displayName.trim() || t("minhaUnidade.branding.previewNamePlaceholder")
+  const name = displayName.trim() || t("myUnit.branding.previewNamePlaceholder")
 
   return (
-    <PreviewFrame aria-label={t("minhaUnidade.branding.previewTitle")} role="img">
+    <PreviewFrame aria-label={t("myUnit.branding.previewTitle")} role="img">
       <PreviewBrowserBar>
         <PreviewBrowserTab>
           {faviconUrl ? (
@@ -56,8 +56,8 @@ export const BrandingPreview = (props: BrandingPreviewProps) => {
 
       <PreviewBody>
         <PreviewAccent $color={secondaryColor} />
-        <Text fontSize="sm">{t("minhaUnidade.branding.previewSample")}</Text>
-        <PreviewButton $color={primaryColor}>{t("minhaUnidade.branding.previewButton")}</PreviewButton>
+        <Text fontSize="sm">{t("myUnit.branding.previewSample")}</Text>
+        <PreviewButton $color={primaryColor}>{t("myUnit.branding.previewButton")}</PreviewButton>
       </PreviewBody>
     </PreviewFrame>
   )

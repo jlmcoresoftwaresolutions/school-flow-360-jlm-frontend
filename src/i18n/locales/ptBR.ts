@@ -60,7 +60,7 @@ export const ptBR = {
     tooManyAttempts_one: "Muitas tentativas incorretas. Aguarde {{count}} minuto para tentar de novo.",
     tooManyAttempts_other: "Muitas tentativas incorretas. Aguarde {{count}} minutos para tentar de novo.",
   },
-  minhaUnidade: {
+  myUnit: {
     address: {
       cep: "CEP",
       cepHelper: "Digite o CEP para preencher o endereço.",
@@ -106,15 +106,15 @@ export const ptBR = {
     loadError: "Não foi possível carregar os dados da organização.",
     loadErrorDescription: "Confira sua conexão e tente novamente.",
     operationModels: {
-      MISTA: "Mista",
-      PRIVADA: "Privada",
-      PUBLICA_ESTADUAL: "Pública Estadual",
-      PUBLICA_FEDERAL: "Pública Federal",
-      PUBLICA_MUNICIPAL: "Pública Municipal",
+      MIXED: "Mista",
+      PRIVATE: "Privada",
+      PUBLIC_FEDERAL: "Pública Federal",
+      PUBLIC_MUNICIPAL: "Pública Municipal",
+      PUBLIC_STATE: "Pública Estadual",
     },
     organizationStatuses: {
-      ATIVA: "Organização ativa",
-      INATIVA: "Organização inativa",
+      ACTIVE: "Organização ativa",
+      INACTIVE: "Organização inativa",
     },
     overview: {
       addressLabel: "Endereço institucional",
@@ -182,8 +182,8 @@ export const ptBR = {
       searchPlaceholder: "Buscar por nome, cidade ou endereço",
       status: "Situação",
       statuses: {
-        ATIVA: "Ativa",
-        INATIVA: "Inativa",
+        ACTIVE: "Ativa",
+        INACTIVE: "Inativa",
       },
       title: "Unidades",
       updated: "Unidade atualizada.",
@@ -250,7 +250,7 @@ export const ptBR = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      minhaUnidade: "Minha Unidade",
+      myUnit: "Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
       preferences: "Preferências",

@@ -4,13 +4,13 @@ import type { BadgeProps } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import type { OperationModel, OrganizationStatus, SchoolUnitStatus } from "@/models"
 
-import { operationModelValues } from "../MinhaUnidade.constants"
+import { operationModelValues } from "../MyUnit.constants"
 
 type BadgeTone = NonNullable<BadgeProps["tone"]>
 
 const statusTones: Record<OrganizationStatus | SchoolUnitStatus, BadgeTone> = {
-  ATIVA: "success",
-  INATIVA: "neutral",
+  ACTIVE: "success",
+  INACTIVE: "neutral",
 }
 
 // The translated labels of Minha Unidade's codes. The organization's status reads differently from a
@@ -18,16 +18,16 @@ const statusTones: Record<OrganizationStatus | SchoolUnitStatus, BadgeTone> = {
 export const useStatusLabels = () => {
   const { t } = useTranslation()
 
-  const operationModelLabel = (value: OperationModel) => t(`minhaUnidade.operationModels.${value}`)
+  const operationModelLabel = (value: OperationModel) => t(`myUnit.operationModels.${value}`)
 
   const operationModelOptions: SelectOption[] = operationModelValues.map((value) => ({
     label: operationModelLabel(value),
     value,
   }))
 
-  const organizationStatusLabel = (value: OrganizationStatus) => t(`minhaUnidade.organizationStatuses.${value}`)
+  const organizationStatusLabel = (value: OrganizationStatus) => t(`myUnit.organizationStatuses.${value}`)
 
-  const unitStatusLabel = (value: SchoolUnitStatus) => t(`minhaUnidade.units.statuses.${value}`)
+  const unitStatusLabel = (value: SchoolUnitStatus) => t(`myUnit.units.statuses.${value}`)
 
   const statusTone = (value: OrganizationStatus | SchoolUnitStatus) => statusTones[value]
 

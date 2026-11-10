@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { Card, Text } from "@/ds-components/atoms"
 import { spacing } from "@/foundation"
 
-import { SectionHeader, SectionHeading, TabPanel } from "../MinhaUnidade.styles"
+import { SectionHeader, SectionHeading, TabPanel } from "../MyUnit.styles"
 
 export type TabCardProps = {
   children: ReactNode
