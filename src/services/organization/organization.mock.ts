@@ -1,4 +1,4 @@
-import type { Organization, OrganizationBranding } from "@/models"
+import type { OrganizationBranding } from "@/models"
 
 // Demo data for Minha Unidade until the real API is wired (see organization.ts). It is a fictional
 // school, kept only in memory: every change is lost on reload, and nothing here is a real client's.
@@ -14,27 +14,7 @@ const faviconUrl = svgDataUrl(
   `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#00285B"/><circle cx="16" cy="16" r="8" fill="#F58220"/></svg>`,
 )
 
-export const mockOrganization: Organization = {
-  address: {
-    cep: "60150-161",
-    city: "Fortaleza",
-    complement: "",
-    district: "Aldeota",
-    number: "1500",
-    state: "CE",
-    street: "Avenida Santos Dumont",
-  },
-  contactEmail: "contato@horizonte.edu.br",
-  contactPhone: "(85) 3333-1100",
-  id: 1,
-  institutionalName: "Associação Educacional Horizonte",
-  internalNotes: "",
-  operationModel: "PRIVATE",
-  status: "ACTIVE",
-}
-
 export const mockBranding: OrganizationBranding = {
-  displayName: "Colégio Horizonte",
   faviconUrl,
   logoUrl,
   primaryColor: "#00285B",

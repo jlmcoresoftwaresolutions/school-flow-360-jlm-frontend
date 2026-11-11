@@ -4,6 +4,36 @@ import { expect, type Page, test } from "@playwright/test"
 // it is sent, so a test can hand out a session that ends a few seconds later.
 const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
   const lengths = [...sessionLengthsMs]
+  // Minha Unidade reads the organization from the backend.
+  await page.route("**/api/organizations/current/editable", (route) =>
+    route.fulfill({
+      body: JSON.stringify({
+        data: {
+          orgAddressCep: "60150-161",
+          orgAddressComplement: "",
+          orgAddressCountry: "Brasil",
+          orgAddressDistrict: "Aldeota",
+          orgAddressCity: "Fortaleza",
+          orgAddressNumber: "1500",
+          orgAddressState: "CE",
+          orgAddressStreet: "Avenida Santos Dumont",
+          orgEmail: "contato@horizonte.edu.br",
+          orgId: 1,
+          orgInstName: "Associação Educacional Horizonte",
+          orgInstTel: "(85) 3333-1100",
+          orgName: "Colégio Horizonte",
+          orgNotes: "",
+          orgOpType: "PRIVATE",
+          orgStatus: "ENABLE",
+          version: 0,
+        },
+        message: "",
+        status: "Success",
+        tenantId: "schoolflow_demo",
+      }),
+      contentType: "application/json",
+    }),
+  )
   // Minha Unidade lists the units from the backend; an empty list is enough here.
   await page.route("**/api/school-units?*", (route) =>
     route.fulfill({

@@ -1,31 +1,30 @@
-import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { Badge } from "@/ds-components/atoms"
-import { DescriptionList, Input, Select } from "@/ds-components/molecules"
-import type { Organization, OrganizationBranding, OrganizationUpdate } from "@/models"
+import { DescriptionList, Input } from "@/ds-components/molecules"
+import type { Organization, OrganizationUpdate } from "@/models"
 
+import { displayNameMaxLength, institutionalNameMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
 import { useSectionForm } from "../shared/useSectionForm"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
-type InstitutionalValues = Pick<OrganizationUpdate, "institutionalName" | "operationModel">
+type InstitutionalValues = Required<Pick<OrganizationUpdate, "displayName" | "institutionalName">>
 
 export type InstitutionalSectionProps = {
-  branding: OrganizationBranding
   organization: Organization
   onSave: (update: InstitutionalValues) => Promise<boolean>
 }
 
-// The organization's institutional data. The display name is shown here but edited in the visual
-// identity tab, where it belongs; the status is read-only (its taxonomy is still pending).
+// The organization's institutional data: its institutional and display names are edited here; the
+// operation model and the status are read-only (the backend does not let them be changed).
 export const InstitutionalSection = (props: InstitutionalSectionProps) => {
-  const { branding, onSave, organization } = props
+  const { onSave, organization } = props
 
   const { t } = useTranslation()
-  const { operationModelLabel, operationModelOptions, organizationStatusLabel, statusTone } = useStatusLabels()
+  const { operationModelLabel, organizationStatusLabel, statusTone } = useStatusLabels()
   const section = useSectionForm<InstitutionalValues>(
-    { institutionalName: organization.institutionalName, operationModel: organization.operationModel },
+    { displayName: organization.displayName, institutionalName: organization.institutionalName },
     onSave,
   )
 
@@ -39,26 +38,22 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
         <>
           <Input
             error={errors.institutionalName?.message}
+            maxLength={institutionalNameMaxLength}
             title={t("myUnit.overview.institutionalName")}
             required
             {...section.form.register("institutionalName", {
               validate: (value) => value.trim() !== "" || requiredMessage,
             })}
           />
-          <Controller
-            control={section.form.control}
-            name="operationModel"
-            render={(controller) => (
-              <Select
-                name={controller.field.name}
-                onBlur={controller.field.onBlur}
-                onChange={(option) => option && controller.field.onChange(option.value)}
-                options={operationModelOptions}
-                title={t("myUnit.overview.operationModel")}
-                value={operationModelOptions.find((option) => option.value === controller.field.value) ?? null}
-                required
-              />
-            )}
+          <Input
+            error={errors.displayName?.message}
+            helperText={t("myUnit.overview.displayNameHelper")}
+            maxLength={displayNameMaxLength}
+            title={t("myUnit.overview.displayName")}
+            required
+            {...section.form.register("displayName", {
+              validate: (value) => value.trim() !== "" || requiredMessage,
+            })}
           />
         </>
       }
@@ -77,7 +72,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
               label: t("myUnit.overview.institutionalName"),
               value: organization.institutionalName,
             },
-            { key: "displayName", label: t("myUnit.overview.displayName"), value: branding.displayName },
+            { key: "displayName", label: t("myUnit.overview.displayName"), value: organization.displayName },
             {
               key: "operationModel",
               label: t("myUnit.overview.operationModel"),

@@ -1,5 +1,5 @@
 import { useId } from "react"
-import { FormProvider, useForm } from "react-hook-form"
+import { Controller, FormProvider, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useUnsavedChanges } from "@/components"
@@ -8,11 +8,14 @@ import { Input, Textarea } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { SchoolUnit, SchoolUnitInput } from "@/models"
 import { emptyAddress } from "@/utils/address"
-import { stripNonDigits } from "@/utils/formats"
+import { isValidEmail } from "@/utils/email"
+import { formatPhoneInput, isValidPhone } from "@/utils/phone"
 
-import { emailPattern, notesMaxLength } from "../MyUnit.constants"
+import { notesMaxLength } from "../MyUnit.constants"
 import { FieldGroup } from "../MyUnit.styles"
 import { AddressFields } from "../shared/AddressFields"
+import { useOrganizationCountry } from "../shared/organizationCountry"
+import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 
 export type UnitFormModalProps = {
   onClose: () => void
@@ -20,28 +23,32 @@ export type UnitFormModalProps = {
   unit?: SchoolUnit
 }
 
-const toInput = (unit?: SchoolUnit): SchoolUnitInput => ({
+const toInput = (formatPhone: (phone: string) => string, unit?: SchoolUnit): SchoolUnitInput => ({
   address: unit?.address ?? emptyAddress,
   contactEmail: unit?.contactEmail ?? "",
-  contactPhone: unit?.contactPhone ?? "",
+  contactPhone: formatPhone(unit?.contactPhone ?? ""),
   name: unit?.name ?? "",
   notes: unit?.notes ?? "",
 })
 
 // Registering a unit, or editing one (`unit`). Rendered only while open, so each opening starts from
-// the unit's current data (or a blank form). A new unit always starts active. Only the name, the city
+// the unit's current data (or a blank form). A new unit always starts active. Its address and phone
+// are in the organization's country (a unit has no country of its own). Only the name, the city
 // and the state are required: the visual spec's academic fields (calendar, operational setup) wait for
 // the Acadêmico module, and the unit code for DP-P1-05.
 export const UnitFormModal = (props: UnitFormModalProps) => {
   const { onClose, onSave, unit } = props
 
   const { t } = useTranslation()
-  const form = useForm<SchoolUnitInput>({ defaultValues: toInput(unit) })
+  const country = useOrganizationCountry()
+  const formatPhone = usePhoneFormatter()
+  const form = useForm<SchoolUnitInput>({ defaultValues: toInput(formatPhone, unit) })
 
   const formId = useId()
 
   const { errors, isDirty, isSubmitting } = form.formState
   const isEditing = unit !== undefined
+  const phoneMessage = country === "BR" ? t("myUnit.validation.phone") : t("myUnit.validation.phoneAnyCountry")
 
   useUnsavedChanges(isDirty)
 
@@ -87,20 +94,32 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                   title={t("myUnit.units.contactEmail")}
                   type="email"
                   {...form.register("contactEmail", {
-                    validate: (value) =>
-                      value.trim() === "" || emailPattern.test(value) || t("myUnit.validation.email"),
+                    validate: (value) => value.trim() === "" || isValidEmail(value) || t("myUnit.validation.email"),
                   })}
                 />
               </Grid.Col>
               <Grid.Col xs={12} md={6}>
-                <Input
-                  error={errors.contactPhone?.message}
-                  mask="phone"
-                  title={t("myUnit.units.contactPhone")}
-                  {...form.register("contactPhone", {
-                    validate: (value) =>
-                      value.trim() === "" || stripNonDigits(value).length >= 10 || t("myUnit.validation.phone"),
-                  })}
+                <Controller
+                  control={form.control}
+                  name="contactPhone"
+                  render={(controller) => (
+                    <Input
+                      error={controller.fieldState.error?.message}
+                      helperText={t("myUnit.phoneHelper")}
+                      name={controller.field.name}
+                      onBlur={controller.field.onBlur}
+                      onChange={(event) =>
+                        controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, country))
+                      }
+                      ref={controller.field.ref}
+                      title={t("myUnit.units.contactPhone")}
+                      type="tel"
+                      value={controller.field.value}
+                    />
+                  )}
+                  rules={{
+                    validate: (value) => value.trim() === "" || isValidPhone(value, country) || phoneMessage,
+                  }}
                 />
               </Grid.Col>
             </Grid.Row>

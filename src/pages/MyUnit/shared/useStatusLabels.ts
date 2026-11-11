@@ -1,10 +1,7 @@
 import { useTranslation } from "react-i18next"
 
 import type { BadgeProps } from "@/ds-components/atoms"
-import type { SelectOption } from "@/ds-components/molecules"
 import type { OperationModel, OrganizationStatus, SchoolUnitStatus } from "@/models"
-
-import { operationModelValues } from "../MyUnit.constants"
 
 type BadgeTone = NonNullable<BadgeProps["tone"]>
 
@@ -20,16 +17,11 @@ export const useStatusLabels = () => {
 
   const operationModelLabel = (value: OperationModel) => t(`myUnit.operationModels.${value}`)
 
-  const operationModelOptions: SelectOption[] = operationModelValues.map((value) => ({
-    label: operationModelLabel(value),
-    value,
-  }))
-
   const organizationStatusLabel = (value: OrganizationStatus) => t(`myUnit.organizationStatuses.${value}`)
 
   const unitStatusLabel = (value: SchoolUnitStatus) => t(`myUnit.units.statuses.${value}`)
 
   const statusTone = (value: OrganizationStatus | SchoolUnitStatus) => statusTones[value]
 
-  return { operationModelLabel, operationModelOptions, organizationStatusLabel, statusTone, unitStatusLabel }
+  return { operationModelLabel, organizationStatusLabel, statusTone, unitStatusLabel }
 }

@@ -13,6 +13,7 @@ import type {
   SchoolUnit,
   SchoolUnitInput,
 } from "@/models"
+import { getErrorStatus } from "@/services/httpClient"
 import {
   createSchoolUnit,
   getBranding,
@@ -23,11 +24,13 @@ import {
   updateOrganization,
   updateSchoolUnit,
 } from "@/services/organization"
+import { defaultCountry, isCountry } from "@/utils/countries"
 
 import { BrandingTab } from "./branding/BrandingTab"
 import type { MyUnitTab } from "./MyUnit.constants"
 import { SubCard } from "./MyUnit.styles"
 import { OverviewTab } from "./overview/OverviewTab"
+import { OrganizationCountryContext } from "./shared/organizationCountry"
 import { TabCard } from "./shared/TabCard"
 import { UnitsTab } from "./units/UnitsTab"
 
@@ -36,15 +39,6 @@ type PageData = {
   organization: Organization
   units: SchoolUnit[]
 }
-
-const toOrganizationUpdate = (organization: Organization): OrganizationUpdate => ({
-  address: organization.address,
-  contactEmail: organization.contactEmail,
-  contactPhone: organization.contactPhone,
-  institutionalName: organization.institutionalName,
-  internalNotes: organization.internalNotes,
-  operationModel: organization.operationModel,
-})
 
 // The same shape as a tab: one main card with its sub-cards, each a few placeholder lines.
 const LoadingState = () => (
@@ -62,8 +56,8 @@ const LoadingState = () => (
 )
 
 // Minha Unidade: the organization the user works in (JLM-11), in three tabs - its overview, its
-// visual identity and its units. The data comes from services/organization, mocked until the API
-// offers the signed-in user's organization. Every tab stays mounted and only the others are hidden, so
+// visual identity and its units. The data comes from services/organization, which is being wired to
+// the backend a call at a time (the rest is mocked). Every tab stays mounted and only the others are hidden, so
 // an edit in progress survives switching tabs. Each tab is one main card (TabCard), attached to the tabs
 // above it, with its sections inside as sub-cards (SectionCard).
 export const MyUnit = () => {
@@ -74,6 +68,8 @@ export const MyUnit = () => {
   const [reloadToken, setReloadToken] = useState(0)
   const [tab, setTab] = useState<MyUnitTab>("overview")
   const [isCreatingUnit, setIsCreatingUnit] = useState(false)
+  // Bumped to remount the overview, dropping its drafts, when a save found the organization changed.
+  const [overviewKey, setOverviewKey] = useState(0)
 
   // The fetch is defined inline inside the effect, rather than as an outer useCallback referenced
   // here, so react-hooks/set-state-in-effect doesn't flag it. handleRetry bumps reloadToken instead of
@@ -127,12 +123,33 @@ export const MyUnit = () => {
       current ? { ...current, units: current.units.map((item) => (item.id === unit.id ? unit : item)) } : current,
     )
 
-  const handleSaveOrganization = (update: Partial<OrganizationUpdate>) =>
-    runSave(
-      () => updateOrganization({ ...toOrganizationUpdate(data!.organization), ...update }),
-      (organization) => setData((current) => (current ? { ...current, organization } : current)),
-      t("myUnit.overview.saved"),
-    )
+  const applyOrganization = (organization: Organization) =>
+    setData((current) => (current ? { ...current, organization } : current))
+
+  // A 409 means someone else changed the organization since it was read: the save is dropped, the
+  // current data is read again and the overview goes back to reading, for the user to redo the change.
+  const handleSaveOrganization = async (update: OrganizationUpdate) => {
+    try {
+      applyOrganization(await updateOrganization(update))
+      toast.success(t("myUnit.overview.saved"))
+      return true
+    } catch (error) {
+      if (getErrorStatus(error) !== 409) {
+        toast.error(t("myUnit.saveError"))
+        return false
+      }
+    }
+
+    try {
+      applyOrganization(await getCurrentOrganization())
+      setOverviewKey((current) => current + 1)
+      toast.error(t("myUnit.overview.conflict"))
+    } catch {
+      toast.error(t("myUnit.saveError"))
+    }
+
+    return false
+  }
 
   const handleSaveBranding = (update: OrganizationBrandingUpdate) =>
     runSave(
@@ -177,10 +194,13 @@ export const MyUnit = () => {
     if (!data) return <LoadingState />
 
     return (
-      <>
+      <OrganizationCountryContext
+        value={isCountry(data.organization.address.country) ? data.organization.address.country : defaultCountry}
+      >
         <div hidden={tab !== "overview"}>
           <OverviewTab
             branding={data.branding}
+            key={overviewKey}
             onCreateUnit={handleCreateFromOverview}
             onSaveOrganization={handleSaveOrganization}
             onSeeAllUnits={() => setTab("units")}
@@ -189,7 +209,11 @@ export const MyUnit = () => {
           />
         </div>
         <div hidden={tab !== "branding"}>
-          <BrandingTab branding={data.branding} onSave={handleSaveBranding} />
+          <BrandingTab
+            branding={data.branding}
+            displayName={data.organization.displayName}
+            onSave={handleSaveBranding}
+          />
         </div>
         <div hidden={tab !== "units"}>
           <UnitsTab
@@ -201,7 +225,7 @@ export const MyUnit = () => {
             units={data.units}
           />
         </div>
-      </>
+      </OrganizationCountryContext>
     )
   }
 

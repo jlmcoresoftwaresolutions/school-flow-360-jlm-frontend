@@ -1,31 +1,39 @@
+import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { DescriptionList, Input } from "@/ds-components/molecules"
 import type { Organization, OrganizationUpdate } from "@/models"
-import { stripNonDigits } from "@/utils/formats"
+import { isValidEmail } from "@/utils/email"
+import { formatPhoneInput, isValidPhone } from "@/utils/phone"
 
-import { emailPattern } from "../MyUnit.constants"
+import { contactEmailMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
+import { useOrganizationCountry } from "../shared/organizationCountry"
+import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useSectionForm } from "../shared/useSectionForm"
 
-type ContactValues = Pick<OrganizationUpdate, "contactEmail" | "contactPhone">
+type ContactValues = Required<Pick<OrganizationUpdate, "contactEmail" | "contactPhone">>
 
 export type ContactSectionProps = {
   organization: Organization
   onSave: (update: ContactValues) => Promise<boolean>
 }
 
-// The organization's institutional contacts.
+// The organization's institutional contacts. The phone may be of any country: one without "+" is read
+// as one of the organization's country, and it is formatted as it is typed.
 export const ContactSection = (props: ContactSectionProps) => {
   const { onSave, organization } = props
 
   const { t } = useTranslation()
+  const country = useOrganizationCountry()
+  const formatPhone = usePhoneFormatter()
   const section = useSectionForm<ContactValues>(
-    { contactEmail: organization.contactEmail, contactPhone: organization.contactPhone },
+    { contactEmail: organization.contactEmail, contactPhone: formatPhone(organization.contactPhone) },
     onSave,
   )
 
   const { errors } = section.form.formState
+  const phoneMessage = country === "BR" ? t("myUnit.validation.phone") : t("myUnit.validation.phoneAnyCountry")
 
   return (
     <EditableSectionCard
@@ -34,22 +42,44 @@ export const ContactSection = (props: ContactSectionProps) => {
         <>
           <Input
             error={errors.contactEmail?.message}
+            maxLength={contactEmailMaxLength}
             title={t("myUnit.overview.contactEmail")}
             type="email"
             required
             {...section.form.register("contactEmail", {
-              pattern: { message: t("myUnit.validation.email"), value: emailPattern },
-              validate: (value) => value.trim() !== "" || t("myUnit.validation.required"),
+              validate: (value) => {
+                if (value.trim() === "") return t("myUnit.validation.required")
+
+                return isValidEmail(value) || t("myUnit.validation.email")
+              },
             })}
           />
-          <Input
-            error={errors.contactPhone?.message}
-            mask="phone"
-            title={t("myUnit.overview.contactPhone")}
-            required
-            {...section.form.register("contactPhone", {
-              validate: (value) => stripNonDigits(value).length >= 10 || t("myUnit.validation.phone"),
-            })}
+          <Controller
+            control={section.form.control}
+            name="contactPhone"
+            render={(controller) => (
+              <Input
+                error={controller.fieldState.error?.message}
+                helperText={t("myUnit.phoneHelper")}
+                name={controller.field.name}
+                onBlur={controller.field.onBlur}
+                onChange={(event) =>
+                  controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, country))
+                }
+                ref={controller.field.ref}
+                title={t("myUnit.overview.contactPhone")}
+                type="tel"
+                value={controller.field.value}
+                required
+              />
+            )}
+            rules={{
+              validate: (value) => {
+                if (value.trim() === "") return t("myUnit.validation.required")
+
+                return isValidPhone(value, country) || phoneMessage
+              },
+            }}
           />
         </>
       }
@@ -65,7 +95,11 @@ export const ContactSection = (props: ContactSectionProps) => {
           emptyValue={t("common.notInformed")}
           items={[
             { key: "contactEmail", label: t("myUnit.overview.contactEmail"), value: organization.contactEmail },
-            { key: "contactPhone", label: t("myUnit.overview.contactPhone"), value: organization.contactPhone },
+            {
+              key: "contactPhone",
+              label: t("myUnit.overview.contactPhone"),
+              value: formatPhone(organization.contactPhone),
+            },
           ]}
         />
       }

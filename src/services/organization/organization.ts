@@ -1,29 +1,39 @@
 import type {
-  ApiSchoolUnit,
   Organization,
   OrganizationBranding,
   OrganizationBrandingUpdate,
+  OrganizationEditable,
   OrganizationUpdate,
   SchoolUnit,
+  SchoolUnitDetail,
   SchoolUnitInactivation,
   SchoolUnitInput,
 } from "@/models"
 import { emptyAddress } from "@/utils/address"
+import { defaultCountry, toCountry } from "@/utils/countries"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
+import { toInternationalPhone } from "@/utils/phone"
 
 import type { RequestConfig } from "../httpClient"
+import { getCurrentOrganizationEditable, updateCurrentOrganization } from "../organizations"
 import { searchSchoolUnits } from "../schoolUnits"
-import { mockBranding, mockOrganization } from "./organization.mock"
+import { mockBranding } from "./organization.mock"
 
 // The page-facing layer of Minha Unidade: it answers in the frontend's shapes (models/organization).
 // The API-shaped services, one function per backend endpoint, are organizations, schoolUnits, branding
 // and the others beside this folder; the calls here are being moved onto them one at a time. Wired:
-// listing the units (listSchoolUnits, through schoolUnits). Still MOCK: everything else answers from
-// in-memory demo data (organization.mock.ts) with a simulated delay. The signatures are the final
-// ones: wiring a call only changes its body (mapping the backend's field names), not the page.
+// reading the organization and saving its name and contacts (through organizations), and listing the
+// units (listSchoolUnits, through schoolUnits). Still MOCK: the branding and the units' create, edit
+// and inactivate answer from in-memory demo data (organization.mock.ts) with a simulated delay. The
+// signatures are the final ones: wiring a call only changes its body (mapping the backend's field
+// names), not the page.
 
-// Copies, so a caller changing what it got never changes the "stored" data.
-let organization = structuredClone(mockOrganization)
+// The organization as the backend last answered it (read or saved), kept for the next save: the backend
+// replaces EVERY editable field with what the body brings (one missing becomes null), so each save
+// sends all of them, these with the section's changes on top. It also carries the `version` the
+// backend asks back, answering 409 when someone else changed the organization since.
+let currentOrganization: OrganizationEditable | null = null
+// A copy, so a caller changing what it got never changes the "stored" data.
 let branding = structuredClone(mockBranding)
 // The units the mocked create/edit/inactivate work on: the real list, as last fetched, so those
 // actions apply to the units on screen (locally only - lost on reload) until they are wired too.
@@ -72,14 +82,80 @@ const readFileAsDataUrl = (file: File) =>
     reader.readAsDataURL(file)
   })
 
-export const getCurrentOrganization = (config?: RequestConfig): Promise<Organization> =>
-  mockRequest(() => organization, config)
+// The backend keeps the country as free text: a code or a name ("Brasil") is read as the country's
+// code, and anything else as unknown (empty), which the save then leaves untouched. The phone comes as
+// stored: the page shows it in its country's format. The backend answers only PRIVATE or PUBLIC for the
+// operation model, and ENABLE/DISABLE for the status.
+const toOrganization = (editable: OrganizationEditable): Organization => ({
+  address: {
+    city: editable.orgAddressCity ?? "",
+    complement: editable.orgAddressComplement ?? "",
+    country: toCountry(editable.orgAddressCountry ?? "") ?? "",
+    district: editable.orgAddressDistrict ?? "",
+    number: editable.orgAddressNumber ?? "",
+    postalCode: editable.orgAddressCep ?? "",
+    state: editable.orgAddressState ?? "",
+    street: editable.orgAddressStreet ?? "",
+  },
+  contactEmail: editable.orgEmail ?? "",
+  contactPhone: editable.orgInstTel ?? "",
+  displayName: editable.orgName ?? "",
+  id: editable.orgId,
+  institutionalName: editable.orgInstName ?? "",
+  internalNotes: editable.orgNotes ?? "",
+  operationModel: editable.orgOpType,
+  status: editable.orgStatus === "ENABLE" ? "ACTIVE" : "INACTIVE",
+})
 
-export const updateOrganization = (update: OrganizationUpdate, config?: RequestConfig): Promise<Organization> =>
-  mockRequest(() => {
-    organization = { ...organization, ...structuredClone(update) }
-    return organization
-  }, config)
+const keepOrganization = (editable: OrganizationEditable): Organization => {
+  currentOrganization = editable
+
+  return toOrganization(editable)
+}
+
+// The signed-in user's organization (ADMIN only; 404 when the tenant has none registered yet).
+export const getCurrentOrganization = async (config?: RequestConfig): Promise<Organization> =>
+  keepOrganization(await getCurrentOrganizationEditable(config))
+
+// Saves the section's changes. Every editable field goes in the body - the ones the section did not
+// change exactly as the backend last answered them, so nothing is cleared - with the `version` last
+// read. The country is saved as its code ("BR"); an address without one keeps the stored text. A
+// phone is saved in the international format, a number without "+" read as one of the organization's
+// country (Brazil when it is not known). A 409 means someone else changed the
+// organization since: read it again (getCurrentOrganization) and let the user redo the change.
+export const updateOrganization = async (update: OrganizationUpdate, config?: RequestConfig): Promise<Organization> => {
+  if (!currentOrganization) throw new Error("The organization must be read before it is saved")
+
+  const current = currentOrganization
+  const { address } = update
+  const phoneCountry = toCountry(current.orgAddressCountry ?? "") ?? defaultCountry
+
+  return keepOrganization(
+    await updateCurrentOrganization(
+      {
+        orgAddressCep: address ? address.postalCode : current.orgAddressCep,
+        orgAddressCity: address ? address.city : current.orgAddressCity,
+        orgAddressComplement: address ? address.complement : current.orgAddressComplement,
+        orgAddressCountry: address?.country || current.orgAddressCountry,
+        orgAddressDistrict: address ? address.district : current.orgAddressDistrict,
+        orgAddressNumber: address ? address.number : current.orgAddressNumber,
+        orgAddressState: address ? address.state : current.orgAddressState,
+        orgAddressStreet: address ? address.street : current.orgAddressStreet,
+        orgEmail: update.contactEmail ?? current.orgEmail,
+        orgInstName: update.institutionalName ?? current.orgInstName,
+        // Saved in the international format, whatever country it is from.
+        orgInstTel:
+          update.contactPhone === undefined
+            ? current.orgInstTel
+            : toInternationalPhone(update.contactPhone, phoneCountry),
+        orgName: update.displayName ?? current.orgName,
+        orgNotes: update.internalNotes ?? current.orgNotes,
+        version: current.version,
+      },
+      config,
+    ),
+  )
+}
 
 export const getBranding = (config?: RequestConfig): Promise<OrganizationBranding> =>
   mockRequest(() => branding, config)
@@ -93,7 +169,6 @@ export const updateBranding = async (
 
   return mockRequest(() => {
     branding = {
-      displayName: update.displayName,
       faviconUrl,
       logoUrl,
       primaryColor: update.primaryColor,
@@ -107,8 +182,10 @@ export const updateBranding = async (
 const unitsPageSize = 100
 
 // The backend keeps the address as one free-text string; until we know its format, all of it goes in
-// the street, so it is shown whole and nothing is guessed (the city stays empty).
-const toSchoolUnit = (unit: ApiSchoolUnit): SchoolUnit => ({
+// the street, so it is shown whole and nothing is guessed (the city stays empty). A unit's country is
+// its organization's. The phone comes as stored: the page shows it in the organization's country's
+// format.
+const toSchoolUnit = (unit: SchoolUnitDetail): SchoolUnit => ({
   address: { ...emptyAddress, street: unit.address ?? "" },
   contactEmail: unit.contactEmail ?? "",
   contactPhone: unit.contactPhone ?? "",
@@ -121,7 +198,7 @@ const toSchoolUnit = (unit: ApiSchoolUnit): SchoolUnit => ({
 // Only the units the user may access (the backend applies that). The list is paged on the backend;
 // every page is fetched, since the page searches, filters and pages the list on its own for now.
 export const listSchoolUnits = async (config?: RequestConfig): Promise<SchoolUnit[]> => {
-  const units: ApiSchoolUnit[] = []
+  const units: SchoolUnitDetail[] = []
   let page = 0
   let totalPages = 1
 

@@ -1,10 +1,81 @@
 import { expect, type Page, test } from "@playwright/test"
 
-// Minha Unidade is being wired to the backend a call at a time: the unit list comes from
-// GET /api/school-units, the rest still from the mocked organization service (services/organization).
-// Everything on the network (login, the unit list, the CEP lookup) is mocked here. The service's mock
-// reads a sessionStorage key to fail its calls (the error state); the empty state is an empty list.
+// Minha Unidade is being wired to the backend a call at a time: the organization (read and saved) and
+// the unit list come from the backend, the rest still from the mocked
+// organization service (services/organization). Everything on the network (login, the organization,
+// the unit list, the CEP lookup) is mocked here. The service's mock reads a sessionStorage key to fail
+// its calls (the error state); the empty state is an empty list.
 const mockScenarioKey = "sf360.mockScenario"
+
+// The backend's organization, in its own field names.
+const apiOrganization = {
+  orgAddressCep: "60150-161",
+  orgAddressComplement: "",
+  orgAddressCountry: "Brasil",
+  orgAddressDistrict: "Aldeota",
+  orgAddressCity: "Fortaleza",
+  orgAddressNumber: "1500",
+  orgAddressState: "CE",
+  orgAddressStreet: "Avenida Santos Dumont",
+  orgEmail: "contato@horizonte.edu.br",
+  orgId: 1,
+  orgInstName: "Associação Educacional Horizonte",
+  orgInstTel: "8533331100",
+  orgName: "Colégio Horizonte",
+  orgNotes: "",
+  orgOpType: "PUBLIC",
+  orgStatus: "ENABLE",
+  version: 3,
+}
+
+// What a save of the organization must send: EVERY editable field (the backend replaces them all), the
+// ones the section did not change as they were read, plus the version read.
+const savedBody = (changes: Record<string, string>) => {
+  const { orgId, orgOpType, orgStatus, version, ...editable } = apiOrganization
+  void [orgId, orgOpType, orgStatus]
+
+  return { ...editable, ...changes, version }
+}
+
+const apiAnswer = (data: unknown) => ({
+  body: JSON.stringify({ data, message: "", status: "Success", tenantId: "schoolflow_demo" }),
+  contentType: "application/json",
+})
+
+// What the page sent in each save of the organization, for a test to check.
+type OrganizationMock = { saves: Record<string, unknown>[] }
+
+// The organization endpoints, keeping what is saved like the backend does: a save REPLACES every
+// editable field with the body's (one left out becomes null). "conflict" refuses every save as the
+// backend does when someone else changed the organization first, which a new read shows.
+const mockOrganizationApi = async (
+  page: Page,
+  scenario?: "conflict",
+  overrides: Partial<typeof apiOrganization> = {},
+): Promise<OrganizationMock> => {
+  const mock: OrganizationMock = { saves: [] }
+  let organization = { ...apiOrganization, ...overrides }
+
+  await page.route("**/api/organizations/current/editable", (route) => route.fulfill(apiAnswer(organization)))
+  await page.route("**/api/organizations/current", (route) => {
+    const body = route.request().postDataJSON() as Record<string, unknown>
+    mock.saves.push(body)
+
+    if (scenario === "conflict") {
+      organization = { ...organization, orgEmail: "outra.pessoa@horizonte.edu.br", version: organization.version + 1 }
+      return route.fulfill({ body: JSON.stringify({ message: "Stale version." }), status: 409 })
+    }
+
+    const editableFields = Object.keys(apiOrganization).filter(
+      (key) => !["orgId", "orgOpType", "orgStatus", "version"].includes(key),
+    )
+    const replaced = Object.fromEntries(editableFields.map((key) => [key, body[key] ?? null]))
+    organization = { ...organization, ...replaced, version: organization.version + 1 }
+    return route.fulfill(apiAnswer(organization))
+  })
+
+  return mock
+}
 
 // The backend's units: one free-text address, ACTIVE/INACTIVE.
 const apiSchoolUnits = [
@@ -46,8 +117,17 @@ const apiSchoolUnits = [
   },
 ]
 
-const signInAndOpen = async (page: Page, scenario?: "error" | "no-units") => {
+const signInAndOpen = async (
+  page: Page,
+  scenario?: "conflict" | "error" | "no-units",
+  organization: Partial<typeof apiOrganization> = {},
+) => {
   const units = scenario === "no-units" ? [] : apiSchoolUnits
+  const organizationMock = await mockOrganizationApi(
+    page,
+    scenario === "conflict" ? "conflict" : undefined,
+    organization,
+  )
 
   await page.route("**/api/school-units?*", (route) =>
     route.fulfill({
@@ -99,6 +179,8 @@ const signInAndOpen = async (page: Page, scenario?: "error" | "no-units") => {
   await page.getByRole("complementary").getByRole("button", { name: "Administração" }).click()
   await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
   await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
+
+  return organizationMock
 }
 
 const tab = (page: Page, name: string) => page.getByRole("tab", { name })
@@ -112,6 +194,11 @@ test.describe("overview", () => {
     // The organization's status reads differently from a unit's.
     await expect(page.getByText("Organização ativa").first()).toBeVisible()
     await expect(page.getByText("Associação Educacional Horizonte").first()).toBeVisible()
+    // The backend's own values, shown in the page's terms: a bare phone masked, PUBLIC as a label.
+    await expect(page.getByRole("definition").filter({ hasText: "(85) 3333-1100" })).toBeVisible()
+    await expect(page.getByText("Pública", { exact: true }).first()).toBeVisible()
+    // The address now comes whole, with the city.
+    await expect(page.getByText(/Avenida Santos Dumont, 1500 - Aldeota, Fortaleza\/CE/)).toBeVisible()
 
     const summary = page.getByRole("list", { name: "Unidades" })
     await expect(summary.getByRole("listitem")).toHaveCount(4)
@@ -119,7 +206,7 @@ test.describe("overview", () => {
   })
 
   test("edits a section in place, refusing an invalid value and saving a valid one", async ({ page }) => {
-    await signInAndOpen(page)
+    const organizationMock = await signInAndOpen(page)
 
     await page.getByRole("button", { name: "Editar Contato" }).click()
     const email = page.getByRole("textbox", { name: "E-mail institucional" })
@@ -129,6 +216,9 @@ test.describe("overview", () => {
     await email.fill("secretaria@horizonte")
     await save.click()
     await expect(page.getByText("Informe um e-mail válido.")).toBeVisible()
+    // The backend's rule: no doubled dot in the local part.
+    await email.fill("secretaria..geral@horizonte.edu.br")
+    await expect(page.getByText("Informe um e-mail válido.")).toBeVisible()
 
     await email.fill("secretaria@horizonte.edu.br")
     await save.click()
@@ -136,9 +226,49 @@ test.describe("overview", () => {
     await expect(page.getByText("Dados da organização atualizados.")).toBeVisible()
     await expect(page.getByRole("form", { name: "Contato" })).toHaveCount(0)
     await expect(page.getByText("secretaria@horizonte.edu.br")).toBeVisible()
+    // Only the section's own fields go, with the version that was read.
+    expect(organizationMock.saves).toEqual([
+      // The phone, untouched, is still saved in the international format.
+      savedBody({ orgEmail: "secretaria@horizonte.edu.br", orgInstTel: "+55 85 3333 1100" }),
+    ])
   })
 
-  test("fills the address from the CEP", async ({ page }) => {
+  test("takes a phone of any country, refusing one that doesn't exist", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+
+    await page.getByRole("button", { name: "Editar Contato" }).click()
+    const form = page.getByRole("form", { name: "Contato" })
+    const phone = form.getByRole("textbox", { name: /^Telefone/ })
+    await expect(phone).toHaveValue("(85) 3333-1100")
+
+    // A Brazilian number with too few digits.
+    await phone.fill("853333110")
+    await form.getByRole("button", { name: "Salvar" }).click()
+    await expect(form.getByText("Informe um telefone válido, com DDD.")).toBeVisible()
+
+    // Another country's, with + and its code: formatted as typed and saved as it is.
+    await phone.fill("+16502530000")
+    await expect(phone).toHaveValue("+1 650 253 0000")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText("Dados da organização atualizados.")).toBeVisible()
+    await expect(page.getByText("+1 650 253 0000")).toBeVisible()
+    expect(organizationMock.saves).toEqual([savedBody({ orgInstTel: "+1 650 253 0000" })])
+  })
+
+  test("drops a save when someone else changed the organization first, showing the current data", async ({ page }) => {
+    await signInAndOpen(page, "conflict")
+
+    await page.getByRole("button", { name: "Editar Contato" }).click()
+    await page.getByRole("textbox", { name: "E-mail institucional" }).fill("secretaria@horizonte.edu.br")
+    await page.getByRole("form", { name: "Contato" }).getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText(/Outra pessoa alterou os dados da organização\./)).toBeVisible()
+    await expect(page.getByRole("form", { name: "Contato" })).toHaveCount(0)
+    await expect(page.getByText("outra.pessoa@horizonte.edu.br")).toBeVisible()
+  })
+
+  test("edits the address from the CEP, with the number as text, and saves it whole", async ({ page }) => {
     await page.route("https://viacep.com.br/ws/01310100/json/", (route) =>
       route.fulfill({
         body: JSON.stringify({
@@ -151,16 +281,140 @@ test.describe("overview", () => {
         contentType: "application/json",
       }),
     )
-    await signInAndOpen(page)
+    const organizationMock = await signInAndOpen(page)
 
     await page.getByRole("button", { name: "Editar Endereço" }).click()
-    await page.getByRole("textbox", { name: "CEP" }).fill("01310100")
+    const form = page.getByRole("form", { name: "Endereço" })
+    await form.getByRole("textbox", { name: "CEP" }).fill("01310100")
+    await expect(form.getByRole("textbox", { name: "Logradouro" })).toHaveValue("Avenida Paulista")
+    await expect(form.getByRole("textbox", { name: /^Cidade/ })).toHaveValue("São Paulo")
 
-    await expect(page.getByRole("textbox", { name: "Logradouro" })).toHaveValue("Avenida Paulista")
-    await expect(page.getByRole("textbox", { name: /^Cidade/ })).toHaveValue("São Paulo")
+    const number = form.getByRole("textbox", { name: "Número" })
+    await number.fill("12, fundos")
+    await form.getByRole("button", { name: "Salvar" }).click()
+    await expect(form.getByText("Use só letras, números, barra, ponto, hífen e espaço.")).toBeVisible()
 
-    await page.getByRole("form", { name: "Endereço" }).getByRole("button", { name: "Salvar" }).click()
-    await expect(page.getByText(/Avenida Paulista, 1500 - Bela Vista, São Paulo\/SP - CEP 01310-100/)).toBeVisible()
+    await number.fill("1500A")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText(/Avenida Paulista, 1500A - Bela Vista, São Paulo\/SP - CEP 01310-100/)).toBeVisible()
+    expect(organizationMock.saves).toEqual([
+      savedBody({
+        orgAddressCep: "01310-100",
+        orgAddressCity: "São Paulo",
+        orgAddressComplement: "",
+        orgAddressDistrict: "Bela Vista",
+        // The country, stored as "Brasil", is saved as its code.
+        orgAddressCountry: "BR",
+        orgAddressNumber: "1500A",
+        orgAddressState: "SP",
+        orgAddressStreet: "Avenida Paulista",
+      }),
+    ])
+  })
+
+  test("edits an address abroad, with a free postal code and region and without the CEP lookup", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+
+    await page.getByRole("button", { name: "Editar Endereço" }).click()
+    const form = page.getByRole("form", { name: "Endereço" })
+    await form.getByRole("combobox", { name: /^País/ }).click()
+    await page.getByRole("option", { exact: true, name: "Portugal" }).click()
+
+    // The CEP and the UF give way to a free postal code and region, cleared for the new country.
+    await expect(form.getByRole("textbox", { name: "CEP" })).toHaveCount(0)
+    await expect(form.getByRole("combobox", { name: /^UF/ })).toHaveCount(0)
+    const postalCode = form.getByRole("textbox", { name: "Código postal" })
+    await expect(postalCode).toHaveValue("")
+    await expect(form.getByRole("textbox", { name: "Estado/região" })).toHaveValue("")
+
+    await postalCode.fill("1250-096")
+    await form.getByRole("textbox", { name: "Logradouro" }).fill("Avenida da Liberdade")
+    await form.getByRole("textbox", { name: "Número" }).fill("110")
+    await form.getByRole("textbox", { name: "Bairro" }).fill("")
+    await form.getByRole("textbox", { name: /^Cidade/ }).fill("Lisboa")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText("Avenida da Liberdade, 110 - Lisboa - 1250-096 - Portugal")).toBeVisible()
+    expect(organizationMock.saves).toEqual([
+      savedBody({
+        orgAddressCep: "1250-096",
+        orgAddressCity: "Lisboa",
+        orgAddressCountry: "PT",
+        orgAddressDistrict: "",
+        orgAddressNumber: "110",
+        orgAddressState: "",
+        orgAddressStreet: "Avenida da Liberdade",
+      }),
+    ])
+  })
+
+  test("reads and saves phones in the organization's country", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page, undefined, {
+      orgAddressCountry: "Portugal",
+      orgInstTel: "+351 912 345 678",
+    })
+
+    // A number of the organization's country is shown in its national format.
+    await expect(page.getByRole("definition").filter({ hasText: "912 345 678" })).toBeVisible()
+
+    await page.getByRole("button", { name: "Editar Contato" }).click()
+    const form = page.getByRole("form", { name: "Contato" })
+    const phone = form.getByRole("textbox", { name: /^Telefone/ })
+    await phone.fill("21345")
+    await form.getByRole("button", { name: "Salvar" }).click()
+    await expect(form.getByText("Informe um telefone válido.")).toBeVisible()
+
+    // Without "+", a Portuguese number.
+    await phone.fill("213456789")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText("Dados da organização atualizados.")).toBeVisible()
+    expect(organizationMock.saves).toEqual([
+      savedBody({ orgAddressCountry: "Portugal", orgInstTel: "+351 21 345 6789" }),
+    ])
+  })
+
+  test("saves the internal note", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+
+    await expect(page.getByText("Nenhuma observação.")).toBeVisible()
+    await page.getByRole("button", { name: "Editar Observação interna" }).click()
+    const form = page.getByRole("form", { name: "Observação interna" })
+    await expect(form.getByText("Até 2000 caracteres.")).toBeVisible()
+    await form.getByRole("textbox", { name: "Observação interna" }).fill("Educação integral, do Infantil ao Médio.")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText("Educação integral, do Infantil ao Médio.")).toBeVisible()
+    expect(organizationMock.saves).toEqual([savedBody({ orgNotes: "Educação integral, do Infantil ao Médio." })])
+    // Nothing else was cleared by the save.
+    await expect(page.getByText(/Avenida Santos Dumont, 1500 - Aldeota, Fortaleza\/CE/)).toBeVisible()
+    await expect(page.getByText("contato@horizonte.edu.br")).toBeVisible()
+  })
+
+  test("edits the display name with the institutional data, saving it as the organization's name", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+
+    await page.getByRole("button", { name: "Editar Dados institucionais" }).click()
+    const form = page.getByRole("form", { name: "Dados institucionais" })
+    await form.getByRole("textbox", { name: /^Nome de exibição/ }).fill("Colégio Horizonte Sul")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByRole("heading", { level: 2, name: "Colégio Horizonte Sul" })).toBeVisible()
+    expect(organizationMock.saves).toEqual([
+      savedBody({ orgInstName: "Associação Educacional Horizonte", orgName: "Colégio Horizonte Sul" }),
+    ])
+
+    await tab(page, "Identidade visual").click()
+    await expect(page.getByRole("img", { name: "Pré-visualização" })).toContainText("Colégio Horizonte Sul")
+  })
+
+  test("keeps the operation model out of the form, since the backend doesn't let it be changed", async ({ page }) => {
+    await signInAndOpen(page)
+
+    await page.getByRole("button", { name: "Editar Dados institucionais" }).click()
+    await expect(page.getByRole("textbox", { name: /^Nome institucional/ })).toBeVisible()
+    await expect(page.getByRole("combobox", { name: /Modelo de operação/ })).toHaveCount(0)
   })
 
   test("explains a failed load and loads again on retry", async ({ page }) => {
@@ -186,45 +440,79 @@ test.describe("overview", () => {
   })
 })
 
+// A tiny valid PNG (1x1), for a logo the page accepts.
+const pngFile = {
+  buffer: Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+    "base64",
+  ),
+  mimeType: "image/png",
+  name: "logo.png",
+}
+
 test.describe("visual identity", () => {
-  test("previews a change before saving it, and refuses an invalid file", async ({ page }) => {
+  test("previews with the organization's display name, refuses an invalid file and saves a valid one", async ({
+    page,
+  }) => {
     await signInAndOpen(page)
     await tab(page, "Identidade visual").click()
 
-    const preview = page.getByRole("img", { name: "Pré-visualização" })
-    await page.getByRole("textbox", { name: /^Nome de exibição/ }).fill("Colégio Horizonte Sul")
-    await expect(preview).toContainText("Colégio Horizonte Sul")
-    // Nothing changes elsewhere before saving.
-    await tab(page, "Visão geral").click()
-    await expect(page.getByRole("heading", { level: 2, name: "Colégio Horizonte" })).toBeVisible()
-    await tab(page, "Identidade visual").click()
+    // The name is the organization's, edited in the overview, not here.
+    await expect(page.getByRole("img", { name: "Pré-visualização" })).toContainText("Colégio Horizonte")
+    await expect(page.getByRole("textbox", { name: /^Nome de exibição/ })).toHaveCount(0)
 
+    const save = page.getByRole("button", { name: "Salvar alterações" })
+    await expect(save).toBeDisabled()
     await page
       .getByLabel("Logo")
       .setInputFiles({ buffer: Buffer.from("text"), mimeType: "text/plain", name: "logo.txt" })
     await expect(page.getByText("Formato de arquivo não aceito.")).toBeVisible()
+    await expect(save).toBeDisabled()
 
-    await page.getByRole("button", { name: "Salvar alterações" }).click()
+    await page.getByLabel("Logo").setInputFiles(pngFile)
+    await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
+    await save.click()
     await expect(page.getByText("Identidade visual atualizada.")).toBeVisible()
-
-    await tab(page, "Visão geral").click()
-    await expect(page.getByRole("heading", { level: 2, name: "Colégio Horizonte Sul" })).toBeVisible()
   })
 
   test("discards a change, going back to the current identity", async ({ page }) => {
     await signInAndOpen(page)
     await tab(page, "Identidade visual").click()
 
-    const displayName = page.getByRole("textbox", { name: /^Nome de exibição/ })
-    await displayName.fill("Outro nome")
+    await page.getByLabel("Logo").setInputFiles(pngFile)
+    await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
     await page.getByRole("button", { name: "Descartar alterações" }).click()
 
-    await expect(displayName).toHaveValue("Colégio Horizonte")
+    await expect(page.getByText(/Novo arquivo: logo\.png/)).toHaveCount(0)
     await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeDisabled()
   })
 })
 
 test.describe("units", () => {
+  test("fills a unit's address from the CEP", async ({ page }) => {
+    await page.route("https://viacep.com.br/ws/01310100/json/", (route) =>
+      route.fulfill({
+        body: JSON.stringify({
+          bairro: "Bela Vista",
+          cep: "01310-100",
+          localidade: "São Paulo",
+          logradouro: "Avenida Paulista",
+          uf: "SP",
+        }),
+        contentType: "application/json",
+      }),
+    )
+    await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Nova unidade" }).click()
+    const dialog = page.getByRole("dialog", { name: "Nova unidade" })
+    await dialog.getByRole("textbox", { name: "CEP" }).fill("01310100")
+
+    await expect(dialog.getByRole("textbox", { name: "Logradouro" })).toHaveValue("Avenida Paulista")
+    await expect(dialog.getByRole("textbox", { name: /^Cidade/ })).toHaveValue("São Paulo")
+  })
+
   test("searches and filters, telling a search without results apart from no units", async ({ page }) => {
     await signInAndOpen(page)
     await tab(page, "Unidades").click()

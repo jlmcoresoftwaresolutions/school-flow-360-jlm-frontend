@@ -1,14 +1,3 @@
-import type { OperationModel } from "@/models"
-
-// Only the codes live here; their labels are copy, translated by the page (myUnit.operationModels).
-export const operationModelValues = [
-  "PRIVATE",
-  "PUBLIC_MUNICIPAL",
-  "PUBLIC_STATE",
-  "PUBLIC_FEDERAL",
-  "MIXED",
-] as const satisfies readonly OperationModel[]
-
 export const myUnitTabs = ["overview", "branding", "units"] as const
 
 export type MyUnitTab = (typeof myUnitTabs)[number]
@@ -20,7 +9,27 @@ export const unitsSummaryLimit = 4
 
 export const notesMaxLength = 500
 
-export const displayNameMaxLength = 80
+// The backend's limits for the organization's fields.
+export const displayNameMaxLength = 100
+
+export const institutionalNameMaxLength = 60
+
+export const contactEmailMaxLength = 50
+
+export const organizationNotesMaxLength = 2000
+
+// The address fields' limits (the organization's on the backend; a unit's whole address fits in its
+// 500 characters with them too).
+export const addressMaxLengths = {
+  city: 80,
+  complement: 100,
+  district: 80,
+  number: 10,
+  street: 150,
+}
+
+// What the backend accepts as an address number: letters, digits, / . - and space ("123A", "s/n").
+export const addressNumberPattern = /^[0-9A-Za-z/ .-]*$/
 
 // The visual spec's limits for the identity files.
 export const logoRules = {
@@ -34,5 +43,3 @@ export const faviconRules = {
   maxBytes: 1024 * 1024,
   mimeTypes: ["image/x-icon", "image/vnd.microsoft.icon", "image/png", "image/svg+xml"],
 }
-
-export const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/

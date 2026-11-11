@@ -5,9 +5,8 @@ import type { ApiOrganization } from "../organizations/organizations"
 
 export type ApiSchoolUnitStatus = "ACTIVE" | "INACTIVE"
 
-// The unit entity, as GET /api/school-units lists it (and POST /api/school-units answers). Its address
-// is one free-text string, not a structured address. Whether `organization` is filled in a list item
-// is not known yet.
+// The unit entity, as POST /api/school-units answers it. Its address is one free-text string, not a
+// structured address.
 export type ApiSchoolUnit = {
   address: string | null
   contactEmail: string | null
@@ -19,8 +18,8 @@ export type ApiSchoolUnit = {
   organization?: ApiOrganization
 }
 
-// A unit's detail, what the by-id, update, deactivate and activate endpoints answer. `version` is to be
-// kept and sent back when editing, deactivating or activating.
+// A unit's detail, what the list (each item of its page), by-id, update, deactivate and activate
+// endpoints answer. `version` is to be kept and sent back when editing, deactivating or activating.
 export type SchoolUnitDetail = {
   address: string
   contactEmail: string

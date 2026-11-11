@@ -5,8 +5,9 @@ import type { DescriptionListItem } from "@/ds-components/molecules"
 import { DescriptionList } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { SchoolUnit } from "@/models"
-import { formatAddress } from "@/utils/address"
 
+import { useAddressFormatter } from "../shared/useAddressFormatter"
+import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
 export type UnitDetailsModalProps = {
@@ -22,6 +23,8 @@ export const UnitDetailsModal = (props: UnitDetailsModalProps) => {
 
   const { i18n, t } = useTranslation()
   const { statusTone, unitStatusLabel } = useStatusLabels()
+  const formatAddress = useAddressFormatter()
+  const formatPhone = usePhoneFormatter()
 
   const isActive = unit.status === "ACTIVE"
 
@@ -33,7 +36,7 @@ export const UnitDetailsModal = (props: UnitDetailsModalProps) => {
       value: <Badge tone={statusTone(unit.status)}>{unitStatusLabel(unit.status)}</Badge>,
     },
     { key: "contactEmail", label: t("myUnit.units.contactEmail"), value: unit.contactEmail },
-    { key: "contactPhone", label: t("myUnit.units.contactPhone"), value: unit.contactPhone },
+    { key: "contactPhone", label: t("myUnit.units.contactPhone"), value: formatPhone(unit.contactPhone) },
     { fullWidth: true, key: "address", label: t("myUnit.units.address"), value: formatAddress(unit.address) },
     { fullWidth: true, key: "notes", label: t("myUnit.units.notes"), value: unit.notes },
   ]
