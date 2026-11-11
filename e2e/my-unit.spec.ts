@@ -139,6 +139,11 @@ const pngSize = (bytes: Buffer) => {
 const logoFile = { buffer: makePng(128, 64), mimeType: "image/png", name: "logo.png" }
 const largeLogoFile = { buffer: makePng(2172, 724), mimeType: "image/png", name: "logo-grande.png" }
 const wideLogoFile = { buffer: makePng(400, 64), mimeType: "image/png", name: "faixa.png" }
+// A favicon the page accepts as it is (32x32 px), one it shrinks (1024x1024 px, over 512 px), and one
+// it refuses for not being square.
+const faviconFile = { buffer: makePng(32, 32), mimeType: "image/png", name: "favicon.png" }
+const largeFaviconFile = { buffer: makePng(1024, 1024), mimeType: "image/png", name: "favicon-grande.png" }
+const oblongFaviconFile = { buffer: makePng(64, 32), mimeType: "image/png", name: "favicon-retangular.png" }
 const logoDataUrl = `data:image/png;base64,${logoFile.buffer.toString("base64")}`
 
 const logoLink = (name: string) => ({
@@ -150,6 +155,8 @@ const logoLink = (name: string) => ({
 const apiBranding = {
   configured: true,
   displayName: "Colégio Horizonte",
+  favicon: logoLink("current-favicon"),
+  hasFavicon: true,
   hasLogo: true,
   hasUnpublishedChanges: false,
   logo: logoLink("current"),
@@ -157,6 +164,7 @@ const apiBranding = {
   published: true,
   publishedBranding: {
     displayName: "Colégio Horizonte",
+    favicon: logoLink("current-favicon"),
     logo: logoLink("current"),
     primaryColor: "#00285B",
     publishedAt: "2026-11-10T12:00:00Z",
@@ -196,6 +204,20 @@ const mockBrandingApi = async (page: Page, mock: OrganizationMock, options: Bran
     }
     return route.fulfill(answer())
   })
+  await page.route("**/api/organizations/current/branding/favicon", (route) => {
+    mock.brandingCalls.push({
+      body: pngSize(route.request().postDataBuffer() ?? Buffer.alloc(0)),
+      method: "POST",
+      path: "favicon",
+    })
+    branding = {
+      ...branding,
+      favicon: logoLink("new-favicon"),
+      hasUnpublishedChanges: true,
+      version: branding.version + 1,
+    }
+    return route.fulfill(answer())
+  })
   await page.route("**/api/organizations/current/branding/logo", (route) => {
     mock.brandingCalls.push({
       body: pngSize(route.request().postDataBuffer() ?? Buffer.alloc(0)),
@@ -217,6 +239,7 @@ const mockBrandingApi = async (page: Page, mock: OrganizationMock, options: Bran
       published: true,
       publishedBranding: {
         displayName: branding.displayName,
+        favicon: branding.favicon,
         logo: branding.logo,
         primaryColor: branding.primaryColor,
         publishedAt: new Date().toISOString(),
@@ -608,17 +631,20 @@ test.describe("visual identity", () => {
     await expect(save).toBeDisabled()
   })
 
-  test("saves the draft with the organization's name, sends the logo and publishes, in one go", async ({ page }) => {
+  test("saves the draft with the organization's name, sends the logo and the favicon and publishes, in one go", async ({
+    page,
+  }) => {
     const organizationMock = await signInAndOpen(page)
     await tab(page, "Identidade visual").click()
 
-    // The name is the organization's, edited in the overview, not here; there is no favicon.
+    // The name is the organization's, edited in the overview, not here.
     await expect(page.getByRole("img", { name: "Pré-visualização" })).toContainText("Colégio Horizonte")
     await expect(page.getByRole("textbox", { name: /^Nome de exibição/ })).toHaveCount(0)
-    await expect(page.getByLabel("Favicon")).toHaveCount(0)
 
     await page.getByLabel("Logo").setInputFiles(logoFile)
     await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
+    await page.getByLabel("Favicon").setInputFiles(faviconFile)
+    await expect(page.getByText(/Novo arquivo: favicon\.png/)).toBeVisible()
     await page.getByRole("button", { name: "Salvar e publicar" }).click()
 
     await expect(page.getByText("Identidade visual publicada.")).toBeVisible()
@@ -629,7 +655,8 @@ test.describe("visual identity", () => {
         path: "branding",
       },
       { body: { height: 64, width: 128 }, method: "POST", path: "logo" },
-      { body: { version: 4 }, method: "POST", path: "publish" },
+      { body: { height: 32, width: 32 }, method: "POST", path: "favicon" },
+      { body: { version: 5 }, method: "POST", path: "publish" },
     ])
 
     // The overview's header shows the newly published logo.
@@ -670,6 +697,28 @@ test.describe("visual identity", () => {
       method: "POST",
       path: "logo",
     })
+  })
+
+  test("refuses a favicon that is not square, and shrinks one larger than the maximum", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+    await tab(page, "Identidade visual").click()
+
+    await page.getByLabel("Favicon").setInputFiles(oblongFaviconFile)
+    await expect(page.getByText("O favicon precisa ser quadrado: a mesma medida de largura e de altura.")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Salvar e publicar" })).toBeDisabled()
+
+    await page.getByLabel("Favicon").setInputFiles(largeFaviconFile)
+    await expect(
+      page.getByRole("status").filter({
+        hasText:
+          "A imagem tinha 1024 × 1024 px e foi reduzida para 512 × 512 px, porque o máximo é 512 px de largura e de altura. A proporção foi mantida.",
+      }),
+    ).toBeVisible()
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+
+    await expect(page.getByText("Identidade visual publicada.")).toBeVisible()
+    expect(organizationMock.brandingCalls.map((call) => call.path)).toEqual(["branding", "favicon", "publish"])
+    expect(organizationMock.brandingCalls[1].body).toEqual({ height: 512, width: 512 })
   })
 
   test("refuses a logo too small to be enlarged", async ({ page }) => {

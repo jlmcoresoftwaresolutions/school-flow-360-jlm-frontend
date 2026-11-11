@@ -48,23 +48,25 @@ export type OrganizationUpdate = Partial<
 >
 
 // The visual identity belongs to the organization in the MVP (no per-unit branding). The backend keeps
-// a draft and publishes it: the colors and `logoUrl` are the draft's, `publishedLogoUrl` the logo the
-// users see. `hasUnpublishedChanges` is true when the draft differs from what is published (or
-// nothing was saved yet). The logo URLs are temporary links (5 minutes): use them to show the image,
+// a draft and publishes it: the colors, `logoUrl` and `faviconUrl` are the draft's, `publishedLogoUrl`
+// the logo the users see. `hasUnpublishedChanges` is true when the draft differs from what is published (or
+// nothing was saved yet). The image URLs are temporary links (5 minutes): use them to show the image,
 // never keep them. The name shown with it is the organization's displayName.
 export type OrganizationBranding = {
   hasUnpublishedChanges: boolean
   primaryColor: string
   secondaryColor: string
+  faviconUrl?: string
   logoUrl?: string
   publishedLogoUrl?: string
 }
 
-// What saving the identity sends: the colors, and a new logo as a file (without one the current logo
-// is kept; removing it is not offered while DP-P1-07 is open). There is no favicon on the backend.
+// What saving the identity sends: the colors, and a new logo or favicon as a file (without one the
+// current image is kept; removing it is not offered while DP-P1-07 is open).
 export type OrganizationBrandingUpdate = {
   primaryColor: string
   secondaryColor: string
+  favicon?: File
   logo?: File
 }
 

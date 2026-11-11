@@ -40,3 +40,13 @@ export const logoRules = {
   mimeTypes: ["image/png", "image/jpeg"],
   minSide: 64,
 }
+
+// The backend's limits for the favicon: PNG or JPEG, up to 512 KB, square, 16 to 512 px a side.
+export const faviconRules = {
+  extensions: [".png", ".jpg", ".jpeg"],
+  maxAspectRatio: 1,
+  maxBytes: 512 * 1024,
+  maxSide: 512,
+  mimeTypes: ["image/png", "image/jpeg"],
+  minSide: 16,
+}

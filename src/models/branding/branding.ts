@@ -7,20 +7,23 @@ export type PublishedBrandingResponse = {
   primaryColor: string
   publishedAt: string
   secondaryColor: string | null
+  favicon?: OrganizationFileLink | null
   logo?: OrganizationFileLink | null
 }
 
-// GET/PUT .../current/branding and the publish and logo endpoints answer this: the DRAFT plus its
-// publication state. When nothing was saved yet (`configured` false) the other fields come empty and
-// `version` is null. `hasUnpublishedChanges` says the draft differs from the published copy (enable
-// the Publish button). The logo link is temporary.
+// GET/PUT .../current/branding and the publish, logo and favicon endpoints answer this: the DRAFT plus
+// its publication state. When nothing was saved yet (`configured` false) the other fields come empty
+// and `version` is null. `hasUnpublishedChanges` says the draft differs from the published copy (enable
+// the Publish button). The logo and favicon links are temporary.
 export type BrandingResponse = {
   configured: boolean
+  hasFavicon: boolean
   hasLogo: boolean
   hasUnpublishedChanges: boolean
   published: boolean
   version: number | null
   displayName?: string | null
+  favicon?: OrganizationFileLink | null
   logo?: OrganizationFileLink | null
   primaryColor?: string | null
   publishedBranding?: PublishedBrandingResponse | null
