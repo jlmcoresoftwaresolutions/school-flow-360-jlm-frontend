@@ -141,6 +141,7 @@ export const ptBR = {
       currentOrganization: "Organização em uso",
       displayName: "Nome de exibição",
       displayNameHelper: "Como a organização aparece no sistema.",
+      faviconAlt: "Favicon de {{name}}",
       institutionalName: "Nome institucional",
       institutionalTitle: "Dados institucionais",
       logoAlt: "Logo de {{name}}",

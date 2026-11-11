@@ -164,6 +164,7 @@ const toBranding = (branding: BrandingResponse): OrganizationBranding => ({
   hasUnpublishedChanges: !branding.configured || branding.hasUnpublishedChanges,
   logoUrl: branding.logo?.url ?? undefined,
   primaryColor: branding.primaryColor || defaultPrimaryColor,
+  publishedFaviconUrl: branding.publishedBranding?.favicon?.url ?? undefined,
   publishedLogoUrl: branding.publishedBranding?.logo?.url ?? undefined,
   secondaryColor: branding.secondaryColor || defaultSecondaryColor,
 })

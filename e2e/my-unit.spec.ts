@@ -603,10 +603,14 @@ test.describe("overview", () => {
 })
 
 test.describe("visual identity", () => {
-  test("shows the published logo in the overview's header", async ({ page }) => {
+  test("shows the published logo and favicon in the overview's header", async ({ page }) => {
     await signInAndOpen(page)
 
     await expect(page.getByRole("img", { name: "Logo de Colégio Horizonte" })).toHaveAttribute("src", /#current$/)
+    await expect(page.getByRole("img", { name: "Favicon de Colégio Horizonte" })).toHaveAttribute(
+      "src",
+      /#current-favicon$/,
+    )
   })
 
   test("refuses a logo the backend wouldn't take, before sending it", async ({ page }) => {
@@ -659,9 +663,13 @@ test.describe("visual identity", () => {
       { body: { version: 5 }, method: "POST", path: "publish" },
     ])
 
-    // The overview's header shows the newly published logo.
+    // The overview's header shows the newly published logo and favicon.
     await tab(page, "Visão geral").click()
     await expect(page.getByRole("img", { name: "Logo de Colégio Horizonte" })).toHaveAttribute("src", /#new$/)
+    await expect(page.getByRole("img", { name: "Favicon de Colégio Horizonte" })).toHaveAttribute(
+      "src",
+      /#new-favicon$/,
+    )
   })
 
   test("publishes a saved draft that was never published, as it is", async ({ page }) => {
