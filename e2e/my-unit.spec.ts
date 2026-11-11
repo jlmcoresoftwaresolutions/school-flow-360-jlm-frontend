@@ -1,11 +1,11 @@
+import { deflateSync } from "node:zlib"
+
 import { expect, type Page, test } from "@playwright/test"
 
-// Minha Unidade is being wired to the backend a call at a time: the organization (read and saved) and
-// the unit list come from the backend, the rest still from the mocked
+// Minha Unidade is being wired to the backend a call at a time: the organization, its visual identity
+// and the unit list come from the backend, the units' create/edit/inactivate still from the mocked
 // organization service (services/organization). Everything on the network (login, the organization,
-// the unit list, the CEP lookup) is mocked here. The service's mock reads a sessionStorage key to fail
-// its calls (the error state); the empty state is an empty list.
-const mockScenarioKey = "sf360.mockScenario"
+// the identity, the unit list, the CEP lookup) is mocked here; the empty state is an empty list.
 
 // The backend's organization, in its own field names.
 const apiOrganization = {
@@ -42,21 +42,33 @@ const apiAnswer = (data: unknown) => ({
   contentType: "application/json",
 })
 
-// What the page sent in each save of the organization, for a test to check.
-type OrganizationMock = { saves: Record<string, unknown>[] }
+// What the page sent: each save of the organization, and each call to the identity's endpoints.
+type OrganizationMock = {
+  brandingCalls: { body: unknown; method: string; path: string }[]
+  saves: Record<string, unknown>[]
+}
 
 // The organization endpoints, keeping what is saved like the backend does: a save REPLACES every
 // editable field with the body's (one left out becomes null). "conflict" refuses every save as the
 // backend does when someone else changed the organization first, which a new read shows.
 const mockOrganizationApi = async (
   page: Page,
-  scenario?: "conflict",
+  scenario?: "conflict" | "error",
   overrides: Partial<typeof apiOrganization> = {},
 ): Promise<OrganizationMock> => {
-  const mock: OrganizationMock = { saves: [] }
+  const mock: OrganizationMock = { brandingCalls: [], saves: [] }
   let organization = { ...apiOrganization, ...overrides }
+  // "error": the first read fails, as a backend that is down would; the next one (a retry) works.
+  let failNextRead = scenario === "error"
 
-  await page.route("**/api/organizations/current/editable", (route) => route.fulfill(apiAnswer(organization)))
+  await page.route("**/api/organizations/current/editable", (route) => {
+    if (failNextRead) {
+      failNextRead = false
+      return route.fulfill({ body: JSON.stringify({ message: "Unavailable." }), status: 500 })
+    }
+
+    return route.fulfill(apiAnswer(organization))
+  })
   await page.route("**/api/organizations/current", (route) => {
     const body = route.request().postDataJSON() as Record<string, unknown>
     mock.saves.push(body)
@@ -75,6 +87,144 @@ const mockOrganizationApi = async (
   })
 
   return mock
+}
+
+// A plain PNG of the given size, made here so a test can use any dimensions.
+const crcTable = Array.from({ length: 256 }, (_, index) => {
+  let value = index
+  for (let bit = 0; bit < 8; bit += 1) value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1
+  return value >>> 0
+})
+
+const crc32 = (bytes: Buffer) => {
+  let value = 0xffffffff
+  for (const byte of bytes) value = crcTable[(value ^ byte) & 0xff] ^ (value >>> 8)
+  return (value ^ 0xffffffff) >>> 0
+}
+
+const pngChunk = (type: string, data: Buffer) => {
+  const length = Buffer.alloc(4)
+  length.writeUInt32BE(data.length)
+  const typeAndData = Buffer.concat([Buffer.from(type, "ascii"), data])
+  const crc = Buffer.alloc(4)
+  crc.writeUInt32BE(crc32(typeAndData))
+  return Buffer.concat([length, typeAndData, crc])
+}
+
+const makePng = (width: number, height: number) => {
+  const header = Buffer.alloc(13)
+  header.writeUInt32BE(width, 0)
+  header.writeUInt32BE(height, 4)
+  header.writeUInt8(8, 8) // 8 bits per channel
+  header.writeUInt8(2, 9) // RGB
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(width * 3, 0x40)])
+  const pixels = deflateSync(Buffer.concat(Array.from({ length: height }, () => row)))
+
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", pixels),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ])
+}
+
+// The size a PNG says it has (its IHDR), to check what was uploaded.
+const pngSize = (bytes: Buffer) => {
+  const header = bytes.indexOf("IHDR")
+  return { height: bytes.readUInt32BE(header + 8), width: bytes.readUInt32BE(header + 4) }
+}
+
+// A logo the page accepts as it is (128x64 px), one it shrinks (2172x724 px, wider than 2048 px), and
+// one it refuses for its ratio (400x64 px, over 4:1).
+const logoFile = { buffer: makePng(128, 64), mimeType: "image/png", name: "logo.png" }
+const largeLogoFile = { buffer: makePng(2172, 724), mimeType: "image/png", name: "logo-grande.png" }
+const wideLogoFile = { buffer: makePng(400, 64), mimeType: "image/png", name: "faixa.png" }
+const logoDataUrl = `data:image/png;base64,${logoFile.buffer.toString("base64")}`
+
+const logoLink = (name: string) => ({
+  expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+  url: `${logoDataUrl}#${name}`,
+})
+
+// The backend's identity: a draft, published as it is.
+const apiBranding = {
+  configured: true,
+  displayName: "Colégio Horizonte",
+  hasLogo: true,
+  hasUnpublishedChanges: false,
+  logo: logoLink("current"),
+  primaryColor: "#00285B",
+  published: true,
+  publishedBranding: {
+    displayName: "Colégio Horizonte",
+    logo: logoLink("current"),
+    primaryColor: "#00285B",
+    publishedAt: "2026-11-10T12:00:00Z",
+    secondaryColor: "#F58220",
+  },
+  secondaryColor: "#F58220",
+  version: 2,
+}
+
+type BrandingOptions = {
+  // The identity as the backend answers it at first.
+  branding?: Partial<typeof apiBranding>
+  // A status the logo upload answers with (503: file storage turned off).
+  logoStatus?: number
+}
+
+// The identity's endpoints, keeping what is saved like the backend does: a draft, a logo, and the
+// publication copying the draft.
+const mockBrandingApi = async (page: Page, mock: OrganizationMock, options: BrandingOptions) => {
+  let branding = { ...apiBranding, ...options.branding }
+
+  const answer = () => apiAnswer(branding)
+
+  await page.route("**/api/organizations/current/branding", (route) => {
+    const request = route.request()
+    if (request.method() === "GET") return route.fulfill(answer())
+
+    const body = request.postDataJSON() as Record<string, unknown>
+    mock.brandingCalls.push({ body, method: "PUT", path: "branding" })
+    branding = {
+      ...branding,
+      displayName: String(body.displayName),
+      hasUnpublishedChanges: true,
+      primaryColor: String(body.primaryColor),
+      secondaryColor: String(body.secondaryColor),
+      version: branding.version + 1,
+    }
+    return route.fulfill(answer())
+  })
+  await page.route("**/api/organizations/current/branding/logo", (route) => {
+    mock.brandingCalls.push({
+      body: pngSize(route.request().postDataBuffer() ?? Buffer.alloc(0)),
+      method: "POST",
+      path: "logo",
+    })
+    if (options.logoStatus) {
+      return route.fulfill({ body: JSON.stringify({ message: "Refused." }), status: options.logoStatus })
+    }
+
+    branding = { ...branding, hasUnpublishedChanges: true, logo: logoLink("new"), version: branding.version + 1 }
+    return route.fulfill(answer())
+  })
+  await page.route("**/api/organizations/current/branding/publish", (route) => {
+    mock.brandingCalls.push({ body: route.request().postDataJSON(), method: "POST", path: "publish" })
+    branding = {
+      ...branding,
+      hasUnpublishedChanges: false,
+      published: true,
+      publishedBranding: {
+        displayName: branding.displayName,
+        logo: branding.logo,
+        primaryColor: branding.primaryColor,
+        publishedAt: new Date().toISOString(),
+        secondaryColor: branding.secondaryColor,
+      },
+    }
+    return route.fulfill(answer())
+  })
 }
 
 // The backend's units: one free-text address, ACTIVE/INACTIVE.
@@ -121,13 +271,15 @@ const signInAndOpen = async (
   page: Page,
   scenario?: "conflict" | "error" | "no-units",
   organization: Partial<typeof apiOrganization> = {},
+  brandingOptions: BrandingOptions = {},
 ) => {
   const units = scenario === "no-units" ? [] : apiSchoolUnits
   const organizationMock = await mockOrganizationApi(
     page,
-    scenario === "conflict" ? "conflict" : undefined,
+    scenario === "conflict" || scenario === "error" ? scenario : undefined,
     organization,
   )
+  await mockBrandingApi(page, organizationMock, brandingOptions)
 
   await page.route("**/api/school-units?*", (route) =>
     route.fulfill({
@@ -140,18 +292,6 @@ const signInAndOpen = async (
       contentType: "application/json",
     }),
   )
-
-  if (scenario === "error") {
-    await page.addInitScript(
-      (entry) => {
-        if (!sessionStorage.getItem("sf360.scenarioSet")) {
-          sessionStorage.setItem(entry.key, entry.value)
-          sessionStorage.setItem("sf360.scenarioSet", "1")
-        }
-      },
-      { key: mockScenarioKey, value: "error" },
-    )
-  }
 
   await page.route("**/api/auth/login", (route) =>
     route.fulfill({
@@ -422,7 +562,6 @@ test.describe("overview", () => {
 
     await expect(page.getByText("Não foi possível carregar os dados da organização.")).toBeVisible()
 
-    await page.evaluate((key) => sessionStorage.removeItem(key), mockScenarioKey)
     await page.getByRole("button", { name: "Tentar novamente" }).click()
 
     await expect(page.getByRole("heading", { level: 2, name: "Colégio Horizonte" })).toBeVisible()
@@ -440,51 +579,132 @@ test.describe("overview", () => {
   })
 })
 
-// A tiny valid PNG (1x1), for a logo the page accepts.
-const pngFile = {
-  buffer: Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
-    "base64",
-  ),
-  mimeType: "image/png",
-  name: "logo.png",
-}
-
 test.describe("visual identity", () => {
-  test("previews with the organization's display name, refuses an invalid file and saves a valid one", async ({
-    page,
-  }) => {
+  test("shows the published logo in the overview's header", async ({ page }) => {
+    await signInAndOpen(page)
+
+    await expect(page.getByRole("img", { name: "Logo de Colégio Horizonte" })).toHaveAttribute("src", /#current$/)
+  })
+
+  test("refuses a logo the backend wouldn't take, before sending it", async ({ page }) => {
     await signInAndOpen(page)
     await tab(page, "Identidade visual").click()
 
-    // The name is the organization's, edited in the overview, not here.
-    await expect(page.getByRole("img", { name: "Pré-visualização" })).toContainText("Colégio Horizonte")
-    await expect(page.getByRole("textbox", { name: /^Nome de exibição/ })).toHaveCount(0)
-
-    const save = page.getByRole("button", { name: "Salvar alterações" })
+    const save = page.getByRole("button", { name: "Salvar e publicar" })
     await expect(save).toBeDisabled()
+
     await page
       .getByLabel("Logo")
       .setInputFiles({ buffer: Buffer.from("text"), mimeType: "text/plain", name: "logo.txt" })
-    await expect(page.getByText("Formato de arquivo não aceito.")).toBeVisible()
-    await expect(save).toBeDisabled()
+    await expect(page.getByText("Formato de arquivo não aceito. Use PNG ou JPG.")).toBeVisible()
 
-    await page.getByLabel("Logo").setInputFiles(pngFile)
+    await page.getByLabel("Logo").setInputFiles({ ...logoFile, mimeType: "image/svg+xml", name: "logo.svg" })
+    await expect(page.getByText("Formato de arquivo não aceito. Use PNG ou JPG.")).toBeVisible()
+
+    await page.getByLabel("Logo").setInputFiles(wideLogoFile)
+    await expect(
+      page.getByText("A imagem pode ser no máximo 4 vezes mais larga que alta (ou o contrário)."),
+    ).toBeVisible()
+    await expect(save).toBeDisabled()
+  })
+
+  test("saves the draft with the organization's name, sends the logo and publishes, in one go", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+    await tab(page, "Identidade visual").click()
+
+    // The name is the organization's, edited in the overview, not here; there is no favicon.
+    await expect(page.getByRole("img", { name: "Pré-visualização" })).toContainText("Colégio Horizonte")
+    await expect(page.getByRole("textbox", { name: /^Nome de exibição/ })).toHaveCount(0)
+    await expect(page.getByLabel("Favicon")).toHaveCount(0)
+
+    await page.getByLabel("Logo").setInputFiles(logoFile)
     await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
-    await save.click()
-    await expect(page.getByText("Identidade visual atualizada.")).toBeVisible()
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+
+    await expect(page.getByText("Identidade visual publicada.")).toBeVisible()
+    expect(organizationMock.brandingCalls).toEqual([
+      {
+        body: { displayName: "Colégio Horizonte", primaryColor: "#00285B", secondaryColor: "#F58220", version: 2 },
+        method: "PUT",
+        path: "branding",
+      },
+      { body: { height: 64, width: 128 }, method: "POST", path: "logo" },
+      { body: { version: 4 }, method: "POST", path: "publish" },
+    ])
+
+    // The overview's header shows the newly published logo.
+    await tab(page, "Visão geral").click()
+    await expect(page.getByRole("img", { name: "Logo de Colégio Horizonte" })).toHaveAttribute("src", /#new$/)
+  })
+
+  test("publishes a saved draft that was never published, as it is", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page, undefined, {}, { branding: { hasUnpublishedChanges: true } })
+    await tab(page, "Identidade visual").click()
+
+    await expect(
+      page.getByText("Há uma versão salva que ainda não foi publicada. Publique para aplicá-la."),
+    ).toBeVisible()
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+
+    await expect(page.getByText("Identidade visual publicada.")).toBeVisible()
+    expect(organizationMock.brandingCalls.map((call) => call.path)).toEqual(["branding", "publish"])
+  })
+
+  test("shrinks a logo larger than the maximum, saying so, and sends the shrunk one", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+    await tab(page, "Identidade visual").click()
+
+    await page.getByLabel("Logo").setInputFiles(largeLogoFile)
+
+    await expect(
+      page.getByRole("status").filter({
+        hasText:
+          "A imagem tinha 2172 × 724 px e foi reduzida para 2048 × 683 px, porque o máximo é 2048 px de largura e de altura. A proporção foi mantida.",
+      }),
+    ).toBeVisible()
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+
+    await expect(page.getByText("Identidade visual publicada.")).toBeVisible()
+    expect(organizationMock.brandingCalls[1]).toEqual({
+      body: { height: 683, width: 2048 },
+      method: "POST",
+      path: "logo",
+    })
+  })
+
+  test("refuses a logo too small to be enlarged", async ({ page }) => {
+    await signInAndOpen(page)
+    await tab(page, "Identidade visual").click()
+
+    await page.getByLabel("Logo").setInputFiles({ ...logoFile, buffer: makePng(300, 50), name: "pequeno.png" })
+
+    await expect(page.getByText("A imagem precisa ter pelo menos 64 px de largura e de altura.")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Salvar e publicar" })).toBeDisabled()
+  })
+
+  test("says so when file storage is off, keeping the change on screen", async ({ page }) => {
+    await signInAndOpen(page, undefined, {}, { logoStatus: 503 })
+    await tab(page, "Identidade visual").click()
+
+    await page.getByLabel("Logo").setInputFiles(logoFile)
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+
+    await expect(
+      page.getByText("O envio de arquivos está indisponível no momento. Tente novamente mais tarde."),
+    ).toBeVisible()
+    await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
   })
 
   test("discards a change, going back to the current identity", async ({ page }) => {
     await signInAndOpen(page)
     await tab(page, "Identidade visual").click()
 
-    await page.getByLabel("Logo").setInputFiles(pngFile)
+    await page.getByLabel("Logo").setInputFiles(logoFile)
     await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
     await page.getByRole("button", { name: "Descartar alterações" }).click()
 
     await expect(page.getByText(/Novo arquivo: logo\.png/)).toHaveCount(0)
-    await expect(page.getByRole("button", { name: "Salvar alterações" })).toBeDisabled()
+    await expect(page.getByRole("button", { name: "Salvar e publicar" })).toBeDisabled()
   })
 })
 

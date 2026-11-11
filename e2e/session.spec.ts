@@ -4,6 +4,18 @@ import { expect, type Page, test } from "@playwright/test"
 // it is sent, so a test can hand out a session that ends a few seconds later.
 const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
   const lengths = [...sessionLengthsMs]
+  // Minha Unidade reads the visual identity from the backend; nothing saved yet is enough here.
+  await page.route("**/api/organizations/current/branding", (route) =>
+    route.fulfill({
+      body: JSON.stringify({
+        data: { configured: false, hasLogo: false, hasUnpublishedChanges: false, published: false, version: null },
+        message: "",
+        status: "Success",
+        tenantId: "schoolflow_demo",
+      }),
+      contentType: "application/json",
+    }),
+  )
   // Minha Unidade reads the organization from the backend.
   await page.route("**/api/organizations/current/editable", (route) =>
     route.fulfill({

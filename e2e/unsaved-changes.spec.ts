@@ -19,6 +19,18 @@ const openDetailsForm = async (page: Page) => {
     }),
   )
   await page.route("**/api/auth/logout", (route) => route.fulfill({ body: "{}", contentType: "application/json" }))
+  // Minha Unidade reads the visual identity from the backend; nothing saved yet is enough here.
+  await page.route("**/api/organizations/current/branding", (route) =>
+    route.fulfill({
+      body: JSON.stringify({
+        data: { configured: false, hasLogo: false, hasUnpublishedChanges: false, published: false, version: null },
+        message: "",
+        status: "Success",
+        tenantId: "schoolflow_demo",
+      }),
+      contentType: "application/json",
+    }),
+  )
   // Minha Unidade reads the organization from the backend.
   await page.route("**/api/organizations/current/editable", (route) =>
     route.fulfill({

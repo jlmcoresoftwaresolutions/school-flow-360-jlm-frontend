@@ -1,4 +1,6 @@
+import { colors } from "@/foundation"
 import type {
+  BrandingResponse,
   Organization,
   OrganizationBranding,
   OrganizationBrandingUpdate,
@@ -14,27 +16,26 @@ import { defaultCountry, toCountry } from "@/utils/countries"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { toInternationalPhone } from "@/utils/phone"
 
+import { getBrandingDraft, publishBranding, saveBrandingDraft, uploadBrandingLogo } from "../branding"
 import type { RequestConfig } from "../httpClient"
 import { getCurrentOrganizationEditable, updateCurrentOrganization } from "../organizations"
 import { searchSchoolUnits } from "../schoolUnits"
-import { mockBranding } from "./organization.mock"
 
 // The page-facing layer of Minha Unidade: it answers in the frontend's shapes (models/organization).
 // The API-shaped services, one function per backend endpoint, are organizations, schoolUnits, branding
 // and the others beside this folder; the calls here are being moved onto them one at a time. Wired:
-// reading the organization and saving its name and contacts (through organizations), and listing the
-// units (listSchoolUnits, through schoolUnits). Still MOCK: the branding and the units' create, edit
-// and inactivate answer from in-memory demo data (organization.mock.ts) with a simulated delay. The
-// signatures are the final ones: wiring a call only changes its body (mapping the backend's field
-// names), not the page.
+// the organization (organizations), its visual identity (branding) and listing the units
+// (schoolUnits). Still MOCK: the units' create, edit and inactivate, which act on the fetched list in
+// memory with a simulated delay. The signatures are the final ones: wiring a call only changes its
+// body (mapping the backend's field names), not the page.
 
 // The organization as the backend last answered it (read or saved), kept for the next save: the backend
 // replaces EVERY editable field with what the body brings (one missing becomes null), so each save
 // sends all of them, these with the section's changes on top. It also carries the `version` the
 // backend asks back, answering 409 when someone else changed the organization since.
 let currentOrganization: OrganizationEditable | null = null
-// A copy, so a caller changing what it got never changes the "stored" data.
-let branding = structuredClone(mockBranding)
+// The visual identity as the backend last answered it, for the `version` the next save sends back.
+let currentBranding: BrandingResponse | null = null
 // The units the mocked create/edit/inactivate work on: the real list, as last fetched, so those
 // actions apply to the units on screen (locally only - lost on reload) until they are wired too.
 let schoolUnits: SchoolUnit[] = []
@@ -72,15 +73,6 @@ const mockRequest = async <T>(answer: () => T, config?: RequestConfig): Promise<
     if (showLoading) stopLoading()
   }
 }
-
-// A data URL rather than an object URL, so it survives being copied and never needs revoking.
-const readFileAsDataUrl = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(String(reader.result))
-    reader.onerror = () => reject(reader.error ?? new Error("Could not read the file"))
-    reader.readAsDataURL(file)
-  })
 
 // The backend keeps the country as free text: a code or a name ("Brasil") is read as the country's
 // code, and anything else as unknown (empty), which the save then leaves untouched. The phone comes as
@@ -157,25 +149,59 @@ export const updateOrganization = async (update: OrganizationUpdate, config?: Re
   )
 }
 
-export const getBranding = (config?: RequestConfig): Promise<OrganizationBranding> =>
-  mockRequest(() => branding, config)
+// The app's own colors, shown (and saved, if the admin keeps them) while nothing was saved yet.
+const defaultPrimaryColor = colors.primary[900]
+const defaultSecondaryColor = colors.primary[500]
 
+const toBranding = (branding: BrandingResponse): OrganizationBranding => ({
+  hasUnpublishedChanges: !branding.configured || branding.hasUnpublishedChanges,
+  logoUrl: branding.logo?.url ?? undefined,
+  primaryColor: branding.primaryColor || defaultPrimaryColor,
+  publishedLogoUrl: branding.publishedBranding?.logo?.url ?? undefined,
+  secondaryColor: branding.secondaryColor || defaultSecondaryColor,
+})
+
+const keepBranding = (branding: BrandingResponse): OrganizationBranding => {
+  currentBranding = branding
+
+  return toBranding(branding)
+}
+
+// The draft and its publication state (ADMIN only).
+export const getBranding = async (config?: RequestConfig): Promise<OrganizationBranding> =>
+  keepBranding(await getBrandingDraft(config))
+
+// Saves and publishes the identity in one go, as the page has a single "save" for it: the draft (with
+// the organization's display name, which the backend asks for its own copy of), then the new logo if
+// there is one, then the publication. Each step keeps the backend's answer, so after a failure midway
+// (a logo refused, file storage off) the next save goes on from the right `version`. A 409 means
+// someone else changed the identity since it was read: read it again (getBranding).
 export const updateBranding = async (
   update: OrganizationBrandingUpdate,
   config?: RequestConfig,
 ): Promise<OrganizationBranding> => {
-  const logoUrl = update.logo ? await readFileAsDataUrl(update.logo) : branding.logoUrl
-  const faviconUrl = update.favicon ? await readFileAsDataUrl(update.favicon) : branding.faviconUrl
+  const displayName = currentOrganization?.orgName?.trim() || currentBranding?.displayName?.trim()
+  if (!displayName) throw new Error("The organization's display name is needed to save its identity")
 
-  return mockRequest(() => {
-    branding = {
-      faviconUrl,
-      logoUrl,
+  let branding = await saveBrandingDraft(
+    {
+      displayName,
       primaryColor: update.primaryColor,
       secondaryColor: update.secondaryColor,
-    }
-    return branding
-  }, config)
+      version: currentBranding?.version ?? undefined,
+    },
+    config,
+  )
+  keepBranding(branding)
+
+  if (update.logo) {
+    branding = await uploadBrandingLogo(update.logo, config)
+    keepBranding(branding)
+  }
+
+  if (branding.version === null) throw new Error("The saved draft came without a version")
+
+  return keepBranding(await publishBranding({ version: branding.version }, config))
 }
 
 // The backend's largest page: the whole list comes in as few requests as possible.

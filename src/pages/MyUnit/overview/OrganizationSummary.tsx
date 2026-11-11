@@ -12,7 +12,7 @@ export type OrganizationSummaryProps = {
 }
 
 // The organization in use, at the top of the overview's main card, so nobody takes it for another one
-// (AC-F1-01): its logo,
+// (AC-F1-01): its logo (the published one, what everybody sees),
 // display name and institutional name, its status (worded as the organization's, not a unit's) and its
 // operation model.
 export const OrganizationSummary = (props: OrganizationSummaryProps) => {
@@ -24,8 +24,11 @@ export const OrganizationSummary = (props: OrganizationSummaryProps) => {
   return (
     <OrganizationSummaryLayout>
       <LogoBox>
-        {branding.logoUrl ? (
-          <LogoImage alt={t("myUnit.overview.logoAlt", { name: organization.displayName })} src={branding.logoUrl} />
+        {branding.publishedLogoUrl ? (
+          <LogoImage
+            alt={t("myUnit.overview.logoAlt", { name: organization.displayName })}
+            src={branding.publishedLogoUrl}
+          />
         ) : (
           <Icon color="muted" name="building-outline" size={40} />
         )}
