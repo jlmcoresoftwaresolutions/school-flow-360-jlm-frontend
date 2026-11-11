@@ -143,6 +143,7 @@ export const fr: TranslationResource = {
       currentOrganization: "Organisation utilisée",
       displayName: "Nom affiché",
       displayNameHelper: "Comment l'organisation apparaît dans le système.",
+      faviconAlt: "Favicon de {{name}}",
       institutionalName: "Nom institutionnel",
       institutionalTitle: "Données institutionnelles",
       logoAlt: "Logo de {{name}}",

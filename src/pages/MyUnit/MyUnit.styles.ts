@@ -97,6 +97,33 @@ export const LogoBox = styled.div`
   width: ${spacing[192]};
 `
 
+// The published logo and favicon, side by side at the start of the overview's header.
+export const BrandImages = styled.div`
+  display: flex;
+  flex-shrink: 0;
+  gap: ${spacing[12]};
+`
+
+// The favicon's frame: the logo's look, square.
+export const FaviconBox = styled.div`
+  align-items: center;
+  background: ${colors.neutral[50]};
+  border: 1px solid ${colors.neutral[200]};
+  border-radius: ${radius.lg};
+  display: flex;
+  flex-shrink: 0;
+  height: ${spacing[80]};
+  justify-content: center;
+  width: ${spacing[80]};
+`
+
+// A favicon is drawn for 16-32 px; 48 px shows it clearly without blowing up a small one.
+export const FaviconImage = styled.img`
+  height: ${spacing[48]};
+  object-fit: contain;
+  width: ${spacing[48]};
+`
+
 export const LogoImage = styled.img`
   max-height: 100%;
   max-width: 100%;

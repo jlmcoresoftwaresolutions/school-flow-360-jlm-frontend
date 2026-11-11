@@ -3,7 +3,16 @@ import { useTranslation } from "react-i18next"
 import { Badge, Icon, Text } from "@/ds-components/atoms"
 import type { Organization, OrganizationBranding } from "@/models"
 
-import { InlineGroup, LogoBox, LogoImage, OrganizationSummaryLayout, OrganizationSummaryText } from "../MyUnit.styles"
+import {
+  BrandImages,
+  FaviconBox,
+  FaviconImage,
+  InlineGroup,
+  LogoBox,
+  LogoImage,
+  OrganizationSummaryLayout,
+  OrganizationSummaryText,
+} from "../MyUnit.styles"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
 export type OrganizationSummaryProps = {
@@ -12,7 +21,7 @@ export type OrganizationSummaryProps = {
 }
 
 // The organization in use, at the top of the overview's main card, so nobody takes it for another one
-// (AC-F1-01): its logo (the published one, what everybody sees),
+// (AC-F1-01): its logo and favicon (the published ones, what everybody sees),
 // display name and institutional name, its status (worded as the organization's, not a unit's) and its
 // operation model.
 export const OrganizationSummary = (props: OrganizationSummaryProps) => {
@@ -23,16 +32,28 @@ export const OrganizationSummary = (props: OrganizationSummaryProps) => {
 
   return (
     <OrganizationSummaryLayout>
-      <LogoBox>
-        {branding.publishedLogoUrl ? (
-          <LogoImage
-            alt={t("myUnit.overview.logoAlt", { name: organization.displayName })}
-            src={branding.publishedLogoUrl}
-          />
-        ) : (
-          <Icon color="muted" name="building-outline" size={40} />
-        )}
-      </LogoBox>
+      <BrandImages>
+        <LogoBox>
+          {branding.publishedLogoUrl ? (
+            <LogoImage
+              alt={t("myUnit.overview.logoAlt", { name: organization.displayName })}
+              src={branding.publishedLogoUrl}
+            />
+          ) : (
+            <Icon color="muted" name="building-outline" size={40} />
+          )}
+        </LogoBox>
+        <FaviconBox>
+          {branding.publishedFaviconUrl ? (
+            <FaviconImage
+              alt={t("myUnit.overview.faviconAlt", { name: organization.displayName })}
+              src={branding.publishedFaviconUrl}
+            />
+          ) : (
+            <Icon color="muted" name="devices-outline" size={32} />
+          )}
+        </FaviconBox>
+      </BrandImages>
 
       <OrganizationSummaryText>
         <Text color="secondary" fontSize="xs" semibold uppercase>

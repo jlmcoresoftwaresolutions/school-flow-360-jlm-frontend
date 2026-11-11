@@ -48,8 +48,8 @@ export type OrganizationUpdate = Partial<
 >
 
 // The visual identity belongs to the organization in the MVP (no per-unit branding). The backend keeps
-// a draft and publishes it: the colors, `logoUrl` and `faviconUrl` are the draft's, `publishedLogoUrl`
-// the logo the users see. `hasUnpublishedChanges` is true when the draft differs from what is published (or
+// a draft and publishes it: the colors, `logoUrl` and `faviconUrl` are the draft's; `publishedLogoUrl`
+// and `publishedFaviconUrl` are what the users see. `hasUnpublishedChanges` is true when the draft differs from what is published (or
 // nothing was saved yet). The image URLs are temporary links (5 minutes): use them to show the image,
 // never keep them. The name shown with it is the organization's displayName.
 export type OrganizationBranding = {
@@ -58,6 +58,7 @@ export type OrganizationBranding = {
   secondaryColor: string
   faviconUrl?: string
   logoUrl?: string
+  publishedFaviconUrl?: string
   publishedLogoUrl?: string
 }
 
