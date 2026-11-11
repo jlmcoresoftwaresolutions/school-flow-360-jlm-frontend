@@ -5,11 +5,11 @@ import { useTranslation } from "react-i18next"
 
 import { useUnsavedChanges } from "@/components"
 import { Button, Text } from "@/ds-components/atoms"
-import { ColorPicker, FileUpload, Input } from "@/ds-components/molecules"
+import { ColorPicker, FileUpload } from "@/ds-components/molecules"
 import type { OrganizationBranding, OrganizationBrandingUpdate } from "@/models"
 import { formatFileSize } from "@/utils/formats"
 
-import { displayNameMaxLength, faviconRules, logoRules } from "../MyUnit.constants"
+import { faviconRules, logoRules } from "../MyUnit.constants"
 import { BrandingLayout, FieldGroup, FilePreview, FileThumb, FormActions, InlineGroup } from "../MyUnit.styles"
 import { SectionCard } from "../shared/SectionCard"
 import { TabCard } from "../shared/TabCard"
@@ -17,7 +17,7 @@ import type { FileProblem, FileRules } from "./brandingFiles"
 import { getFileProblem, readAsDataUrl } from "./brandingFiles"
 import { BrandingPreview } from "./BrandingPreview"
 
-type BrandingValues = Pick<OrganizationBranding, "displayName" | "primaryColor" | "secondaryColor">
+type BrandingValues = Pick<OrganizationBranding, "primaryColor" | "secondaryColor">
 
 // A file picked but not saved yet, with its data URL for the preview.
 type ChosenFile = {
@@ -29,22 +29,23 @@ type FileField = "favicon" | "logo"
 
 export type BrandingTabProps = {
   branding: OrganizationBranding
+  // The organization's display name, shown in the preview (it is edited in the overview).
+  displayName: string
   onSave: (update: OrganizationBrandingUpdate) => Promise<boolean>
 }
 
 const toValues = (branding: OrganizationBranding): BrandingValues => ({
-  displayName: branding.displayName,
   primaryColor: branding.primaryColor,
   secondaryColor: branding.secondaryColor,
 })
 
 // The organization's visual identity (there is none per unit in the MVP): the form beside a live
-// preview of what it would look like. Unlike the overview's sections it is always editable, since the
+// preview of what it would look like, with the organization's display name (edited in the overview). Unlike the overview's sections it is always editable, since the
 // preview is the point; "Salvar alterações" publishes it, "Descartar" goes back to the current one, and
 // nothing changes for anyone before saving. An invalid file is refused on the spot and never saved.
 // There is no "remove logo" (DP-P1-07 is open): a new file replaces the current one.
 export const BrandingTab = (props: BrandingTabProps) => {
-  const { branding, onSave } = props
+  const { branding, displayName, onSave } = props
 
   const { t, i18n } = useTranslation()
   const form = useForm<BrandingValues>({ defaultValues: toValues(branding) })
@@ -55,7 +56,7 @@ export const BrandingTab = (props: BrandingTabProps) => {
   // Bumped to remount the file inputs, clearing the names they show, after saving or discarding.
   const [fileInputsKey, setFileInputsKey] = useState(0)
 
-  const { errors, isDirty, isSubmitting } = form.formState
+  const { isDirty, isSubmitting } = form.formState
   const hasChanges = isDirty || chosenFiles.logo !== undefined || chosenFiles.favicon !== undefined
 
   useUnsavedChanges(hasChanges)
@@ -143,17 +144,6 @@ export const BrandingTab = (props: BrandingTabProps) => {
         <SectionCard description={t("myUnit.branding.description")} title={t("myUnit.branding.title")}>
           <form aria-label={t("myUnit.branding.title")} onSubmit={handleSubmit} noValidate>
             <FieldGroup>
-              <Input
-                error={errors.displayName?.message}
-                helperText={t("myUnit.branding.displayNameHelper")}
-                maxLength={displayNameMaxLength}
-                title={t("myUnit.branding.displayName")}
-                required
-                {...form.register("displayName", {
-                  validate: (value) => value.trim() !== "" || t("myUnit.validation.required"),
-                })}
-              />
-
               <FieldGroup key={`logo-${fileInputsKey}`}>
                 <FileUpload
                   accept={logoRules.extensions.join(",")}
@@ -225,7 +215,7 @@ export const BrandingTab = (props: BrandingTabProps) => {
 
         <SectionCard description={t("myUnit.branding.previewDescription")} title={t("myUnit.branding.previewTitle")}>
           <BrandingPreview
-            displayName={draft.displayName ?? ""}
+            displayName={displayName}
             faviconUrl={chosenFiles.favicon?.url ?? branding.faviconUrl}
             logoUrl={chosenFiles.logo?.url ?? branding.logoUrl}
             primaryColor={draft.primaryColor ?? branding.primaryColor}

@@ -13,6 +13,7 @@ import { normalizeForSearch } from "@/utils/strings"
 import { unitsPageSize } from "../MyUnit.constants"
 import { FieldGroup } from "../MyUnit.styles"
 import { TabCard } from "../shared/TabCard"
+import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useStatusLabels } from "../shared/useStatusLabels"
 import { InactivateUnitDialog } from "./InactivateUnitDialog"
 import { UnitDetailsModal } from "./UnitDetailsModal"
@@ -53,6 +54,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
   const { isCreating, onCreate, onCreatingChange, onInactivate, onUpdate, units } = props
 
   const { t } = useTranslation()
+  const formatPhone = usePhoneFormatter()
   const { statusTone, unitStatusLabel } = useStatusLabels()
 
   const [search, setSearch] = useState("")
@@ -177,7 +179,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
                 header={t("myUnit.units.cityState")}
               />
               <Table.Column
-                body={(unit: SchoolUnit) => unit.contactPhone || t("common.notInformed")}
+                body={(unit: SchoolUnit) => formatPhone(unit.contactPhone) || t("common.notInformed")}
                 field="contactPhone"
                 header={t("myUnit.units.contactPhone")}
               />

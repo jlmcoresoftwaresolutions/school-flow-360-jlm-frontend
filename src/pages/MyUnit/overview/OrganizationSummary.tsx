@@ -25,7 +25,7 @@ export const OrganizationSummary = (props: OrganizationSummaryProps) => {
     <OrganizationSummaryLayout>
       <LogoBox>
         {branding.logoUrl ? (
-          <LogoImage alt={t("myUnit.overview.logoAlt", { name: branding.displayName })} src={branding.logoUrl} />
+          <LogoImage alt={t("myUnit.overview.logoAlt", { name: organization.displayName })} src={branding.logoUrl} />
         ) : (
           <Icon color="muted" name="building-outline" size={40} />
         )}
@@ -36,7 +36,7 @@ export const OrganizationSummary = (props: OrganizationSummaryProps) => {
           {t("myUnit.overview.currentOrganization")}
         </Text>
         <Text as="h2" fontSize="2xl" bold>
-          {branding.displayName}
+          {organization.displayName}
         </Text>
         <Text color="secondary" fontSize="sm">
           {organization.institutionalName}

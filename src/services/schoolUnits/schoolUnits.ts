@@ -24,15 +24,15 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // USED: Minha Unidade's list (through services/organization). GET /api/school-units: the tenant's
 // units, with a name search, a status filter, sorting and paging, answered as a Spring page of full
-// units (with their `version`). The sort is stable, so consecutive pages neither repeat nor skip an
+// units in the by-id detail's shape (with their `version` and `organizationId`). The sort is stable, so consecutive pages neither repeat nor skip an
 // item. 400 for page < 0, size outside 1..100, a sortBy other than unitName or operationalStatus, a
 // direction other than asc or desc, or a status other than ACTIVE or INACTIVE. The Swagger documents the
 // response as a bare object, so its shape comes from the description.
 export const searchSchoolUnits = async (
   params?: ApiSchoolUnitListParams,
   config?: RequestConfig,
-): Promise<ApiPage<ApiSchoolUnit>> => {
-  const response = await httpClient.get<ApiResponse<ApiPage<ApiSchoolUnit>>>("/api/school-units", {
+): Promise<ApiPage<SchoolUnitDetail>> => {
+  const response = await httpClient.get<ApiResponse<ApiPage<SchoolUnitDetail>>>("/api/school-units", {
     ...config,
     params,
   })

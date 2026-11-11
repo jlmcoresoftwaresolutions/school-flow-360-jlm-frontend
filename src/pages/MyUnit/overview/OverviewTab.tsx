@@ -14,7 +14,7 @@ export type OverviewTabProps = {
   organization: Organization
   units: SchoolUnit[]
   onCreateUnit: () => void
-  onSaveOrganization: (update: Partial<OrganizationUpdate>) => Promise<boolean>
+  onSaveOrganization: (update: OrganizationUpdate) => Promise<boolean>
   onSeeAllUnits: () => void
 }
 
@@ -27,7 +27,7 @@ export const OverviewTab = (props: OverviewTabProps) => {
     <TabCard>
       <OrganizationSummary branding={branding} organization={organization} />
 
-      <InstitutionalSection branding={branding} onSave={onSaveOrganization} organization={organization} />
+      <InstitutionalSection onSave={onSaveOrganization} organization={organization} />
 
       <CardGrid>
         <ContactSection onSave={onSaveOrganization} organization={organization} />

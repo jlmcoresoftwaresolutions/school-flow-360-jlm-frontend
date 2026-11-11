@@ -24,9 +24,10 @@ export const getCurrentOrganizationSummary = async (config?: RequestConfig): Pro
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/organizations/current/editable: the editable fields plus the `version` to send
-// back when saving (404 when the organization is not registered). The overview's sections could be fed
-// by it; for now they read the mocked organization.
+// USED: Minha Unidade's overview (through services/organization). GET
+// /api/organizations/current/editable: the editable fields plus the `version` to send back when saving.
+// 404 ("Organization not found.") when the tenant has no organization yet: the backend asks for an
+// empty state offering to register it (createOrganization), not an error.
 export const getCurrentOrganizationEditable = async (config?: RequestConfig): Promise<OrganizationEditable> => {
   const response = await httpClient.get<ApiResponse<OrganizationEditable>>(
     "/api/organizations/current/editable",
@@ -36,10 +37,13 @@ export const getCurrentOrganizationEditable = async (config?: RequestConfig): Pr
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/organizations/current: saves the organization's registration and address and
-// answers the new state with the new `version`. 400 for an invalid, unknown or non-editable field (or a
-// missing `version`), 409 when the `version` is stale (reload and let the user redo the change). The
-// overview's edit forms could save through it; for now they save to the mock.
+// USED: Minha Unidade's overview (through services/organization), for the institutional and display
+// names (orgInstName, orgName), the contacts, the address and the internal notes. PUT
+// /api/organizations/current: saves the organization's registration and address and answers the new
+// state with the new `version`. It REPLACES every editable field with what the body brings: a field
+// left out is saved as null, so always send all of them. 400 for an invalid,
+// unknown or non-editable field (or a missing `version`), 409 when the `version` is stale (reload and
+// let the user redo the change).
 export const updateCurrentOrganization = async (
   request: UpdateCurrentOrganizationRequest,
   config?: RequestConfig,
@@ -61,13 +65,15 @@ export const listOrganizations = async (config?: RequestConfig): Promise<ApiOrga
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/organizations: creates the tenant's organization (201). Each tenant takes at
-// most one: a second is refused with 409. Nothing in the app registers an organization today.
+// NOT USED YET. POST /api/organizations: registers the tenant's organization (201), for when the
+// "current" endpoints answer 404, and answers it in the editable shape (with `version`). Each tenant
+// takes at most one: a second is refused with 409. 400 for an invalid or unknown field, or an orgOpType
+// or orgStatus outside the enum. Nothing in the app registers an organization today.
 export const createOrganization = async (
   request: CreateOrganizationRequest,
   config?: RequestConfig,
-): Promise<ApiOrganization> => {
-  const response = await httpClient.post<ApiResponse<ApiOrganization>>("/api/organizations", request, config)
+): Promise<OrganizationEditable> => {
+  const response = await httpClient.post<ApiResponse<OrganizationEditable>>("/api/organizations", request, config)
 
   return unwrapApiResponse(response)
 }
