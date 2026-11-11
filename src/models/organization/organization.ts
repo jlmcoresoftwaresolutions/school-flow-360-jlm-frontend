@@ -78,27 +78,3 @@ export type SchoolUnitInput = Omit<SchoolUnit, "id" | "inactivatedAt" | "inactiv
 export type SchoolUnitInactivation = {
   reason: string
 }
-
-// The backend's school unit, as GET /api/school-units lists it. Its address is one free-text string,
-// not the structured Address.
-export type ApiSchoolUnitStatus = "ACTIVE" | "INACTIVE"
-
-export type ApiSchoolUnit = {
-  address: string | null
-  contactEmail: string | null
-  contactPhone: string | null
-  operationalStatus: ApiSchoolUnitStatus
-  schoolUnitId: number
-  unitName: string
-  version: number
-}
-
-// GET /api/school-units's query: a name search, a status filter, sorting and paging (size 1-100).
-export type ApiSchoolUnitListParams = {
-  direction?: "ASC" | "DESC"
-  page?: number
-  search?: string
-  size?: number
-  sortBy?: "operationalStatus" | "unitName"
-  status?: ApiSchoolUnitStatus
-}

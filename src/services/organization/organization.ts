@@ -1,8 +1,5 @@
 import type {
-  ApiPage,
-  ApiResponse,
   ApiSchoolUnit,
-  ApiSchoolUnitListParams,
   Organization,
   OrganizationBranding,
   OrganizationBrandingUpdate,
@@ -15,13 +12,15 @@ import { emptyAddress } from "@/utils/address"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 
 import type { RequestConfig } from "../httpClient"
-import { httpClient } from "../httpClient"
+import { searchSchoolUnits } from "../schoolUnits"
 import { mockBranding, mockOrganization } from "./organization.mock"
 
-// Minha Unidade's calls are being wired to the real API one at a time. Wired: listing the units
-// (listSchoolUnits). Still MOCK: everything else answers from in-memory demo data
-// (organization.mock.ts) with a simulated delay. The signatures are the final ones: wiring a call only
-// changes its body (through httpClient, mapping the backend's field names), not the page.
+// The page-facing layer of Minha Unidade: it answers in the frontend's shapes (models/organization).
+// The API-shaped services, one function per backend endpoint, are organizations, schoolUnits, branding
+// and the others beside this folder; the calls here are being moved onto them one at a time. Wired:
+// listing the units (listSchoolUnits, through schoolUnits). Still MOCK: everything else answers from
+// in-memory demo data (organization.mock.ts) with a simulated delay. The signatures are the final
+// ones: wiring a call only changes its body (mapping the backend's field names), not the page.
 
 // Copies, so a caller changing what it got never changes the "stored" data.
 let organization = structuredClone(mockOrganization)
@@ -127,17 +126,10 @@ export const listSchoolUnits = async (config?: RequestConfig): Promise<SchoolUni
   let totalPages = 1
 
   while (page < totalPages) {
-    const params: ApiSchoolUnitListParams = { direction: "ASC", page, size: unitsPageSize, sortBy: "unitName" }
-    const response = await httpClient.get<ApiResponse<ApiPage<ApiSchoolUnit>>>("/api/school-units", {
-      ...config,
-      params,
-    })
-    const data = response.data.data
+    const result = await searchSchoolUnits({ direction: "asc", page, size: unitsPageSize, sortBy: "unitName" }, config)
 
-    if (!data) throw new Error("The school units response has no data.")
-
-    units.push(...data.content)
-    totalPages = data.totalPages
+    units.push(...result.content)
+    totalPages = result.totalPages
     page += 1
   }
 
