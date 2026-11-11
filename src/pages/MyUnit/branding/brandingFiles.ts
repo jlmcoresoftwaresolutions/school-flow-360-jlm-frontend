@@ -1,5 +1,5 @@
 // What went wrong with a chosen logo, if anything.
-export type FileProblem = "badRatio" | "tooLarge" | "tooSmall" | "unreadable" | "wrongType"
+export type FileProblem = "badRatio" | "notSquare" | "tooLarge" | "tooSmall" | "unreadable" | "wrongType"
 
 export type FileRules = {
   extensions: string[]
@@ -38,12 +38,14 @@ export const readImageSize = (url: string) =>
   })
 
 // What can't be fixed without distorting the image: a side under the minimum, or a ratio over the
-// maximum (the longer side more than `maxAspectRatio` times the shorter). A side over the maximum is
+// maximum (the longer side more than `maxAspectRatio` times the shorter; a ratio of 1 asks for a
+// square, the width exactly equal to the height). A side over the maximum is
 // not a problem: the image is shrunk to fit (see fitWithin).
 export const getImageProblem = (size: ImageSize, rules: FileRules): FileProblem | null => {
   const sides = [size.width, size.height]
 
   if (sides.some((side) => side < rules.minSide)) return "tooSmall"
+  if (rules.maxAspectRatio === 1 && size.width !== size.height) return "notSquare"
   if (Math.max(...sides) / Math.min(...sides) > rules.maxAspectRatio) return "badRatio"
 
   return null

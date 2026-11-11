@@ -9,7 +9,8 @@ import type {
 import type { RequestConfig } from "../httpClient"
 import { httpClient, toFileFormData, unwrapApiResponse } from "../httpClient"
 
-// The visual identity endpoints, one function per route, in the backend's own shapes (models/branding).
+// The visual identity endpoints, one function per route, in the backend's own shapes (models/branding):
+// display name, colors, logo and favicon.
 // The backend works with a DRAFT that only reaches the users once it is published. Everything but
 // getPublishedBranding is ADMIN only. services/organization is the page-facing layer for Minha
 // Unidade: it reads the draft and saves, uploads the logo and publishes in one go.
@@ -82,6 +83,35 @@ export const uploadBrandingLogo = async (file: File, config?: RequestConfig): Pr
 export const removeBrandingLogo = async (config?: RequestConfig): Promise<BrandingResponse> => {
   const response = await httpClient.delete<ApiResponse<BrandingResponse>>(
     "/api/organizations/current/branding/logo",
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED: Minha Unidade's visual identity (through services/organization). POST
+// /api/organizations/current/branding/favicon: uploads the draft's favicon (201), replacing the
+// previous one, and answers the updated branding. The draft must already be saved (409 otherwise).
+// PNG or JPEG (no .ico, no SVG) up to 512 KB, SQUARE (width equal to height), 16 to 512 px a side, and
+// the real content is checked: 413 when larger, 415 for another type or content that does not match,
+// 422 for an image that is not square or out of the size range, 503 when file storage is off. Users
+// only see it after publishBranding.
+export const uploadBrandingFavicon = async (file: File, config?: RequestConfig): Promise<BrandingResponse> => {
+  const response = await httpClient.post<ApiResponse<BrandingResponse>>(
+    "/api/organizations/current/branding/favicon",
+    toFileFormData(file),
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// NOT USED YET. DELETE /api/organizations/current/branding/favicon: removes the DRAFT's favicon; the
+// published branding keeps its favicon until the next publication. 409 when the draft was never saved,
+// 503 when file storage is off.
+export const removeBrandingFavicon = async (config?: RequestConfig): Promise<BrandingResponse> => {
+  const response = await httpClient.delete<ApiResponse<BrandingResponse>>(
+    "/api/organizations/current/branding/favicon",
     config,
   )
 

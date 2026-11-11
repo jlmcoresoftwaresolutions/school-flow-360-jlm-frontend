@@ -83,8 +83,12 @@ export const fr: TranslationResource = {
     branding: {
       conflict: "Quelqu'un d'autre a modifié l'identité visuelle. Vérifiez l'actuelle et refaites la modification.",
       currentFile: "Fichier actuel",
-      description: "Le logo et les couleurs utilisés sur les écrans de l'organisation.",
+      description: "Le logo, le favicon et les couleurs utilisés sur les écrans de l'organisation.",
       discard: "Annuler les modifications",
+      favicon: "Favicon",
+      faviconHelper:
+        "PNG ou JPG carré, d'au moins 16 px de largeur et de hauteur, jusqu'à 512 Ko. Une image de plus de 512 px est réduite automatiquement.",
+      fileNotSquare: "Le favicon doit être carré : la même largeur et la même hauteur.",
       filePlaceholder: "Cliquez pour sélectionner un fichier",
       fileRatio: "L'image peut être au plus {{ratio}} fois plus large que haute (ou l'inverse).",
       fileShrunk:
@@ -93,10 +97,10 @@ export const fr: TranslationResource = {
       fileTooSmall: "L'image doit faire au moins {{min}} px de largeur et de hauteur.",
       fileUnreadable: "Impossible de lire l'image. Choisissez un autre fichier.",
       fileWrongType: "Format de fichier non accepté. Utilisez PNG ou JPG.",
+      imageRefused: "L'image a été refusée. Vérifiez le format, la taille et les dimensions.",
       logo: "Logo",
       logoHelper:
         "PNG ou JPG, d'au moins 64 px de largeur et de hauteur, rapport jusqu'à 4:1, jusqu'à 2 Mo. Une image de plus de 2048 px est réduite automatiquement.",
-      logoRefused: "Le logo a été refusé. Vérifiez le format, la taille et les dimensions de l'image.",
       newFile: "Nouveau fichier : {{name}} ({{size}})",
       noFile: "Aucun fichier envoyé.",
       openColorPicker: "Ouvrir le sélecteur de couleur",

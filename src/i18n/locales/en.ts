@@ -82,8 +82,12 @@ export const en: TranslationResource = {
     branding: {
       conflict: "Someone else changed the visual identity. Check the current one and make your change again.",
       currentFile: "Current file",
-      description: "The logo and colors used across the organization's screens.",
+      description: "The logo, favicon and colors used across the organization's screens.",
       discard: "Discard changes",
+      favicon: "Favicon",
+      faviconHelper:
+        "Square PNG or JPG, at least 16 px wide and tall, up to 512 KB. An image larger than 512 px is shrunk automatically.",
+      fileNotSquare: "The favicon must be square: the same width and height.",
       filePlaceholder: "Click to select a file",
       fileRatio: "The image can be at most {{ratio}} times wider than it is tall (or the other way around).",
       fileShrunk:
@@ -92,10 +96,10 @@ export const en: TranslationResource = {
       fileTooSmall: "The image must be at least {{min}} px wide and tall.",
       fileUnreadable: "We couldn't read the image. Choose another file.",
       fileWrongType: "File format not accepted. Use PNG or JPG.",
+      imageRefused: "The image was refused. Check its format, size and dimensions.",
       logo: "Logo",
       logoHelper:
         "PNG or JPG, at least 64 px wide and tall, ratio up to 4:1, up to 2 MB. An image larger than 2048 px is shrunk automatically.",
-      logoRefused: "The logo was refused. Check the image's format, size and dimensions.",
       newFile: "New file: {{name}} ({{size}})",
       noFile: "No file uploaded.",
       openColorPicker: "Open color picker",

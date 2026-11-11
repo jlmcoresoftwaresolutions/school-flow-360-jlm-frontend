@@ -16,7 +16,13 @@ import { defaultCountry, toCountry } from "@/utils/countries"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { toInternationalPhone } from "@/utils/phone"
 
-import { getBrandingDraft, publishBranding, saveBrandingDraft, uploadBrandingLogo } from "../branding"
+import {
+  getBrandingDraft,
+  publishBranding,
+  saveBrandingDraft,
+  uploadBrandingFavicon,
+  uploadBrandingLogo,
+} from "../branding"
 import type { RequestConfig } from "../httpClient"
 import { getCurrentOrganizationEditable, updateCurrentOrganization } from "../organizations"
 import { searchSchoolUnits } from "../schoolUnits"
@@ -154,6 +160,7 @@ const defaultPrimaryColor = colors.primary[900]
 const defaultSecondaryColor = colors.primary[500]
 
 const toBranding = (branding: BrandingResponse): OrganizationBranding => ({
+  faviconUrl: branding.favicon?.url ?? undefined,
   hasUnpublishedChanges: !branding.configured || branding.hasUnpublishedChanges,
   logoUrl: branding.logo?.url ?? undefined,
   primaryColor: branding.primaryColor || defaultPrimaryColor,
@@ -172,8 +179,8 @@ export const getBranding = async (config?: RequestConfig): Promise<OrganizationB
   keepBranding(await getBrandingDraft(config))
 
 // Saves and publishes the identity in one go, as the page has a single "save" for it: the draft (with
-// the organization's display name, which the backend asks for its own copy of), then the new logo if
-// there is one, then the publication. Each step keeps the backend's answer, so after a failure midway
+// the organization's display name, which the backend asks for its own copy of), then the new logo and
+// the new favicon if there are, then the publication. Each step keeps the backend's answer, so after a failure midway
 // (a logo refused, file storage off) the next save goes on from the right `version`. A 409 means
 // someone else changed the identity since it was read: read it again (getBranding).
 export const updateBranding = async (
@@ -196,6 +203,11 @@ export const updateBranding = async (
 
   if (update.logo) {
     branding = await uploadBrandingLogo(update.logo, config)
+    keepBranding(branding)
+  }
+
+  if (update.favicon) {
+    branding = await uploadBrandingFavicon(update.favicon, config)
     keepBranding(branding)
   }
 

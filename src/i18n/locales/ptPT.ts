@@ -84,8 +84,12 @@ export const ptPT: TranslationResource = {
     branding: {
       conflict: "Outra pessoa alterou a identidade visual. Verifique a atual e refaça a alteração.",
       currentFile: "Ficheiro atual",
-      description: "Logótipo e cores usados nos ecrãs da organização.",
+      description: "Logótipo, favicon e cores usados nos ecrãs da organização.",
       discard: "Descartar alterações",
+      favicon: "Favicon",
+      faviconHelper:
+        "PNG ou JPG quadrado, com pelo menos 16 px de largura e de altura, até 512 KB. Uma imagem maior do que 512 px é reduzida automaticamente.",
+      fileNotSquare: "O favicon tem de ser quadrado: a mesma medida de largura e de altura.",
       filePlaceholder: "Clique para selecionar um ficheiro",
       fileRatio: "A imagem pode ser no máximo {{ratio}} vezes mais larga do que alta (ou o contrário).",
       fileShrunk:
@@ -94,10 +98,10 @@ export const ptPT: TranslationResource = {
       fileTooSmall: "A imagem tem de ter pelo menos {{min}} px de largura e de altura.",
       fileUnreadable: "Não foi possível ler a imagem. Escolha outro ficheiro.",
       fileWrongType: "Formato de ficheiro não aceite. Use PNG ou JPG.",
+      imageRefused: "A imagem foi recusada. Verifique o formato, o tamanho e as dimensões.",
       logo: "Logótipo",
       logoHelper:
         "PNG ou JPG, com pelo menos 64 px de largura e de altura, proporção até 4:1, até 2 MB. Uma imagem maior do que 2048 px é reduzida automaticamente.",
-      logoRefused: "O logótipo foi recusado. Verifique o formato, o tamanho e as dimensões da imagem.",
       newFile: "Novo ficheiro: {{name}} ({{size}})",
       noFile: "Nenhum ficheiro enviado.",
       openColorPicker: "Abrir seletor de cor",

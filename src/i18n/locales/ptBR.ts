@@ -82,8 +82,12 @@ export const ptBR = {
     branding: {
       conflict: "Outra pessoa alterou a identidade visual. Confira a atual e refaça a alteração.",
       currentFile: "Arquivo atual",
-      description: "Logo e cores usados nas telas da organização.",
+      description: "Logo, favicon e cores usados nas telas da organização.",
       discard: "Descartar alterações",
+      favicon: "Favicon",
+      faviconHelper:
+        "PNG ou JPG quadrado, com pelo menos 16 px de largura e de altura, até 512 KB. Uma imagem maior que 512 px é reduzida automaticamente.",
+      fileNotSquare: "O favicon precisa ser quadrado: a mesma medida de largura e de altura.",
       filePlaceholder: "Clique para selecionar um arquivo",
       fileRatio: "A imagem pode ser no máximo {{ratio}} vezes mais larga que alta (ou o contrário).",
       fileShrunk:
@@ -92,10 +96,10 @@ export const ptBR = {
       fileTooSmall: "A imagem precisa ter pelo menos {{min}} px de largura e de altura.",
       fileUnreadable: "Não foi possível ler a imagem. Escolha outro arquivo.",
       fileWrongType: "Formato de arquivo não aceito. Use PNG ou JPG.",
+      imageRefused: "A imagem foi recusada. Confira o formato, o tamanho e as dimensões.",
       logo: "Logo",
       logoHelper:
         "PNG ou JPG, com pelo menos 64 px de largura e de altura, proporção até 4:1, até 2 MB. Uma imagem maior que 2048 px é reduzida automaticamente.",
-      logoRefused: "O logo foi recusado. Confira o formato, o tamanho e as dimensões da imagem.",
       newFile: "Novo arquivo: {{name}} ({{size}})",
       noFile: "Nenhum arquivo enviado.",
       openColorPicker: "Abrir seletor de cor",

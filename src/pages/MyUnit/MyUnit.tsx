@@ -156,9 +156,9 @@ export const MyUnit = () => {
   const applyBranding = (branding: OrganizationBranding) =>
     setData((current) => (current ? { ...current, branding } : current))
 
-  // Saving the identity is three calls (draft, logo, publication), so a failure can come from any of
-  // them: a logo the backend refuses, file storage turned off, or - 409 - someone else changed the
-  // identity first, when it is read again and the tab goes back to it.
+  // Saving the identity is up to four calls (draft, logo, favicon, publication), so a failure can come
+  // from any of them: an image the backend refuses, file storage turned off, or - 409 - someone else
+  // changed the identity first, when it is read again and the tab goes back to it.
   const handleSaveBranding = async (update: OrganizationBrandingUpdate) => {
     try {
       applyBranding(await updateBranding(update))
@@ -169,7 +169,7 @@ export const MyUnit = () => {
 
       if (status !== 409) {
         if (status === 503) toast.error(t("myUnit.branding.storageUnavailable"))
-        else if (status === 413 || status === 415 || status === 422) toast.error(t("myUnit.branding.logoRefused"))
+        else if (status === 413 || status === 415 || status === 422) toast.error(t("myUnit.branding.imageRefused"))
         else toast.error(t("myUnit.saveError"))
         return false
       }
