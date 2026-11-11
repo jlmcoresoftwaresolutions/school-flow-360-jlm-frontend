@@ -2,10 +2,9 @@ import { deflateSync } from "node:zlib"
 
 import { expect, type Page, test } from "@playwright/test"
 
-// Minha Unidade is being wired to the backend a call at a time: the organization, its visual identity
-// and the unit list come from the backend, the units' create/edit/inactivate still from the mocked
-// organization service (services/organization). Everything on the network (login, the organization,
-// the identity, the unit list, the CEP lookup) is mocked here; the empty state is an empty list.
+// Minha Unidade runs on the backend: the organization, its visual identity and its units. Everything
+// on the network (login, those three, the CEP lookup) is mocked here, each mock keeping what is saved
+// the way the backend does; the empty state is an empty list.
 
 // The backend's organization, in its own field names.
 const apiOrganization = {
@@ -42,10 +41,12 @@ const apiAnswer = (data: unknown) => ({
   contentType: "application/json",
 })
 
-// What the page sent: each save of the organization, and each call to the identity's endpoints.
+// What the page sent: each save of the organization, and each call to the identity's and the units'
+// endpoints.
 type OrganizationMock = {
   brandingCalls: { body: unknown; method: string; path: string }[]
   saves: Record<string, unknown>[]
+  unitCalls: { body: unknown; method: string; path: string }[]
 }
 
 // The organization endpoints, keeping what is saved like the backend does: a save REPLACES every
@@ -56,7 +57,7 @@ const mockOrganizationApi = async (
   scenario?: "conflict" | "error",
   overrides: Partial<typeof apiOrganization> = {},
 ): Promise<OrganizationMock> => {
-  const mock: OrganizationMock = { brandingCalls: [], saves: [] }
+  const mock: OrganizationMock = { brandingCalls: [], saves: [], unitCalls: [] }
   let organization = { ...apiOrganization, ...overrides }
   // "error": the first read fails, as a backend that is down would; the next one (a retry) works.
   let failNextRead = scenario === "error"
@@ -250,70 +251,235 @@ const mockBrandingApi = async (page: Page, mock: OrganizationMock, options: Bran
   })
 }
 
-// The backend's units: one free-text address, ACTIVE/INACTIVE.
+// The backend's units, in the detail's shape. The first two have a structured address (its one-text
+// copy composed by the backend); Caucaia is from before structured addresses, with only the text;
+// Benfica is inactive, with when and why.
+const noStructuredAddress = {
+  addressCep: null,
+  addressCity: null,
+  addressComplement: null,
+  addressDistrict: null,
+  addressNumber: null,
+  addressState: null,
+  addressStreet: null,
+}
+
 const apiSchoolUnits = [
   {
-    address: "Avenida Santos Dumont, 1500 - Aldeota, Fortaleza/CE",
+    address: "Avenida Santos Dumont, 1500, Aldeota, Fortaleza/CE, CEP 60150-161",
+    addressCep: "60150-161",
+    addressCity: "Fortaleza",
+    addressComplement: null,
+    addressDistrict: "Aldeota",
+    addressNumber: "1500",
+    addressState: "CE",
+    addressStreet: "Avenida Santos Dumont",
     contactEmail: "aldeota@horizonte.edu.br",
-    contactPhone: "(85) 3333-1100",
+    contactPhone: "+55 85 3333 1100",
+    inactivatedAt: null,
+    inactivationReason: null,
     operationalStatus: "ACTIVE",
+    organizationId: 1,
     schoolUnitId: 1,
     unitName: "Unidade Aldeota",
+    unitNotes: "Funciona em dois turnos.",
     version: 0,
   },
   {
-    address: "Avenida Washington Soares, 2200, Bloco B - Edson Queiroz, Fortaleza/CE",
+    address: "Avenida Washington Soares, 2200, Bloco B, Edson Queiroz, Fortaleza/CE",
+    addressCep: null,
+    addressCity: "Fortaleza",
+    addressComplement: "Bloco B",
+    addressDistrict: "Edson Queiroz",
+    addressNumber: "2200",
+    addressState: "CE",
+    addressStreet: "Avenida Washington Soares",
     contactEmail: "secretaria.unidade.edsonqueiroz@horizonte.edu.br",
     contactPhone: "(85) 3333-1200",
+    inactivatedAt: null,
+    inactivationReason: null,
     operationalStatus: "ACTIVE",
+    organizationId: 1,
     schoolUnitId: 2,
     unitName: "Unidade Edson Queiroz",
-    version: 0,
+    unitNotes: null,
+    version: 4,
   },
   {
+    ...noStructuredAddress,
     address: "Rua Coronel Correia, 45 - Centro, Caucaia/CE",
     contactEmail: "caucaia@horizonte.edu.br",
     contactPhone: "(85) 3342-0400",
+    inactivatedAt: null,
+    inactivationReason: null,
     operationalStatus: "ACTIVE",
+    organizationId: 1,
     schoolUnitId: 3,
     unitName: "Unidade Caucaia",
-    version: 0,
+    unitNotes: null,
+    version: 2,
   },
   {
+    ...noStructuredAddress,
     address: "Avenida da Universidade, 830 - Benfica, Fortaleza/CE",
     contactEmail: "",
     contactPhone: "(85) 3281-0900",
+    inactivatedAt: "2026-08-03T14:00:00Z",
+    inactivationReason: "Prédio devolvido ao proprietário.",
     operationalStatus: "INACTIVE",
+    organizationId: 1,
     schoolUnitId: 4,
     unitName: "Unidade Benfica",
+    unitNotes: null,
     version: 1,
   },
 ]
 
+type ApiUnit = Record<string, unknown> & { schoolUnitId: number; unitName: string; version: number }
+
+// The users tied to each unit, which inactivating it would affect: only Caucaia has some.
+const assignedUsersByUnit: Record<number, { assigned: number; enabled: number }> = { 3: { assigned: 3, enabled: 2 } }
+
+const apiError = (status: number, code: string) => ({
+  body: JSON.stringify({ code, data: null, message: code, status: "Error", tenantId: "schoolflow_demo" }),
+  contentType: "application/json",
+  status,
+})
+
+// The units' endpoints, keeping what is saved like the backend does: unique names, a version checked
+// and bumped on every change, the one-text address composed from the structured one, and an
+// inactivation that wants the impact confirmed when users are tied to the unit. "unit-conflict" has
+// every edit find the unit changed by someone else (a new e-mail), as the next read of the list shows.
+const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit[], scenario?: "unit-conflict") => {
+  let units = initial.map((unit) => ({ ...unit }))
+
+  const idOf = (url: string) => Number(new URL(url).pathname.split("/")[3])
+  const sameName = (first: string, second: string) => first.trim().toLowerCase() === second.trim().toLowerCase()
+  const composeAddress = (body: Record<string, unknown>) =>
+    [body.addressStreet, body.addressNumber, body.addressComplement, body.addressDistrict]
+      .concat(`${String(body.addressCity)}/${String(body.addressState)}`)
+      .filter(Boolean)
+      .join(", ")
+  const record = (method: string, path: string, body: unknown) => mock.unitCalls.push({ body, method, path })
+  const replace = (unit: ApiUnit) => {
+    units = units.map((item) => (item.schoolUnitId === unit.schoolUnitId ? unit : item))
+    return unit
+  }
+
+  await page.route("**/api/school-units?*", (route) =>
+    route.fulfill(apiAnswer({ content: units, number: 0, size: 100, totalElements: units.length, totalPages: 1 })),
+  )
+
+  await page.route(/\/api\/school-units$/, (route) => {
+    const body = route.request().postDataJSON() as Record<string, unknown>
+    record("POST", "school-units", body)
+
+    if (units.some((unit) => sameName(unit.unitName, String(body.unitName)))) {
+      return route.fulfill(apiError(409, "UNIT_NAME_DUPLICATE"))
+    }
+
+    const created: ApiUnit = {
+      ...noStructuredAddress,
+      ...body,
+      address: composeAddress(body),
+      inactivatedAt: null,
+      inactivationReason: null,
+      operationalStatus: "ACTIVE",
+      organizationId: 1,
+      schoolUnitId: Math.max(0, ...units.map((unit) => unit.schoolUnitId)) + 1,
+      unitName: String(body.unitName),
+      version: 0,
+    }
+    units = [...units, created]
+    return route.fulfill({ ...apiAnswer(created), status: 201 })
+  })
+
+  await page.route(/\/api\/school-units\/\d+$/, (route) => {
+    const body = route.request().postDataJSON() as Record<string, unknown>
+    const current = units.find((unit) => unit.schoolUnitId === idOf(route.request().url()))!
+    record("PUT", `school-units/${current.schoolUnitId}`, body)
+
+    if (scenario === "unit-conflict") {
+      replace({ ...current, contactEmail: "outra.pessoa@horizonte.edu.br", version: current.version + 1 })
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+
+    const { version, ...data } = body
+    void version
+    return route.fulfill(
+      apiAnswer(
+        replace({
+          ...current,
+          ...noStructuredAddress,
+          ...data,
+          address: composeAddress(body),
+          unitName: String(body.unitName),
+          version: current.version + 1,
+        }),
+      ),
+    )
+  })
+
+  await page.route(/\/api\/school-units\/\d+\/deactivation-check$/, (route) => {
+    const current = units.find((unit) => unit.schoolUnitId === idOf(route.request().url()))!
+    const users = assignedUsersByUnit[current.schoolUnitId] ?? { assigned: 0, enabled: 0 }
+
+    return route.fulfill(
+      apiAnswer({
+        assignedUsers: users.assigned,
+        canDeactivate: true,
+        enabledAssignedUsers: users.enabled,
+        operationalStatus: current.operationalStatus,
+        requiresConfirmation: users.assigned > 0,
+        schoolUnitId: current.schoolUnitId,
+        version: current.version,
+      }),
+    )
+  })
+
+  await page.route(/\/api\/school-units\/\d+\/deactivate$/, (route) => {
+    const body = route.request().postDataJSON() as Record<string, unknown>
+    const current = units.find((unit) => unit.schoolUnitId === idOf(route.request().url()))!
+    const users = assignedUsersByUnit[current.schoolUnitId] ?? { assigned: 0, enabled: 0 }
+    record("POST", `school-units/${current.schoolUnitId}/deactivate`, body)
+
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    if (users.assigned > 0 && body.confirmImpacts !== true) {
+      return route.fulfill(apiError(409, "IMPACTS_NOT_CONFIRMED"))
+    }
+
+    return route.fulfill(
+      apiAnswer(
+        replace({
+          ...current,
+          inactivatedAt: "2026-11-11T22:00:00Z",
+          inactivationReason: body.reason || null,
+          operationalStatus: "INACTIVE",
+          version: current.version + 1,
+        }),
+      ),
+    )
+  })
+}
+
 const signInAndOpen = async (
   page: Page,
-  scenario?: "conflict" | "error" | "no-units",
+  scenario?: "conflict" | "error" | "no-units" | "unit-conflict",
   organization: Partial<typeof apiOrganization> = {},
   brandingOptions: BrandingOptions = {},
 ) => {
-  const units = scenario === "no-units" ? [] : apiSchoolUnits
   const organizationMock = await mockOrganizationApi(
     page,
     scenario === "conflict" || scenario === "error" ? scenario : undefined,
     organization,
   )
   await mockBrandingApi(page, organizationMock, brandingOptions)
-
-  await page.route("**/api/school-units?*", (route) =>
-    route.fulfill({
-      body: JSON.stringify({
-        data: { content: units, number: 0, size: 100, totalElements: units.length, totalPages: 1 },
-        message: "",
-        status: "Success",
-        tenantId: "schoolflow_demo",
-      }),
-      contentType: "application/json",
-    }),
+  await mockUnitsApi(
+    page,
+    organizationMock,
+    scenario === "no-units" ? [] : apiSchoolUnits,
+    scenario === "unit-conflict" ? scenario : undefined,
   )
 
   await page.route("**/api/auth/login", (route) =>
@@ -821,13 +987,33 @@ test.describe("units", () => {
     ).toBeVisible()
   })
 
-  test("registers a unit, which then appears in the list and the overview", async ({ page }) => {
+  test("shows a unit's city and state from its structured address, and its details", async ({ page }) => {
     await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    const row = page.getByRole("row", { name: /Unidade Aldeota/ })
+    await expect(row.getByText("Fortaleza/CE")).toBeVisible()
+    // Stored in the international format, shown in the national one.
+    await expect(row.getByText("(85) 3333-1100")).toBeVisible()
+
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await page.getByRole("menuitem", { name: "Visualizar" }).click()
+    const details = page.getByRole("dialog", { name: "Unidade Aldeota" })
+    await expect(details).toContainText("Avenida Santos Dumont, 1500 - Aldeota, Fortaleza/CE - CEP 60150-161")
+    await expect(details).toContainText("Funciona em dois turnos.")
+  })
+
+  test("registers a unit, which then appears in the list and the overview", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
     await tab(page, "Unidades").click()
 
     await page.getByRole("button", { name: "Nova unidade" }).click()
     const dialog = page.getByRole("dialog", { name: "Nova unidade" })
     await dialog.getByRole("textbox", { name: /^Nome da unidade/ }).fill("Unidade Messejana")
+    await dialog.getByRole("textbox", { name: /^E-mail/ }).fill("messejana@horizonte.edu.br")
+    await dialog.getByRole("textbox", { name: /^Telefone/ }).fill("8532740500")
+    await dialog.getByRole("textbox", { name: /^Logradouro/ }).fill("Rua Padre Pedro de Alencar")
+    await dialog.getByRole("textbox", { name: "Número" }).fill("s/n")
     await dialog.getByRole("textbox", { name: /^Cidade/ }).fill("Fortaleza")
     await dialog.getByRole("combobox", { name: /^UF/ }).click()
     await page.getByRole("option", { name: "CE", exact: true }).click()
@@ -836,14 +1022,34 @@ test.describe("units", () => {
     await expect(page.getByText("Unidade cadastrada.")).toBeVisible()
     await expect(dialog).toHaveCount(0)
     await expect(page.getByRole("cell", { exact: true, name: "Unidade Messejana" })).toBeVisible()
+    // The structured address, and the phone in the international format.
+    expect(organizationMock.unitCalls).toEqual([
+      {
+        body: {
+          addressCep: "",
+          addressCity: "Fortaleza",
+          addressComplement: "",
+          addressDistrict: "",
+          addressNumber: "s/n",
+          addressState: "CE",
+          addressStreet: "Rua Padre Pedro de Alencar",
+          contactEmail: "messejana@horizonte.edu.br",
+          contactPhone: "+55 85 3274 0500",
+          unitName: "Unidade Messejana",
+          unitNotes: "",
+        },
+        method: "POST",
+        path: "school-units",
+      },
+    ])
 
     await tab(page, "Visão geral").click()
     await expect(page.getByRole("list", { name: "Unidades" }).getByText("Unidade Messejana")).toBeVisible()
     await expect(page.getByText("5", { exact: true })).toBeVisible()
   })
 
-  test("asks for the required fields before registering", async ({ page }) => {
-    await signInAndOpen(page)
+  test("asks for the fields the backend requires before registering", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
     await tab(page, "Unidades").click()
 
     await page.getByRole("button", { name: "Nova unidade" }).click()
@@ -851,11 +1057,109 @@ test.describe("units", () => {
     await dialog.getByRole("textbox", { name: "Observações" }).fill("Só uma observação")
     await dialog.getByRole("button", { name: "Cadastrar unidade" }).click()
 
-    await expect(dialog.getByText("Preencha este campo.")).toHaveCount(3)
+    // The name, the e-mail, the phone, the street, the city and the state.
+    await expect(dialog.getByText("Preencha este campo.")).toHaveCount(6)
+    expect(organizationMock.unitCalls).toEqual([])
   })
 
-  test("inactivates a unit with a reason, keeping it as history without edit or reactivation", async ({ page }) => {
+  test("refuses a name another unit already has, keeping the form open", async ({ page }) => {
     await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Nova unidade" }).click()
+    const dialog = page.getByRole("dialog", { name: "Nova unidade" })
+    await dialog.getByRole("textbox", { name: /^Nome da unidade/ }).fill("unidade aldeota")
+    await dialog.getByRole("textbox", { name: /^E-mail/ }).fill("outra@horizonte.edu.br")
+    await dialog.getByRole("textbox", { name: /^Telefone/ }).fill("8532740500")
+    await dialog.getByRole("textbox", { name: /^Logradouro/ }).fill("Rua A")
+    await dialog.getByRole("textbox", { name: /^Cidade/ }).fill("Fortaleza")
+    await dialog.getByRole("combobox", { name: /^UF/ }).click()
+    await page.getByRole("option", { name: "CE", exact: true }).click()
+    await dialog.getByRole("button", { name: "Cadastrar unidade" }).click()
+
+    await expect(page.getByText("Já existe uma unidade com esse nome.")).toBeVisible()
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByRole("textbox", { name: /^Nome da unidade/ })).toHaveValue("unidade aldeota")
+  })
+
+  test("edits a unit, sending the version it was read at", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Ações de Unidade Edson Queiroz" }).click()
+    await page.getByRole("menuitem", { name: "Editar" }).click()
+    const dialog = page.getByRole("dialog", { name: "Editar unidade" })
+    await expect(dialog.getByRole("textbox", { name: /^Logradouro/ })).toHaveValue("Avenida Washington Soares")
+    await dialog.getByRole("textbox", { name: /^Telefone/ }).fill("85988887777")
+    await dialog.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText("Unidade atualizada.")).toBeVisible()
+    await expect(dialog).toHaveCount(0)
+    await expect(page.getByRole("row", { name: /Unidade Edson Queiroz/ }).getByText("(85) 98888-7777")).toBeVisible()
+    expect(organizationMock.unitCalls).toEqual([
+      {
+        body: {
+          addressCep: "",
+          addressCity: "Fortaleza",
+          addressComplement: "Bloco B",
+          addressDistrict: "Edson Queiroz",
+          addressNumber: "2200",
+          addressState: "CE",
+          addressStreet: "Avenida Washington Soares",
+          contactEmail: "secretaria.unidade.edsonqueiroz@horizonte.edu.br",
+          contactPhone: "+55 85 98888 7777",
+          unitName: "Unidade Edson Queiroz",
+          unitNotes: "",
+          version: 4,
+        },
+        method: "PUT",
+        path: "school-units/2",
+      },
+    ])
+  })
+
+  test("closes the form and shows the current data when someone else changed the unit first", async ({ page }) => {
+    await signInAndOpen(page, "unit-conflict")
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await page.getByRole("menuitem", { name: "Editar" }).click()
+    const dialog = page.getByRole("dialog", { name: "Editar unidade" })
+    await dialog.getByRole("textbox", { name: /^Telefone/ }).fill("85988887777")
+    await dialog.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText(/Outra pessoa alterou esta unidade\./)).toBeVisible()
+    await expect(dialog).toHaveCount(0)
+    await expect(
+      page.getByRole("row", { name: /Unidade Aldeota/ }).getByText("outra.pessoa@horizonte.edu.br"),
+    ).toBeVisible()
+  })
+
+  test("shows the one-text address of a unit from before structured addresses, and asks for the fields", async ({
+    page,
+  }) => {
+    await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Ações de Unidade Caucaia" }).click()
+    await page.getByRole("menuitem", { name: "Visualizar" }).click()
+    const details = page.getByRole("dialog", { name: "Unidade Caucaia" })
+    await expect(details).toContainText("Rua Coronel Correia, 45 - Centro, Caucaia/CE")
+
+    await details.getByRole("button", { name: "Editar" }).click()
+    const dialog = page.getByRole("dialog", { name: "Editar unidade" })
+    await expect(
+      dialog.getByRole("status").filter({
+        hasText: "Endereço cadastrado antes: Rua Coronel Correia, 45 - Centro, Caucaia/CE.",
+      }),
+    ).toBeVisible()
+    await expect(dialog.getByRole("textbox", { name: /^Logradouro/ })).toHaveValue("")
+  })
+
+  test("inactivates a unit showing who is affected, keeping it as history without edit or reactivation", async ({
+    page,
+  }) => {
+    const organizationMock = await signInAndOpen(page)
     await tab(page, "Unidades").click()
 
     await page.getByRole("button", { name: "Ações de Unidade Caucaia" }).click()
@@ -863,10 +1167,20 @@ test.describe("units", () => {
 
     const confirm = page.getByRole("dialog", { name: "Inativar unidade?" })
     await expect(confirm).toContainText("continua no histórico da organização")
+    await expect(confirm).toContainText(
+      "Usuários vinculados a esta unidade: 3 (2 com acesso ativo). Eles não são alterados nem bloqueados.",
+    )
     await confirm.getByRole("textbox", { name: "Motivo da inativação" }).fill("Unidade incorporada à Aldeota.")
     await confirm.getByRole("button", { name: "Inativar" }).click()
 
     await expect(page.getByText("Unidade inativada.")).toBeVisible()
+    expect(organizationMock.unitCalls).toEqual([
+      {
+        body: { confirmImpacts: true, reason: "Unidade incorporada à Aldeota.", version: 2 },
+        method: "POST",
+        path: "school-units/3/deactivate",
+      },
+    ])
     const row = page.getByRole("row", { name: /Unidade Caucaia/ })
     await expect(row.getByText("Inativa")).toBeVisible()
 
@@ -877,6 +1191,28 @@ test.describe("units", () => {
 
     const details = page.getByRole("dialog", { name: "Unidade Caucaia" })
     await expect(details).toContainText("Unidade incorporada à Aldeota.")
+    await expect(details).toContainText("11 de novembro de 2026")
     await expect(details.getByRole("button", { name: "Editar" })).toHaveCount(0)
+  })
+
+  test("says no user is affected when the unit has none, and can't inactivate when that can't be checked", async ({
+    page,
+  }) => {
+    await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await page.getByRole("menuitem", { name: "Inativar" }).click()
+    const confirm = page.getByRole("dialog", { name: "Inativar unidade?" })
+    await expect(confirm).toContainText("Nenhum usuário está vinculado a esta unidade.")
+    await expect(confirm.getByRole("button", { name: "Inativar" })).toBeEnabled()
+    await confirm.getByRole("button", { name: "Cancelar" }).click()
+
+    // The check failing: nothing to confirm with.
+    await page.route(/\/api\/school-units\/\d+\/deactivation-check$/, (route) => route.fulfill({ status: 500 }))
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await page.getByRole("menuitem", { name: "Inativar" }).click()
+    await expect(confirm.getByRole("alert")).toContainText("Não foi possível verificar o impacto da inativação.")
+    await expect(confirm.getByRole("button", { name: "Inativar" })).toBeDisabled()
   })
 })

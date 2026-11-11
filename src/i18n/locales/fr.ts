@@ -175,6 +175,7 @@ export const fr: TranslationResource = {
       address: "Adresse",
       cityState: "Ville/État",
       clearFilters: "Effacer les filtres",
+      conflict: "Quelqu'un d'autre a modifié cet établissement. La liste a été mise à jour ; refaites la modification.",
       contactEmail: "E-mail",
       contactPhone: "Téléphone",
       create: "Nouvel établissement",
@@ -192,11 +193,19 @@ export const fr: TranslationResource = {
       inactivate: "Désactiver",
       inactivateDescription:
         "{{name}} n'apparaîtra plus dans les nouvelles opérations, mais reste dans l'historique de l'organisation.",
+      inactivateImpactError: "Impossible de vérifier l'impact de la désactivation. Fermez et réessayez.",
+      inactivateImpactLoading: "Vérification de l'impact de la désactivation...",
+      inactivateImpactNone: "Aucun utilisateur n'est lié à cet établissement.",
+      inactivateImpactUsers:
+        "Utilisateurs liés à cet établissement : {{assigned}} ({{enabled}} avec un accès actif). Ils ne sont ni modifiés ni bloqués.",
       inactivateTitle: "Désactiver l'établissement ?",
       inactivated: "Établissement désactivé.",
       inactivatedAt: "Désactivé le",
       inactivationReason: "Motif de la désactivation",
+      legacyAddress:
+        "Adresse enregistrée auparavant : {{address}}. Remplissez les champs ci-dessous pour la mettre à jour.",
       name: "Nom de l'établissement",
+      nameTaken: "Un établissement porte déjà ce nom.",
       noResults: "Aucun établissement ne correspond à la recherche ou au filtre.",
       notes: "Notes",
       searchLabel: "Rechercher un établissement",

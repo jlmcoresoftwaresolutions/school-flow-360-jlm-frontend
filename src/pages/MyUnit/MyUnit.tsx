@@ -11,18 +11,14 @@ import type {
   OrganizationBrandingUpdate,
   OrganizationUpdate,
   SchoolUnit,
-  SchoolUnitInput,
 } from "@/models"
 import { getErrorStatus } from "@/services/httpClient"
 import {
-  createSchoolUnit,
   getBranding,
   getCurrentOrganization,
-  inactivateSchoolUnit,
   listSchoolUnits,
   updateBranding,
   updateOrganization,
-  updateSchoolUnit,
 } from "@/services/organization"
 import { defaultCountry, isCountry } from "@/utils/countries"
 
@@ -107,24 +103,6 @@ export const MyUnit = () => {
     setReloadToken((current) => current + 1)
   }
 
-  // Every save reports whether it worked, so the form that asked closes only on success and keeps the
-  // draft otherwise.
-  const runSave = async <T,>(save: () => Promise<T>, apply: (result: T) => void, successMessage: string) => {
-    try {
-      apply(await save())
-      toast.success(successMessage)
-      return true
-    } catch {
-      toast.error(t("myUnit.saveError"))
-      return false
-    }
-  }
-
-  const replaceUnit = (unit: SchoolUnit) =>
-    setData((current) =>
-      current ? { ...current, units: current.units.map((item) => (item.id === unit.id ? unit : item)) } : current,
-    )
-
   const applyOrganization = (organization: Organization) =>
     setData((current) => (current ? { ...current, organization } : current))
 
@@ -186,18 +164,8 @@ export const MyUnit = () => {
     return false
   }
 
-  const handleCreateUnit = (input: SchoolUnitInput) =>
-    runSave(
-      () => createSchoolUnit(input),
-      (unit) => setData((current) => (current ? { ...current, units: [...current.units, unit] } : current)),
-      t("myUnit.units.created"),
-    )
-
-  const handleUpdateUnit = (unit: SchoolUnit, input: SchoolUnitInput) =>
-    runSave(() => updateSchoolUnit(unit.id, input), replaceUnit, t("myUnit.units.updated"))
-
-  const handleInactivateUnit = (unit: SchoolUnit, reason: string) =>
-    runSave(() => inactivateSchoolUnit(unit.id, { reason }), replaceUnit, t("myUnit.units.inactivated"))
+  const handleUnitsChange = (change: (units: SchoolUnit[]) => SchoolUnit[]) =>
+    setData((current) => (current ? { ...current, units: change(current.units) } : current))
 
   // From the overview's empty units summary: straight to the units tab, with the form open.
   const handleCreateFromOverview = () => {
@@ -247,10 +215,8 @@ export const MyUnit = () => {
         <div hidden={tab !== "units"}>
           <UnitsTab
             isCreating={isCreatingUnit}
-            onCreate={handleCreateUnit}
             onCreatingChange={setIsCreatingUnit}
-            onInactivate={handleInactivateUnit}
-            onUpdate={handleUpdateUnit}
+            onUnitsChange={handleUnitsChange}
             units={data.units}
           />
         </div>

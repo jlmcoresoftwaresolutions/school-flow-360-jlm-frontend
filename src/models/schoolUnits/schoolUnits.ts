@@ -5,8 +5,7 @@ import type { ApiOrganization } from "../organizations/organizations"
 
 export type ApiSchoolUnitStatus = "ACTIVE" | "INACTIVE"
 
-// The unit entity, as POST /api/school-units answers it. Its address is one free-text string, not a
-// structured address.
+// The unit entity nested in other entities (a user's unit), with its address as one text.
 export type ApiSchoolUnit = {
   address: string | null
   contactEmail: string | null
@@ -18,41 +17,70 @@ export type ApiSchoolUnit = {
   organization?: ApiOrganization
 }
 
-// A unit's detail, what the list (each item of its page), by-id, update, deactivate and activate
-// endpoints answer. `version` is to be kept and sent back when editing, deactivating or activating.
+// A unit's detail, what every unit endpoint answers: the list (each item of its page), by-id, create,
+// update, deactivate and activate. `version` is to be kept and sent back when editing, deactivating or
+// activating. The address is structured (addressStreet and the others) for a unit saved that way;
+// `address` is always there, as one text - composed by the backend from the structured fields, or the
+// only address of a unit from before them (whose structured fields come null). `inactivatedAt` and
+// `inactivationReason` are set while the unit is INACTIVE and cleared when it is activated again.
 export type SchoolUnitDetail = {
   address: string
+  addressCep: string | null
+  addressCity: string | null
+  addressComplement: string | null
+  addressDistrict: string | null
+  addressNumber: string | null
+  addressState: string | null
+  addressStreet: string | null
   contactEmail: string
   contactPhone: string
+  inactivatedAt: string | null
+  inactivationReason: string | null
   operationalStatus: ApiSchoolUnitStatus
   organizationId: number
   schoolUnitId: number
   unitName: string
+  unitNotes: string | null
   version: number
 }
 
-// Body of POST /api/school-units: all required, trimmed by the backend. The name must be unique in the
-// tenant (ignoring case and the spaces around it); the unit starts ACTIVE. Limits: name 100, address
-// 500, e-mail 255 (a valid e-mail), phone 25.
+// Body of POST /api/school-units, trimmed by the backend. unitName (max 100, unique in the tenant
+// ignoring case and the spaces around it), contactEmail (a valid e-mail, max 255) and contactPhone (7
+// to 25 digits and + ( ) . - space) are required, and so is an address: `addressStreet` (max 150)
+// makes it a structured one, the backend composing the single text from the fields; without it the
+// single-text `address` (max 500) is taken, as older clients send it; with neither, 400. Limits: CEP
+// 20, number 10 (text: letters, digits, / . - and space), complement 100, district 80, city 80, state
+// 20, notes 2000. The unit starts ACTIVE.
 export type CreateSchoolUnitRequest = {
-  address: string
   contactEmail: string
   contactPhone: string
   unitName: string
+  address?: string
+  addressCep?: string
+  addressCity?: string
+  addressComplement?: string
+  addressDistrict?: string
+  addressNumber?: string
+  addressState?: string
+  addressStreet?: string
+  unitNotes?: string
 }
 
-// Body of PUT /api/school-units/{id}: the same fields plus the `version` read from the detail (409 if
-// it is stale or if the name is taken by another unit). It does not change the organization or the
-// status; for the status use deactivate/activate.
+// Body of PUT /api/school-units/{id}: the same fields plus the `version` read from the detail (409
+// VERSION_CONFLICT if it is stale, 409 UNIT_NAME_DUPLICATE if the name is taken by another unit).
+// Like the create, it replaces every field: one left out is cleared. It does not change the
+// organization or the status; for the status use deactivate/activate.
 export type UpdateSchoolUnitRequest = CreateSchoolUnitRequest & {
   version: number
 }
 
 // Body of POST /api/school-units/{id}/deactivate. `confirmImpacts` must be true when the check said
-// the deactivation requires confirmation, otherwise the backend answers 409.
+// the deactivation requires confirmation, otherwise the backend answers 409 IMPACTS_NOT_CONFIRMED.
+// `reason` (optional, max 500) is kept in the unit's detail and in the audit.
 export type DeactivateSchoolUnitRequest = {
   version: number
   confirmImpacts?: boolean
+  reason?: string
 }
 
 // Body of POST /api/school-units/{id}/activate.

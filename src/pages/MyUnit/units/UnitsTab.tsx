@@ -6,7 +6,7 @@ import type { SelectOption } from "@/ds-components/molecules"
 import { ActionMenu, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
-import type { SchoolUnit, SchoolUnitInput, SchoolUnitStatus } from "@/models"
+import type { SchoolUnit, SchoolUnitStatus } from "@/models"
 import { formatCityState } from "@/utils/address"
 import { normalizeForSearch } from "@/utils/strings"
 
@@ -18,6 +18,7 @@ import { useStatusLabels } from "../shared/useStatusLabels"
 import { InactivateUnitDialog } from "./InactivateUnitDialog"
 import { UnitDetailsModal } from "./UnitDetailsModal"
 import { UnitFormModal } from "./UnitFormModal"
+import { useUnitActions } from "./useUnitActions"
 
 type StatusFilter = "all" | SchoolUnitStatus
 
@@ -31,27 +32,27 @@ type UnitDialog =
 export type UnitsTabProps = {
   isCreating: boolean
   units: SchoolUnit[]
-  onCreate: (input: SchoolUnitInput) => Promise<boolean>
   onCreatingChange: (isCreating: boolean) => void
-  onInactivate: (unit: SchoolUnit, reason: string) => Promise<boolean>
-  onUpdate: (unit: SchoolUnit, input: SchoolUnitInput) => Promise<boolean>
+  // Applies a change to the page's list of units (which the overview's summary also shows).
+  onUnitsChange: (change: (units: SchoolUnit[]) => SchoolUnit[]) => void
 }
 
 const matchesSearch = (unit: SchoolUnit, search: string) => {
   const term = normalizeForSearch(search)
   if (!term) return true
 
-  return [unit.name, unit.address.city, unit.address.street, unit.address.district].some((text) =>
-    normalizeForSearch(text).includes(term),
-  )
+  const texts = [unit.name, unit.address.city, unit.address.street, unit.address.district, unit.legacyAddress ?? ""]
+
+  return texts.some((text) => normalizeForSearch(text).includes(term))
 }
 
 // The organization's units the user may access (search and filter only ever narrow that list): a
 // table with a search, a status filter and paging, plus registering, viewing, editing and
-// inactivating. An empty organization and a search without results are told apart. The "new unit"
-// form is opened from here or from the overview, so whether it is open lives in the page (isCreating).
+// inactivating (see useUnitActions). An empty organization and a search without results are told apart.
+// The "new unit" form is opened from here or from the overview, so whether it is open lives in the
+// page (isCreating), as does the list itself, which the overview's summary shares.
 export const UnitsTab = (props: UnitsTabProps) => {
-  const { isCreating, onCreate, onCreatingChange, onInactivate, onUpdate, units } = props
+  const { isCreating, onCreatingChange, onUnitsChange, units } = props
 
   const { t } = useTranslation()
   const formatPhone = usePhoneFormatter()
@@ -60,6 +61,11 @@ export const UnitsTab = (props: UnitsTabProps) => {
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [dialog, setDialog] = useState<UnitDialog>(null)
+
+  const { createUnit, inactivateUnit, updateUnit } = useUnitActions({
+    onConflict: () => setDialog(null),
+    onUnitsChange,
+  })
 
   const hasFilters = search.trim() !== "" || statusFilter !== "all"
   const filteredUnits = units.filter(
@@ -225,10 +231,10 @@ export const UnitsTab = (props: UnitsTabProps) => {
         )}
       </TabCard>
 
-      {isCreating && <UnitFormModal onClose={() => onCreatingChange(false)} onSave={onCreate} />}
+      {isCreating && <UnitFormModal onClose={() => onCreatingChange(false)} onSave={createUnit} />}
 
       {dialog?.kind === "edit" && (
-        <UnitFormModal onClose={closeDialog} onSave={(input) => onUpdate(dialog.unit, input)} unit={dialog.unit} />
+        <UnitFormModal onClose={closeDialog} onSave={(input) => updateUnit(dialog.unit, input)} unit={dialog.unit} />
       )}
 
       {dialog?.kind === "details" && (
@@ -242,7 +248,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
       {dialog?.kind === "inactivate" && (
         <InactivateUnitDialog
           onClose={closeDialog}
-          onConfirm={(reason) => onInactivate(dialog.unit, reason)}
+          onConfirm={(inactivation) => inactivateUnit(dialog.unit, inactivation)}
           unit={dialog.unit}
         />
       )}

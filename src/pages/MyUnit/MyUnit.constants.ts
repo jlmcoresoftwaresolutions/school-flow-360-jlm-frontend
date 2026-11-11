@@ -7,8 +7,6 @@ export const unitsPageSize = 10
 // How many units the overview's summary lists before "see all".
 export const unitsSummaryLimit = 4
 
-export const notesMaxLength = 500
-
 // The backend's limits for the organization's fields.
 export const displayNameMaxLength = 100
 
@@ -16,10 +14,17 @@ export const institutionalNameMaxLength = 60
 
 export const contactEmailMaxLength = 50
 
-export const organizationNotesMaxLength = 2000
+// The organization's internal note and a unit's notes.
+export const notesMaxLength = 2000
 
-// The address fields' limits (the organization's on the backend; a unit's whole address fits in its
-// 500 characters with them too).
+// The backend's limits for a unit's fields.
+export const unitNameMaxLength = 100
+
+export const unitEmailMaxLength = 255
+
+export const inactivationReasonMaxLength = 500
+
+// The address fields' limits, the same on the backend for the organization's and a unit's.
 export const addressMaxLengths = {
   city: 80,
   complement: 100,

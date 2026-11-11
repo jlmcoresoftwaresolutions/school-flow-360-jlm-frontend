@@ -37,7 +37,12 @@ export const UnitDetailsModal = (props: UnitDetailsModalProps) => {
     },
     { key: "contactEmail", label: t("myUnit.units.contactEmail"), value: unit.contactEmail },
     { key: "contactPhone", label: t("myUnit.units.contactPhone"), value: formatPhone(unit.contactPhone) },
-    { fullWidth: true, key: "address", label: t("myUnit.units.address"), value: formatAddress(unit.address) },
+    {
+      fullWidth: true,
+      key: "address",
+      label: t("myUnit.units.address"),
+      value: formatAddress(unit.address) || unit.legacyAddress,
+    },
     { fullWidth: true, key: "notes", label: t("myUnit.units.notes"), value: unit.notes },
   ]
 
