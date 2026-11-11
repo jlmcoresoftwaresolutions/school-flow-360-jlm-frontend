@@ -31,15 +31,12 @@ export const addressMaxLengths = {
 // What the backend accepts as an address number: letters, digits, / . - and space ("123A", "s/n").
 export const addressNumberPattern = /^[0-9A-Za-z/ .-]*$/
 
-// The visual spec's limits for the identity files.
+// The backend's limits for the logo: PNG or JPEG, up to 2 MB, 64 to 2048 px a side, at most 4:1.
 export const logoRules = {
-  extensions: [".png", ".jpg", ".jpeg", ".svg"],
+  extensions: [".png", ".jpg", ".jpeg"],
+  maxAspectRatio: 4,
   maxBytes: 2 * 1024 * 1024,
-  mimeTypes: ["image/png", "image/jpeg", "image/svg+xml"],
-}
-
-export const faviconRules = {
-  extensions: [".ico", ".png", ".svg"],
-  maxBytes: 1024 * 1024,
-  mimeTypes: ["image/x-icon", "image/vnd.microsoft.icon", "image/png", "image/svg+xml"],
+  maxSide: 2048,
+  mimeTypes: ["image/png", "image/jpeg"],
+  minSide: 64,
 }

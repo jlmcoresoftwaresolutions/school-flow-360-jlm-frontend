@@ -70,6 +70,8 @@ export const MyUnit = () => {
   const [isCreatingUnit, setIsCreatingUnit] = useState(false)
   // Bumped to remount the overview, dropping its drafts, when a save found the organization changed.
   const [overviewKey, setOverviewKey] = useState(0)
+  // The same for the visual identity tab.
+  const [brandingKey, setBrandingKey] = useState(0)
 
   // The fetch is defined inline inside the effect, rather than as an outer useCallback referenced
   // here, so react-hooks/set-state-in-effect doesn't flag it. handleRetry bumps reloadToken instead of
@@ -151,12 +153,38 @@ export const MyUnit = () => {
     return false
   }
 
-  const handleSaveBranding = (update: OrganizationBrandingUpdate) =>
-    runSave(
-      () => updateBranding(update),
-      (branding) => setData((current) => (current ? { ...current, branding } : current)),
-      t("myUnit.branding.saved"),
-    )
+  const applyBranding = (branding: OrganizationBranding) =>
+    setData((current) => (current ? { ...current, branding } : current))
+
+  // Saving the identity is three calls (draft, logo, publication), so a failure can come from any of
+  // them: a logo the backend refuses, file storage turned off, or - 409 - someone else changed the
+  // identity first, when it is read again and the tab goes back to it.
+  const handleSaveBranding = async (update: OrganizationBrandingUpdate) => {
+    try {
+      applyBranding(await updateBranding(update))
+      toast.success(t("myUnit.branding.saved"))
+      return true
+    } catch (error) {
+      const status = getErrorStatus(error)
+
+      if (status !== 409) {
+        if (status === 503) toast.error(t("myUnit.branding.storageUnavailable"))
+        else if (status === 413 || status === 415 || status === 422) toast.error(t("myUnit.branding.logoRefused"))
+        else toast.error(t("myUnit.saveError"))
+        return false
+      }
+    }
+
+    try {
+      applyBranding(await getBranding())
+      setBrandingKey((current) => current + 1)
+      toast.error(t("myUnit.branding.conflict"))
+    } catch {
+      toast.error(t("myUnit.saveError"))
+    }
+
+    return false
+  }
 
   const handleCreateUnit = (input: SchoolUnitInput) =>
     runSave(
@@ -211,6 +239,7 @@ export const MyUnit = () => {
         <div hidden={tab !== "branding"}>
           <BrandingTab
             branding={data.branding}
+            key={brandingKey}
             displayName={data.organization.displayName}
             onSave={handleSaveBranding}
           />
