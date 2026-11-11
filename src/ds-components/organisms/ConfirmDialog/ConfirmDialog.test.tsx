@@ -86,6 +86,19 @@ describe("ConfirmDialog", () => {
     expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: colors.danger[700] })
   })
 
+  it("disables only the confirm button when confirmDisabled, still letting the dialog be cancelled", () => {
+    const { onClose, onConfirm } = renderDialog({ confirmDisabled: true })
+
+    expect(screen.getByRole("button", { name: "Inativar" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Cancelar" })).toBeEnabled()
+
+    fireEvent.click(screen.getByRole("button", { name: "Inativar" }))
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }))
+
+    expect(onConfirm).not.toHaveBeenCalled()
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   it("disables both buttons while loading", () => {
     renderDialog({ loading: true })
 

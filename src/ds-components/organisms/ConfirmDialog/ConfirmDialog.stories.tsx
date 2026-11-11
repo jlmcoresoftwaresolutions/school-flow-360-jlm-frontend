@@ -46,6 +46,11 @@ const meta: Meta<typeof ConfirmDialog> = {
       control: "text",
       description: "Accessible name of the X button. The button is only rendered when this is given.",
     },
+    confirmDisabled: {
+      control: "boolean",
+      description:
+        "Disables only the confirm button, for an action that can't go ahead yet; cancelling still works. Defaults to false.",
+    },
     confirmLabel: {
       control: "text",
       description: "Label of the confirm button, which calls onConfirm.",
@@ -109,6 +114,17 @@ export const WithReasonField: Story = {
   args: {
     children: <Textarea placeholder="Descreva o motivo" title="Motivo" />,
     confirmLabel: "Inativar",
+    title: "Inativar unidade?",
+    tone: "danger",
+  },
+}
+
+// The confirmDisabled prop turning off only the confirm button while cancelling stays possible
+export const ConfirmDisabled: Story = {
+  args: {
+    confirmDisabled: true,
+    confirmLabel: "Inativar",
+    description: "Verificando o impacto da inativação...",
     title: "Inativar unidade?",
     tone: "danger",
   },

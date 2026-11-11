@@ -13,6 +13,7 @@ export type ConfirmDialogProps = {
   title: string
   children?: ReactNode
   closeLabel?: string
+  confirmDisabled?: boolean
   description?: string
   loading?: boolean
   tone?: ConfirmDialogTone
@@ -23,13 +24,16 @@ export type ConfirmDialogProps = {
 // A Modal that asks the user to confirm an action. Cancelling (the button, Escape, the X or the
 // backdrop) all go through onClose; only the confirm button calls onConfirm. While `loading` the
 // dialog can't be dismissed and both buttons are disabled, so the action can't be repeated or
-// abandoned halfway. The danger tone is for destructive actions such as inactivating a unit.
-// children render below the description, e.g. a reason field the action requires.
+// abandoned halfway. `confirmDisabled` turns off only the confirm button, for an action that can't go
+// ahead yet (something it needs is still loading, or failed to load) while cancelling stays possible.
+// The danger tone is for destructive actions such as inactivating a unit. children render below the
+// description, e.g. a reason field the action requires.
 export const ConfirmDialog = (props: ConfirmDialogProps) => {
   const {
     cancelLabel,
     children,
     closeLabel,
+    confirmDisabled = false,
     confirmLabel,
     description,
     loading = false,
@@ -56,7 +60,7 @@ export const ConfirmDialog = (props: ConfirmDialogProps) => {
             {cancelLabel}
           </Button>
 
-          <Button color={confirmColor} disabled={loading} onClick={onConfirm}>
+          <Button color={confirmColor} disabled={loading || confirmDisabled} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </>

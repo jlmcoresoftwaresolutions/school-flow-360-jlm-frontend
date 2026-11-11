@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { DescriptionList, Textarea } from "@/ds-components/molecules"
 import type { Organization, OrganizationUpdate } from "@/models"
 
-import { organizationNotesMaxLength } from "../MyUnit.constants"
+import { notesMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
 import { useSectionForm } from "../shared/useSectionForm"
 
@@ -27,8 +27,8 @@ export const NotesSection = (props: NotesSectionProps) => {
       editing={section.isEditing}
       form={
         <Textarea
-          helperText={t("myUnit.validation.maxLength", { max: organizationNotesMaxLength })}
-          maxLength={organizationNotesMaxLength}
+          helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}
+          maxLength={notesMaxLength}
           title={t("myUnit.overview.notesTitle")}
           {...section.form.register("internalNotes")}
         />

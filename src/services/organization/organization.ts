@@ -9,11 +9,10 @@ import type {
   SchoolUnit,
   SchoolUnitDetail,
   SchoolUnitInactivation,
+  SchoolUnitInactivationImpact,
   SchoolUnitInput,
 } from "@/models"
-import { emptyAddress } from "@/utils/address"
 import { defaultCountry, toCountry } from "@/utils/countries"
-import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { toInternationalPhone } from "@/utils/phone"
 
 import {
@@ -25,15 +24,18 @@ import {
 } from "../branding"
 import type { RequestConfig } from "../httpClient"
 import { getCurrentOrganizationEditable, updateCurrentOrganization } from "../organizations"
-import { searchSchoolUnits } from "../schoolUnits"
+import {
+  addSchoolUnit,
+  checkSchoolUnitDeactivation,
+  deactivateSchoolUnit,
+  editSchoolUnit,
+  searchSchoolUnits,
+} from "../schoolUnits"
 
-// The page-facing layer of Minha Unidade: it answers in the frontend's shapes (models/organization).
-// The API-shaped services, one function per backend endpoint, are organizations, schoolUnits, branding
-// and the others beside this folder; the calls here are being moved onto them one at a time. Wired:
-// the organization (organizations), its visual identity (branding) and listing the units
-// (schoolUnits). Still MOCK: the units' create, edit and inactivate, which act on the fetched list in
-// memory with a simulated delay. The signatures are the final ones: wiring a call only changes its
-// body (mapping the backend's field names), not the page.
+// The page-facing layer of Minha Unidade: it answers in the frontend's shapes (models/organization),
+// over the API-shaped services beside this folder (organizations, branding, schoolUnits), which have
+// one function per backend endpoint in the backend's own names. Everything here is wired to the
+// backend; mapping the field names, and keeping what a later save needs, is this file's job.
 
 // The organization as the backend last answered it (read or saved), kept for the next save: the backend
 // replaces EVERY editable field with what the body brings (one missing becomes null), so each save
@@ -42,43 +44,9 @@ import { searchSchoolUnits } from "../schoolUnits"
 let currentOrganization: OrganizationEditable | null = null
 // The visual identity as the backend last answered it, for the `version` the next save sends back.
 let currentBranding: BrandingResponse | null = null
-// The units the mocked create/edit/inactivate work on: the real list, as last fetched, so those
-// actions apply to the units on screen (locally only - lost on reload) until they are wired too.
-let schoolUnits: SchoolUnit[] = []
 
-const mockDelayMs = 600
-
-// MOCK-ONLY test hook: the E2E suite sets this sessionStorage key to see the page's error state
-// ("error" fails every mocked call). The wired calls never read it.
-const mockScenarioKey = "sf360.mockScenario"
-
-const readMockScenario = (): string | null => {
-  try {
-    return sessionStorage.getItem(mockScenarioKey)
-  } catch {
-    return null
-  }
-}
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-// Behaves like an httpClient call: shows the global loading overlay unless showLoading is false,
-// takes a moment, and fails in the "error" scenario.
-const mockRequest = async <T>(answer: () => T, config?: RequestConfig): Promise<T> => {
-  const showLoading = config?.showLoading !== false
-
-  if (showLoading) startLoading()
-
-  try {
-    await wait(mockDelayMs)
-
-    if (readMockScenario() === "error") throw new Error("Mock request failed")
-
-    return structuredClone(answer())
-  } finally {
-    if (showLoading) stopLoading()
-  }
-}
+// The organization's country, which a phone without "+" is read as one of (Brazil when not known).
+const getOrganizationCountry = () => toCountry(currentOrganization?.orgAddressCountry ?? "") ?? defaultCountry
 
 // The backend keeps the country as free text: a code or a name ("Brasil") is read as the country's
 // code, and anything else as unknown (empty), which the save then leaves untouched. The phone comes as
@@ -126,7 +94,6 @@ export const updateOrganization = async (update: OrganizationUpdate, config?: Re
 
   const current = currentOrganization
   const { address } = update
-  const phoneCountry = toCountry(current.orgAddressCountry ?? "") ?? defaultCountry
 
   return keepOrganization(
     await updateCurrentOrganization(
@@ -145,7 +112,7 @@ export const updateOrganization = async (update: OrganizationUpdate, config?: Re
         orgInstTel:
           update.contactPhone === undefined
             ? current.orgInstTel
-            : toInternationalPhone(update.contactPhone, phoneCountry),
+            : toInternationalPhone(update.contactPhone, getOrganizationCountry()),
         orgName: update.displayName ?? current.orgName,
         orgNotes: update.internalNotes ?? current.orgNotes,
         version: current.version,
@@ -220,18 +187,47 @@ export const updateBranding = async (
 // The backend's largest page: the whole list comes in as few requests as possible.
 const unitsPageSize = 100
 
-// The backend keeps the address as one free-text string; until we know its format, all of it goes in
-// the street, so it is shown whole and nothing is guessed (the city stays empty). A unit's country is
-// its organization's. The phone comes as stored: the page shows it in the organization's country's
-// format.
+// A unit has no country of its own (it is its organization's), so the address comes without one. A
+// unit from before structured addresses has no street: its fields come empty and the old text goes in
+// `legacyAddress`. The phone comes as stored: the page shows it in the organization's country's format.
 const toSchoolUnit = (unit: SchoolUnitDetail): SchoolUnit => ({
-  address: { ...emptyAddress, street: unit.address ?? "" },
+  address: {
+    city: unit.addressCity ?? "",
+    complement: unit.addressComplement ?? "",
+    country: "",
+    district: unit.addressDistrict ?? "",
+    number: unit.addressNumber ?? "",
+    postalCode: unit.addressCep ?? "",
+    state: unit.addressState ?? "",
+    street: unit.addressStreet ?? "",
+  },
   contactEmail: unit.contactEmail ?? "",
   contactPhone: unit.contactPhone ?? "",
   id: unit.schoolUnitId,
+  inactivatedAt: unit.inactivatedAt ?? undefined,
+  inactivationReason: unit.inactivationReason ?? undefined,
+  legacyAddress: unit.addressStreet ? undefined : unit.address || undefined,
   name: unit.unitName,
-  notes: "",
+  notes: unit.unitNotes ?? "",
   status: unit.operationalStatus,
+  version: unit.version,
+})
+
+// The body of a create or an edit: the structured address (the backend composes its one-text copy)
+// and the phone in the international format, a number without "+" read as one of the organization's
+// country.
+const toSchoolUnitRequest = (input: SchoolUnitInput) => ({
+  addressCep: input.address.postalCode,
+  addressCity: input.address.city,
+  addressComplement: input.address.complement,
+  addressDistrict: input.address.district,
+  addressNumber: input.address.number,
+  addressState: input.address.state,
+  addressStreet: input.address.street,
+  contactEmail: input.contactEmail,
+  contactPhone: toInternationalPhone(input.contactPhone, getOrganizationCountry()),
+  unitName: input.name,
+  unitNotes: input.notes,
 })
 
 // Only the units the user may access (the backend applies that). The list is paged on the backend;
@@ -249,46 +245,54 @@ export const listSchoolUnits = async (config?: RequestConfig): Promise<SchoolUni
     page += 1
   }
 
-  schoolUnits = units.map(toSchoolUnit)
-
-  return structuredClone(schoolUnits)
+  return units.map(toSchoolUnit)
 }
 
-export const createSchoolUnit = (input: SchoolUnitInput, config?: RequestConfig): Promise<SchoolUnit> =>
-  mockRequest(() => {
-    const id = Math.max(0, ...schoolUnits.map((unit) => unit.id)) + 1
-    const unit: SchoolUnit = { ...structuredClone(input), id, status: "ACTIVE" }
+// Registers a unit, which starts active. A name another unit already has is refused (the error's code
+// is UNIT_NAME_DUPLICATE, see getErrorCode).
+export const createSchoolUnit = async (input: SchoolUnitInput, config?: RequestConfig): Promise<SchoolUnit> =>
+  toSchoolUnit(await addSchoolUnit(toSchoolUnitRequest(input), config))
 
-    schoolUnits = [...schoolUnits, unit]
-    return unit
-  }, config)
+// Saves a unit's data, with the `version` it was read at: when someone else changed the unit since,
+// the error's code is VERSION_CONFLICT (read the list again); a name taken, UNIT_NAME_DUPLICATE.
+export const updateSchoolUnit = async (
+  unit: Pick<SchoolUnit, "id" | "version">,
+  input: SchoolUnitInput,
+  config?: RequestConfig,
+): Promise<SchoolUnit> =>
+  toSchoolUnit(await editSchoolUnit(unit.id, { ...toSchoolUnitRequest(input), version: unit.version }, config))
 
-const replaceSchoolUnit = (id: number, change: (unit: SchoolUnit) => SchoolUnit): SchoolUnit => {
-  const current = schoolUnits.find((unit) => unit.id === id)
-  if (!current) throw new Error(`School unit ${id} not found`)
+// What inactivating the unit would affect, to show before asking for the confirmation.
+export const getSchoolUnitInactivationImpact = async (
+  id: number,
+  config?: RequestConfig,
+): Promise<SchoolUnitInactivationImpact> => {
+  const check = await checkSchoolUnitDeactivation(id, config)
 
-  const next = change(current)
-  schoolUnits = schoolUnits.map((unit) => (unit.id === id ? next : unit))
-
-  return next
+  return {
+    assignedUsers: check.assignedUsers,
+    canInactivate: check.canDeactivate,
+    enabledAssignedUsers: check.enabledAssignedUsers,
+    requiresConfirmation: check.requiresConfirmation,
+    version: check.version,
+  }
 }
 
-export const updateSchoolUnit = (id: number, input: SchoolUnitInput, config?: RequestConfig): Promise<SchoolUnit> =>
-  mockRequest(() => replaceSchoolUnit(id, (unit) => ({ ...unit, ...structuredClone(input) })), config)
-
-// Inactivating isn't deleting: the unit stays, marked inactive, with when and why.
-export const inactivateSchoolUnit = (
+// Inactivating isn't deleting: the unit stays, marked inactive, with when and why. It goes with the
+// version the impact was read at (VERSION_CONFLICT when the unit changed since).
+export const inactivateSchoolUnit = async (
   id: number,
   inactivation: SchoolUnitInactivation,
   config?: RequestConfig,
 ): Promise<SchoolUnit> =>
-  mockRequest(
-    () =>
-      replaceSchoolUnit(id, (unit) => ({
-        ...unit,
-        inactivatedAt: new Date().toISOString(),
-        inactivationReason: inactivation.reason,
-        status: "INACTIVE",
-      })),
-    config,
+  toSchoolUnit(
+    await deactivateSchoolUnit(
+      id,
+      {
+        confirmImpacts: inactivation.confirmImpacts,
+        reason: inactivation.reason,
+        version: inactivation.version,
+      },
+      config,
+    ),
   )

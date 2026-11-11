@@ -20,6 +20,8 @@ export type AddressFormValues = {
 }
 
 export type AddressFieldsProps = {
+  // Makes the street required (a unit's address: the backend takes it as structured only with one).
+  streetRequired?: boolean
   // Shows the country field (the organization's address). Without it the address is in the
   // organization's country, as a unit's is.
   withCountry?: boolean
@@ -38,10 +40,10 @@ const regionMaxLength = 20
 // the street, district, city and state, which stay editable - a CEP not found, or a lookup that fails,
 // only says so) and the state as a UF, required. Any other has the postal code and the state/region as
 // free text, the region optional, and no lookup. Changing the country clears the postal code and the
-// state. The city is always required; the lengths and the
+// state. The street is required only when asked (`streetRequired`). The city is always required; the lengths and the
 // number's characters are the backend's limits.
 export const AddressFields = (props: AddressFieldsProps) => {
-  const { withCountry } = props
+  const { streetRequired, withCountry } = props
 
   const { i18n, t } = useTranslation()
   const { control, formState, register, setValue } = useFormContext<AddressFormValues>()
@@ -148,9 +150,13 @@ export const AddressFields = (props: AddressFieldsProps) => {
         </Grid.Col>
         <Grid.Col xs={12} md={8}>
           <Input
+            error={errors.address?.street?.message}
             maxLength={addressMaxLengths.street}
+            required={streetRequired}
             title={t("myUnit.address.street")}
-            {...register("address.street")}
+            {...register("address.street", {
+              validate: (value) => !streetRequired || value.trim() !== "" || requiredMessage,
+            })}
           />
         </Grid.Col>
       </Grid.Row>

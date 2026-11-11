@@ -1,6 +1,7 @@
 import type { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios"
 import axios, { isAxiosError } from "axios"
 
+import type { ApiErrorCode } from "@/models"
 import { paths } from "@/routes/paths"
 import { endExpiredSession } from "@/utils/authRedirect"
 import { markBackendResponse } from "@/utils/backendActivity"
@@ -27,6 +28,18 @@ export type RequestConfig = Pick<AxiosRequestConfig, "showLoading" | "tenantId">
 // importing axios itself.
 export const getErrorStatus = (error: unknown): number | undefined =>
   isAxiosError(error) ? error.response?.status : undefined
+
+// The backend's stable code of a failed call (e.g. UNIT_NAME_DUPLICATE), or undefined when the error
+// has none - which tells apart errors that share a status (a 409 for a stale version from a 409 for a
+// name already taken) without reading the message.
+export const getErrorCode = (error: unknown): ApiErrorCode | undefined => {
+  if (!isAxiosError(error)) return undefined
+
+  const body: unknown = error.response?.data
+  if (typeof body !== "object" || body === null || !("code" in body)) return undefined
+
+  return typeof body.code === "string" ? (body.code as ApiErrorCode) : undefined
+}
 
 // A relative URL ("/api/...") goes to the SchoolFlow360 backend through baseURL; an absolute one is
 // a third-party API (e.g. ViaCEP), which must never receive the user's token.

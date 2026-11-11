@@ -75,6 +75,11 @@ export type OrganizationBrandingUpdate = {
 // deleting, and there is no reactivation (DP-P1-06).
 export type SchoolUnitStatus = "ACTIVE" | "INACTIVE"
 
+// A unit of the organization. `version` is the backend's, sent back when the unit is edited or
+// inactivated (someone else changing it first makes that fail). The address is structured; a unit from
+// before structured addresses has it empty and its old one-text address in `legacyAddress`, to be shown
+// as it is until the unit is edited. A unit has no country of its own: it is its organization's.
+// `inactivatedAt` and `inactivationReason` exist only while the unit is inactive.
 export type SchoolUnit = {
   address: Address
   contactEmail: string
@@ -83,14 +88,31 @@ export type SchoolUnit = {
   name: string
   notes: string
   status: SchoolUnitStatus
+  version: number
   inactivatedAt?: string
   inactivationReason?: string
+  legacyAddress?: string
 }
 
 // What the unit form sends: a new unit always starts active, and it only stops being active by
 // inactivation.
-export type SchoolUnitInput = Omit<SchoolUnit, "id" | "inactivatedAt" | "inactivationReason" | "status">
+export type SchoolUnitInput = Pick<SchoolUnit, "address" | "contactEmail" | "contactPhone" | "name" | "notes">
 
+// What inactivating a unit would affect, read before asking for the confirmation: the users tied to
+// the unit (who are not changed or blocked by it). `requiresConfirmation` says the backend wants the
+// impact acknowledged, and `version` is the unit's, to send with the inactivation.
+export type SchoolUnitInactivationImpact = {
+  assignedUsers: number
+  canInactivate: boolean
+  enabledAssignedUsers: number
+  requiresConfirmation: boolean
+  version: number
+}
+
+// The inactivation itself: why (optional), the version the impact was read at, and that the impact
+// was shown to the user.
 export type SchoolUnitInactivation = {
+  confirmImpacts: boolean
   reason: string
+  version: number
 }

@@ -3,7 +3,7 @@ import { Controller, FormProvider, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useUnsavedChanges } from "@/components"
-import { Button, Grid } from "@/ds-components/atoms"
+import { Button, Grid, Text } from "@/ds-components/atoms"
 import { Input, Textarea } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { SchoolUnit, SchoolUnitInput } from "@/models"
@@ -11,7 +11,7 @@ import { emptyAddress } from "@/utils/address"
 import { isValidEmail } from "@/utils/email"
 import { formatPhoneInput, isValidPhone } from "@/utils/phone"
 
-import { notesMaxLength } from "../MyUnit.constants"
+import { notesMaxLength, unitEmailMaxLength, unitNameMaxLength } from "../MyUnit.constants"
 import { FieldGroup } from "../MyUnit.styles"
 import { AddressFields } from "../shared/AddressFields"
 import { useOrganizationCountry } from "../shared/organizationCountry"
@@ -33,9 +33,12 @@ const toInput = (formatPhone: (phone: string) => string, unit?: SchoolUnit): Sch
 
 // Registering a unit, or editing one (`unit`). Rendered only while open, so each opening starts from
 // the unit's current data (or a blank form). A new unit always starts active. Its address and phone
-// are in the organization's country (a unit has no country of its own). Only the name, the city
-// and the state are required: the visual spec's academic fields (calendar, operational setup) wait for
-// the Acadêmico module, and the unit code for DP-P1-05.
+// are in the organization's country (a unit has no country of its own). The backend requires the
+// name, the e-mail, the phone and an address with its street (plus, here, the city and - in Brazil -
+// the state); the limits are the backend's. A unit from before structured addresses opens with the
+// address fields empty and its old one-text address shown above them, to be typed into the fields.
+// The visual spec's academic fields (calendar, operational setup) wait for the Acadêmico module, and
+// the unit code for DP-P1-05.
 export const UnitFormModal = (props: UnitFormModalProps) => {
   const { onClose, onSave, unit } = props
 
@@ -49,6 +52,7 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
   const { errors, isDirty, isSubmitting } = form.formState
   const isEditing = unit !== undefined
   const phoneMessage = country === "BR" ? t("myUnit.validation.phone") : t("myUnit.validation.phoneAnyCountry")
+  const requiredMessage = t("myUnit.validation.required")
 
   useUnsavedChanges(isDirty)
 
@@ -80,10 +84,11 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
           <FieldGroup>
             <Input
               error={errors.name?.message}
+              maxLength={unitNameMaxLength}
               title={t("myUnit.units.name")}
               required
               {...form.register("name", {
-                validate: (value) => value.trim() !== "" || t("myUnit.validation.required"),
+                validate: (value) => value.trim() !== "" || requiredMessage,
               })}
             />
 
@@ -91,10 +96,16 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
               <Grid.Col xs={12} md={6}>
                 <Input
                   error={errors.contactEmail?.message}
+                  maxLength={unitEmailMaxLength}
                   title={t("myUnit.units.contactEmail")}
                   type="email"
+                  required
                   {...form.register("contactEmail", {
-                    validate: (value) => value.trim() === "" || isValidEmail(value) || t("myUnit.validation.email"),
+                    validate: (value) => {
+                      if (value.trim() === "") return requiredMessage
+
+                      return isValidEmail(value) || t("myUnit.validation.email")
+                    },
                   })}
                 />
               </Grid.Col>
@@ -115,16 +126,27 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                       title={t("myUnit.units.contactPhone")}
                       type="tel"
                       value={controller.field.value}
+                      required
                     />
                   )}
                   rules={{
-                    validate: (value) => value.trim() === "" || isValidPhone(value, country) || phoneMessage,
+                    validate: (value) => {
+                      if (value.trim() === "") return requiredMessage
+
+                      return isValidPhone(value, country) || phoneMessage
+                    },
                   }}
                 />
               </Grid.Col>
             </Grid.Row>
 
-            <AddressFields />
+            {unit?.legacyAddress && (
+              <Text color="warning" fontSize="sm" role="status">
+                {t("myUnit.units.legacyAddress", { address: unit.legacyAddress })}
+              </Text>
+            )}
+
+            <AddressFields streetRequired />
 
             <Textarea
               helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}
