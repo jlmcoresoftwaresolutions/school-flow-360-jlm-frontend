@@ -8,11 +8,14 @@ import type { SchoolUnit, SchoolUnitInactivation, SchoolUnitInactivationImpact }
 import { getSchoolUnitInactivationImpact } from "@/services/organization"
 
 import { inactivationReasonMaxLength } from "../MyUnit.constants"
+import type { SaveResult } from "../shared/saveResult"
 
 export type InactivateUnitDialogProps = {
   unit: SchoolUnit
   onClose: () => void
-  onConfirm: (inactivation: SchoolUnitInactivation) => Promise<boolean>
+  // "conflict" when the unit changed since its impact was read: `unit` then comes again as it is now,
+  // and the impact is read again before the user confirms.
+  onConfirm: (inactivation: SchoolUnitInactivation) => Promise<SaveResult>
 }
 
 // The impact of the inactivation: not read yet, read, or impossible to read.
@@ -23,7 +26,8 @@ type ImpactState = SchoolUnitInactivationImpact | "failed" | "loading"
 // affect (the users tied to the unit, who are not changed or blocked) and shows it, since the backend
 // wants that acknowledged; until it is read - or if it can't be - the unit can't be inactivated. The
 // reason is optional until a policy says when it is required (AC-F8-02), and nothing here promises a
-// reactivation (none is approved).
+// reactivation (none is approved). If the unit changed since the impact was read, the impact is read
+// again and the user confirms once more, on what it is now, with the reason kept.
 export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
   const { onClose, onConfirm, unit } = props
 
@@ -32,6 +36,9 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
   const [impact, setImpact] = useState<ImpactState>("loading")
   const [reason, setReason] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasConflict, setHasConflict] = useState(false)
+  // Bumped to read the impact again, after a conflict.
+  const [impactReload, setImpactReload] = useState(0)
 
   const hasImpact = typeof impact !== "string"
 
@@ -55,21 +62,31 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
     return () => {
       ignore = true
     }
-  }, [unit.id])
+  }, [impactReload, unit.id])
 
   const handleConfirm = async () => {
     if (!hasImpact) return
 
     setIsSubmitting(true)
 
-    const done = await onConfirm({
+    const result = await onConfirm({
       confirmImpacts: impact.requiresConfirmation,
       reason: reason.trim(),
       version: impact.version,
     })
 
     setIsSubmitting(false)
-    if (done) onClose()
+
+    if (result === "saved") {
+      onClose()
+      return
+    }
+
+    if (result === "conflict") {
+      setHasConflict(true)
+      setImpact("loading")
+      setImpactReload((current) => current + 1)
+    }
   }
 
   const renderImpact = () => {
@@ -121,6 +138,12 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
       tone="danger"
       open
     >
+      {hasConflict && (
+        <Text color="warning" fontSize="sm" role="alert">
+          {t("myUnit.units.inactivateConflict")}
+        </Text>
+      )}
+
       {renderImpact()}
 
       <Textarea

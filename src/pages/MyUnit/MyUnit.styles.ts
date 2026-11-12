@@ -18,6 +18,31 @@ export const SubCard = styled.section`
   padding: ${spacing[24]};
 `
 
+// The notice of a save that found the record changed by someone else (ConflictNotice).
+export const ConflictNoticeBox = styled.div`
+  background: ${colors.warning[50]};
+  border: 1px solid ${colors.warning[500]};
+  border-radius: ${radius.md};
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing[8]};
+  padding: ${spacing[16]};
+`
+
+export const ConflictActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[8]};
+`
+
+// The current version, inside the notice: on the page's surface so it reads like the section itself.
+export const ConflictCurrent = styled.section`
+  background: ${colors.neutral[0]};
+  border: 1px solid ${colors.neutral[200]};
+  border-radius: ${radius.md};
+  padding: ${spacing[16]};
+`
+
 export type AnimatedHeightBoxProps = {
   $isAnimating: boolean
 }

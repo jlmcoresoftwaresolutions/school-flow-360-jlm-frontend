@@ -88,7 +88,6 @@ export const en: TranslationResource = {
       streetPlaceholder: "Enter the street",
     },
     branding: {
-      conflict: "Someone else changed the visual identity. Check the current one and make your change again.",
       currentFile: "Current file",
       description: "The logo, favicon and colors used across the organization's screens.",
       discard: "Discard changes",
@@ -108,6 +107,8 @@ export const en: TranslationResource = {
       logo: "Logo",
       logoHelper:
         "PNG or JPG, at least 64 px wide and tall, ratio up to 4:1, up to 2 MB. An image larger than 2048 px is shrunk automatically.",
+      lowContrast:
+        "White text on the primary color has a {{ratio}}:1 contrast, below the recommended minimum of {{minimum}}:1, and may be hard to read. Consider a darker color.",
       newFile: "New file: {{name}} ({{size}})",
       noFile: "No file uploaded.",
       openColorPicker: "Open color picker",
@@ -124,9 +125,21 @@ export const en: TranslationResource = {
       title: "Visual identity",
       unpublished: "There is a saved version that hasn't been published yet. Publish it to apply it.",
     },
+    conflict: {
+      currentLabel: "Current version",
+      discard: "Discard my changes",
+      hideCurrent: "Hide current version",
+      message:
+        "Your changes weren't saved and are still in the form. Check the current version and save again to write yours over it, or discard yours.",
+      showCurrent: "See current version",
+      title: "Someone else changed this data while you were editing.",
+    },
     editSection: "Edit {{section}}",
     loadError: "Couldn't load the organization's data.",
     loadErrorDescription: "Check your connection and try again.",
+    notRegistered: "Organization not registered yet",
+    notRegisteredDescription:
+      "This school doesn't have its organization data yet. It is created during onboarding; contact support if this persists.",
     operationModels: {
       MIXED: "Mixed",
       PRIVATE: "Private",
@@ -142,7 +155,6 @@ export const en: TranslationResource = {
     overview: {
       addressLabel: "Institutional address",
       addressTitle: "Address",
-      conflict: "Someone else changed the organization's data. Check the current data and make your change again.",
       contactEmail: "Institutional email",
       contactPhone: "Phone",
       contactTitle: "Contact",
@@ -181,7 +193,7 @@ export const en: TranslationResource = {
       address: "Address",
       cityState: "City/State",
       clearFilters: "Clear filters",
-      conflict: "Someone else changed this unit. The list was updated; make your change again.",
+      conflict: "Someone else inactivated this unit. The list was updated.",
       contactEmail: "Email",
       contactEmailPlaceholder: "Enter the unit's email",
       contactPhone: "Phone",
@@ -189,6 +201,7 @@ export const en: TranslationResource = {
       create: "New unit",
       createFirst: "Register a unit",
       createTitle: "New unit",
+      createUnconfirmed: "We couldn't confirm whether the unit was registered. Check the list before trying again.",
       created: "Unit registered.",
       description: "The organization's units you can access.",
       editTitle: "Edit unit",
@@ -199,6 +212,8 @@ export const en: TranslationResource = {
       filterInactive: "Inactive",
       filtersLabel: "Filter units",
       inactivate: "Inactivate",
+      inactivateConflict:
+        "This unit changed since its impact was checked. Review the updated impact and confirm again.",
       inactivateDescription:
         "{{name}} will no longer appear in new operations, but stays in the organization's history.",
       inactivateImpactError: "We couldn't check the impact of inactivating it. Close this and try again.",

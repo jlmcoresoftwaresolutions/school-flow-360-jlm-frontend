@@ -5,13 +5,14 @@ import type { Organization, OrganizationUpdate } from "@/models"
 
 import { notesMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
+import type { SaveResult } from "../shared/saveResult"
 import { useSectionForm } from "../shared/useSectionForm"
 
 type NotesValues = Pick<OrganizationUpdate, "internalNotes">
 
 export type NotesSectionProps = {
   organization: Organization
-  onSave: (update: NotesValues) => Promise<boolean>
+  onSave: (update: NotesValues) => Promise<SaveResult>
 }
 
 // A note for the administrative staff only.
@@ -25,6 +26,7 @@ export const NotesSection = (props: NotesSectionProps) => {
     <EditableSectionCard
       description={t("myUnit.overview.notesHelper")}
       editing={section.isEditing}
+      hasConflict={section.hasConflict}
       form={
         <Textarea
           helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}

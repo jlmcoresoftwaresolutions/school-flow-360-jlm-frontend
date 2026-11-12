@@ -42,6 +42,9 @@ export const stateMenuMaxHeight = Number.parseFloat(spacing[192])
 // What the backend accepts as an address number: letters, digits, / . - and space ("123A", "s/n").
 export const addressNumberPattern = /^[0-9A-Za-z/ .-]*$/
 
+// WCAG AA's minimum contrast for normal text: white text on the primary color below it is pointed out.
+export const minimumContrastRatio = 4.5
+
 // The backend's limits for the logo: PNG or JPEG, up to 2 MB, 64 to 2048 px a side, at most 4:1.
 export const logoRules = {
   extensions: [".png", ".jpg", ".jpeg"],

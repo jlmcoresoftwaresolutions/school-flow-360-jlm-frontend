@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { hexToRgb, hexToRgba, rgbToHex } from "./colors"
+import { getContrastRatio, hexToRgb, hexToRgba, rgbToHex } from "./colors"
 
 describe("hexToRgba", () => {
   it("converts a 6-digit hex color to an rgba string", () => {
@@ -46,5 +46,28 @@ describe("rgbToHex", () => {
 
   it("clamps channel values outside the 0-255 range", () => {
     expect(rgbToHex({ b: -10, g: 300, r: 128 })).toBe("#80FF00")
+  })
+})
+
+describe("getContrastRatio", () => {
+  it("gives 21 for black on white and 1 for a color on itself", () => {
+    expect(getContrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21, 5)
+    expect(getContrastRatio("#4B87D6", "#4B87D6")).toBeCloseTo(1, 5)
+  })
+
+  it("doesn't depend on the order of the colors", () => {
+    expect(getContrastRatio("#FFFFFF", "#00285B")).toBeCloseTo(getContrastRatio("#00285B", "#FFFFFF")!, 10)
+  })
+
+  it("matches the WCAG values of known pairs", () => {
+    // White on the brand's navy passes AA comfortably; on a light yellow it fails.
+    expect(getContrastRatio("#00285B", "#FFFFFF")).toBeGreaterThan(4.5)
+    expect(getContrastRatio("#FFFF00", "#FFFFFF")).toBeLessThan(1.1)
+    expect(getContrastRatio("#777777", "#FFFFFF")).toBeCloseTo(4.48, 2)
+  })
+
+  it("gives null for a color that isn't a valid hex", () => {
+    expect(getContrastRatio("#12", "#FFFFFF")).toBeNull()
+    expect(getContrastRatio("#FFFFFF", "azul")).toBeNull()
   })
 })

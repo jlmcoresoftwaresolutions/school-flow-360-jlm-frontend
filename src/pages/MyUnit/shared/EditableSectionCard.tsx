@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Icon } from "@/ds-components/atoms"
 
 import { AnimatedHeightBox, AnimatedHeightContent, FieldGroup, FormActions, SwappedContent } from "../MyUnit.styles"
+import { ConflictNotice } from "./ConflictNotice"
 import { SectionCard } from "./SectionCard"
 import { useAnimatedHeight } from "./useAnimatedHeight"
 
@@ -17,6 +18,9 @@ export type EditableSectionCardProps = {
   onEdit: () => void
   onSubmit: FormEventHandler<HTMLFormElement>
   description?: string
+  // A save found the record changed by someone else: the form keeps the draft and shows the notice,
+  // whose "current version" is the section's own `view` (already showing the record as it is now).
+  hasConflict?: boolean
   isDirty?: boolean
   isSubmitting?: boolean
 }
@@ -26,7 +30,8 @@ export type EditableSectionCardProps = {
 // swap is animated: the section's height glides to the new content's (useAnimatedHeight), which fades
 // in; nothing moves on the page's first render.
 export const EditableSectionCard = (props: EditableSectionCardProps) => {
-  const { description, editing, form, isDirty, isSubmitting, onCancel, onEdit, onSubmit, title, view } = props
+  const { description, editing, form, hasConflict, isDirty, isSubmitting, onCancel, onEdit, onSubmit, title, view } =
+    props
 
   const { t } = useTranslation()
   const { contentRef, handleTransitionEnd, height, isAnimating } = useAnimatedHeight()
@@ -61,7 +66,10 @@ export const EditableSectionCard = (props: EditableSectionCardProps) => {
           <SwappedContent key={editing ? "form" : "view"} $animate={hasSwapped}>
             {editing ? (
               <form aria-label={title} onSubmit={onSubmit} noValidate>
-                <FieldGroup>{form}</FieldGroup>
+                <FieldGroup>
+                  {hasConflict && <ConflictNotice buttonSize="small" current={view} onDiscard={onCancel} />}
+                  {form}
+                </FieldGroup>
 
                 <FormActions>
                   <Button disabled={isSubmitting} onClick={onCancel} size="small" type="button" variant="outlined">

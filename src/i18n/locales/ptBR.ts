@@ -88,7 +88,6 @@ export const ptBR = {
       streetPlaceholder: "Informe o logradouro",
     },
     branding: {
-      conflict: "Outra pessoa alterou a identidade visual. Confira a atual e refaça a alteração.",
       currentFile: "Arquivo atual",
       description: "Logo, favicon e cores usados nas telas da organização.",
       discard: "Descartar alterações",
@@ -108,6 +107,8 @@ export const ptBR = {
       logo: "Logo",
       logoHelper:
         "PNG ou JPG, com pelo menos 64 px de largura e de altura, proporção até 4:1, até 2 MB. Uma imagem maior que 2048 px é reduzida automaticamente.",
+      lowContrast:
+        "O texto branco sobre a cor primária tem contraste {{ratio}}:1, abaixo do mínimo recomendado de {{minimum}}:1, e pode ficar difícil de ler. Considere uma cor mais escura.",
       newFile: "Novo arquivo: {{name}} ({{size}})",
       noFile: "Nenhum arquivo enviado.",
       openColorPicker: "Abrir seletor de cor",
@@ -124,9 +125,21 @@ export const ptBR = {
       title: "Identidade visual",
       unpublished: "Há uma versão salva que ainda não foi publicada. Publique para aplicá-la.",
     },
+    conflict: {
+      currentLabel: "Versão atual",
+      discard: "Descartar minhas alterações",
+      hideCurrent: "Ocultar versão atual",
+      message:
+        "Suas alterações não foram salvas e continuam no formulário. Confira a versão atual e salve de novo para gravar as suas por cima dela, ou descarte as suas.",
+      showCurrent: "Ver versão atual",
+      title: "Outra pessoa alterou estes dados enquanto você editava.",
+    },
     editSection: "Editar {{section}}",
     loadError: "Não foi possível carregar os dados da organização.",
     loadErrorDescription: "Confira sua conexão e tente novamente.",
+    notRegistered: "Organização ainda não cadastrada",
+    notRegisteredDescription:
+      "Esta escola ainda não tem os dados da organização. Eles são criados na implantação; fale com o suporte se isso persistir.",
     operationModels: {
       MIXED: "Mista",
       PRIVATE: "Privada",
@@ -142,7 +155,6 @@ export const ptBR = {
     overview: {
       addressLabel: "Endereço institucional",
       addressTitle: "Endereço",
-      conflict: "Outra pessoa alterou os dados da organização. Confira os dados atuais e refaça a alteração.",
       contactEmail: "E-mail institucional",
       contactPhone: "Telefone",
       contactTitle: "Contato",
@@ -181,7 +193,7 @@ export const ptBR = {
       address: "Endereço",
       cityState: "Cidade/UF",
       clearFilters: "Limpar filtros",
-      conflict: "Outra pessoa alterou esta unidade. A lista foi atualizada; refaça a alteração.",
+      conflict: "Outra pessoa inativou esta unidade. A lista foi atualizada.",
       contactEmail: "E-mail",
       contactEmailPlaceholder: "Informe o e-mail da unidade",
       contactPhone: "Telefone",
@@ -189,6 +201,8 @@ export const ptBR = {
       create: "Nova unidade",
       createFirst: "Cadastrar unidade",
       createTitle: "Nova unidade",
+      createUnconfirmed:
+        "Não foi possível confirmar se a unidade foi cadastrada. Confira a lista antes de tentar de novo.",
       created: "Unidade cadastrada.",
       description: "As unidades da organização que você pode acessar.",
       editTitle: "Editar unidade",
@@ -199,6 +213,8 @@ export const ptBR = {
       filterInactive: "Inativas",
       filtersLabel: "Filtrar unidades",
       inactivate: "Inativar",
+      inactivateConflict:
+        "Esta unidade foi alterada desde que o impacto foi verificado. Confira o impacto atualizado e confirme de novo.",
       inactivateDescription:
         "{{name}} deixa de aparecer nas novas operações, mas continua no histórico da organização.",
       inactivateImpactError: "Não foi possível verificar o impacto da inativação. Feche e tente novamente.",

@@ -6,6 +6,7 @@ import type { Organization, OrganizationUpdate } from "@/models"
 
 import { displayNameMaxLength, institutionalNameMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
+import type { SaveResult } from "../shared/saveResult"
 import { useSectionForm } from "../shared/useSectionForm"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
@@ -13,7 +14,7 @@ type InstitutionalValues = Required<Pick<OrganizationUpdate, "displayName" | "in
 
 export type InstitutionalSectionProps = {
   organization: Organization
-  onSave: (update: InstitutionalValues) => Promise<boolean>
+  onSave: (update: InstitutionalValues) => Promise<SaveResult>
 }
 
 // The organization's institutional data: its institutional and display names are edited here; the
@@ -34,6 +35,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
   return (
     <EditableSectionCard
       editing={section.isEditing}
+      hasConflict={section.hasConflict}
       form={
         <>
           <Input
