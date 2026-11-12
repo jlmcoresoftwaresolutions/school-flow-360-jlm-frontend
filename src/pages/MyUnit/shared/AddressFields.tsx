@@ -11,7 +11,7 @@ import { brazilianStates } from "@/utils/address"
 import { getCountryOptions, isCountry } from "@/utils/countries"
 import { stripNonDigits } from "@/utils/formats"
 
-import { addressMaxLengths, addressNumberPattern } from "../MyUnit.constants"
+import { addressMaxLengths, addressNumberPattern, stateMenuMaxHeight } from "../MyUnit.constants"
 import { useOrganizationCountry } from "./organizationCountry"
 
 // Any form holding an address under `address` (the organization's and a unit's).
@@ -136,6 +136,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
               key="cep"
               helperText={cepHelperByLookup[cepLookup]}
               mask="cep"
+              placeholder={t("myUnit.address.cepPlaceholder")}
               title={t("myUnit.address.cep")}
               {...register("address.postalCode", { onChange: (event) => void lookUpCep(event.target.value) })}
             />
@@ -143,6 +144,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
             <Input
               key="postalCode"
               maxLength={postalCodeMaxLength}
+              placeholder={t("myUnit.address.postalCodePlaceholder")}
               title={t("myUnit.address.postalCode")}
               {...register("address.postalCode")}
             />
@@ -152,6 +154,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
           <Input
             error={errors.address?.street?.message}
             maxLength={addressMaxLengths.street}
+            placeholder={t("myUnit.address.streetPlaceholder")}
             required={streetRequired}
             title={t("myUnit.address.street")}
             {...register("address.street", {
@@ -166,6 +169,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
           <Input
             error={errors.address?.number?.message}
             maxLength={addressMaxLengths.number}
+            placeholder={t("myUnit.address.numberPlaceholder")}
             title={t("myUnit.address.number")}
             {...register("address.number", {
               pattern: { message: t("myUnit.validation.addressNumber"), value: addressNumberPattern },
@@ -175,6 +179,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
         <Grid.Col xs={12} md={8}>
           <Input
             maxLength={addressMaxLengths.complement}
+            placeholder={t("myUnit.address.complementPlaceholder")}
             title={t("myUnit.address.complement")}
             {...register("address.complement")}
           />
@@ -185,6 +190,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
         <Grid.Col xs={12} md={4}>
           <Input
             maxLength={addressMaxLengths.district}
+            placeholder={t("myUnit.address.districtPlaceholder")}
             title={t("myUnit.address.district")}
             {...register("address.district")}
           />
@@ -193,6 +199,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
           <Input
             error={errors.address?.city?.message}
             maxLength={addressMaxLengths.city}
+            placeholder={t("myUnit.address.cityPlaceholder")}
             title={t("myUnit.address.city")}
             required
             {...register("address.city", { validate: (value) => value.trim() !== "" || requiredMessage })}
@@ -207,6 +214,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
               render={(controller) => (
                 <Select
                   error={controller.fieldState.error?.message}
+                  maxMenuHeight={stateMenuMaxHeight}
                   name={controller.field.name}
                   onBlur={controller.field.onBlur}
                   onChange={(option) => controller.field.onChange(option?.value ?? "")}
@@ -223,6 +231,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
             <Input
               key="region"
               maxLength={regionMaxLength}
+              placeholder={t("myUnit.address.regionPlaceholder")}
               title={t("myUnit.address.region")}
               {...register("address.state", { required: false })}
             />

@@ -22,6 +22,11 @@ const meta: Meta<typeof Textarea> = {
         "Error message shown below the textarea in red, replacing helperText. Also turns the border red and sets aria-invalid.",
     },
     helperText: { control: "text", description: "Text rendered below the textarea to provide extra context" },
+    maxLength: {
+      control: "number",
+      description:
+        'Native maximum length. It also shows a "typed/maximum" counter on the right of the line of the helper text while the textarea is focused, turning red at the limit.',
+    },
     required: {
       control: "boolean",
       description: "Native required attribute, forwarded to the textarea. Also adds a red asterisk to the title.",
@@ -49,6 +54,22 @@ export const WithTitle: Story = {
 // The helperText prop rendering supporting text below the textarea
 export const WithHelperText: Story = {
   args: { helperText: "Visível apenas para a coordenação.", title: "Observações" },
+}
+
+// The maxLength prop limiting the text and showing a typed/maximum counter while the textarea is focused
+export const WithCounter: Story = {
+  args: { helperText: "Até 500 caracteres.", maxLength: 500, title: "Observações" },
+}
+
+// A long helper text wrapping beside the counter, which keeps its gap from it
+export const WithCounterAndLongHelperText: Story = {
+  args: {
+    helperText:
+      "Visível apenas para a equipe administrativa. Use este campo para registrar o histórico, a missão ou qualquer nota relevante para a gestão da unidade.",
+    maxLength: 500,
+    style: { maxWidth: 360 },
+    title: "Observações",
+  },
 }
 
 // The rows prop controlling the initial visible height

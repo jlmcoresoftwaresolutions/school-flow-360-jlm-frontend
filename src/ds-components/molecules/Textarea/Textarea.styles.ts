@@ -8,6 +8,38 @@ export const TextareaWrapper = styled.div`
   gap: ${spacing[4]};
 `
 
+// The line under the textarea when it has a counter: the helper text or error on the left, taking the
+// room the counter leaves, and the counter on the right, centered on that line's height. The gap keeps
+// a long message, which wraps, from touching the counter.
+export const TextareaFooter = styled.div`
+  align-items: center;
+  display: flex;
+  gap: ${spacing[8]};
+`
+
+export const MessageSlot = styled.div`
+  flex: 1;
+  min-width: 0;
+`
+
+export type CharacterCounterProps = {
+  $atLimit: boolean
+  $visible: boolean
+}
+
+// "x/y". It is always laid out, hidden while the textarea has no focus, so the line (and the room the
+// message has beside it) doesn't change when the focus comes and goes.
+export const CharacterCounter = styled.span<CharacterCounterProps>`
+  color: ${(props) => (props.$atLimit ? colors.danger[700] : colors.neutral[700])};
+  flex-shrink: 0;
+  font-family: ${typography.fontFamily.sans};
+  font-size: ${typography.fontSize.xs}px;
+  line-height: ${typography.lineHeight.xs};
+  margin-left: auto;
+  visibility: ${(props) => (props.$visible ? "visible" : "hidden")};
+  white-space: nowrap;
+`
+
 export type StyledTextareaProps = {
   $borderRadius: string
   $elevated?: boolean

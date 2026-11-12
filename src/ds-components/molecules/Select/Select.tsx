@@ -29,6 +29,7 @@ type SelectOwnProps = {
   helperText?: string
   id?: string
   isDisabled?: boolean
+  maxMenuHeight?: number
   name?: string
   placeholder?: string
   required?: boolean
@@ -82,6 +83,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
     helperText,
     id,
     isDisabled,
+    maxMenuHeight,
     name,
     onBlur,
     onChange,
@@ -122,6 +124,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
           defaultValue={defaultValue}
           inputId={selectId}
           isDisabled={isDisabled}
+          maxMenuHeight={maxMenuHeight}
           name={name}
           onBlur={onBlur}
           onChange={onChange}

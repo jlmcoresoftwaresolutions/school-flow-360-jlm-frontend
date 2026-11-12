@@ -39,6 +39,11 @@ const meta: Meta<typeof Select> = {
     },
     helperText: { control: "text", description: "Text rendered below the select to provide extra context" },
     isDisabled: { control: "boolean", description: "Disables the select, forwarded to react-select" },
+    maxMenuHeight: {
+      control: "number",
+      description:
+        "Maximum height of the open menu, in pixels, past which its options scroll. Forwarded to react-select (300 by default).",
+    },
     options: { control: "object", description: "Array of { label, value } options rendered inside the select" },
     placeholder: { control: "text", description: "Placeholder shown before a value is chosen" },
     required: {
@@ -97,6 +102,15 @@ export const BorderRadiuses: Story = {
 // The isDisabled prop, forwarded straight through to react-select
 export const Disabled: Story = {
   args: { defaultValue: turnoOptions[0], isDisabled: true, title: "Turno" },
+}
+
+// The maxMenuHeight prop keeping a long list's open menu short, its options scrolling
+export const ShortMenu: Story = {
+  args: {
+    maxMenuHeight: 160,
+    options: ["AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA"].map((uf) => ({ label: uf, value: uf })),
+    title: "UF",
+  },
 }
 
 // A fully controlled select, driving the value/onChange props from useState

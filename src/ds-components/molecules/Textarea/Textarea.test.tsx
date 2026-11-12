@@ -75,6 +75,96 @@ describe("Textarea", () => {
     expect(handleChange).toHaveBeenCalled()
   })
 
+  describe("character counter", () => {
+    it("shows the typed and the maximum characters while the textarea is focused, hiding them otherwise", () => {
+      render(<Textarea defaultValue="olá" maxLength={20} placeholder="Notes" />)
+      const textarea = screen.getByPlaceholderText("Notes")
+
+      expect(screen.getByText("0/20")).not.toBeVisible()
+
+      fireEvent.focus(textarea)
+      expect(screen.getByText("3/20")).toBeVisible()
+
+      fireEvent.change(textarea, { target: { value: "olá, mundo" } })
+      expect(screen.getByText("10/20")).toBeVisible()
+
+      fireEvent.blur(textarea)
+      expect(screen.getByText("10/20")).not.toBeVisible()
+    })
+
+    it("sits on the same line as the helper text, on its right", () => {
+      render(<Textarea helperText="Até 20 caracteres." maxLength={20} placeholder="Notes" />)
+
+      const helper = screen.getByText("Até 20 caracteres.")
+      const counter = screen.getByText("0/20")
+      const line = counter.parentElement as HTMLElement
+
+      expect(line).toContainElement(helper)
+      expect(line).toHaveStyle({ alignItems: "center", display: "flex", gap: spacing[8] })
+      expect(counter).toHaveStyle({ marginLeft: "auto" })
+      // The helper text gives way to the counter instead of pushing it out.
+      expect(helper.parentElement).toHaveStyle({ minWidth: "0px" })
+      expect(counter).toHaveStyle({ flexShrink: "0" })
+    })
+
+    it("keeps the counter on the line when there is an error instead of the helper text", () => {
+      render(<Textarea error="Texto demais." helperText="Ajuda" maxLength={20} placeholder="Notes" />)
+
+      expect(screen.getByText("Texto demais.").parentElement?.parentElement).toBe(
+        screen.getByText("0/20").parentElement,
+      )
+      expect(screen.queryByText("Ajuda")).not.toBeInTheDocument()
+    })
+
+    it("follows the value when the parent controls the textarea", () => {
+      const { rerender } = render(<Textarea maxLength={20} onChange={vi.fn()} placeholder="Notes" value="abc" />)
+
+      fireEvent.focus(screen.getByPlaceholderText("Notes"))
+      expect(screen.getByText("3/20")).toBeVisible()
+
+      rerender(<Textarea maxLength={20} onChange={vi.fn()} placeholder="Notes" value="abcde" />)
+      expect(screen.getByText("5/20")).toBeVisible()
+    })
+
+    it("turns red at the limit", () => {
+      render(<Textarea defaultValue="12345" maxLength={5} placeholder="Notes" />)
+
+      fireEvent.focus(screen.getByPlaceholderText("Notes"))
+
+      expect(screen.getByText("5/5")).toHaveStyle({ color: colors.danger[700] })
+    })
+
+    it("is not rendered without a maxLength", () => {
+      render(<Textarea defaultValue="olá" placeholder="Notes" />)
+
+      fireEvent.focus(screen.getByPlaceholderText("Notes"))
+
+      expect(screen.queryByText(/\d+\/\d+/)).not.toBeInTheDocument()
+    })
+
+    it("keeps calling the onFocus, onBlur and onChange of the parent", () => {
+      const onBlur = vi.fn()
+      const onChange = vi.fn()
+      const onFocus = vi.fn()
+      render(<Textarea maxLength={20} onBlur={onBlur} onChange={onChange} onFocus={onFocus} placeholder="Notes" />)
+      const textarea = screen.getByPlaceholderText("Notes")
+
+      fireEvent.focus(textarea)
+      fireEvent.change(textarea, { target: { value: "a" } })
+      fireEvent.blur(textarea)
+
+      expect(onFocus).toHaveBeenCalledTimes(1)
+      expect(onChange).toHaveBeenCalledTimes(1)
+      expect(onBlur).toHaveBeenCalledTimes(1)
+    })
+
+    it("limits the text natively", () => {
+      render(<Textarea maxLength={20} placeholder="Notes" />)
+
+      expect(screen.getByPlaceholderText("Notes")).toHaveAttribute("maxlength", "20")
+    })
+  })
+
   it("defaults to the low border radius", () => {
     render(<Textarea placeholder="Amount" />)
 

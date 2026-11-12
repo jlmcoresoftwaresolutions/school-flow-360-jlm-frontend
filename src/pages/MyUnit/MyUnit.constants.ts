@@ -1,3 +1,5 @@
+import { spacing } from "@/foundation"
+
 export const myUnitTabs = ["overview", "branding", "units"] as const
 
 export type MyUnitTab = (typeof myUnitTabs)[number]
@@ -32,6 +34,10 @@ export const addressMaxLengths = {
   number: 10,
   street: 150,
 }
+
+// The height of the open UF menu: about five states, the rest scrolling, so the long list doesn't run
+// far below the field.
+export const stateMenuMaxHeight = Number.parseFloat(spacing[192])
 
 // What the backend accepts as an address number: letters, digits, / . - and space ("123A", "s/n").
 export const addressNumberPattern = /^[0-9A-Za-z/ .-]*$/
