@@ -1,6 +1,6 @@
-import styled from "styled-components"
+import styled, { css, keyframes } from "styled-components"
 
-import { borderRadiusLevels, colors, media, radius, shadows, spacing, typography } from "@/foundation"
+import { borderRadiusLevels, colors, media, motion, opacity, radius, shadows, spacing, typography } from "@/foundation"
 
 // Inside a tab's main card: its sub-cards stacked with a steady gap.
 export const TabPanel = styled.div`
@@ -16,6 +16,58 @@ export const SubCard = styled.section`
   border-radius: ${borderRadiusLevels.medium};
   min-width: 0;
   padding: ${spacing[24]};
+`
+
+export type AnimatedHeightBoxProps = {
+  $isAnimating: boolean
+}
+
+// The box whose height follows its content (see useAnimatedHeight), set inline. It reaches a little
+// past its content on every side (and the content pads it back), so the shadow and focus ring of a
+// field at the edge aren't cut while it clips during the animation.
+export const AnimatedHeightBox = styled.div<AnimatedHeightBoxProps>`
+  margin: -${spacing[4]};
+  overflow: ${(props) => (props.$isAnimating ? "hidden" : "visible")};
+  transition: height ${motion.duration.slow} ${motion.easing.inOut};
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+`
+
+export const AnimatedHeightContent = styled.div`
+  padding: ${spacing[4]};
+`
+
+// Fades in while rising slightly into place: the reading or the form taking over a section.
+const swapIn = keyframes`
+  from {
+    opacity: ${opacity.hidden};
+    transform: translateY(${spacing[4]});
+  }
+
+  to {
+    opacity: ${opacity.visible};
+    transform: translateY(0);
+  }
+`
+
+export type SwappedContentProps = {
+  $animate: boolean
+}
+
+// What a section shows in one mode; it plays the fade-in each time the mode changes (it is keyed by
+// it), but not on the page's first render.
+export const SwappedContent = styled.div<SwappedContentProps>`
+  ${(props) =>
+    props.$animate &&
+    css`
+      animation: ${swapIn} ${motion.duration.normal} ${motion.easing.out};
+    `}
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `
 
 export const SectionHeader = styled.div`

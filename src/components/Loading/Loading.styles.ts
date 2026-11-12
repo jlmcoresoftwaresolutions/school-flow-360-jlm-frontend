@@ -49,7 +49,7 @@ export const LoadingOverlay = styled.div`
   position: fixed;
   right: 0;
   top: 0;
-  z-index: ${zIndex.overlay};
+  z-index: ${zIndex.loading};
 `
 
 export const LoadingMessage = styled.div`

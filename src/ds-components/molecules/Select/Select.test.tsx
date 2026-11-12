@@ -117,6 +117,14 @@ describe("Select", () => {
     expect(container.querySelector(".select__control")).toHaveStyle({ boxShadow: shadows.none })
   })
 
+  it("limits the open menu's height with maxMenuHeight", () => {
+    const { container } = render(<Select maxMenuHeight={160} options={options} />)
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    expect(container.querySelector(".select__menu-list")).toHaveStyle({ maxHeight: "160px" })
+  })
+
   it("respects the isDisabled prop", () => {
     const { container } = render(<Select isDisabled options={options} title="Turno" />)
 

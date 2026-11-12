@@ -1062,6 +1062,31 @@ test.describe("units", () => {
     expect(organizationMock.unitCalls).toEqual([])
   })
 
+  test("shows a typed/maximum counter on the notes' helper text line while they have focus", async ({ page }) => {
+    await signInAndOpen(page)
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Nova unidade" }).click()
+    const dialog = page.getByRole("dialog", { name: "Nova unidade" })
+    const notes = dialog.getByRole("textbox", { name: "Observações" })
+    const counter = dialog.getByText(/^\d+\/2000$/)
+    const helper = dialog.getByText("Até 2000 caracteres.")
+
+    await expect(counter).toBeHidden()
+    await notes.fill("Funciona em dois turnos.")
+    await expect(counter).toHaveText("24/2000")
+    await expect(counter).toBeVisible()
+
+    // On the helper text's line, to its right.
+    const helperBox = (await helper.boundingBox())!
+    const counterBox = (await counter.boundingBox())!
+    expect(Math.abs(helperBox.y - counterBox.y)).toBeLessThan(8)
+    expect(counterBox.x).toBeGreaterThan(helperBox.x + helperBox.width)
+
+    await dialog.getByRole("textbox", { name: /^Nome da unidade/ }).focus()
+    await expect(counter).toBeHidden()
+  })
+
   test("refuses a name another unit already has, keeping the form open", async ({ page }) => {
     await signInAndOpen(page)
     await tab(page, "Unidades").click()

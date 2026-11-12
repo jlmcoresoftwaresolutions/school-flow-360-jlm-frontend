@@ -85,6 +85,7 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
             <Input
               error={errors.name?.message}
               maxLength={unitNameMaxLength}
+              placeholder={t("myUnit.units.namePlaceholder")}
               title={t("myUnit.units.name")}
               required
               {...form.register("name", {
@@ -97,6 +98,7 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                 <Input
                   error={errors.contactEmail?.message}
                   maxLength={unitEmailMaxLength}
+                  placeholder={t("myUnit.units.contactEmailPlaceholder")}
                   title={t("myUnit.units.contactEmail")}
                   type="email"
                   required
@@ -122,6 +124,7 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                       onChange={(event) =>
                         controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, country))
                       }
+                      placeholder={t("myUnit.units.contactPhonePlaceholder")}
                       ref={controller.field.ref}
                       title={t("myUnit.units.contactPhone")}
                       type="tel"
@@ -151,6 +154,7 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
             <Textarea
               helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}
               maxLength={notesMaxLength}
+              placeholder={t("myUnit.units.notesPlaceholder")}
               title={t("myUnit.units.notes")}
               {...form.register("notes")}
             />
