@@ -1,6 +1,7 @@
 import type { Organization, OrganizationBranding, OrganizationUpdate, SchoolUnit } from "@/models"
 
 import { CardGrid } from "../MyUnit.styles"
+import type { SaveResult } from "../shared/saveResult"
 import { TabCard } from "../shared/TabCard"
 import { AddressSection } from "./AddressSection"
 import { ContactSection } from "./ContactSection"
@@ -14,7 +15,7 @@ export type OverviewTabProps = {
   organization: Organization
   units: SchoolUnit[]
   onCreateUnit: () => void
-  onSaveOrganization: (update: OrganizationUpdate) => Promise<boolean>
+  onSaveOrganization: (update: OrganizationUpdate) => Promise<SaveResult>
   onSeeAllUnits: () => void
 }
 

@@ -5,12 +5,25 @@ import { useTranslation } from "react-i18next"
 
 import { useUnsavedChanges } from "@/components"
 import { Button, Text } from "@/ds-components/atoms"
-import { ColorPicker, FileUpload } from "@/ds-components/molecules"
+import { ColorPicker, DescriptionList, FileUpload } from "@/ds-components/molecules"
+import { colors } from "@/foundation"
 import type { OrganizationBranding, OrganizationBrandingUpdate } from "@/models"
+import { getContrastRatio } from "@/utils/colors"
 import { formatFileSize } from "@/utils/formats"
 
-import { faviconRules, logoRules } from "../MyUnit.constants"
-import { BrandingLayout, FieldGroup, FilePreview, FileThumb, FormActions, InlineGroup } from "../MyUnit.styles"
+import { faviconRules, logoRules, minimumContrastRatio } from "../MyUnit.constants"
+import {
+  BrandingLayout,
+  ColorSwatch,
+  ColorValue,
+  FieldGroup,
+  FilePreview,
+  FileThumb,
+  FormActions,
+  InlineGroup,
+} from "../MyUnit.styles"
+import { ConflictNotice } from "../shared/ConflictNotice"
+import type { SaveResult } from "../shared/saveResult"
 import { SectionCard } from "../shared/SectionCard"
 import { TabCard } from "../shared/TabCard"
 import type { FileProblem, FileRules, ImageSize } from "./brandingFiles"
@@ -47,7 +60,9 @@ export type BrandingTabProps = {
   branding: OrganizationBranding
   // The organization's display name, shown in the preview (it is edited in the overview).
   displayName: string
-  onSave: (update: OrganizationBrandingUpdate) => Promise<boolean>
+  // "conflict" when someone else changed the identity first: `branding` then comes again as it is now,
+  // and the tab keeps what the user picked beside a notice.
+  onSave: (update: OrganizationBrandingUpdate) => Promise<SaveResult>
 }
 
 const toValues = (branding: OrganizationBranding): BrandingValues => ({
@@ -64,7 +79,8 @@ const toValues = (branding: OrganizationBranding): BrandingValues => ({
 // image larger than the backend's maximum is shrunk to fit (keeping its proportion, and saying so);
 // one the backend would refuse anyway (type, too small, out of proportion - the favicon must be
 // square - or too heavy) is refused on the spot. There is no "remove" (DP-P1-07 is open): a new file
-// replaces the current one.
+// replaces the current one. White text on the primary color (the preview's button) below the WCAG AA
+// contrast (4.5:1) is pointed out, without stopping the publication: the color is the school's call.
 export const BrandingTab = (props: BrandingTabProps) => {
   const { branding, displayName, onSave } = props
 
@@ -76,6 +92,7 @@ export const BrandingTab = (props: BrandingTabProps) => {
   const [fileProblems, setFileProblems] = useState<Partial<Record<ImageField, FileProblem>>>({})
   // Bumped to remount the file inputs, clearing the names they show, after saving or discarding.
   const [fileInputsKey, setFileInputsKey] = useState(0)
+  const [hasConflict, setHasConflict] = useState(false)
 
   const { isDirty, isSubmitting } = form.formState
   const hasChanges = isDirty || chosenFiles.logo !== undefined || chosenFiles.favicon !== undefined
@@ -84,6 +101,8 @@ export const BrandingTab = (props: BrandingTabProps) => {
     favicon: branding.faviconUrl,
     logo: branding.logoUrl,
   }
+  const primaryContrast = getContrastRatio(draft.primaryColor ?? branding.primaryColor, colors.neutral[0])
+  const hasLowContrast = primaryContrast !== null && primaryContrast < minimumContrastRatio
 
   useUnsavedChanges(hasChanges)
 
@@ -142,16 +161,48 @@ export const BrandingTab = (props: BrandingTabProps) => {
   const handleDiscard = () => {
     form.reset(toValues(branding))
     clearFiles()
+    setHasConflict(false)
   }
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    const saved = await onSave({ ...values, favicon: chosenFiles.favicon?.file, logo: chosenFiles.logo?.file })
+    const result = await onSave({ ...values, favicon: chosenFiles.favicon?.file, logo: chosenFiles.logo?.file })
 
-    if (!saved) return
+    setHasConflict(result === "conflict")
+    if (result !== "saved") return
 
     form.reset(values)
     clearFiles()
   })
+
+  const renderColor = (color: string) => (
+    <ColorValue>
+      <ColorSwatch $color={color} aria-hidden="true" />
+      {color}
+    </ColorValue>
+  )
+
+  const renderImage = (url: string | undefined) => {
+    if (!url) return undefined
+
+    return <FileThumb alt="" src={url} />
+  }
+
+  // The identity as it is now, for the conflict notice.
+  const currentBranding = (
+    <DescriptionList
+      emptyValue={t("common.notInformed")}
+      items={[
+        { key: "logo", label: t("myUnit.branding.logo"), value: renderImage(branding.logoUrl) },
+        { key: "favicon", label: t("myUnit.branding.favicon"), value: renderImage(branding.faviconUrl) },
+        { key: "primaryColor", label: t("myUnit.branding.primaryColor"), value: renderColor(branding.primaryColor) },
+        {
+          key: "secondaryColor",
+          label: t("myUnit.branding.secondaryColor"),
+          value: renderColor(branding.secondaryColor),
+        },
+      ]}
+    />
+  )
 
   const problemMessage = (field: ImageField): string | undefined => {
     const rules = rulesByField[field]
@@ -234,6 +285,8 @@ export const BrandingTab = (props: BrandingTabProps) => {
         <SectionCard description={t("myUnit.branding.description")} title={t("myUnit.branding.title")}>
           <form aria-label={t("myUnit.branding.title")} onSubmit={handleSubmit} noValidate>
             <FieldGroup>
+              {hasConflict && <ConflictNotice buttonSize="small" current={currentBranding} onDiscard={handleDiscard} />}
+
               {renderImageField("logo")}
               {renderImageField("favicon")}
 
@@ -263,6 +316,15 @@ export const BrandingTab = (props: BrandingTabProps) => {
                   )}
                 />
               </InlineGroup>
+
+              {hasLowContrast && primaryContrast !== null && (
+                <Text color="warning" fontSize="xs" role="status">
+                  {t("myUnit.branding.lowContrast", {
+                    minimum: minimumContrastRatio.toLocaleString(i18n.language),
+                    ratio: primaryContrast.toLocaleString(i18n.language, { maximumFractionDigits: 1 }),
+                  })}
+                </Text>
+              )}
 
               {branding.hasUnpublishedChanges && !hasChanges && (
                 <Text color="secondary" fontSize="xs">

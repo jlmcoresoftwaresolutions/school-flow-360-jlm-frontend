@@ -7,12 +7,13 @@ import type { Organization } from "@/models"
 import type { AddressFormValues } from "../shared/AddressFields"
 import { AddressFields } from "../shared/AddressFields"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
+import type { SaveResult } from "../shared/saveResult"
 import { useAddressFormatter } from "../shared/useAddressFormatter"
 import { useSectionForm } from "../shared/useSectionForm"
 
 export type AddressSectionProps = {
   organization: Organization
-  onSave: (update: AddressFormValues) => Promise<boolean>
+  onSave: (update: AddressFormValues) => Promise<SaveResult>
 }
 
 // The organization's institutional address, with its country: one line to read, the fields to edit,
@@ -27,6 +28,7 @@ export const AddressSection = (props: AddressSectionProps) => {
   return (
     <EditableSectionCard
       editing={section.isEditing}
+      hasConflict={section.hasConflict}
       form={
         <FormProvider {...section.form}>
           <AddressFields withCountry />

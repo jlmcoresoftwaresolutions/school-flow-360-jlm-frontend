@@ -27,6 +27,7 @@ import type { MyUnitTab } from "./MyUnit.constants"
 import { SubCard } from "./MyUnit.styles"
 import { OverviewTab } from "./overview/OverviewTab"
 import { OrganizationCountryContext } from "./shared/organizationCountry"
+import type { SaveResult } from "./shared/saveResult"
 import { TabCard } from "./shared/TabCard"
 import { UnitsTab } from "./units/UnitsTab"
 
@@ -60,14 +61,12 @@ export const MyUnit = () => {
   const { t } = useTranslation()
 
   const [data, setData] = useState<PageData | null>(null)
-  const [hasError, setHasError] = useState(false)
+  // Why there is no data: the tenant has no organization registered yet (the backend's 404), or the
+  // load failed. They read differently, so a missing registration is never taken for an outage.
+  const [failure, setFailure] = useState<"error" | "notRegistered" | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [tab, setTab] = useState<MyUnitTab>("overview")
   const [isCreatingUnit, setIsCreatingUnit] = useState(false)
-  // Bumped to remount the overview, dropping its drafts, when a save found the organization changed.
-  const [overviewKey, setOverviewKey] = useState(0)
-  // The same for the visual identity tab.
-  const [brandingKey, setBrandingKey] = useState(0)
 
   // The fetch is defined inline inside the effect, rather than as an outer useCallback referenced
   // here, so react-hooks/set-state-in-effect doesn't flag it. handleRetry bumps reloadToken instead of
@@ -77,17 +76,25 @@ export const MyUnit = () => {
     let ignore = false
 
     const load = async () => {
-      try {
-        const [organization, branding, units] = await Promise.all([
-          getCurrentOrganization({ showLoading: false }),
-          getBranding({ showLoading: false }),
-          listSchoolUnits({ showLoading: false }),
-        ])
+      const [organization, branding, units] = await Promise.allSettled([
+        getCurrentOrganization({ showLoading: false }),
+        getBranding({ showLoading: false }),
+        listSchoolUnits({ showLoading: false }),
+      ])
 
-        if (!ignore) setData({ branding, organization, units })
-      } catch {
-        if (!ignore) setHasError(true)
+      if (ignore) return
+
+      if (organization.status === "rejected" && getErrorStatus(organization.reason) === 404) {
+        setFailure("notRegistered")
+        return
       }
+
+      if (organization.status === "rejected" || branding.status === "rejected" || units.status === "rejected") {
+        setFailure("error")
+        return
+      }
+
+      setData({ branding: branding.value, organization: organization.value, units: units.value })
     }
 
     void load()
@@ -98,7 +105,7 @@ export const MyUnit = () => {
   }, [reloadToken])
 
   const handleRetry = () => {
-    setHasError(false)
+    setFailure(null)
     setData(null)
     setReloadToken((current) => current + 1)
   }
@@ -106,29 +113,28 @@ export const MyUnit = () => {
   const applyOrganization = (organization: Organization) =>
     setData((current) => (current ? { ...current, organization } : current))
 
-  // A 409 means someone else changed the organization since it was read: the save is dropped, the
-  // current data is read again and the overview goes back to reading, for the user to redo the change.
-  const handleSaveOrganization = async (update: OrganizationUpdate) => {
+  // A 409 means someone else changed the organization since it was read: nothing was saved, the
+  // organization is read again (its sections show it as it is now, and the next save goes with the new
+  // version), and the section that asked keeps the user's draft beside a notice (SaveResult "conflict").
+  const handleSaveOrganization = async (update: OrganizationUpdate): Promise<SaveResult> => {
     try {
       applyOrganization(await updateOrganization(update))
       toast.success(t("myUnit.overview.saved"))
-      return true
+      return "saved"
     } catch (error) {
       if (getErrorStatus(error) !== 409) {
         toast.error(t("myUnit.saveError"))
-        return false
+        return "failed"
       }
     }
 
     try {
       applyOrganization(await getCurrentOrganization())
-      setOverviewKey((current) => current + 1)
-      toast.error(t("myUnit.overview.conflict"))
+      return "conflict"
     } catch {
       toast.error(t("myUnit.saveError"))
+      return "failed"
     }
-
-    return false
   }
 
   const applyBranding = (branding: OrganizationBranding) =>
@@ -136,12 +142,13 @@ export const MyUnit = () => {
 
   // Saving the identity is up to four calls (draft, logo, favicon, publication), so a failure can come
   // from any of them: an image the backend refuses, file storage turned off, or - 409 - someone else
-  // changed the identity first, when it is read again and the tab goes back to it.
-  const handleSaveBranding = async (update: OrganizationBrandingUpdate) => {
+  // changed the identity first, when it is read again and the tab keeps the user's draft beside a
+  // notice (SaveResult "conflict").
+  const handleSaveBranding = async (update: OrganizationBrandingUpdate): Promise<SaveResult> => {
     try {
       applyBranding(await updateBranding(update))
       toast.success(t("myUnit.branding.saved"))
-      return true
+      return "saved"
     } catch (error) {
       const status = getErrorStatus(error)
 
@@ -149,19 +156,17 @@ export const MyUnit = () => {
         if (status === 503) toast.error(t("myUnit.branding.storageUnavailable"))
         else if (status === 413 || status === 415 || status === 422) toast.error(t("myUnit.branding.imageRefused"))
         else toast.error(t("myUnit.saveError"))
-        return false
+        return "failed"
       }
     }
 
     try {
       applyBranding(await getBranding())
-      setBrandingKey((current) => current + 1)
-      toast.error(t("myUnit.branding.conflict"))
+      return "conflict"
     } catch {
       toast.error(t("myUnit.saveError"))
+      return "failed"
     }
-
-    return false
   }
 
   const handleUnitsChange = (change: (units: SchoolUnit[]) => SchoolUnit[]) =>
@@ -174,7 +179,21 @@ export const MyUnit = () => {
   }
 
   const renderContent = () => {
-    if (hasError) {
+    if (failure === "notRegistered") {
+      return (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <StateMessage
+            action={<Button onClick={handleRetry}>{t("common.tryAgain")}</Button>}
+            description={t("myUnit.notRegisteredDescription")}
+            icon="building-outline"
+            title={t("myUnit.notRegistered")}
+            variant="empty"
+          />
+        </Card>
+      )
+    }
+
+    if (failure === "error") {
       return (
         <Card elevated style={{ padding: spacing[32] }}>
           <StateMessage
@@ -196,7 +215,6 @@ export const MyUnit = () => {
         <div hidden={tab !== "overview"}>
           <OverviewTab
             branding={data.branding}
-            key={overviewKey}
             onCreateUnit={handleCreateFromOverview}
             onSaveOrganization={handleSaveOrganization}
             onSeeAllUnits={() => setTab("units")}
@@ -207,7 +225,6 @@ export const MyUnit = () => {
         <div hidden={tab !== "branding"}>
           <BrandingTab
             branding={data.branding}
-            key={brandingKey}
             displayName={data.organization.displayName}
             onSave={handleSaveBranding}
           />

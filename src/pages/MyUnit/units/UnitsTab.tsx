@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { toast } from "@/components"
 import { Badge, Button, Icon, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import { ActionMenu, Select, StateMessage } from "@/ds-components/molecules"
@@ -62,10 +63,26 @@ export const UnitsTab = (props: UnitsTabProps) => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
   const [dialog, setDialog] = useState<UnitDialog>(null)
 
-  const { createUnit, inactivateUnit, updateUnit } = useUnitActions({
-    onConflict: () => setDialog(null),
-    onUnitsChange,
-  })
+  // After a conflict the open dialog follows the unit as it is now, keeping what the user typed. A
+  // unit that can no longer be edited or inactivated (someone inactivated it) closes the dialog.
+  const handleConflict = (fresh: SchoolUnit[]) => {
+    const unit = dialog && fresh.find((item) => item.id === dialog.unit.id)
+
+    if (!dialog || !unit) {
+      setDialog(null)
+      return
+    }
+
+    if (unit.status !== "ACTIVE") {
+      toast.error(t("myUnit.units.conflict"))
+      setDialog(null)
+      return
+    }
+
+    setDialog({ ...dialog, unit })
+  }
+
+  const { createUnit, inactivateUnit, updateUnit } = useUnitActions({ onConflict: handleConflict, onUnitsChange })
 
   const hasFilters = search.trim() !== "" || statusFilter !== "all"
   const filteredUnits = units.filter(

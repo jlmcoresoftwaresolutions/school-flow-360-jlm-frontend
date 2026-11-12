@@ -50,19 +50,24 @@ type OrganizationMock = {
 }
 
 // The organization endpoints, keeping what is saved like the backend does: a save REPLACES every
-// editable field with the body's (one left out becomes null). "conflict" refuses every save as the
-// backend does when someone else changed the organization first, which a new read shows.
+// editable field with the body's (one left out becomes null). "conflict" refuses the first save as the
+// backend does when someone else changed the organization first, which a new read shows; the next one
+// goes through. "not-registered" answers 404, as for a tenant without an organization yet.
 const mockOrganizationApi = async (
   page: Page,
-  scenario?: "conflict" | "error",
+  scenario?: "conflict" | "error" | "not-registered",
   overrides: Partial<typeof apiOrganization> = {},
 ): Promise<OrganizationMock> => {
   const mock: OrganizationMock = { brandingCalls: [], saves: [], unitCalls: [] }
   let organization = { ...apiOrganization, ...overrides }
   // "error": the first read fails, as a backend that is down would; the next one (a retry) works.
   let failNextRead = scenario === "error"
+  let conflictNext = scenario === "conflict"
 
   await page.route("**/api/organizations/current/editable", (route) => {
+    if (scenario === "not-registered") {
+      return route.fulfill({ body: JSON.stringify({ message: "Organization not found." }), status: 404 })
+    }
     if (failNextRead) {
       failNextRead = false
       return route.fulfill({ body: JSON.stringify({ message: "Unavailable." }), status: 500 })
@@ -74,7 +79,8 @@ const mockOrganizationApi = async (
     const body = route.request().postDataJSON() as Record<string, unknown>
     mock.saves.push(body)
 
-    if (scenario === "conflict") {
+    if (conflictNext) {
+      conflictNext = false
       organization = { ...organization, orgEmail: "outra.pessoa@horizonte.edu.br", version: organization.version + 1 }
       return route.fulfill({ body: JSON.stringify({ message: "Stale version." }), status: 409 })
     }
@@ -178,6 +184,8 @@ const apiBranding = {
 type BrandingOptions = {
   // The identity as the backend answers it at first.
   branding?: Partial<typeof apiBranding>
+  // The first draft save finds the identity changed by someone else (a new primary color): 409.
+  conflict?: boolean
   // A status the logo upload answers with (503: file storage turned off).
   logoStatus?: number
 }
@@ -186,6 +194,7 @@ type BrandingOptions = {
 // publication copying the draft.
 const mockBrandingApi = async (page: Page, mock: OrganizationMock, options: BrandingOptions) => {
   let branding = { ...apiBranding, ...options.branding }
+  let conflictNext = options.conflict === true
 
   const answer = () => apiAnswer(branding)
 
@@ -195,6 +204,14 @@ const mockBrandingApi = async (page: Page, mock: OrganizationMock, options: Bran
 
     const body = request.postDataJSON() as Record<string, unknown>
     mock.brandingCalls.push({ body, method: "PUT", path: "branding" })
+    if (conflictNext) {
+      conflictNext = false
+      branding = { ...branding, primaryColor: "#7A1F5C", version: branding.version + 1 }
+      return route.fulfill({ body: JSON.stringify({ message: "Stale version." }), status: 409 })
+    }
+    if (body.version !== branding.version) {
+      return route.fulfill({ body: JSON.stringify({ message: "Stale version." }), status: 409 })
+    }
     branding = {
       ...branding,
       displayName: String(body.displayName),
@@ -337,6 +354,8 @@ const apiSchoolUnits = [
 
 type ApiUnit = Record<string, unknown> & { schoolUnitId: number; unitName: string; version: number }
 
+type UnitsScenario = "create-lost" | "create-saved" | "unit-conflict"
+
 // The users tied to each unit, which inactivating it would affect: only Caucaia has some.
 const assignedUsersByUnit: Record<number, { assigned: number; enabled: number }> = { 3: { assigned: 3, enabled: 2 } }
 
@@ -349,9 +368,12 @@ const apiError = (status: number, code: string) => ({
 // The units' endpoints, keeping what is saved like the backend does: unique names, a version checked
 // and bumped on every change, the one-text address composed from the structured one, and an
 // inactivation that wants the impact confirmed when users are tied to the unit. "unit-conflict" has
-// every edit find the unit changed by someone else (a new e-mail), as the next read of the list shows.
-const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit[], scenario?: "unit-conflict") => {
+// the first edit or inactivation find the unit changed by someone else (a new e-mail), as the next
+// read of the list shows. "create-saved" and "create-lost" drop the connection on a registration,
+// after saving the unit or before it.
+const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit[], scenario?: UnitsScenario) => {
   let units = initial.map((unit) => ({ ...unit }))
+  let conflictNext = scenario === "unit-conflict"
 
   const idOf = (url: string) => Number(new URL(url).pathname.split("/")[3])
   const sameName = (first: string, second: string) => first.trim().toLowerCase() === second.trim().toLowerCase()
@@ -374,6 +396,7 @@ const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit
     const body = route.request().postDataJSON() as Record<string, unknown>
     record("POST", "school-units", body)
 
+    if (scenario === "create-lost") return route.abort("timedout")
     if (units.some((unit) => sameName(unit.unitName, String(body.unitName)))) {
       return route.fulfill(apiError(409, "UNIT_NAME_DUPLICATE"))
     }
@@ -391,6 +414,7 @@ const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit
       version: 0,
     }
     units = [...units, created]
+    if (scenario === "create-saved") return route.abort("timedout")
     return route.fulfill({ ...apiAnswer(created), status: 201 })
   })
 
@@ -399,7 +423,8 @@ const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit
     const current = units.find((unit) => unit.schoolUnitId === idOf(route.request().url()))!
     record("PUT", `school-units/${current.schoolUnitId}`, body)
 
-    if (scenario === "unit-conflict") {
+    if (conflictNext) {
+      conflictNext = false
       replace({ ...current, contactEmail: "outra.pessoa@horizonte.edu.br", version: current.version + 1 })
       return route.fulfill(apiError(409, "VERSION_CONFLICT"))
     }
@@ -444,6 +469,11 @@ const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit
     const users = assignedUsersByUnit[current.schoolUnitId] ?? { assigned: 0, enabled: 0 }
     record("POST", `school-units/${current.schoolUnitId}/deactivate`, body)
 
+    if (conflictNext) {
+      conflictNext = false
+      replace({ ...current, contactEmail: "outra.pessoa@horizonte.edu.br", version: current.version + 1 })
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
     if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
     if (users.assigned > 0 && body.confirmImpacts !== true) {
       return route.fulfill(apiError(409, "IMPACTS_NOT_CONFIRMED"))
@@ -465,13 +495,15 @@ const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit
 
 const signInAndOpen = async (
   page: Page,
-  scenario?: "conflict" | "error" | "no-units" | "unit-conflict",
+  scenario?: "conflict" | "error" | "no-units" | "not-registered" | UnitsScenario,
   organization: Partial<typeof apiOrganization> = {},
   brandingOptions: BrandingOptions = {},
 ) => {
+  const organizationScenarios = ["conflict", "error", "not-registered"] as const
+  const unitsScenarios: readonly string[] = ["create-lost", "create-saved", "unit-conflict"]
   const organizationMock = await mockOrganizationApi(
     page,
-    scenario === "conflict" || scenario === "error" ? scenario : undefined,
+    organizationScenarios.find((item) => item === scenario),
     organization,
   )
   await mockBrandingApi(page, organizationMock, brandingOptions)
@@ -479,7 +511,7 @@ const signInAndOpen = async (
     page,
     organizationMock,
     scenario === "no-units" ? [] : apiSchoolUnits,
-    scenario === "unit-conflict" ? scenario : undefined,
+    unitsScenarios.includes(scenario ?? "") ? (scenario as UnitsScenario) : undefined,
   )
 
   await page.route("**/api/auth/login", (route) =>
@@ -513,6 +545,20 @@ const signInAndOpen = async (
 }
 
 const tab = (page: Page, name: string) => page.getByRole("tab", { name })
+
+// Fills the new unit's form with what the backend requires and sends it.
+const registerUnit = async (page: Page, name: string) => {
+  await page.getByRole("button", { name: "Nova unidade" }).click()
+  const dialog = page.getByRole("dialog", { name: "Nova unidade" })
+  await dialog.getByRole("textbox", { name: /^Nome da unidade/ }).fill(name)
+  await dialog.getByRole("textbox", { name: /^E-mail/ }).fill("messejana@horizonte.edu.br")
+  await dialog.getByRole("textbox", { name: /^Telefone/ }).fill("8532740500")
+  await dialog.getByRole("textbox", { name: /^Logradouro/ }).fill("Rua Padre Pedro de Alencar")
+  await dialog.getByRole("textbox", { name: /^Cidade/ }).fill("Fortaleza")
+  await dialog.getByRole("combobox", { name: /^UF/ }).click()
+  await page.getByRole("option", { name: "CE", exact: true }).click()
+  await dialog.getByRole("button", { name: "Cadastrar unidade" }).click()
+}
 
 test.describe("overview", () => {
   test("shows which organization is in use, its data and a summary of its units", async ({ page }) => {
@@ -585,15 +631,47 @@ test.describe("overview", () => {
     expect(organizationMock.saves).toEqual([savedBody({ orgInstTel: "+1 650 253 0000" })])
   })
 
-  test("drops a save when someone else changed the organization first, showing the current data", async ({ page }) => {
+  test("keeps the draft when someone else changed the organization first, showing the current data", async ({
+    page,
+  }) => {
+    const organizationMock = await signInAndOpen(page, "conflict")
+
+    await page.getByRole("button", { name: "Editar Contato" }).click()
+    const form = page.getByRole("form", { name: "Contato" })
+    const email = form.getByRole("textbox", { name: "E-mail institucional" })
+    await email.fill("secretaria@horizonte.edu.br")
+    await form.getByRole("button", { name: "Salvar" }).click()
+
+    const notice = form
+      .getByRole("alert")
+      .filter({ hasText: "Outra pessoa alterou estes dados enquanto você editava." })
+    await expect(notice).toBeVisible()
+    await expect(email).toHaveValue("secretaria@horizonte.edu.br")
+
+    await notice.getByRole("button", { name: "Ver versão atual" }).click()
+    await expect(notice.getByLabel("Versão atual")).toContainText("outra.pessoa@horizonte.edu.br")
+    await notice.getByRole("button", { name: "Ocultar versão atual" }).click()
+    await expect(notice.getByLabel("Versão atual")).toHaveCount(0)
+
+    // Saving again goes with the version just read, over the other person's change.
+    await form.getByRole("button", { name: "Salvar" }).click()
+    await expect(page.getByText("Dados da organização atualizados.")).toBeVisible()
+    await expect(form).toHaveCount(0)
+    await expect(page.getByText("secretaria@horizonte.edu.br")).toBeVisible()
+    expect(organizationMock.saves.map((save) => save.version)).toEqual([3, 4])
+  })
+
+  test("discards the draft after a conflict, going back to the current data", async ({ page }) => {
     await signInAndOpen(page, "conflict")
 
     await page.getByRole("button", { name: "Editar Contato" }).click()
-    await page.getByRole("textbox", { name: "E-mail institucional" }).fill("secretaria@horizonte.edu.br")
-    await page.getByRole("form", { name: "Contato" }).getByRole("button", { name: "Salvar" }).click()
+    const form = page.getByRole("form", { name: "Contato" })
+    await form.getByRole("textbox", { name: "E-mail institucional" }).fill("secretaria@horizonte.edu.br")
+    await form.getByRole("button", { name: "Salvar" }).click()
 
-    await expect(page.getByText(/Outra pessoa alterou os dados da organização\./)).toBeVisible()
-    await expect(page.getByRole("form", { name: "Contato" })).toHaveCount(0)
+    await form.getByRole("button", { name: "Descartar minhas alterações" }).click()
+
+    await expect(form).toHaveCount(0)
     await expect(page.getByText("outra.pessoa@horizonte.edu.br")).toBeVisible()
   })
 
@@ -756,6 +834,14 @@ test.describe("overview", () => {
     await expect(page.getByRole("heading", { level: 2, name: "Colégio Horizonte" })).toBeVisible()
   })
 
+  test("tells an organization not registered yet apart from a failed load", async ({ page }) => {
+    await signInAndOpen(page, "not-registered")
+
+    await expect(page.getByText("Organização ainda não cadastrada")).toBeVisible()
+    await expect(page.getByText("Não foi possível carregar os dados da organização.")).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Editar Contato" })).toHaveCount(0)
+  })
+
   test("says there are no units, without made-up data, and leads to registering one", async ({ page }) => {
     await signInAndOpen(page, "no-units")
 
@@ -916,6 +1002,47 @@ test.describe("visual identity", () => {
       page.getByText("O envio de arquivos está indisponível no momento. Tente novamente mais tarde."),
     ).toBeVisible()
     await expect(page.getByText(/Novo arquivo: logo\.png/)).toBeVisible()
+  })
+
+  test("points out a primary color too light for white text, without blocking the publication", async ({ page }) => {
+    await signInAndOpen(page)
+    await tab(page, "Identidade visual").click()
+
+    const warning = page.getByText(/O texto branco sobre a cor primária tem contraste/)
+    await expect(warning).toHaveCount(0)
+
+    await page.getByRole("textbox", { name: "Cor primária" }).fill("FFFF00")
+    await expect(warning).toContainText("1,1:1")
+    await expect(page.getByRole("button", { name: "Salvar e publicar" })).toBeEnabled()
+
+    await page.getByRole("textbox", { name: "Cor primária" }).fill("00285B")
+    await expect(warning).toHaveCount(0)
+  })
+
+  test("keeps the change when someone else changed the identity first, and publishes it over theirs", async ({
+    page,
+  }) => {
+    const organizationMock = await signInAndOpen(page, undefined, {}, { conflict: true })
+    await tab(page, "Identidade visual").click()
+
+    await page.getByRole("textbox", { name: "Cor secundária" }).fill("1F7A3D")
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+
+    const notice = page
+      .getByRole("alert")
+      .filter({ hasText: "Outra pessoa alterou estes dados enquanto você editava." })
+    await expect(notice).toBeVisible()
+    await expect(page.getByRole("textbox", { name: "Cor secundária" })).toHaveValue("#1F7A3D")
+    await notice.getByRole("button", { name: "Ver versão atual" }).click()
+    await expect(notice.getByLabel("Versão atual")).toContainText("#7A1F5C")
+
+    await page.getByRole("button", { name: "Salvar e publicar" }).click()
+    await expect(page.getByText("Identidade visual publicada.")).toBeVisible()
+    await expect(notice).toHaveCount(0)
+    expect(organizationMock.brandingCalls.filter((call) => call.path === "branding").map((call) => call.body)).toEqual([
+      expect.objectContaining({ secondaryColor: "#1F7A3D", version: 2 }),
+      expect.objectContaining({ secondaryColor: "#1F7A3D", version: 3 }),
+    ])
   })
 
   test("discards a change, going back to the current identity", async ({ page }) => {
@@ -1143,21 +1270,71 @@ test.describe("units", () => {
     ])
   })
 
-  test("closes the form and shows the current data when someone else changed the unit first", async ({ page }) => {
-    await signInAndOpen(page, "unit-conflict")
+  test("keeps the form when someone else changed the unit first, and saves over it with the new version", async ({
+    page,
+  }) => {
+    const organizationMock = await signInAndOpen(page, "unit-conflict")
     await tab(page, "Unidades").click()
 
     await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
     await page.getByRole("menuitem", { name: "Editar" }).click()
     const dialog = page.getByRole("dialog", { name: "Editar unidade" })
-    await dialog.getByRole("textbox", { name: /^Telefone/ }).fill("85988887777")
+    const phone = dialog.getByRole("textbox", { name: /^Telefone/ })
+    await phone.fill("85988887777")
     await dialog.getByRole("button", { name: "Salvar" }).click()
 
-    await expect(page.getByText(/Outra pessoa alterou esta unidade\./)).toBeVisible()
-    await expect(dialog).toHaveCount(0)
+    const notice = dialog
+      .getByRole("alert")
+      .filter({ hasText: "Outra pessoa alterou estes dados enquanto você editava." })
+    await expect(notice).toBeVisible()
+    await expect(phone).toHaveValue("(85) 98888-7777")
     await expect(
       page.getByRole("row", { name: /Unidade Aldeota/ }).getByText("outra.pessoa@horizonte.edu.br"),
     ).toBeVisible()
+    await notice.getByRole("button", { name: "Ver versão atual" }).click()
+    await expect(notice.getByLabel("Versão atual")).toContainText("outra.pessoa@horizonte.edu.br")
+
+    await dialog.getByRole("button", { name: "Salvar" }).click()
+    await expect(page.getByText("Unidade atualizada.")).toBeVisible()
+    await expect(dialog).toHaveCount(0)
+    expect(organizationMock.unitCalls.map((call) => (call.body as { version: number }).version)).toEqual([0, 1])
+  })
+
+  test("reads the impact again when the unit changed before the inactivation was confirmed", async ({ page }) => {
+    const organizationMock = await signInAndOpen(page, "unit-conflict")
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await page.getByRole("menuitem", { name: "Inativar" }).click()
+    const dialog = page.getByRole("dialog", { name: /^Inativar unidade/ })
+    await dialog.getByRole("textbox", { name: "Motivo da inativação" }).fill("Mudança de endereço.")
+    await dialog.getByRole("button", { name: "Inativar" }).click()
+
+    await expect(dialog.getByText(/Esta unidade foi alterada desde que o impacto foi verificado\./)).toBeVisible()
+    await expect(dialog.getByRole("textbox", { name: "Motivo da inativação" })).toHaveValue("Mudança de endereço.")
+
+    await dialog.getByRole("button", { name: "Inativar" }).click()
+    await expect(dialog).toHaveCount(0)
+    expect(organizationMock.unitCalls.map((call) => (call.body as { version: number }).version)).toEqual([0, 1])
+  })
+
+  test("takes a registration without an answer as saved when the unit is in the list", async ({ page }) => {
+    await signInAndOpen(page, "create-saved")
+    await tab(page, "Unidades").click()
+    await registerUnit(page, "Unidade Messejana")
+
+    await expect(page.getByText("Unidade cadastrada.")).toBeVisible()
+    await expect(page.getByRole("dialog", { name: "Nova unidade" })).toHaveCount(0)
+    await expect(page.getByRole("row", { name: /Unidade Messejana/ })).toBeVisible()
+  })
+
+  test("keeps the form when a registration got no answer and the unit is not in the list", async ({ page }) => {
+    await signInAndOpen(page, "create-lost")
+    await tab(page, "Unidades").click()
+    await registerUnit(page, "Unidade Messejana")
+
+    await expect(page.getByText(/Não foi possível confirmar se a unidade foi cadastrada\./)).toBeVisible()
+    await expect(page.getByRole("dialog", { name: "Nova unidade" })).toBeVisible()
   })
 
   test("shows the one-text address of a unit from before structured addresses, and asks for the fields", async ({

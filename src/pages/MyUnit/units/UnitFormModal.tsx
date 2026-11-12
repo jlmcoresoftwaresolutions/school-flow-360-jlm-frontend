@@ -1,10 +1,10 @@
-import { useId } from "react"
+import { useId, useState } from "react"
 import { Controller, FormProvider, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useUnsavedChanges } from "@/components"
 import { Button, Grid, Text } from "@/ds-components/atoms"
-import { Input, Textarea } from "@/ds-components/molecules"
+import { DescriptionList, Input, Textarea } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { SchoolUnit, SchoolUnitInput } from "@/models"
 import { emptyAddress } from "@/utils/address"
@@ -14,12 +14,17 @@ import { formatPhoneInput, isValidPhone } from "@/utils/phone"
 import { notesMaxLength, unitEmailMaxLength, unitNameMaxLength } from "../MyUnit.constants"
 import { FieldGroup } from "../MyUnit.styles"
 import { AddressFields } from "../shared/AddressFields"
+import { ConflictNotice } from "../shared/ConflictNotice"
 import { useOrganizationCountry } from "../shared/organizationCountry"
+import type { SaveResult } from "../shared/saveResult"
+import { useAddressFormatter } from "../shared/useAddressFormatter"
 import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 
 export type UnitFormModalProps = {
   onClose: () => void
-  onSave: (input: SchoolUnitInput) => Promise<boolean>
+  // "conflict" when someone else changed the unit first: `unit` then comes again as it is now, and the
+  // form keeps what the user typed beside a notice.
+  onSave: (input: SchoolUnitInput) => Promise<SaveResult>
   unit?: SchoolUnit
 }
 
@@ -38,16 +43,20 @@ const toInput = (formatPhone: (phone: string) => string, unit?: SchoolUnit): Sch
 // the state); the limits are the backend's. A unit from before structured addresses opens with the
 // address fields empty and its old one-text address shown above them, to be typed into the fields.
 // The visual spec's academic fields (calendar, operational setup) wait for the Acadêmico module, and
-// the unit code for DP-P1-05.
+// the unit code for DP-P1-05. A save that found the unit changed by someone else keeps the form as
+// the user left it, with the current unit one click away; saving again goes over it.
 export const UnitFormModal = (props: UnitFormModalProps) => {
   const { onClose, onSave, unit } = props
 
   const { t } = useTranslation()
   const country = useOrganizationCountry()
   const formatPhone = usePhoneFormatter()
+  const formatAddress = useAddressFormatter()
   const form = useForm<SchoolUnitInput>({ defaultValues: toInput(formatPhone, unit) })
 
   const formId = useId()
+
+  const [hasConflict, setHasConflict] = useState(false)
 
   const { errors, isDirty, isSubmitting } = form.formState
   const isEditing = unit !== undefined
@@ -57,8 +66,30 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
   useUnsavedChanges(isDirty)
 
   const handleSubmit = form.handleSubmit(async (input) => {
-    if (await onSave(input)) onClose()
+    const result = await onSave(input)
+
+    setHasConflict(result === "conflict")
+    if (result === "saved") onClose()
   })
+
+  // The unit as it is now, for the conflict notice.
+  const currentUnit = unit && (
+    <DescriptionList
+      emptyValue={t("common.notInformed")}
+      items={[
+        { key: "name", label: t("myUnit.units.name"), value: unit.name },
+        { key: "contactEmail", label: t("myUnit.units.contactEmail"), value: unit.contactEmail },
+        { key: "contactPhone", label: t("myUnit.units.contactPhone"), value: formatPhone(unit.contactPhone) },
+        {
+          fullWidth: true,
+          key: "address",
+          label: t("myUnit.units.address"),
+          value: formatAddress(unit.address) || unit.legacyAddress,
+        },
+        { fullWidth: true, key: "notes", label: t("myUnit.units.notes"), value: unit.notes },
+      ]}
+    />
+  )
 
   return (
     <Modal
@@ -82,6 +113,8 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
       <FormProvider {...form}>
         <form id={formId} onSubmit={handleSubmit} noValidate>
           <FieldGroup>
+            {hasConflict && <ConflictNotice current={currentUnit} onDiscard={onClose} />}
+
             <Input
               error={errors.name?.message}
               maxLength={unitNameMaxLength}

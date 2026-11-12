@@ -87,8 +87,8 @@ export const getCurrentOrganization = async (config?: RequestConfig): Promise<Or
 // change exactly as the backend last answered them, so nothing is cleared - with the `version` last
 // read. The country is saved as its code ("BR"); an address without one keeps the stored text. A
 // phone is saved in the international format, a number without "+" read as one of the organization's
-// country (Brazil when it is not known). A 409 means someone else changed the
-// organization since: read it again (getCurrentOrganization) and let the user redo the change.
+// country (Brazil when it is not known). A 409 means someone else changed the organization since:
+// read it again (getCurrentOrganization), and saving again goes with the version just read.
 export const updateOrganization = async (update: OrganizationUpdate, config?: RequestConfig): Promise<Organization> => {
   if (!currentOrganization) throw new Error("The organization must be read before it is saved")
 

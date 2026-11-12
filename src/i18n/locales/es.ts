@@ -89,7 +89,6 @@ export const es: TranslationResource = {
       streetPlaceholder: "Escribe la calle",
     },
     branding: {
-      conflict: "Otra persona modificó la identidad visual. Revisa la actual y vuelve a hacer el cambio.",
       currentFile: "Archivo actual",
       description: "Logotipo, favicon y colores usados en las pantallas de la organización.",
       discard: "Descartar cambios",
@@ -109,6 +108,8 @@ export const es: TranslationResource = {
       logo: "Logotipo",
       logoHelper:
         "PNG o JPG, de al menos 64 px de ancho y de alto, proporción hasta 4:1, hasta 2 MB. Una imagen de más de 2048 px se reduce automáticamente.",
+      lowContrast:
+        "El texto blanco sobre el color primario tiene un contraste de {{ratio}}:1, por debajo del mínimo recomendado de {{minimum}}:1, y puede ser difícil de leer. Considera un color más oscuro.",
       newFile: "Archivo nuevo: {{name}} ({{size}})",
       noFile: "Ningún archivo enviado.",
       openColorPicker: "Abrir selector de color",
@@ -125,9 +126,21 @@ export const es: TranslationResource = {
       title: "Identidad visual",
       unpublished: "Hay una versión guardada que aún no se publicó. Publícala para aplicarla.",
     },
+    conflict: {
+      currentLabel: "Versión actual",
+      discard: "Descartar mis cambios",
+      hideCurrent: "Ocultar versión actual",
+      message:
+        "Tus cambios no se guardaron y siguen en el formulario. Revisa la versión actual y guarda de nuevo para grabar los tuyos encima, o descarta los tuyos.",
+      showCurrent: "Ver versión actual",
+      title: "Otra persona modificó estos datos mientras editabas.",
+    },
     editSection: "Editar {{section}}",
     loadError: "No se pudieron cargar los datos de la organización.",
     loadErrorDescription: "Revisa tu conexión e inténtalo de nuevo.",
+    notRegistered: "Organización aún no registrada",
+    notRegisteredDescription:
+      "Esta escuela aún no tiene los datos de la organización. Se crean durante la implantación; contacta con soporte si esto persiste.",
     operationModels: {
       MIXED: "Mixta",
       PRIVATE: "Privada",
@@ -143,8 +156,6 @@ export const es: TranslationResource = {
     overview: {
       addressLabel: "Dirección institucional",
       addressTitle: "Dirección",
-      conflict:
-        "Otra persona modificó los datos de la organización. Revisa los datos actuales y vuelve a hacer el cambio.",
       contactEmail: "Correo institucional",
       contactPhone: "Teléfono",
       contactTitle: "Contacto",
@@ -183,7 +194,7 @@ export const es: TranslationResource = {
       address: "Dirección",
       cityState: "Ciudad/Estado",
       clearFilters: "Limpiar filtros",
-      conflict: "Otra persona modificó esta sede. La lista se actualizó; vuelve a hacer el cambio.",
+      conflict: "Otra persona inactivó esta sede. La lista se actualizó.",
       contactEmail: "Correo",
       contactEmailPlaceholder: "Escribe el correo de la sede",
       contactPhone: "Teléfono",
@@ -191,6 +202,7 @@ export const es: TranslationResource = {
       create: "Nueva sede",
       createFirst: "Registrar sede",
       createTitle: "Nueva sede",
+      createUnconfirmed: "No pudimos confirmar si la sede se registró. Revisa la lista antes de intentarlo de nuevo.",
       created: "Sede registrada.",
       description: "Las sedes de la organización a las que tienes acceso.",
       editTitle: "Editar sede",
@@ -201,6 +213,8 @@ export const es: TranslationResource = {
       filterInactive: "Inactivas",
       filtersLabel: "Filtrar sedes",
       inactivate: "Inactivar",
+      inactivateConflict:
+        "Esta sede cambió desde que se comprobó el impacto. Revisa el impacto actualizado y confirma de nuevo.",
       inactivateDescription:
         "{{name}} dejará de aparecer en las nuevas operaciones, pero seguirá en el historial de la organización.",
       inactivateImpactError: "No pudimos comprobar el impacto de la inactivación. Cierra e inténtalo de nuevo.",

@@ -89,7 +89,6 @@ export const fr: TranslationResource = {
       streetPlaceholder: "Saisissez la rue",
     },
     branding: {
-      conflict: "Quelqu'un d'autre a modifié l'identité visuelle. Vérifiez l'actuelle et refaites la modification.",
       currentFile: "Fichier actuel",
       description: "Le logo, le favicon et les couleurs utilisés sur les écrans de l'organisation.",
       discard: "Annuler les modifications",
@@ -109,6 +108,8 @@ export const fr: TranslationResource = {
       logo: "Logo",
       logoHelper:
         "PNG ou JPG, d'au moins 64 px de largeur et de hauteur, rapport jusqu'à 4:1, jusqu'à 2 Mo. Une image de plus de 2048 px est réduite automatiquement.",
+      lowContrast:
+        "Le texte blanc sur la couleur primaire a un contraste de {{ratio}}:1, en dessous du minimum recommandé de {{minimum}}:1, et peut être difficile à lire. Envisagez une couleur plus foncée.",
       newFile: "Nouveau fichier : {{name}} ({{size}})",
       noFile: "Aucun fichier envoyé.",
       openColorPicker: "Ouvrir le sélecteur de couleur",
@@ -125,9 +126,21 @@ export const fr: TranslationResource = {
       title: "Identité visuelle",
       unpublished: "Une version enregistrée n'a pas encore été publiée. Publiez-la pour l'appliquer.",
     },
+    conflict: {
+      currentLabel: "Version actuelle",
+      discard: "Abandonner mes modifications",
+      hideCurrent: "Masquer la version actuelle",
+      message:
+        "Vos modifications n'ont pas été enregistrées et restent dans le formulaire. Consultez la version actuelle et enregistrez à nouveau pour écrire les vôtres par-dessus, ou abandonnez les vôtres.",
+      showCurrent: "Voir la version actuelle",
+      title: "Quelqu'un d'autre a modifié ces données pendant votre modification.",
+    },
     editSection: "Modifier {{section}}",
     loadError: "Impossible de charger les données de l'organisation.",
     loadErrorDescription: "Vérifiez votre connexion et réessayez.",
+    notRegistered: "Organisation pas encore enregistrée",
+    notRegisteredDescription:
+      "Cette école n'a pas encore les données de son organisation. Elles sont créées lors de la mise en place ; contactez le support si cela persiste.",
     operationModels: {
       MIXED: "Mixte",
       PRIVATE: "Privée",
@@ -143,8 +156,6 @@ export const fr: TranslationResource = {
     overview: {
       addressLabel: "Adresse institutionnelle",
       addressTitle: "Adresse",
-      conflict:
-        "Quelqu'un d'autre a modifié les données de l'organisation. Vérifiez les données actuelles et refaites la modification.",
       contactEmail: "E-mail institutionnel",
       contactPhone: "Téléphone",
       contactTitle: "Contact",
@@ -183,7 +194,7 @@ export const fr: TranslationResource = {
       address: "Adresse",
       cityState: "Ville/État",
       clearFilters: "Effacer les filtres",
-      conflict: "Quelqu'un d'autre a modifié cet établissement. La liste a été mise à jour ; refaites la modification.",
+      conflict: "Quelqu'un d'autre a désactivé cet établissement. La liste a été mise à jour.",
       contactEmail: "E-mail",
       contactEmailPlaceholder: "Saisissez l'e-mail de l'établissement",
       contactPhone: "Téléphone",
@@ -191,6 +202,8 @@ export const fr: TranslationResource = {
       create: "Nouvel établissement",
       createFirst: "Enregistrer un établissement",
       createTitle: "Nouvel établissement",
+      createUnconfirmed:
+        "Impossible de confirmer si l'établissement a été enregistré. Vérifiez la liste avant de réessayer.",
       created: "Établissement enregistré.",
       description: "Les établissements de l'organisation auxquels vous avez accès.",
       editTitle: "Modifier l'établissement",
@@ -201,6 +214,8 @@ export const fr: TranslationResource = {
       filterInactive: "Inactifs",
       filtersLabel: "Filtrer les établissements",
       inactivate: "Désactiver",
+      inactivateConflict:
+        "Cet établissement a changé depuis la vérification de l'impact. Consultez l'impact mis à jour et confirmez à nouveau.",
       inactivateDescription:
         "{{name}} n'apparaîtra plus dans les nouvelles opérations, mais reste dans l'historique de l'organisation.",
       inactivateImpactError: "Impossible de vérifier l'impact de la désactivation. Fermez et réessayez.",

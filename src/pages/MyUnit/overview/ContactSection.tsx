@@ -9,6 +9,7 @@ import { formatPhoneInput, isValidPhone } from "@/utils/phone"
 import { contactEmailMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
 import { useOrganizationCountry } from "../shared/organizationCountry"
+import type { SaveResult } from "../shared/saveResult"
 import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useSectionForm } from "../shared/useSectionForm"
 
@@ -16,7 +17,7 @@ type ContactValues = Required<Pick<OrganizationUpdate, "contactEmail" | "contact
 
 export type ContactSectionProps = {
   organization: Organization
-  onSave: (update: ContactValues) => Promise<boolean>
+  onSave: (update: ContactValues) => Promise<SaveResult>
 }
 
 // The organization's institutional contacts. The phone may be of any country: one without "+" is read
@@ -38,6 +39,7 @@ export const ContactSection = (props: ContactSectionProps) => {
   return (
     <EditableSectionCard
       editing={section.isEditing}
+      hasConflict={section.hasConflict}
       form={
         <>
           <Input

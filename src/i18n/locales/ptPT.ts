@@ -90,7 +90,6 @@ export const ptPT: TranslationResource = {
       streetPlaceholder: "Indique o arruamento",
     },
     branding: {
-      conflict: "Outra pessoa alterou a identidade visual. Verifique a atual e refaça a alteração.",
       currentFile: "Ficheiro atual",
       description: "Logótipo, favicon e cores usados nos ecrãs da organização.",
       discard: "Descartar alterações",
@@ -110,6 +109,8 @@ export const ptPT: TranslationResource = {
       logo: "Logótipo",
       logoHelper:
         "PNG ou JPG, com pelo menos 64 px de largura e de altura, proporção até 4:1, até 2 MB. Uma imagem maior do que 2048 px é reduzida automaticamente.",
+      lowContrast:
+        "O texto branco sobre a cor primária tem contraste {{ratio}}:1, abaixo do mínimo recomendado de {{minimum}}:1, e pode ficar difícil de ler. Considere uma cor mais escura.",
       newFile: "Novo ficheiro: {{name}} ({{size}})",
       noFile: "Nenhum ficheiro enviado.",
       openColorPicker: "Abrir seletor de cor",
@@ -126,9 +127,21 @@ export const ptPT: TranslationResource = {
       title: "Identidade visual",
       unpublished: "Há uma versão guardada que ainda não foi publicada. Publique para a aplicar.",
     },
+    conflict: {
+      currentLabel: "Versão atual",
+      discard: "Descartar as minhas alterações",
+      hideCurrent: "Ocultar versão atual",
+      message:
+        "As suas alterações não foram guardadas e continuam no formulário. Verifique a versão atual e guarde de novo para gravar as suas por cima dela, ou descarte as suas.",
+      showCurrent: "Ver versão atual",
+      title: "Outra pessoa alterou estes dados enquanto editava.",
+    },
     editSection: "Editar {{section}}",
     loadError: "Não foi possível carregar os dados da organização.",
     loadErrorDescription: "Verifique a sua ligação e tente novamente.",
+    notRegistered: "Organização ainda não registada",
+    notRegisteredDescription:
+      "Esta escola ainda não tem os dados da organização. São criados na implementação; contacte o suporte se isto persistir.",
     operationModels: {
       MIXED: "Mista",
       PRIVATE: "Privada",
@@ -144,7 +157,6 @@ export const ptPT: TranslationResource = {
     overview: {
       addressLabel: "Morada institucional",
       addressTitle: "Morada",
-      conflict: "Outra pessoa alterou os dados da organização. Verifique os dados atuais e refaça a alteração.",
       contactEmail: "E-mail institucional",
       contactPhone: "Telefone",
       contactTitle: "Contacto",
@@ -183,7 +195,7 @@ export const ptPT: TranslationResource = {
       address: "Morada",
       cityState: "Cidade/UF",
       clearFilters: "Limpar filtros",
-      conflict: "Outra pessoa alterou esta unidade. A lista foi atualizada; refaça a alteração.",
+      conflict: "Outra pessoa desativou esta unidade. A lista foi atualizada.",
       contactEmail: "E-mail",
       contactEmailPlaceholder: "Indique o e-mail da unidade",
       contactPhone: "Telefone",
@@ -191,6 +203,8 @@ export const ptPT: TranslationResource = {
       create: "Nova unidade",
       createFirst: "Registar unidade",
       createTitle: "Nova unidade",
+      createUnconfirmed:
+        "Não foi possível confirmar se a unidade foi registada. Verifique a lista antes de tentar de novo.",
       created: "Unidade registada.",
       description: "As unidades da organização a que tem acesso.",
       editTitle: "Editar unidade",
@@ -201,6 +215,8 @@ export const ptPT: TranslationResource = {
       filterInactive: "Inativas",
       filtersLabel: "Filtrar unidades",
       inactivate: "Inativar",
+      inactivateConflict:
+        "Esta unidade foi alterada desde que o impacto foi verificado. Verifique o impacto atualizado e confirme de novo.",
       inactivateDescription:
         "{{name}} deixa de aparecer nas novas operações, mas continua no histórico da organização.",
       inactivateImpactError: "Não foi possível verificar o impacto da inativação. Feche e tente novamente.",
