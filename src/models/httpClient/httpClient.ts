@@ -1,14 +1,35 @@
-// The stable codes the backend puts on some errors, so a screen never has to read the message:
-// VERSION_CONFLICT (the record changed since it was read), UNIT_NAME_DUPLICATE (another unit of the
-// tenant has that name), IMPACTS_NOT_CONFIRMED (a unit with users deactivated without confirmImpacts),
-// ORGANIZATION_REQUIRED (the tenant has no organization for the unit) and DATA_CONFLICT (another
-// integrity conflict). Other errors come without a code.
+// The stable codes the backend puts on errors, so a screen never has to read the message (section 5
+// of the backend's docs/P02_CONTRATO.md says when each comes). The *_NOT_FOUND codes also mean "out of
+// your scope": the backend never tells the two apart. Some errors come without a code.
 export type ApiErrorCode =
+  | "ACCESS_DENIED"
+  | "ASSIGNMENT_NOT_FOUND"
+  | "CHALLENGE_INVALID"
   | "DATA_CONFLICT"
   | "IMPACTS_NOT_CONFIRMED"
+  | "INVALID_REQUEST"
+  | "INVITATION_ALREADY_USED"
+  | "INVITATION_EXPIRED"
+  | "INVITATION_INVALID"
+  | "INVITATION_NOT_FOUND"
+  | "INVITATION_PENDING"
+  | "INVITATION_STATE_INVALID"
+  | "LAST_ADMIN"
+  | "NO_ACTIVE_ASSIGNMENT"
   | "ORGANIZATION_REQUIRED"
+  | "ROLE_NOT_GRANTABLE"
+  | "SCOPE_DENIED"
+  | "SESSION_LIMIT_REACHED"
+  | "SESSION_NOT_FOUND"
+  | "TENANT_NOT_FOUND"
+  | "UNIT_INACTIVE"
   | "UNIT_NAME_DUPLICATE"
+  | "UNIT_NOT_FOUND"
+  | "USER_DUPLICATE"
+  | "USER_NOT_FOUND"
   | "VERSION_CONFLICT"
+  | "VERSION_REQUIRED"
+  | "WEAK_PASSWORD"
 
 // The envelope every SchoolFlow360 backend response comes in, success or error: the payload is in
 // `data` (null on an error), `status` is "Success"/"Error" and `message` is the backend's own text.
@@ -21,6 +42,16 @@ export type ApiResponse<T> = {
   tenantId: string
   code?: ApiErrorCode | null
   correlationId?: string
+}
+
+// A page of the P02 lists (users, invitations, the access audit): a simpler shape than Spring's, with
+// the items in `items` and `page` zero-based.
+export type ApiItemsPage<T> = {
+  items: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
 }
 
 // Spring's sort descriptor inside a page.

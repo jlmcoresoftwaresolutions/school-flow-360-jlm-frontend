@@ -5,10 +5,17 @@ import { getSessionState } from "@/utils/session"
 // setTimeout's longest delay (about 24.8 days); a later expiry is reached in more than one step.
 const maxTimeoutMs = 2 ** 31 - 1
 
-// Calls onExpire when the stored session reaches its expiresAt, even if the page makes no request in
-// the meantime (the backend's 401 only shows up on the next call). Checked once on mount, then again
-// at the expiry time; a session removed in the meantime (signed out in another tab) doesn't call it.
-export const useSessionExpiry = (onExpire: () => void): void => {
+// How long to wait before trying again when the session couldn't be renewed yet (the backend didn't
+// answer) and is still stale.
+export const sessionRetryDelayMs = 30_000
+
+// Calls onExpire when the stored session's access token expires, even if the page makes no request in
+// the meantime (the backend's 401 only shows up on the next call). onExpire renews the session or
+// ends it, and resolves to whether the session goes on: then the watch starts over from the new expiry
+// (or, if it is still expired - the renewal couldn't reach the backend - tries again after a pause).
+// Checked once on mount, then at each expiry; a session removed in the meantime (signed out in another
+// tab) ends the watch without calling it.
+export const useSessionExpiry = (onExpire: () => Promise<boolean> | boolean): void => {
   const onExpireRef = useRef(onExpire)
 
   useEffect(() => {
@@ -19,19 +26,25 @@ export const useSessionExpiry = (onExpire: () => void): void => {
     let isStale = false
     let timeout: ReturnType<typeof setTimeout> | undefined
 
+    const schedule = (delayMs: number) => {
+      timeout = setTimeout(() => void check(), Math.min(Math.max(delayMs, 0), maxTimeoutMs))
+    }
+
     const check = async () => {
       const state = await getSessionState()
-      if (isStale) return
+      if (isStale || state.status === "none") return
 
-      if (state.status !== "active") {
-        if (state.status === "expired") onExpireRef.current()
+      if (state.status === "active") {
+        const remainingMs = Date.parse(state.session.expiresAt) - Date.now()
+        if (!Number.isNaN(remainingMs)) schedule(remainingMs)
         return
       }
 
-      const remainingMs = Date.parse(state.session.expiresAt) - Date.now()
-      if (Number.isNaN(remainingMs)) return
+      const goesOn = await onExpireRef.current()
+      if (isStale || !goesOn) return
 
-      timeout = setTimeout(() => void check(), Math.min(Math.max(remainingMs, 0), maxTimeoutMs))
+      const next = await getSessionState()
+      if (!isStale) schedule(next.status === "stale" ? sessionRetryDelayMs : 0)
     }
 
     void check()

@@ -1,9 +1,27 @@
-import type { ApiResponse, AuditEventPage, AuditEventSearchParams } from "@/models"
+import type {
+  AccessAuditEventPage,
+  AccessAuditSearchParams,
+  ApiResponse,
+  AuditEventPage,
+  AuditEventSearchParams,
+} from "@/models"
 
 import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
 
-// NOT USED YET. GET /api/admin/audit: the audit trail, paged (page 0 and size 20 by default) and
+// NOT USED YET. GET /api/audit: the P02 access audit, paged. An Admin reads the whole tenant, a
+// Secretaria only the events of her units. Errors: 401, 403 ACCESS_DENIED, 400 INVALID_REQUEST (a
+// period over 366 days).
+export const listAccessAuditEvents = async (
+  params?: AccessAuditSearchParams,
+  config?: RequestConfig,
+): Promise<AccessAuditEventPage> => {
+  const response = await httpClient.get<ApiResponse<AccessAuditEventPage>>("/api/audit", { ...config, params })
+
+  return unwrapApiResponse(response)
+}
+
+// NOT USED, AND ON ITS WAY OUT (replaced by GET /api/audit). GET /api/admin/audit: the audit trail, paged (page 0 and size 20 by default) and
 // optionally filtered by the kind and the id of the entity. ADMIN only. There is no access-logs screen
 // wired to it yet ("Logs de Acesso" is still a blank page).
 export const searchAuditEvents = async (

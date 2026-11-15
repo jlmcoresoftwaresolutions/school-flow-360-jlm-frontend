@@ -6,11 +6,16 @@ import { paths } from "@/routes/paths"
 import { endExpiredSession } from "@/utils/authRedirect"
 import { markBackendResponse } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
-import { getSessionToken } from "@/utils/session"
+import { getSessionState, saveSession } from "@/utils/session"
 import { getTenantId } from "@/utils/tenant"
+
+import { refreshSession } from "../auth/auth"
 
 declare module "axios" {
   interface AxiosRequestConfig {
+    idempotencyKey?: string
+    // Internal: set on a request sent again after the session was renewed, so it is never retried twice.
+    retriedAfterRenewal?: boolean
     showLoading?: boolean
     tenantId?: string
   }
@@ -20,8 +25,10 @@ declare module "axios" {
 // as its own type (rather than exposing all of AxiosRequestConfig) so callers only ever see the
 // options this app actually wants to offer, with room to grow (e.g. a future skipErrorToast).
 // tenantId overrides the deploy's tenant for one call, for a request that names its own school (the
-// password reset link carries the tenant it was issued for).
-export type RequestConfig = Pick<AxiosRequestConfig, "showLoading" | "tenantId">
+// password reset link carries the tenant it was issued for). idempotencyKey goes as the
+// Idempotency-Key header, so repeating a create (a double click, a retry after a timeout) returns
+// the first result instead of creating twice - generate one per attempt the user means as one.
+export type RequestConfig = Pick<AxiosRequestConfig, "idempotencyKey" | "showLoading" | "tenantId">
 
 // The HTTP status of a failed call (e.g. 401 for wrong credentials), or undefined when there was no
 // response at all (network down, CORS refusal, timeout) - so a page can tell the two apart without
@@ -45,6 +52,66 @@ export const getErrorCode = (error: unknown): ApiErrorCode | undefined => {
 // a third-party API (e.g. ViaCEP), which must never receive the user's token.
 const isBackendRequest = (url?: string) => url !== undefined && !/^[a-z][a-z\d+\-.]*:\/\//i.test(url)
 
+// The renewal itself carries no access token (the expired one would only get it refused) and is never
+// renewed in turn.
+const renewalPath = "/api/auth/refresh"
+const isRenewalRequest = (url?: string) => url === renewalPath
+
+let pendingRenewal: Promise<string | null> | null = null
+
+const requestRenewal = async (): Promise<string | null> => {
+  const { session } = await getSessionState()
+  if (!session?.refreshToken) return null
+
+  let renewed
+  try {
+    renewed = await refreshSession({ refreshToken: session.refreshToken }, { showLoading: false })
+  } catch (error) {
+    // Refused: the refresh token expired or the session was revoked. Anything else (offline, the
+    // backend down) says nothing about the session, so it is left for the caller.
+    if (getErrorStatus(error) === 401) return null
+    throw error
+  }
+
+  // Signed out while the renewal was on its way: don't bring the session back.
+  if ((await getSessionState()).status === "none") return null
+
+  await saveSession({ ...renewed, context: session.context })
+
+  return renewed.token
+}
+
+// Trades the refresh token for a new access token (it lasts 1 h; the refresh token, 7 days) and stores
+// it, keeping who signed in. Resolves to the new token, or null when the session can't be renewed
+// (none stored, or the backend refused it) and must end; rejects when the backend couldn't be reached.
+// Calls made at the same time share one renewal, since each refresh token works only once.
+export const renewSession = (): Promise<string | null> => {
+  pendingRenewal ??= requestRenewal().finally(() => {
+    pendingRenewal = null
+  })
+
+  return pendingRenewal
+}
+
+// The access token to send: the stored one while it works, a renewed one once it has expired. A
+// session the backend won't renew ends here, sending the user to the login.
+const getUsableToken = async (): Promise<string | null> => {
+  const state = await getSessionState()
+
+  if (state.status === "active") return state.session.token
+  if (state.status === "none") return null
+
+  try {
+    const token = await renewSession()
+    if (!token) endExpiredSession(paths.login)
+
+    return token
+  } catch {
+    // The backend couldn't be reached: the call goes as it is and fails on its own.
+    return null
+  }
+}
+
 // Shared axios instance every service must use instead of importing axios directly, so every API
 // call automatically shows the global Loading overlay unless it opts out via config.showLoading,
 // and every backend call carries the signed-in user's token. baseURL comes from .env (empty in
@@ -60,10 +127,12 @@ httpClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =
     const tenantId = config.tenantId ?? getTenantId()
     if (tenantId && !config.headers["X-Tenant-ID"]) config.headers["X-Tenant-ID"] = tenantId
 
-    if (!config.headers.Authorization) {
-      const token = await getSessionToken()
+    if (!config.headers.Authorization && !isRenewalRequest(config.url)) {
+      const token = await getUsableToken()
       if (token) config.headers.Authorization = `Bearer ${token}`
     }
+
+    if (config.idempotencyKey) config.headers["Idempotency-Key"] = config.idempotencyKey
   }
 
   return config
@@ -81,12 +150,30 @@ httpClient.interceptors.response.use(
     // Any answer, even an error status, means the backend is awake; no response at all doesn't.
     if (error.response && isBackendRequest(error.config?.url)) markBackendResponse()
 
-    // A 401 on a request that carried a token means the session is no longer valid (expired or
-    // revoked): drop it and send the user to the login, which says so and offers to come back here.
-    // A 401 without a token - wrong credentials on the login itself - is left for the caller.
+    // A 401 on a request that carried a token means its access token is no longer accepted: the
+    // session is renewed once and the request sent again. When it can't be renewed (revoked, or the
+    // refresh token expired too), the session ends and the user goes to the login, which says so and
+    // offers to come back here. A 401 without a token - wrong credentials on the login itself - is
+    // left for the caller.
     const sentToken = Boolean(error.config?.headers?.Authorization)
 
-    if (error.response?.status === 401 && sentToken) endExpiredSession(paths.login)
+    if (error.response?.status === 401 && sentToken && !isRenewalRequest(error.config.url)) {
+      if (!error.config.retriedAfterRenewal) {
+        try {
+          const token = await renewSession()
+
+          if (token) {
+            error.config.headers.Authorization = `Bearer ${token}`
+            return httpClient({ ...error.config, retriedAfterRenewal: true })
+          }
+        } catch {
+          // The backend couldn't be reached to renew it: the call fails as it is.
+          return Promise.reject(error)
+        }
+      }
+
+      endExpiredSession(paths.login)
+    }
 
     return Promise.reject(error)
   },

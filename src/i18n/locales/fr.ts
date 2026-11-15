@@ -281,6 +281,7 @@ export const fr: TranslationResource = {
     validationUnavailableTitle: "Impossible de vérifier le lien",
   },
   shell: {
+    account: "Mon compte",
     breadcrumbLabel: "Vous êtes ici",
     collapseMenu: "Réduire le menu",
     expandMenu: "Développer le menu",
@@ -328,7 +329,12 @@ export const fr: TranslationResource = {
     notifications: "Notifications",
     roles: {
       ADMIN: "Administrateur",
-      USER: "Utilisateur",
+      ALUNO: "Élève",
+      COORDENACAO: "Coordination",
+      FINANCEIRO: "Finances",
+      PROFESSOR: "Enseignant",
+      RESPONSAVEL: "Responsable légal",
+      SECRETARIA: "Secrétariat",
     },
     signOut: "Se déconnecter",
     userMenu: "Menu de l'utilisateur",

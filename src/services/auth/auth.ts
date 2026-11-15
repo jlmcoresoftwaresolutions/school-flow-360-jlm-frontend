@@ -1,19 +1,26 @@
 import type {
+  AcceptInvitationRequest,
   ApiResponse,
   AuthData,
+  InvitationTokenRequest,
+  InvitationValidation,
   LoginRequest,
   PasswordRecoveryConfirmationRequest,
   PasswordRecoveryRequest,
   PasswordRecoveryTokenValidationRequest,
   RefreshTokenRequest,
   RegisterUserPayload,
+  SessionReplaceRequest,
 } from "@/models"
 
 import type { RequestConfig } from "../httpClient"
-import { httpClient } from "../httpClient"
+import { httpClient, unwrapApiResponse } from "../httpClient"
 
-// USED by the login page. POST /api/auth/login. Signs in with e-mail and password. Wrong credentials come back as a 401, which axios rejects, so
-// the caller tells them apart from other failures by the error's response status.
+// USED by the login page. POST /api/auth/login. Signs in with e-mail and password, and says who signed
+// in (`context`). Wrong credentials come back as a 401, which axios rejects, so the caller tells them
+// apart from other failures by the error's response status. Also: 429 with Retry-After after repeated
+// wrong passwords, and 409 SESSION_LIMIT_REACHED when 5 sessions are open, its data a
+// SessionLimitChallenge (see replaceSessionAtLimit).
 export const login = async (credentials: LoginRequest, config?: RequestConfig): Promise<AuthData> => {
   const response = await httpClient.post<ApiResponse<AuthData>>("/api/auth/login", credentials, config)
   const authData = response.data.data
@@ -62,9 +69,9 @@ export const logout = async (token: string, config?: RequestConfig): Promise<voi
   })
 }
 
-// NOT USED YET. POST /api/auth/refresh: trades the refresh token for new tokens when the access token
-// expires (a 401). The app does not renew sessions yet: an expired one sends the user to the login. As
-// with login, the new access token is `token`.
+// USED by the httpClient (renewSession). POST /api/auth/refresh: trades the refresh token for new
+// tokens when the access token (1 h) expires; the refresh token itself changes on every call and lasts
+// 7 days. No `context` comes back. An invalid, expired or revoked refresh token is a 401.
 export const refreshSession = async (request: RefreshTokenRequest, config?: RequestConfig): Promise<AuthData> => {
   const response = await httpClient.post<ApiResponse<AuthData>>("/api/auth/refresh", request, config)
   const authData = response.data.data
@@ -72,6 +79,46 @@ export const refreshSession = async (request: RefreshTokenRequest, config?: Requ
   if (!authData?.token) throw new Error("The refresh response has no token.")
 
   return authData
+}
+
+// NOT USED YET. POST /api/auth/session-limit/replace: after the login's 409 SESSION_LIMIT_REACHED,
+// ends the chosen session (one of the person's own) and signs in, answering like the login. Errors: 401
+// CHALLENGE_INVALID (used, expired or unknown challenge), 404 SESSION_NOT_FOUND (the challenge is not
+// used up, so another session can be picked).
+export const replaceSessionAtLimit = async (
+  request: SessionReplaceRequest,
+  config?: RequestConfig,
+): Promise<AuthData> => {
+  const response = await httpClient.post<ApiResponse<AuthData>>("/api/auth/session-limit/replace", request, config)
+  const authData = response.data.data
+
+  if (!authData?.token) throw new Error("The session replacement response has no token.")
+
+  return authData
+}
+
+// NOT USED YET. POST /api/auth/invitations/validate: whether an invitation link can still be used, with
+// the invited e-mail (masked) and its expiry. Pass the link's tenant as `tenantId`. Any unusable link -
+// unknown, expired, cancelled, superseded or used - is the same 404 INVITATION_INVALID.
+export const validateInvitation = async (
+  request: InvitationTokenRequest,
+  config?: RequestConfig,
+): Promise<InvitationValidation> => {
+  const response = await httpClient.post<ApiResponse<InvitationValidation>>(
+    "/api/auth/invitations/validate",
+    request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// NOT USED YET. POST /api/auth/invitations/accept: creates the account with the person's own password
+// (201); they then sign in normally. Pass the link's tenant as `tenantId`. Errors: 422 WEAK_PASSWORD
+// (the invitation stays usable), 422 INVITATION_EXPIRED, 409 INVITATION_ALREADY_USED, 404
+// INVITATION_INVALID, 409 USER_DUPLICATE, 422 UNIT_INACTIVE.
+export const acceptInvitation = async (request: AcceptInvitationRequest, config?: RequestConfig): Promise<void> => {
+  await httpClient.post<ApiResponse<null>>("/api/auth/invitations/accept", request, config)
 }
 
 // NOT USED, AND NOT MEANT TO BE (there is no self-signup: accounts will come from invitations). POST

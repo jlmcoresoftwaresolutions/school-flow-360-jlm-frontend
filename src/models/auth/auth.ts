@@ -1,3 +1,4 @@
+import type { SessionItem, UserContext } from "../me/me"
 import type { UserActor } from "../userAccount/userAccount"
 
 export type PasswordRecoveryRequest = {
@@ -40,12 +41,48 @@ export type LoginRequest = {
   password: string
 }
 
-// What /api/auth/login (and /api/auth/refresh) return. `token` is the access token to send as
-// `Authorization: Bearer`; `accessToken` is the one the refresh endpoint hands back, so it is
-// optional here. `expiresAt` is an ISO date-time.
+// What /api/auth/login, /api/auth/refresh and /api/auth/session-limit/replace return. `token` is the
+// access token to send as `Authorization: Bearer` (valid for 1 h; `accessToken` repeats it);
+// `expiresAt`, its expiry as an ISO date-time. The refresh token lasts 7 days and changes on every
+// refresh. The login also says who signed in (`context`); a refresh doesn't.
 export type AuthData = {
   expiresAt: string
   refreshToken: string
   token: string
   accessToken?: string | null
+  context?: UserContext | null
+}
+
+// The data of the login's 409 SESSION_LIMIT_REACHED: the right password, but 5 sessions already open.
+// The person picks one of `sessions` to end; `challengeToken` (single use, valid for
+// `challengeExpiresInSeconds`) proves the password was checked.
+export type SessionLimitChallenge = {
+  challengeExpiresInSeconds: number
+  challengeToken: string
+  sessions: SessionItem[]
+}
+
+// Body of POST /api/auth/session-limit/replace: ends that session (one of the person's own) and signs in.
+export type SessionReplaceRequest = {
+  challengeToken: string
+  sessionId: string
+}
+
+// Body of POST /api/auth/invitations/validate, with the token from the invitation link.
+export type InvitationTokenRequest = {
+  token: string
+}
+
+// A valid invitation link: the invited e-mail (masked) and until when the link works. Any invalid link
+// (unknown, expired, cancelled, used) is a 404 INVITATION_INVALID instead.
+export type InvitationValidation = {
+  email: string
+  expiresAt: string
+  valid: boolean
+}
+
+// Body of POST /api/auth/invitations/accept: the account is created with this password (12 to 128).
+export type AcceptInvitationRequest = {
+  password: string
+  token: string
 }

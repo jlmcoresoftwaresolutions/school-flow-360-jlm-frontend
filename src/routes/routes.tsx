@@ -1,10 +1,13 @@
-import type { LoaderFunctionArgs } from "react-router-dom"
+import type { LoaderFunctionArgs, ShouldRevalidateFunctionArgs } from "react-router-dom"
 import { createBrowserRouter, Navigate, redirect } from "react-router-dom"
 
 import { GlobalLoading } from "@/components"
+import type { UserContext } from "@/models"
+import { canOpenPage } from "@/utils/access"
 import { buildLoginUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/authRedirect"
-import { clearSession, getSessionState, getSessionToken, hasSession } from "@/utils/session"
+import { clearSession, getSessionState, getSessionToken, hasSession, updateSessionContext } from "@/utils/session"
 
+import { getPageKey, pageRoles } from "./access"
 import { homePath, paths } from "./paths"
 
 // Every page (and the AppShell layout) is loaded on demand through `lazy`, so each one becomes its own
@@ -31,17 +34,71 @@ const redirectSignedInUserBack = async (args: LoaderFunctionArgs) => {
   return redirect(redirectPath ?? homePath)
 }
 
-// Every page behind the login: without a valid session the user goes to the login, carrying the page
-// they asked for (to come back to it after signing in) and whether their session had just expired.
-// Coming back still goes through this same check, so a page they can no longer open stays closed.
-const requireSession = async (args: LoaderFunctionArgs) => {
-  const { status } = await getSessionState()
-  if (status === "active") return null
-
-  const { pathname, search } = new URL(args.request.url)
-
-  return redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired: status === "expired" }))
+// Renews a session whose access token expired, for the loader. False when the backend refused it; an
+// unreachable backend doesn't end the session (the page's own calls try again). The HTTP client is
+// imported on demand, as in signOut below.
+const renewForLoader = async (): Promise<boolean> => {
+  try {
+    const { renewSession } = await import("@/services/httpClient")
+    return (await renewSession()) !== null
+  } catch {
+    return true
+  }
 }
+
+// Who signed in is read again from /api/me once per visit, since roles can change after the login. A
+// session that already knows it goes on at once and the fresher reading is stored for the next page;
+// one that doesn't (signed in before the login returned it) waits for it.
+let contextReading: Promise<UserContext | null> | null = null
+
+const readContext = async (): Promise<UserContext | null> => {
+  try {
+    const { getMe } = await import("@/services/me")
+    const context = await getMe({ showLoading: false })
+    await updateSessionContext(context)
+    return context
+  } catch {
+    contextReading = null
+    return null
+  }
+}
+
+const getContext = async (stored: UserContext | null | undefined): Promise<UserContext | null> => {
+  contextReading ??= readContext()
+
+  return stored ?? (await contextReading)
+}
+
+// Every page behind the login. Without a session the user goes to the login, carrying the page they
+// asked for (to come back to it after signing in); a session whose access token expired is renewed,
+// and one that can't be goes to the login saying it expired. A page the user's roles don't open (see
+// pageRoles) sends them home. Coming back from the login goes through this same check, so a page they
+// can no longer open stays closed. The loader's data is who signed in, which the AppShell shows.
+const requireSession = async (args: LoaderFunctionArgs): Promise<Response | UserContext | null> => {
+  const { pathname, search } = new URL(args.request.url)
+  const toLogin = (sessionExpired: boolean) =>
+    redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired }))
+
+  const state = await getSessionState()
+  if (state.status === "none") return toLogin(false)
+
+  if (state.status === "stale" && !(await renewForLoader())) {
+    clearSession()
+    return toLogin(true)
+  }
+
+  const context = await getContext(state.session.context)
+  const pageKey = getPageKey(pathname)
+
+  if (pageKey && !canOpenPage(context, pageRoles[pageKey])) return redirect(homePath)
+
+  return context
+}
+
+// The AppShell's loader runs again on every change of page (not only when the layout first mounts),
+// so each page goes through the session and role checks.
+const revalidateOnNewPage = (args: ShouldRevalidateFunctionArgs) =>
+  args.currentUrl.pathname !== args.nextUrl.pathname || args.defaultShouldRevalidate
 
 // Tells the backend the session ended, without anyone waiting for it: the user is already on the
 // login, and a failure there changes nothing for them. The service is imported here, on demand, so the
@@ -60,6 +117,8 @@ const signOut = async () => {
   const token = await getSessionToken()
 
   clearSession()
+  // The next person to sign in in this tab has their own roles read again.
+  contextReading = null
   if (token) void notifyBackendOfSignOut(token)
 
   return redirect(paths.login)
@@ -292,6 +351,7 @@ export const router = createBrowserRouter([
       return { Component: AppShell }
     },
     loader: requireSession,
+    shouldRevalidate: revalidateOnNewPage,
   },
   { loader: signOut, path: paths.signOut },
   { element: <Navigate to={paths.login} replace />, path: "*" },

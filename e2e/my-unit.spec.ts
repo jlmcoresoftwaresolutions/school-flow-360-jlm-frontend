@@ -1,6 +1,6 @@
 import { deflateSync } from "node:zlib"
 
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // Minha Unidade runs on the backend: the organization, its visual identity and its units. Everything
 // on the network (login, those three, the CEP lookup) is mocked here, each mock keeping what is saved

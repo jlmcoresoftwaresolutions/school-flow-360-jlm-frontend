@@ -277,6 +277,7 @@ export const en: TranslationResource = {
     validationUnavailableTitle: "We couldn't check the link",
   },
   shell: {
+    account: "My account",
     breadcrumbLabel: "You are here",
     collapseMenu: "Collapse menu",
     expandMenu: "Expand menu",
@@ -324,7 +325,12 @@ export const en: TranslationResource = {
     notifications: "Notifications",
     roles: {
       ADMIN: "Administrator",
-      USER: "User",
+      ALUNO: "Student",
+      COORDENACAO: "Coordination",
+      FINANCEIRO: "Finance",
+      PROFESSOR: "Teacher",
+      RESPONSAVEL: "Guardian",
+      SECRETARIA: "School office",
     },
     signOut: "Sign out",
     userMenu: "User menu",
