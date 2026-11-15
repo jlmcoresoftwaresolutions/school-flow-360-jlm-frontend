@@ -4,6 +4,8 @@
 // menu entry (shell.nav), so the AppShell finds its path by that key.
 export const paths = {
   academicReports: "/reports/academic",
+  // Opened from the invitation e-mail, as /accept-invitation?token=...&tenant=... (the backend builds the link).
+  acceptInvitation: "/accept-invitation",
   activeSessions: "/access-logs/active-sessions",
   audit: "/access-logs/audit",
   billing: "/finance/billing",

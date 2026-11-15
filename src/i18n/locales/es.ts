@@ -3,6 +3,43 @@ import type { TranslationResource } from "./ptBR"
 // Neutral Spanish, used for every Spanish-speaking browser (es-ES, es-MX, es-AR...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const es: TranslationResource = {
+  acceptInvitation: {
+    activated: "Cuenta activada. Inicia sesión con tu correo y la contraseña que creaste.",
+    confirmPasswordLabel: "Confirmar contraseña",
+    confirmPasswordPlaceholder: "Repite la contraseña",
+    confirmPasswordRequired: "Confirma la contraseña.",
+    description:
+      "Te invitaron a acceder al sistema de la escuela con el correo {{email}}. Crea tu contraseña para terminar.",
+    duplicateDescription:
+      "Este correo ya tiene una cuenta en esta escuela. Inicia sesión con ella o recupera la contraseña.",
+    duplicateTitle: "Ya tienes una cuenta",
+    expiredDescription: "Las invitaciones valen 48 horas. Pide una nueva a quien te invitó.",
+    expiredTitle: "Esta invitación venció",
+    failed: "No pudimos activar la cuenta ahora. Inténtalo de nuevo en unos instantes.",
+    goToLogin: "Ir al inicio de sesión",
+    haveAccount: "Ya tengo cuenta",
+    invalidDescription:
+      "El enlace puede haber sido cancelado o reemplazado por una invitación más reciente. Revisa el último correo recibido o pide una nueva invitación.",
+    invalidTitle: "Esta invitación no está disponible",
+    passwordHelper: "Usa de {{min}} a {{max}} caracteres.",
+    passwordLabel: "Contraseña",
+    passwordMismatch: "Las contraseñas no coinciden.",
+    passwordPlaceholder: "Crea tu contraseña",
+    passwordRequired: "Crea una contraseña.",
+    passwordTooLong: "Usa como máximo {{max}} caracteres.",
+    passwordTooShort: "Usa al menos {{min}} caracteres.",
+    recoverPassword: "Recuperar contraseña",
+    submit: "Activar cuenta",
+    title: "Activa tu cuenta",
+    unavailableDescription: "Revisa tu conexión e inténtalo de nuevo en unos instantes.",
+    unavailableTitle: "No pudimos verificar la invitación",
+    unitInactiveDescription: "La sede de esta invitación fue inactivada. Pide una nueva invitación a quien te invitó.",
+    unitInactiveTitle: "Esta invitación ya no se puede usar",
+    usedDescription:
+      "Esta invitación ya se usó para crear una cuenta. Inicia sesión con el correo y la contraseña registrados.",
+    usedTitle: "Esta invitación ya se usó",
+    validUntil: "La invitación vale hasta el {{date}}.",
+  },
   common: {
     cancel: "Cancelar",
     close: "Cerrar",
@@ -50,6 +87,21 @@ export const es: TranslationResource = {
     passwordRequired: "Introduce tu contraseña.",
     retryIn: "Reintentar en {{time}}",
     sessionExpired: "Tu sesión ha caducado. Inicia sesión de nuevo para continuar.",
+    sessionLimit: {
+      alreadyEnded: "Esa sesión ya se había cerrado. Elige otra.",
+      cancel: "Cancelar inicio de sesión",
+      description:
+        "Ya tienes 5 sesiones abiertas, el máximo permitido. Cierra una de ellas para entrar en este dispositivo.",
+      device: "{{browser}} en {{system}}",
+      end: "Cerrar y continuar",
+      endLabel: "Cerrar la sesión {{device}} y continuar",
+      listLabel: "Sesiones abiertas",
+      startedAt: "Iniciada el {{date}}",
+      title: "Límite de sesiones alcanzado",
+      unavailable: "No pudimos cerrar la sesión ahora. Inténtalo de nuevo.",
+      unknownDevice: "Navegador desconocido",
+    },
+    sessionLimitExpired: "Se acabó el tiempo para elegir una sesión. Inicia sesión de nuevo.",
     signIn: "Iniciar sesión",
     signInTitle: "Accede a tu experiencia SchoolFlow360º",
     signInUnavailable: "No se pudo iniciar sesión en este momento. Inténtalo de nuevo en unos instantes.",

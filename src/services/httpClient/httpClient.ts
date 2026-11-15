@@ -48,6 +48,29 @@ export const getErrorCode = (error: unknown): ApiErrorCode | undefined => {
   return typeof body.code === "string" ? (body.code as ApiErrorCode) : undefined
 }
 
+// The `data` of a failed call's envelope, for the errors that carry one (the login's 409
+// SESSION_LIMIT_REACHED brings the sessions to choose from), or undefined. Its shape is the caller's to
+// check: nothing here vouches for it.
+export const getErrorData = (error: unknown): unknown => {
+  if (!isAxiosError(error)) return undefined
+
+  const body: unknown = error.response?.data
+  if (typeof body !== "object" || body === null || !("data" in body)) return undefined
+
+  return body.data ?? undefined
+}
+
+// The seconds a refused call says to wait (its Retry-After header, as the login's 429 sends), or
+// undefined when it doesn't say - or the browser can't read it: a cross-origin response only shows the
+// headers the backend's CORS exposes.
+export const getRetryAfterSeconds = (error: unknown): number | undefined => {
+  if (!isAxiosError(error)) return undefined
+
+  const seconds = Number(error.response?.headers?.["retry-after"])
+
+  return Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : undefined
+}
+
 // A relative URL ("/api/...") goes to the SchoolFlow360 backend through baseURL; an absolute one is
 // a third-party API (e.g. ViaCEP), which must never receive the user's token.
 const isBackendRequest = (url?: string) => url !== undefined && !/^[a-z][a-z\d+\-.]*:\/\//i.test(url)

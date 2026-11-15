@@ -8,15 +8,15 @@ import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Te
 import { Input } from "@/ds-components/molecules"
 import { colors, spacing } from "@/foundation"
 import { useCountdown } from "@/hooks"
-import type { LoginRequest } from "@/models"
+import type { AuthData, LoginRequest, SessionLimitChallenge } from "@/models"
 import { homePath, paths } from "@/routes/paths"
-import { getErrorStatus, login } from "@/services"
+import { getErrorCode, getErrorData, getErrorStatus, getRetryAfterSeconds, login } from "@/services"
 import { getSafeRedirectPath, loginRedirectParam, sessionExpiredParam } from "@/utils/authRedirect"
 import { formatCountdown } from "@/utils/formats"
-import { clearFailedLogins, getLoginLockRemainingMs, normalizeEmail, registerFailedLogin } from "@/utils/loginThrottle"
 import { saveSession } from "@/utils/session"
 
 import { LoginWrapper } from "./Login.styles"
+import { SessionLimitDialog } from "./SessionLimitDialog"
 
 const commonTagProps: Omit<TagProps, "children"> = {
   color: "muted",
@@ -42,20 +42,42 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 const signInErrorId = "login-sign-in-error"
 
-type SignInError = "invalidCredentials" | "signInUnavailable"
+type SignInError = "invalidCredentials" | "sessionLimitExpired" | "signInUnavailable"
 
-// Sign-in held back after repeated wrong passwords (see utils/loginThrottle): for which e-mail, and
-// the wait announced when it started, in whole minutes.
+// Sign-in held back by the backend after repeated wrong passwords (its 429): for which e-mail, and the
+// wait announced when it started, in whole minutes.
 type SignInLock = {
   email: string
   minutes: number
+}
+
+// The wait when the 429 doesn't say (the browser can't read Retry-After unless the backend's CORS
+// exposes it): the backend's shortest lock.
+const defaultLockSeconds = 60
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase()
+
+// The challenge of the login's 409 SESSION_LIMIT_REACHED, if the error carries a usable one.
+const toSessionLimitChallenge = (error: unknown): SessionLimitChallenge | null => {
+  if (getErrorCode(error) !== "SESSION_LIMIT_REACHED") return null
+
+  const data = getErrorData(error) as Partial<SessionLimitChallenge> | undefined
+  if (!data?.challengeToken || !Array.isArray(data.sessions)) return null
+
+  return {
+    challengeExpiresInSeconds: data.challengeExpiresInSeconds ?? 0,
+    challengeToken: data.challengeToken,
+    sessions: data.sessions,
+  }
 }
 
 // The entry page of the app. There is no sign-up here on purpose: accounts are created for users,
 // never by them. On success the session is stored (see utils/session) and the user goes back to the
 // page they were sent from (?redirect=, only an in-app path) or home; the router keeps a signed-in
 // user from coming back here (see routes.tsx). Arriving with ?expired=1 says the session ended.
-// Every 5th wrong password for the same e-mail locks it for a while, with a countdown on the button.
+// Repeated wrong passwords make the backend hold the e-mail back for a while (its 429: 1 minute on the
+// 3rd, 3 minutes on every 5th), shown as a countdown on the button. With 5 sessions already open, the
+// person picks one to end and signs in in the same step (SessionLimitDialog).
 export const Login = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -68,6 +90,7 @@ export const Login = () => {
 
   const [signInError, setSignInError] = useState<SignInError | null>(null)
   const [signInLock, setSignInLock] = useState<SignInLock | null>(null)
+  const [sessionLimit, setSessionLimit] = useState<SessionLimitChallenge | null>(null)
 
   const { errors, isSubmitting } = formState
   const credentialsRejected = signInError === "invalidCredentials"
@@ -78,9 +101,19 @@ export const Login = () => {
 
   const clearSignInError = () => setSignInError(null)
 
-  const startLock = (email: string, lockMs: number) => {
-    setSignInLock({ email: normalizeEmail(email), minutes: Math.ceil(lockMs / 60_000) })
-    lockCountdown.start(Math.ceil(lockMs / 1000))
+  const startLock = (email: string, seconds: number) => {
+    setSignInLock({ email: normalizeEmail(email), minutes: Math.ceil(seconds / 60) })
+    lockCountdown.start(seconds)
+  }
+
+  const finishSignIn = async (authData: AuthData) => {
+    await saveSession(authData)
+    navigate(redirectPath, { replace: true })
+  }
+
+  const handleSessionLimitExpired = () => {
+    setSessionLimit(null)
+    setSignInError("sessionLimitExpired")
   }
 
   // A new attempt always clears the previous one's error, whether it reaches the backend or stops at
@@ -88,29 +121,27 @@ export const Login = () => {
   const onSubmit = async (credentials: LoginRequest) => {
     setSignInError(null)
 
-    // A lock still running for this e-mail (e.g. set before a reload) stops the attempt here.
-    const remainingLockMs = await getLoginLockRemainingMs(credentials.email)
-    if (remainingLockMs > 0) {
-      startLock(credentials.email, remainingLockMs)
-      return
-    }
-
     try {
-      const authData = await login(credentials)
-      await saveSession(authData)
-      await clearFailedLogins(credentials.email)
-      navigate(redirectPath, { replace: true })
+      await finishSignIn(await login(credentials))
     } catch (error) {
-      // 401 is the backend's answer to a wrong e-mail/password; anything else (no response, a 5xx)
-      // isn't the user's fault, so they are told to try again instead and it doesn't count.
-      if (getErrorStatus(error) !== 401) {
-        setSignInError("signInUnavailable")
+      const status = getErrorStatus(error)
+
+      // 401 is the backend's answer to a wrong e-mail/password, 429 to too many of them, a 409 with a
+      // challenge to a 6th session. Anything else (no response, a 5xx) isn't the user's fault, so they
+      // are told to try again.
+      if (status === 401) {
+        setSignInError("invalidCredentials")
         return
       }
 
-      const lockMs = await registerFailedLogin(credentials.email)
-      if (lockMs > 0) startLock(credentials.email, lockMs)
-      else setSignInError("invalidCredentials")
+      if (status === 429) {
+        startLock(credentials.email, getRetryAfterSeconds(error) ?? defaultLockSeconds)
+        return
+      }
+
+      const challenge = toSessionLimitChallenge(error)
+      if (challenge) setSessionLimit(challenge)
+      else setSignInError("signInUnavailable")
     }
   }
 
@@ -262,6 +293,15 @@ export const Login = () => {
           </Grid.Col>
         </Grid.Row>
       </Grid.Container>
+
+      {sessionLimit && (
+        <SessionLimitDialog
+          challenge={sessionLimit}
+          onCancel={() => setSessionLimit(null)}
+          onChallengeExpired={handleSessionLimitExpired}
+          onSignedIn={(authData) => void finishSignIn(authData)}
+        />
+      )}
     </LoginWrapper>
   )
 }

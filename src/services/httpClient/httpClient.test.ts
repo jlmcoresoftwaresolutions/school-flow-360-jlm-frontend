@@ -6,7 +6,7 @@ import type { UserContext } from "@/models"
 import { endExpiredSession } from "@/utils/authRedirect"
 import { getSessionState, saveSession } from "@/utils/session"
 
-import { httpClient } from "./httpClient"
+import { getErrorData, getRetryAfterSeconds, httpClient } from "./httpClient"
 
 vi.mock("@/utils/authRedirect", () => ({ endExpiredSession: vi.fn() }))
 
@@ -172,5 +172,32 @@ describe("httpClient", () => {
 
     expect(endExpiredSession).not.toHaveBeenCalled()
     expect((await getSessionState()).status).toBe("stale")
+  })
+
+  it("reads the seconds to wait from a refused call's Retry-After header, when it can be read", async () => {
+    handle = () => ({ status: 429 })
+    const withoutHeader = await httpClient.post("/api/auth/login", {}).catch((error: unknown) => error)
+
+    expect(getRetryAfterSeconds(withoutHeader)).toBeUndefined()
+
+    const config = { headers: {} } as InternalAxiosRequestConfig
+    const refused = new AxiosError("Too many", "429", config, null, {
+      config,
+      data: {},
+      headers: { "retry-after": "42" },
+      status: 429,
+      statusText: "",
+    })
+
+    expect(getRetryAfterSeconds(refused)).toBe(42)
+    expect(getRetryAfterSeconds(new Error("other"))).toBeUndefined()
+  })
+
+  it("reads the data a failed call's envelope carries", async () => {
+    handle = () => ({ data: { code: "SESSION_LIMIT_REACHED", data: { sessions: [] } }, status: 409 })
+    const error = await httpClient.post("/api/auth/login", {}).catch((caught: unknown) => caught)
+
+    expect(getErrorData(error)).toEqual({ sessions: [] })
+    expect(getErrorData(new Error("other"))).toBeUndefined()
   })
 })
