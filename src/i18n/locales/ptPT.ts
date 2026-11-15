@@ -5,12 +5,16 @@ import type { TranslationResource } from "./ptBR"
 // missing key is a compile error.
 export const ptPT: TranslationResource = {
   acceptInvitation: {
+    accessLabel: "O seu acesso",
     activated: "Conta ativada. Entre com o seu e-mail e a palavra-passe que criou.",
+    assignment: "{{role}} · {{unit}}",
     confirmPasswordLabel: "Confirmar palavra-passe",
     confirmPasswordPlaceholder: "Repita a palavra-passe",
     confirmPasswordRequired: "Confirme a palavra-passe.",
     description:
-      "Foi convidado para aceder ao sistema da escola com o e-mail {{email}}. Crie a sua palavra-passe para concluir.",
+      "Recebeu um convite para aceder ao sistema da escola com o e-mail {{email}}. Confirme os seus dados e crie a sua palavra-passe para concluir.",
+    descriptionWithInstitution:
+      "Recebeu um convite para aceder a {{institution}} com o e-mail {{email}}. Confirme os seus dados e crie a sua palavra-passe para concluir.",
     duplicateDescription: "Este e-mail já tem uma conta nesta escola. Entre com ela ou recupere a palavra-passe.",
     duplicateTitle: "Já tem uma conta",
     expiredDescription: "Os convites são válidos durante 48 horas. Peça um novo a quem o convidou.",
@@ -21,6 +25,9 @@ export const ptPT: TranslationResource = {
     invalidDescription:
       "O link pode ter sido cancelado ou substituído por um convite mais recente. Verifique o último e-mail recebido ou peça um novo convite.",
     invalidTitle: "Este convite não está disponível",
+    nameLabel: "Nome completo",
+    namePlaceholder: "Introduza o seu nome completo",
+    nameRequired: "Introduza o seu nome completo.",
     passwordHelper: "Use de {{min}} a {{max}} caracteres.",
     passwordLabel: "Palavra-passe",
     passwordMismatch: "As palavras-passe não coincidem.",
@@ -28,6 +35,9 @@ export const ptPT: TranslationResource = {
     passwordRequired: "Crie uma palavra-passe.",
     passwordTooLong: "Use no máximo {{max}} caracteres.",
     passwordTooShort: "Use pelo menos {{min}} caracteres.",
+    phoneHelper: "Opcional. Para um número de outro país, comece com + e o indicativo do país.",
+    phoneInvalid: "Introduza um telefone válido, com indicativo.",
+    phoneLabel: "Telefone",
     recoverPassword: "Recuperar palavra-passe",
     submit: "Ativar conta",
     title: "Ative a sua conta",
@@ -38,6 +48,7 @@ export const ptPT: TranslationResource = {
     usedDescription: "Este convite já foi usado para criar uma conta. Entre com o e-mail e a palavra-passe registados.",
     usedTitle: "Este convite já foi usado",
     validUntil: "O convite é válido até {{date}}.",
+    wholeInstitution: "Toda a instituição",
   },
   common: {
     cancel: "Cancelar",
@@ -79,7 +90,7 @@ export const ptPT: TranslationResource = {
     heroSubtitle:
       "Uma experiência executiva para diretores, escola, professores e famílias: cada perfil entra num percurso visual próprio, com navegação adaptativa, indicadores claros e interações acolhedoras.",
     heroTitle: "Gestão escolar que parece simples, mas funciona a 360º.",
-    invalidCredentials: "Credenciais incorretas",
+    invalidCredentials: "Não foi possível entrar. Verifique o e-mail e a palavra-passe ou contacte a secretaria.",
     logoAlt: "Ícone do SchoolFlow360",
     passwordLabel: "Palavra-passe",
     passwordPlaceholder: "Introduza a sua palavra-passe",

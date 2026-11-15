@@ -9,7 +9,7 @@ import type {
   PasswordRecoveryRequest,
   PasswordRecoveryTokenValidationRequest,
   RefreshTokenRequest,
-  RegisterUserPayload,
+  RegisterUserRequest,
   SessionReplaceRequest,
 } from "@/models"
 
@@ -18,7 +18,8 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // USED by the login page. POST /api/auth/login. Signs in with e-mail and password, and says who signed
 // in (`context`). Wrong credentials come back as a 401, which axios rejects, so the caller tells them
-// apart from other failures by the error's response status. Also: 429 with Retry-After after repeated
+// apart from other failures by the error's response status. An inactive or locked account, or one
+// without an active role, gets the very same 401 (no code), so nobody learns whether an account exists. Also: 429 with Retry-After after repeated
 // wrong passwords, and 409 SESSION_LIMIT_REACHED when 5 sessions are open, its data a
 // SessionLimitChallenge (see replaceSessionAtLimit).
 export const login = async (credentials: LoginRequest, config?: RequestConfig): Promise<AuthData> => {
@@ -115,7 +116,7 @@ export const validateInvitation = async (
 
 // USED by the accept-invitation page. POST /api/auth/invitations/accept: creates the account with the person's own password
 // (201); they then sign in normally. Pass the link's tenant as `tenantId`. Errors: 422 WEAK_PASSWORD
-// (the invitation stays usable), 422 INVITATION_EXPIRED, 409 INVITATION_ALREADY_USED, 404
+// and 422 NAME_REQUIRED (the invitation stays usable for both), 422 INVITATION_EXPIRED, 409 INVITATION_ALREADY_USED, 404
 // INVITATION_INVALID, 409 USER_DUPLICATE, 422 UNIT_INACTIVE.
 export const acceptInvitation = async (request: AcceptInvitationRequest, config?: RequestConfig): Promise<void> => {
   await httpClient.post<ApiResponse<null>>("/api/auth/invitations/accept", request, config)
@@ -123,7 +124,7 @@ export const acceptInvitation = async (request: AcceptInvitationRequest, config?
 
 // NOT USED, AND NOT MEANT TO BE (there is no self-signup: accounts will come from invitations). POST
 // /api/auth/register: creates an account tied to a school unit. The backend answers 201, though the
-// Swagger documents 200. See RegisterUserPayload about the `actor` it documents.
-export const registerUser = async (payload: RegisterUserPayload, config?: RequestConfig): Promise<void> => {
-  await httpClient.post<ApiResponse<null>>("/api/auth/register", payload, config)
+// Swagger documents 200.
+export const registerUser = async (request: RegisterUserRequest, config?: RequestConfig): Promise<void> => {
+  await httpClient.post<ApiResponse<null>>("/api/auth/register", request, config)
 }

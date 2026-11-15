@@ -1,5 +1,5 @@
+import type { InvitationAssignment } from "../invitations/invitations"
 import type { SessionItem, UserContext } from "../me/me"
-import type { UserActor } from "../userAccount/userAccount"
 
 export type PasswordRecoveryRequest = {
   email: string
@@ -27,15 +27,6 @@ export type RegisterUserRequest = {
   schoolUnitId: number
 }
 
-// The body POST /api/auth/register documents: the request plus an `actor` (a whole User). The actor
-// is most likely the authenticated principal that the Swagger shows by mistake (the backend should
-// take it from the token); this is unconfirmed, so it is optional here and nothing should send it
-// until the backend team says so.
-export type RegisterUserPayload = {
-  request: RegisterUserRequest
-  actor?: UserActor
-}
-
 export type LoginRequest = {
   email: string
   password: string
@@ -59,8 +50,12 @@ export type AuthData = {
 export type SessionLimitChallenge = {
   challengeExpiresInSeconds: number
   challengeToken: string
-  sessions: SessionItem[]
+  sessions: SessionLimitSession[]
 }
+
+// One of the sessions the login's 409 lists. Less than GET /api/me/sessions says: neither its expiry
+// nor which one is current (none is: the person isn't signed in yet).
+export type SessionLimitSession = Pick<SessionItem, "createdAt" | "id" | "userAgent">
 
 // Body of POST /api/auth/session-limit/replace: ends that session (one of the person's own) and signs in.
 export type SessionReplaceRequest = {
@@ -73,16 +68,35 @@ export type InvitationTokenRequest = {
   token: string
 }
 
-// A valid invitation link: the invited e-mail (masked) and until when the link works. Any invalid link
-// (unknown, expired, cancelled, used) is a 404 INVITATION_INVALID instead.
+// A role an invitation grants, with the unit's name. `unitId` and `unitName` are null for an Admin
+// (the whole institution); `unitName` is also null when the unit can't be found.
+export type InvitationValidationAssignment = InvitationAssignment & {
+  unitName: string | null
+}
+
+// A valid invitation link: the invited e-mail (masked), until when the link works, the name and phone
+// the invitation already carries (to prefill the screen), whether the screen must ask for the name
+// (the invitation came without one), the institution (the tenant's organization: its institutional
+// and display names, null when none is registered) and what the account will be able to do and where.
+// Any invalid link (unknown, expired, cancelled, used) is a 404 INVITATION_INVALID instead.
 export type InvitationValidation = {
+  assignments: InvitationValidationAssignment[]
   email: string
   expiresAt: string
+  fullName: string | null
+  institutionName: string | null
+  nameRequired: boolean
+  organizationName: string | null
+  phone: string | null
   valid: boolean
 }
 
 // Body of POST /api/auth/invitations/accept: the account is created with this password (12 to 128).
+// `fullName` (up to 150) and `phone` (up to 30) fill or replace the invitation's own; every account
+// has a name, so without one in the invitation `fullName` is required (422 NAME_REQUIRED).
 export type AcceptInvitationRequest = {
   password: string
   token: string
+  fullName?: string
+  phone?: string
 }

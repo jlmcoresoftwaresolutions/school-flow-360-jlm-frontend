@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { Button, Text } from "@/ds-components/atoms"
 import { Modal } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
-import type { AuthData, SessionItem, SessionLimitChallenge } from "@/models"
+import type { AuthData, SessionLimitChallenge, SessionLimitSession } from "@/models"
 import { getErrorCode, replaceSessionAtLimit } from "@/services"
 import { summarizeUserAgent } from "@/utils/userAgent"
 
@@ -30,18 +30,18 @@ export const SessionLimitDialog = (props: SessionLimitDialogProps) => {
 
   const { i18n, t } = useTranslation()
 
-  const [sessions, setSessions] = useState<SessionItem[]>(challenge.sessions)
+  const [sessions, setSessions] = useState<SessionLimitSession[]>(challenge.sessions)
   const [endingId, setEndingId] = useState<string | null>(null)
   const [problem, setProblem] = useState<DialogProblem | null>(null)
 
-  const describeDevice = (session: SessionItem) => {
+  const describeDevice = (session: SessionLimitSession) => {
     const { browser, system } = summarizeUserAgent(session.userAgent)
 
     if (browser && system) return t("login.sessionLimit.device", { browser, system })
     return browser ?? system ?? t("login.sessionLimit.unknownDevice")
   }
 
-  const describeStart = (session: SessionItem) => {
+  const describeStart = (session: SessionLimitSession) => {
     const startedAt = new Date(session.createdAt)
     if (Number.isNaN(startedAt.getTime())) return undefined
 
@@ -50,7 +50,7 @@ export const SessionLimitDialog = (props: SessionLimitDialogProps) => {
     })
   }
 
-  const handleEnd = async (session: SessionItem) => {
+  const handleEnd = async (session: SessionLimitSession) => {
     setEndingId(session.id)
     setProblem(null)
 

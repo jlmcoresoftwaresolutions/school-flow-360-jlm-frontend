@@ -41,7 +41,9 @@ test("holds sign-in back for as long as the backend says, counting down on the b
   await page.goto("/login")
 
   await failTimes(page, email, 2)
-  await expect(page.getByRole("alert")).toHaveText("Credenciais incorretas")
+  await expect(page.getByRole("alert")).toHaveText(
+    "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+  )
 
   await tryPassword(page, email)
   await expect(page.getByRole("alert")).toHaveText(

@@ -10,7 +10,7 @@ import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // NOT USED YET. GET /api/audit: the P02 access audit, paged. An Admin reads the whole tenant, a
-// Secretaria only the events of her units. Errors: 401, 403 ACCESS_DENIED, 400 INVALID_REQUEST (a
+// Secretaria only the events of its units. Errors: 401, 403 ACCESS_DENIED, 400 INVALID_REQUEST (a
 // period over 366 days).
 export const listAccessAuditEvents = async (
   params?: AccessAuditSearchParams,

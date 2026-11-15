@@ -22,15 +22,24 @@ export type AuditEventSearchParams = {
   size?: number
 }
 
-// One event of the access audit (GET /api/audit): who did it (only the user's id), what, on which
-// entity, in which unit, and when. Kept for 12 months and never changed; it never carries a secret.
+// SUCCESS: the action was done. DENIED: a signed-in person was refused with a 403 (action
+// ACCESS_DENIED, entityType ENDPOINT, entityId the method and path). A refusal has no unit, so only an
+// Admin sees them; a refusal answered with a 404 (to hide that something exists) isn't recorded.
+export type AccessAuditResult = "DENIED" | "SUCCESS"
+
+// One event of the access audit (GET /api/audit): who did it, what, on which entity, in which unit,
+// with which result and when. Kept for 12 months and never changed; it never carries a secret. The
+// actor's name and e-mail are null when the actor is an Admin and the reader isn't.
 export type AccessAuditEvent = {
   action: string
+  actorEmail: string | null
+  actorName: string | null
   actorUserId: number | null
   entityId: string | null
   entityType: string | null
   id: number
   occurredAt: string
+  result: AccessAuditResult
   schoolUnitId: number | null
 }
 
@@ -40,10 +49,13 @@ export type AccessAuditEventPage = ApiItemsPage<AccessAuditEvent>
 // when left out).
 export type AccessAuditSearchParams = {
   action?: string
+  actorUserId?: number
   entityId?: string
   entityType?: string
   from?: string
   page?: number
+  result?: AccessAuditResult
+  schoolUnitId?: number
   size?: number
   to?: string
 }

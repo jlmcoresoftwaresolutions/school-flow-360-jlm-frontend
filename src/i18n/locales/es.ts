@@ -4,12 +4,16 @@ import type { TranslationResource } from "./ptBR"
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const es: TranslationResource = {
   acceptInvitation: {
+    accessLabel: "Tu acceso",
     activated: "Cuenta activada. Inicia sesión con tu correo y la contraseña que creaste.",
+    assignment: "{{role}} · {{unit}}",
     confirmPasswordLabel: "Confirmar contraseña",
     confirmPasswordPlaceholder: "Repite la contraseña",
     confirmPasswordRequired: "Confirma la contraseña.",
     description:
-      "Te invitaron a acceder al sistema de la escuela con el correo {{email}}. Crea tu contraseña para terminar.",
+      "Recibiste una invitación para acceder al sistema de la escuela con el correo {{email}}. Revisa tus datos y crea tu contraseña para terminar.",
+    descriptionWithInstitution:
+      "Recibiste una invitación para acceder a {{institution}} con el correo {{email}}. Revisa tus datos y crea tu contraseña para terminar.",
     duplicateDescription:
       "Este correo ya tiene una cuenta en esta escuela. Inicia sesión con ella o recupera la contraseña.",
     duplicateTitle: "Ya tienes una cuenta",
@@ -21,6 +25,9 @@ export const es: TranslationResource = {
     invalidDescription:
       "El enlace puede haber sido cancelado o reemplazado por una invitación más reciente. Revisa el último correo recibido o pide una nueva invitación.",
     invalidTitle: "Esta invitación no está disponible",
+    nameLabel: "Nombre completo",
+    namePlaceholder: "Escribe tu nombre completo",
+    nameRequired: "Escribe tu nombre completo.",
     passwordHelper: "Usa de {{min}} a {{max}} caracteres.",
     passwordLabel: "Contraseña",
     passwordMismatch: "Las contraseñas no coinciden.",
@@ -28,6 +35,9 @@ export const es: TranslationResource = {
     passwordRequired: "Crea una contraseña.",
     passwordTooLong: "Usa como máximo {{max}} caracteres.",
     passwordTooShort: "Usa al menos {{min}} caracteres.",
+    phoneHelper: "Opcional. Para un número de otro país, empieza con + y el código del país.",
+    phoneInvalid: "Escribe un teléfono válido, con código de área.",
+    phoneLabel: "Teléfono",
     recoverPassword: "Recuperar contraseña",
     submit: "Activar cuenta",
     title: "Activa tu cuenta",
@@ -39,6 +49,7 @@ export const es: TranslationResource = {
       "Esta invitación ya se usó para crear una cuenta. Inicia sesión con el correo y la contraseña registrados.",
     usedTitle: "Esta invitación ya se usó",
     validUntil: "La invitación vale hasta el {{date}}.",
+    wholeInstitution: "Toda la institución",
   },
   common: {
     cancel: "Cancelar",
@@ -80,7 +91,7 @@ export const es: TranslationResource = {
     heroSubtitle:
       "Una experiencia ejecutiva para directores, escuela, docentes y familias: cada perfil accede a su propio recorrido visual, con navegación adaptable, indicadores claros e interacciones cercanas.",
     heroTitle: "Gestión escolar que parece sencilla, pero opera en 360º.",
-    invalidCredentials: "Credenciales incorrectas",
+    invalidCredentials: "No fue posible entrar. Revisa el correo y la contraseña o habla con la secretaría.",
     logoAlt: "Icono de SchoolFlow360",
     passwordLabel: "Contraseña",
     passwordPlaceholder: "Escribe tu contraseña",

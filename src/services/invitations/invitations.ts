@@ -4,7 +4,7 @@ import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // The P02 invitations (backend docs/P02_CONTRATO.md, 4.2). Admin and Secretaria only; a Secretaria only
-// sees invitations granting something in her units, and never an Admin. An invitation is not a user:
+// sees invitations granting something in its units, and never an Admin. An invitation is not a user:
 // the account only exists once it is accepted. Every route may also answer 401 and 403 ACCESS_DENIED.
 
 // NOT USED YET. GET /api/invitations: invitations in the operator's scope, paged.
