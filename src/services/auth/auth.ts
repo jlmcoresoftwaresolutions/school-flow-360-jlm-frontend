@@ -81,7 +81,7 @@ export const refreshSession = async (request: RefreshTokenRequest, config?: Requ
   return authData
 }
 
-// NOT USED YET. POST /api/auth/session-limit/replace: after the login's 409 SESSION_LIMIT_REACHED,
+// USED by the login page (SessionLimitDialog). POST /api/auth/session-limit/replace: after the login's 409 SESSION_LIMIT_REACHED,
 // ends the chosen session (one of the person's own) and signs in, answering like the login. Errors: 401
 // CHALLENGE_INVALID (used, expired or unknown challenge), 404 SESSION_NOT_FOUND (the challenge is not
 // used up, so another session can be picked).
@@ -97,7 +97,7 @@ export const replaceSessionAtLimit = async (
   return authData
 }
 
-// NOT USED YET. POST /api/auth/invitations/validate: whether an invitation link can still be used, with
+// USED by the accept-invitation page. POST /api/auth/invitations/validate: whether an invitation link can still be used, with
 // the invited e-mail (masked) and its expiry. Pass the link's tenant as `tenantId`. Any unusable link -
 // unknown, expired, cancelled, superseded or used - is the same 404 INVITATION_INVALID.
 export const validateInvitation = async (
@@ -113,7 +113,7 @@ export const validateInvitation = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/auth/invitations/accept: creates the account with the person's own password
+// USED by the accept-invitation page. POST /api/auth/invitations/accept: creates the account with the person's own password
 // (201); they then sign in normally. Pass the link's tenant as `tenantId`. Errors: 422 WEAK_PASSWORD
 // (the invitation stays usable), 422 INVITATION_EXPIRED, 409 INVITATION_ALREADY_USED, 404
 // INVITATION_INVALID, 409 USER_DUPLICATE, 422 UNIT_INACTIVE.

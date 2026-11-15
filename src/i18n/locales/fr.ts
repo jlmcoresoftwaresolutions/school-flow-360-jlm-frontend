@@ -3,6 +3,45 @@ import type { TranslationResource } from "./ptBR"
 // French, used for every French-speaking browser (fr-FR, fr-CA, fr-BE...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const fr: TranslationResource = {
+  acceptInvitation: {
+    activated: "Compte activé. Connectez-vous avec votre e-mail et le mot de passe que vous avez créé.",
+    confirmPasswordLabel: "Confirmer le mot de passe",
+    confirmPasswordPlaceholder: "Répétez le mot de passe",
+    confirmPasswordRequired: "Confirmez le mot de passe.",
+    description:
+      "Vous avez été invité à accéder au système de l'école avec l'e-mail {{email}}. Créez votre mot de passe pour terminer.",
+    duplicateDescription:
+      "Cet e-mail a déjà un compte dans cette école. Connectez-vous avec celui-ci ou récupérez le mot de passe.",
+    duplicateTitle: "Vous avez déjà un compte",
+    expiredDescription:
+      "Les invitations sont valables 48 heures. Demandez-en une nouvelle à la personne qui vous a invité.",
+    expiredTitle: "Cette invitation a expiré",
+    failed: "Impossible d'activer le compte pour le moment. Réessayez dans quelques instants.",
+    goToLogin: "Aller à la connexion",
+    haveAccount: "J'ai déjà un compte",
+    invalidDescription:
+      "Le lien a peut-être été annulé ou remplacé par une invitation plus récente. Consultez le dernier e-mail reçu ou demandez une nouvelle invitation.",
+    invalidTitle: "Cette invitation n'est pas disponible",
+    passwordHelper: "Utilisez de {{min}} à {{max}} caractères.",
+    passwordLabel: "Mot de passe",
+    passwordMismatch: "Les mots de passe ne correspondent pas.",
+    passwordPlaceholder: "Créez votre mot de passe",
+    passwordRequired: "Créez un mot de passe.",
+    passwordTooLong: "Utilisez au maximum {{max}} caractères.",
+    passwordTooShort: "Utilisez au moins {{min}} caractères.",
+    recoverPassword: "Récupérer le mot de passe",
+    submit: "Activer le compte",
+    title: "Activez votre compte",
+    unavailableDescription: "Vérifiez votre connexion et réessayez dans quelques instants.",
+    unavailableTitle: "Impossible de vérifier l'invitation",
+    unitInactiveDescription:
+      "L'établissement de cette invitation a été désactivé. Demandez une nouvelle invitation à la personne qui vous a invité.",
+    unitInactiveTitle: "Cette invitation ne peut plus être utilisée",
+    usedDescription:
+      "Cette invitation a déjà servi à créer un compte. Connectez-vous avec l'e-mail et le mot de passe enregistrés.",
+    usedTitle: "Cette invitation a déjà été utilisée",
+    validUntil: "L'invitation est valable jusqu'au {{date}}.",
+  },
   common: {
     cancel: "Annuler",
     close: "Fermer",
@@ -50,6 +89,21 @@ export const fr: TranslationResource = {
     passwordRequired: "Saisissez votre mot de passe.",
     retryIn: "Réessayer dans {{time}}",
     sessionExpired: "Votre session a expiré. Reconnectez-vous pour continuer.",
+    sessionLimit: {
+      alreadyEnded: "Cette session était déjà fermée. Choisissez-en une autre.",
+      cancel: "Annuler la connexion",
+      description:
+        "Vous avez déjà 5 sessions ouvertes, le maximum autorisé. Fermez-en une pour vous connecter sur cet appareil.",
+      device: "{{browser}} sur {{system}}",
+      end: "Fermer et continuer",
+      endLabel: "Fermer la session {{device}} et continuer",
+      listLabel: "Sessions ouvertes",
+      startedAt: "Ouverte le {{date}}",
+      title: "Limite de sessions atteinte",
+      unavailable: "Impossible de fermer la session pour le moment. Réessayez.",
+      unknownDevice: "Navigateur inconnu",
+    },
+    sessionLimitExpired: "Le temps pour choisir une session est écoulé. Connectez-vous à nouveau.",
     signIn: "Se connecter",
     signInTitle: "Accédez à votre parcours SchoolFlow360º",
     signInUnavailable: "Connexion impossible pour le moment. Réessayez dans quelques instants.",

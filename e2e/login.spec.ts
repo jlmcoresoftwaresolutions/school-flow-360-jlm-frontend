@@ -206,3 +206,91 @@ test.describe("access control", () => {
     expect(storage).not.toContain("access-token")
   })
 })
+
+// With 5 sessions open the backend refuses a 6th with a 409 that carries a challenge and the sessions.
+const chromeOnWindows =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+const safariOnIphone =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"
+
+const sessionLimitBody = {
+  code: "SESSION_LIMIT_REACHED",
+  data: {
+    challengeExpiresInSeconds: 300,
+    challengeToken: "challenge-1",
+    sessions: [
+      { createdAt: "2026-11-10T13:30:00Z", current: false, expiresAt: "", id: "s1", userAgent: chromeOnWindows },
+      { createdAt: "2026-11-12T09:05:00Z", current: false, expiresAt: "", id: "s2", userAgent: safariOnIphone },
+    ],
+  },
+  message: "The limit of active sessions was reached.",
+  status: "Error",
+  tenantId: "schoolflow_demo",
+}
+
+const signInAtLimit = async (page: Page) => {
+  await mockLogin(page, 409, sessionLimitBody)
+  await page.goto("/login")
+  await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
+
+  return page.getByRole("dialog", { name: "Limite de sessões atingido" })
+}
+
+const mockReplace = async (page: Page, status: number, body: unknown) => {
+  const bodies: unknown[] = []
+  await page.route("**/api/auth/session-limit/replace", (route) => {
+    bodies.push(route.request().postDataJSON())
+    return route.fulfill({ body: JSON.stringify(body), contentType: "application/json", status })
+  })
+  return bodies
+}
+
+test.describe("session limit", () => {
+  test("lists the open sessions and signs in after ending the chosen one", async ({ page }) => {
+    const dialog = await signInAtLimit(page)
+    const replaceBodies = await mockReplace(page, 200, successBody)
+
+    await expect(dialog.getByText("Chrome no Windows")).toBeVisible()
+    await expect(dialog.getByText("Safari no iOS")).toBeVisible()
+    await expect(dialog.getByText(/^Iniciada em \d{2}\/\d{2}\/\d{4}/).first()).toBeVisible()
+
+    await dialog.getByRole("button", { name: /^Encerrar a sessão Safari no iOS/ }).click()
+
+    await expect(page).toHaveURL(/\/home$/)
+    expect(replaceBodies).toEqual([{ challengeToken: "challenge-1", sessionId: "s2" }])
+  })
+
+  test("drops a session that was already ended elsewhere, keeping the others to choose from", async ({ page }) => {
+    const dialog = await signInAtLimit(page)
+    await mockReplace(page, 404, { code: "SESSION_NOT_FOUND", data: null, message: "", status: "Error" })
+
+    await dialog.getByRole("button", { name: /^Encerrar a sessão Chrome no Windows/ }).click()
+
+    await expect(dialog.getByRole("alert")).toHaveText("Essa sessão já tinha sido encerrada. Escolha outra.")
+    await expect(dialog.getByText("Chrome no Windows")).toHaveCount(0)
+    await expect(dialog.getByText("Safari no iOS")).toBeVisible()
+  })
+
+  test("sends the person back to sign in again when the time to choose ran out", async ({ page }) => {
+    const dialog = await signInAtLimit(page)
+    await mockReplace(page, 401, { code: "CHALLENGE_INVALID", data: null, message: "", status: "Error" })
+
+    await dialog.getByRole("button", { name: /^Encerrar a sessão Chrome no Windows/ }).click()
+
+    await expect(dialog).toHaveCount(0)
+    await expect(page.getByRole("alert")).toHaveText("O tempo para escolher uma sessão acabou. Entre novamente.")
+    await expect(page).toHaveURL(/\/login$/)
+  })
+
+  test("cancels the sign-in without ending any session", async ({ page }) => {
+    const dialog = await signInAtLimit(page)
+    const replaceBodies = await mockReplace(page, 200, successBody)
+
+    await dialog.getByRole("button", { name: "Cancelar login" }).click()
+
+    await expect(dialog).toHaveCount(0)
+    await expect(page).toHaveURL(/\/login$/)
+    expect(replaceBodies).toEqual([])
+  })
+})

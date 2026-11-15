@@ -1,4 +1,5 @@
 export * from "./AcademicReports"
+export * from "./AcceptInvitation"
 export * from "./ActiveSessions"
 export * from "./Audit"
 export * from "./Billing"

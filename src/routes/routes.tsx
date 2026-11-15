@@ -153,6 +153,15 @@ export const router = createBrowserRouter([
     },
     path: paths.resetPassword,
   },
+  // No redirect either: an invitation link works whoever is signed in in this browser.
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
+      const { AcceptInvitation } = await import("@/pages/AcceptInvitation")
+      return { Component: AcceptInvitation }
+    },
+    path: paths.acceptInvitation,
+  },
   {
     children: [
       {
