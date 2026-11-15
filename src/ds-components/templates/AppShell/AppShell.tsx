@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom"
 
 import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
 import { UnsavedChangesGuard } from "@/components"
@@ -10,11 +10,14 @@ import type { SidebarNavChild, SidebarNavItem, TopbarAction } from "@/ds-compone
 import { Sidebar, Topbar } from "@/ds-components/organisms"
 import { useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
+import type { UserContext } from "@/models"
+import { pageRoles } from "@/routes/access"
 import type { PathsType } from "@/routes/paths"
 import { paths } from "@/routes/paths"
+import { renewSession } from "@/services/httpClient"
+import { canOpenPage, getDisplayRoles } from "@/utils/access"
 import { endExpiredSession } from "@/utils/authRedirect"
 
-import { currentUserMock } from "./AppShell.mock"
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
 type NavKey = keyof TranslationResource["shell"]["nav"]
@@ -64,17 +67,32 @@ const breadcrumbByPath: Record<string, BreadcrumbTrail> = Object.fromEntries([
   ),
 ])
 
+// Renews the session when its access token expires, even on an idle page, so it doesn't wait for the
+// next request to be refused; one the backend won't renew ends there. An unreachable backend keeps the
+// session (it is tried again later).
+const renewOrEndSession = async (): Promise<boolean> => {
+  try {
+    if (await renewSession()) return true
+  } catch {
+    return true
+  }
+
+  endExpiredSession(paths.login)
+  return false
+}
+
 // This template is the app's own shell rather than a reusable piece, so - like the pages - it
 // translates its copy instead of taking it through props. Nav keys double as React keys, so they
-// stay stable whatever the language.
+// stay stable whatever the language. Who signed in comes from its route's loader (the session's
+// context, read again from /api/me once per visit): their name and roles go in the topbar, and the
+// menu leaves out the pages their roles don't open.
 export const AppShell = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const user = (useLoaderData() as UserContext | null | undefined) ?? null
 
   const { t } = useTranslation()
-  // Ends the session at its expiry time even if the page sits idle, instead of waiting for the next
-  // request to be refused.
-  useSessionExpiry(() => endExpiredSession(paths.login))
+  useSessionExpiry(renewOrEndSession)
 
   const navLabel = (key: NavKey) => t(`shell.nav.${key}`)
 
@@ -85,16 +103,26 @@ export const AppShell = () => {
     onClick: () => navigate(paths[key]),
   })
 
+  const canOpen = (key: PageKey) => canOpenPage(user, pageRoles[key])
+
   const toNavItem = (group: NavGroup): SidebarNavItem => ({
-    children: group.children.map(toNavLink),
+    children: group.children.filter(canOpen).map(toNavLink),
     icon: group.icon,
     key: group.key,
     label: navLabel(group.key),
   })
 
-  const items: SidebarNavItem[] = [{ ...toNavLink("home"), icon: homeIcon }, ...menuGroups.map(toNavItem)]
+  // A group left without any page the user can open isn't shown at all.
+  const toNavItems = (groups: NavGroup[]) => groups.map(toNavItem).filter((item) => item.children?.length)
 
-  const bottomItems: SidebarNavItem[] = bottomGroups.map(toNavItem)
+  const items: SidebarNavItem[] = [{ ...toNavLink("home"), icon: homeIcon }, ...toNavItems(menuGroups)]
+
+  const bottomItems: SidebarNavItem[] = toNavItems(bottomGroups)
+
+  const userName = user?.fullName?.trim() || user?.email || t("shell.account")
+  const userRoles = getDisplayRoles(user)
+    .map((role) => t(`shell.roles.${role}`))
+    .join(", ")
 
   // The art puts notifications and help in the topbar, but neither feature exists yet, so - like the
   // menu entries without a page - they are rendered disabled instead of as buttons that do nothing.
@@ -134,7 +162,7 @@ export const AppShell = () => {
         <AppShellBody>
           <Topbar
             actions={topbarActions}
-            user={{ ...currentUserMock, role: t(`shell.roles.${currentUserMock.role}`) }}
+            user={{ name: userName, role: userRoles || undefined }}
             userMenuItems={userMenuItems}
             userMenuLabel={t("shell.userMenu")}
           >

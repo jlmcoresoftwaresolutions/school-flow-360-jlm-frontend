@@ -1,8 +1,29 @@
 import { afterEach, describe, expect, it } from "vitest"
 
-import { clearSession, getSession, getSessionState, getSessionToken, hasSession, saveSession } from "./session"
+import type { UserContext } from "@/models"
+
+import {
+  clearSession,
+  getSession,
+  getSessionContext,
+  getSessionState,
+  getSessionToken,
+  hasSession,
+  saveSession,
+  updateSessionContext,
+} from "./session"
 
 const inOneHour = () => new Date(Date.now() + 60 * 60 * 1000).toISOString()
+const aSecondAgo = () => new Date(Date.now() - 1000).toISOString()
+
+const adminContext: UserContext = {
+  admin: true,
+  assignments: [],
+  email: "diretor@escola.com.br",
+  fullName: "Ana Diretora",
+  roles: ["ADMIN"],
+  userId: 1,
+}
 
 describe("session", () => {
   afterEach(() => {
@@ -19,7 +40,7 @@ describe("session", () => {
     const expiresAt = inOneHour()
     await saveSession({ expiresAt, refreshToken: "refresh-1", token: "token-1" })
 
-    expect(await getSession()).toEqual({ expiresAt, refreshToken: "refresh-1", token: "token-1" })
+    expect(await getSession()).toEqual({ context: null, expiresAt, refreshToken: "refresh-1", token: "token-1" })
     expect(await getSessionToken()).toBe("token-1")
     expect(await hasSession()).toBe(true)
   })
@@ -37,11 +58,17 @@ describe("session", () => {
     expect(JSON.stringify({ ...localStorage })).not.toContain("token-1")
   })
 
-  it("treats an expired session as no session and removes it", async () => {
-    await saveSession({ expiresAt: new Date(Date.now() - 1000).toISOString(), refreshToken: "r", token: "t" })
+  it("keeps a session whose access token expired, as stale, for its refresh token to renew", async () => {
+    const expiresAt = aSecondAgo()
+    await saveSession({ expiresAt, refreshToken: "r", token: "t" })
 
+    expect(await getSessionState()).toEqual({
+      session: { context: null, expiresAt, refreshToken: "r", token: "t" },
+      status: "stale",
+    })
     expect(await getSession()).toBeNull()
-    expect(localStorage.getItem("sf360.session")).toBeNull()
+    expect(await getSessionToken()).toBeNull()
+    expect(await hasSession()).toBe(true)
   })
 
   it("keeps a session whose expiry can't be read", async () => {
@@ -50,20 +77,35 @@ describe("session", () => {
     expect(await getSessionToken()).toBe("t")
   })
 
-  it("tells an expired session apart from no session, once", async () => {
+  it("reports no session, and an unexpired one as active", async () => {
     expect(await getSessionState()).toEqual({ session: null, status: "none" })
 
-    await saveSession({ expiresAt: new Date(Date.now() - 1000).toISOString(), refreshToken: "r", token: "t" })
-
-    expect(await getSessionState()).toEqual({ session: null, status: "expired" })
-    expect(await getSessionState()).toEqual({ session: null, status: "none" })
-  })
-
-  it("reports an unexpired session as active", async () => {
     const expiresAt = inOneHour()
     await saveSession({ expiresAt, refreshToken: "r", token: "t" })
 
-    expect(await getSessionState()).toEqual({ session: { expiresAt, refreshToken: "r", token: "t" }, status: "active" })
+    expect(await getSessionState()).toEqual({
+      session: { context: null, expiresAt, refreshToken: "r", token: "t" },
+      status: "active",
+    })
+  })
+
+  it("keeps who signed in with the session, and a fresher reading of it", async () => {
+    expect(await getSessionContext()).toBeNull()
+
+    await saveSession({ context: adminContext, expiresAt: inOneHour(), refreshToken: "r", token: "t" })
+    expect(await getSessionContext()).toEqual(adminContext)
+
+    const renamed = { ...adminContext, fullName: "Ana Souza" }
+    await updateSessionContext(renamed)
+
+    expect(await getSessionContext()).toEqual(renamed)
+    expect(await getSessionToken()).toBe("t")
+  })
+
+  it("doesn't bring a session back when updating who signed in after it ended", async () => {
+    await updateSessionContext(adminContext)
+
+    expect(await hasSession()).toBe(false)
   })
 
   it("forgets the session on clearSession", async () => {

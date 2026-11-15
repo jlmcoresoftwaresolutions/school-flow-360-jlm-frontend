@@ -279,6 +279,7 @@ export const ptBR = {
     validationUnavailableTitle: "Não foi possível verificar o link",
   },
   shell: {
+    account: "Minha conta",
     breadcrumbLabel: "Você está em",
     collapseMenu: "Recolher menu",
     expandMenu: "Expandir menu",
@@ -326,7 +327,12 @@ export const ptBR = {
     notifications: "Notificações",
     roles: {
       ADMIN: "Administrador",
-      USER: "Usuário",
+      ALUNO: "Aluno",
+      COORDENACAO: "Coordenação",
+      FINANCEIRO: "Financeiro",
+      PROFESSOR: "Professor",
+      RESPONSAVEL: "Responsável",
+      SECRETARIA: "Secretaria",
     },
     signOut: "Sair",
     userMenu: "Menu do usuário",

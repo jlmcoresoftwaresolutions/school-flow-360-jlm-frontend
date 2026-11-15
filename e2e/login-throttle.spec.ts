@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // The backend is mocked to reject every password, and the browser clock is simulated (page.clock) so
 // the lock's minutes pass instantly.

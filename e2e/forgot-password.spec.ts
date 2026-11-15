@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // The backend is mocked at the browser (page.route); it answers every address the same way.
 const recoveryEndpoint = "**/api/auth/password-recovery/request"

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./support/test.ts"
 
 // The interface language is the browser's own; there is no language picker (see i18n.ts).
 

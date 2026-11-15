@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { useUnsavedChanges } from "@/components"
 import { i18n } from "@/i18n"
+import type { UserContext } from "@/models"
 
 import { AppShell } from "./AppShell"
 
@@ -14,8 +15,21 @@ const EditingPage = () => {
   return <div>Página em edição</div>
 }
 
-// A data router (createMemoryRouter), like the app's own: the unsaved-changes guard needs one.
-const renderAppShell = (initialEntry: string) =>
+const signedInAs = (fullName: string | null, roles: UserContext["roles"]): UserContext => ({
+  admin: roles.includes("ADMIN"),
+  assignments: [],
+  email: "joao.silva@escola.com.br",
+  fullName,
+  roles,
+  userId: 1,
+})
+
+const admin = signedInAs("João Silva", ["ADMIN"])
+
+// A data router (createMemoryRouter), like the app's own: the unsaved-changes guard needs one. Who
+// signed in is the AppShell route's loader data, given as hydration data so the first render is
+// immediate.
+const renderAppShell = (initialEntry: string, user: UserContext | null = admin) =>
   render(
     <RouterProvider
       router={createMemoryRouter(
@@ -30,9 +44,11 @@ const renderAppShell = (initialEntry: string) =>
               { element: <EditingPage />, path: "/editando" },
             ],
             element: <AppShell />,
+            id: "shell",
+            loader: () => user,
           },
         ],
-        { initialEntries: [initialEntry] },
+        { hydrationData: { loaderData: { shell: user } }, initialEntries: [initialEntry] },
       )}
     />,
   )
@@ -181,6 +197,48 @@ describe("AppShell", () => {
         .getAllByRole("menuitem")
         .map((item) => item.textContent),
     ).toEqual(["Sair"])
+  })
+
+  it("shows several roles of one person, widest first", () => {
+    renderAppShell("/outra", signedInAs("Maria Souza", ["PROFESSOR", "COORDENACAO"]))
+
+    const banner = within(screen.getByRole("banner"))
+    expect(banner.getByText("Maria Souza")).toBeInTheDocument()
+    expect(banner.getByText("Coordenação, Professor")).toBeInTheDocument()
+  })
+
+  it("shows the e-mail when the user has no name, and a generic label when nobody is known", () => {
+    const { unmount } = renderAppShell("/outra", signedInAs(null, ["SECRETARIA"]))
+
+    expect(within(screen.getByRole("banner")).getByText("joao.silva@escola.com.br")).toBeInTheDocument()
+    unmount()
+
+    renderAppShell("/outra", null)
+
+    expect(within(screen.getByRole("banner")).getByText("Minha conta")).toBeInTheDocument()
+  })
+
+  it("leaves out of the menu the pages a role doesn't open, and the groups left empty", () => {
+    renderAppShell("/outra", signedInAs("Maria Souza", ["PROFESSOR"]))
+
+    const sidebar = within(screen.getByRole("complementary"))
+    expect(sidebar.queryByRole("button", { name: "Administração" })).not.toBeInTheDocument()
+    expect(sidebar.queryByRole("button", { name: "Usuários" })).not.toBeInTheDocument()
+
+    fireEvent.click(sidebar.getByRole("button", { name: "Logs de Acesso" }))
+    expect(sidebar.getByRole("button", { name: "Acessos recentes" })).toBeInTheDocument()
+    expect(sidebar.queryByRole("button", { name: "Auditoria" })).not.toBeInTheDocument()
+  })
+
+  it("shows a Secretaria the users' pages and the audit, but not the organization's", () => {
+    renderAppShell("/outra", signedInAs("Maria Souza", ["SECRETARIA"]))
+
+    const sidebar = within(screen.getByRole("complementary"))
+    expect(sidebar.queryByRole("button", { name: "Administração" })).not.toBeInTheDocument()
+
+    fireEvent.click(sidebar.getByRole("button", { name: "Usuários" }))
+    expect(sidebar.getByRole("button", { name: "Lista de usuários" })).toBeInTheDocument()
+    expect(sidebar.getByRole("button", { name: "Convites" })).toBeInTheDocument()
   })
 
   it("signs out through the sign-out route, so it goes through the unsaved-changes warning", async () => {

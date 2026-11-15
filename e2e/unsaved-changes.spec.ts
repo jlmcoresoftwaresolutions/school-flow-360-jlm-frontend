@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // Signs in (backend mocked) and opens the edit form of Minha Unidade's institutional data.
 const openDetailsForm = async (page: Page) => {

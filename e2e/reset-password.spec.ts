@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // The backend is mocked at the browser (page.route). The link carries its own tenant, which must be the
 // one sent - not the deploy's (schoolflow_demo) - so the tests use a different one.

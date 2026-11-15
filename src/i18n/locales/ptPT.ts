@@ -281,6 +281,7 @@ export const ptPT: TranslationResource = {
     validationUnavailableTitle: "Não foi possível verificar a ligação",
   },
   shell: {
+    account: "A minha conta",
     breadcrumbLabel: "Está em",
     collapseMenu: "Recolher menu",
     expandMenu: "Expandir menu",
@@ -328,7 +329,12 @@ export const ptPT: TranslationResource = {
     notifications: "Notificações",
     roles: {
       ADMIN: "Administrador",
-      USER: "Utilizador",
+      ALUNO: "Aluno",
+      COORDENACAO: "Coordenação",
+      FINANCEIRO: "Financeiro",
+      PROFESSOR: "Professor",
+      RESPONSAVEL: "Encarregado de educação",
+      SECRETARIA: "Secretaria",
     },
     signOut: "Terminar sessão",
     userMenu: "Menu do utilizador",

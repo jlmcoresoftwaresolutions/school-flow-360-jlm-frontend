@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // The backend is mocked at the browser (page.route), so these tests don't depend on it being up.
 const loginEndpoint = "**/api/auth/login"

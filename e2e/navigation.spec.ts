@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./support/test.ts"
 
 // Signs in with the backend mocked, landing on Início.
 const signIn = async (page: Page) => {

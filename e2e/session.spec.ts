@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { apiAnswer, expect, type Page, signedInUser, test } from "./support/test.ts"
 
 // The backend is mocked at the browser (page.route). Each login answer gets its expiry from the moment
 // it is sent, so a test can hand out a session that ends a few seconds later.
@@ -114,6 +114,62 @@ test("ends the session when it expires, even on an idle page, and brings the use
 
   await expect(page).toHaveURL(/\/administration\/my-unit$/)
   await expect(myUnitHeading(page)).toBeVisible()
+})
+
+test("renews the session when its access token expires, keeping the user on the page", async ({ page }) => {
+  await mockLogin(page, [4000])
+  const refreshBodies: unknown[] = []
+  await page.route("**/api/auth/refresh", (route) => {
+    refreshBodies.push(route.request().postDataJSON())
+    return route.fulfill(
+      apiAnswer({
+        expiresAt: new Date(Date.now() + oneHour).toISOString(),
+        refreshToken: "refresh-token-2",
+        token: "access-token-2",
+      }),
+    )
+  })
+  const meAuthorizations: (string | undefined)[] = []
+  await page.route("**/api/me", (route) => {
+    meAuthorizations.push(route.request().headers().authorization)
+    return route.fulfill(apiAnswer(signedInUser))
+  })
+
+  await page.goto("/administration/my-unit")
+  await signIn(page)
+  await expect(myUnitHeading(page)).toBeVisible()
+
+  // The expiry passes on an idle page: the session is renewed instead of ending.
+  await expect.poll(() => refreshBodies, { timeout: 15_000 }).toEqual([{ refreshToken: "refresh-token" }])
+  await expect(page).toHaveURL(/\/administration\/my-unit$/)
+
+  // A new visit goes on with the renewed token.
+  await page.reload()
+  await expect(myUnitHeading(page)).toBeVisible()
+  await expect.poll(() => meAuthorizations.at(-1)).toBe("Bearer access-token-2")
+})
+
+test("shows who signed in, and keeps a role away from the pages it doesn't open", async ({ page }) => {
+  const teacher = { ...signedInUser, admin: false, fullName: "Maria Souza", roles: ["PROFESSOR"] }
+  await mockLogin(page, [oneHour])
+  await page.route("**/api/me", (route) => route.fulfill(apiAnswer(teacher)))
+
+  await page.goto("/login")
+  await signIn(page)
+  await expect(page).toHaveURL(/\/home$/)
+
+  const banner = page.getByRole("banner")
+  await expect(banner.getByText("Maria Souza")).toBeVisible()
+  await expect(banner.getByText("Professor", { exact: true })).toBeVisible()
+
+  const sidebar = page.getByRole("complementary")
+  await expect(sidebar.getByRole("button", { name: "Administração" })).toHaveCount(0)
+  await expect(sidebar.getByRole("button", { name: "Usuários" })).toHaveCount(0)
+
+  // Typing the address of a page the role doesn't open lands on the home page instead.
+  await page.goto("/administration/my-unit")
+  await expect(page).toHaveURL(/\/home$/)
+  await expect(myUnitHeading(page)).toHaveCount(0)
 })
 
 test("brings a visitor back to the page they opened, without saying a session expired", async ({ page }) => {
