@@ -5,12 +5,15 @@
 # - preview: on pull requests only, publishes the app and the Storybook to temporary Firebase preview
 #   channels (7 days) and comments their links on the PR.
 # - deploy: on pushes to master only, once checks pass, publishes the app and the Storybook live.
+# It can also be started by hand on master (gh workflow run ci.yml), for when GitHub loses a push event
+# and a merge never gets deployed: checks then deploy, as on a push.
 name: CI
 
 on:
   pull_request:
   push:
     branches: [master]
+  workflow_dispatch:
 
 # On a PR, a newer push cancels the run still going for the older one; on master every run finishes,
 # so a deploy is never cut off halfway.
@@ -127,7 +130,7 @@ jobs:
 
   deploy:
     needs: checks
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Two merges in a row deploy one after the other, never at the same time.

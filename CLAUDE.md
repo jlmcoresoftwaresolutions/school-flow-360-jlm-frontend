@@ -305,7 +305,7 @@ export const Example = (props: ExampleProps) => {
 
 - **`checks`** — em todo PR e todo push no `master`: `bun install --frozen-lockfile`, lint, `format:check`, `tsc -b`, testes unitários, build do app, build do Storybook e o E2E do Playwright (o relatório fica como artefato quando algo falha). Os builds viram artefatos, então o que é publicado é exatamente o que foi testado. É a checagem exigida pela proteção do `master`: um PR só entra com ela verde.
 - **`preview`** — só em PR (e não de forks, que não recebem os secrets): publica o app e o Storybook em canais de preview do Firebase, que valem 7 dias, e comenta os links no PR.
-- **`deploy`** — só em push no `master`, depois de `checks` passar: publica o app (`school-flow-360.web.app`) e o Storybook no canal `live`. **Não rode `bun run deploy`/`deploy-storybook` no dia a dia** — publicar é fazer o merge; os scripts ficam para uma emergência.
+- **`deploy`** — só em push no `master`, depois de `checks` passar: publica o app (`school-flow-360.web.app`) e o Storybook no canal `live`. Se o GitHub perder o evento de um merge (nenhuma execução aparece para o commit no `master`), `gh workflow run ci.yml --ref master` roda a esteira à mão, com checks e deploy como num push. **Não rode `bun run deploy`/`deploy-storybook` no dia a dia** — publicar é fazer o merge; os scripts ficam para uma emergência.
 
 Um segundo workflow, `.github/workflows/pr-title.yml` (job **`pr-title`**), passa o **título do PR** pelo mesmo `commitlint` do hook `commit-msg`, já com o ` (#<número>)` que o squash merge acrescenta: é esse título que vira o commit no `master`, e nenhum hook local o vê. Fica separado da esteira para editar o título rodar só essa checagem. Também é exigido pela proteção do `master`.
 
