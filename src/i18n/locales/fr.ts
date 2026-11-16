@@ -4,12 +4,16 @@ import type { TranslationResource } from "./ptBR"
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const fr: TranslationResource = {
   acceptInvitation: {
+    accessLabel: "Votre accès",
     activated: "Compte activé. Connectez-vous avec votre e-mail et le mot de passe que vous avez créé.",
+    assignment: "{{role}} · {{unit}}",
     confirmPasswordLabel: "Confirmer le mot de passe",
     confirmPasswordPlaceholder: "Répétez le mot de passe",
     confirmPasswordRequired: "Confirmez le mot de passe.",
     description:
-      "Vous avez été invité à accéder au système de l'école avec l'e-mail {{email}}. Créez votre mot de passe pour terminer.",
+      "Vous avez reçu une invitation pour accéder au système de l'école avec l'e-mail {{email}}. Vérifiez vos informations et créez votre mot de passe pour terminer.",
+    descriptionWithInstitution:
+      "Vous avez reçu une invitation pour accéder à {{institution}} avec l'e-mail {{email}}. Vérifiez vos informations et créez votre mot de passe pour terminer.",
     duplicateDescription:
       "Cet e-mail a déjà un compte dans cette école. Connectez-vous avec celui-ci ou récupérez le mot de passe.",
     duplicateTitle: "Vous avez déjà un compte",
@@ -22,6 +26,9 @@ export const fr: TranslationResource = {
     invalidDescription:
       "Le lien a peut-être été annulé ou remplacé par une invitation plus récente. Consultez le dernier e-mail reçu ou demandez une nouvelle invitation.",
     invalidTitle: "Cette invitation n'est pas disponible",
+    nameLabel: "Nom complet",
+    namePlaceholder: "Saisissez votre nom complet",
+    nameRequired: "Saisissez votre nom complet.",
     passwordHelper: "Utilisez de {{min}} à {{max}} caractères.",
     passwordLabel: "Mot de passe",
     passwordMismatch: "Les mots de passe ne correspondent pas.",
@@ -29,6 +36,9 @@ export const fr: TranslationResource = {
     passwordRequired: "Créez un mot de passe.",
     passwordTooLong: "Utilisez au maximum {{max}} caractères.",
     passwordTooShort: "Utilisez au moins {{min}} caractères.",
+    phoneHelper: "Facultatif. Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
+    phoneInvalid: "Saisissez un téléphone valide, avec l'indicatif.",
+    phoneLabel: "Téléphone",
     recoverPassword: "Récupérer le mot de passe",
     submit: "Activer le compte",
     title: "Activez votre compte",
@@ -41,6 +51,7 @@ export const fr: TranslationResource = {
       "Cette invitation a déjà servi à créer un compte. Connectez-vous avec l'e-mail et le mot de passe enregistrés.",
     usedTitle: "Cette invitation a déjà été utilisée",
     validUntil: "L'invitation est valable jusqu'au {{date}}.",
+    wholeInstitution: "Tout l'établissement",
   },
   common: {
     cancel: "Annuler",
@@ -82,7 +93,7 @@ export const fr: TranslationResource = {
     heroSubtitle:
       "Une expérience de pilotage pour les directions, l'établissement, les enseignants et les familles : chaque profil accède à son propre parcours visuel, avec une navigation adaptative, des indicateurs clairs et des interactions chaleureuses.",
     heroTitle: "Une gestion scolaire qui paraît simple, mais opère à 360º.",
-    invalidCredentials: "Identifiants incorrects",
+    invalidCredentials: "Connexion impossible. Vérifiez l'e-mail et le mot de passe ou contactez le secrétariat.",
     logoAlt: "Icône SchoolFlow360",
     passwordLabel: "Mot de passe",
     passwordPlaceholder: "Saisissez votre mot de passe",

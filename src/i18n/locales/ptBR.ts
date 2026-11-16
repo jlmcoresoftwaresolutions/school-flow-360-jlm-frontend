@@ -3,12 +3,16 @@
 // compile error instead of a silently untranslated string in production.
 export const ptBR = {
   acceptInvitation: {
+    accessLabel: "Seu acesso",
     activated: "Conta ativada. Entre com seu e-mail e a senha que você criou.",
+    assignment: "{{role}} · {{unit}}",
     confirmPasswordLabel: "Confirmar senha",
     confirmPasswordPlaceholder: "Repita a senha",
     confirmPasswordRequired: "Confirme a senha.",
     description:
-      "Você foi convidado para acessar o sistema da escola com o e-mail {{email}}. Crie sua senha para concluir.",
+      "Você recebeu um convite para acessar o sistema da escola com o e-mail {{email}}. Confira seus dados e crie sua senha para concluir.",
+    descriptionWithInstitution:
+      "Você recebeu um convite para acessar {{institution}} com o e-mail {{email}}. Confira seus dados e crie sua senha para concluir.",
     duplicateDescription: "Este e-mail já tem uma conta nesta escola. Entre com ela ou recupere a senha.",
     duplicateTitle: "Você já tem uma conta",
     expiredDescription: "Os convites valem por 48 horas. Peça um novo a quem convidou você.",
@@ -19,6 +23,9 @@ export const ptBR = {
     invalidDescription:
       "O link pode ter sido cancelado ou substituído por um convite mais novo. Confira o último e-mail recebido ou peça um novo convite.",
     invalidTitle: "Este convite não está disponível",
+    nameLabel: "Nome completo",
+    namePlaceholder: "Digite seu nome completo",
+    nameRequired: "Informe seu nome completo.",
     passwordHelper: "Use de {{min}} a {{max}} caracteres.",
     passwordLabel: "Senha",
     passwordMismatch: "As senhas não coincidem.",
@@ -26,6 +33,9 @@ export const ptBR = {
     passwordRequired: "Crie uma senha.",
     passwordTooLong: "Use no máximo {{max}} caracteres.",
     passwordTooShort: "Use pelo menos {{min}} caracteres.",
+    phoneHelper: "Opcional. Para um número de outro país, comece com + e o código do país.",
+    phoneInvalid: "Informe um telefone válido, com DDD.",
+    phoneLabel: "Telefone",
     recoverPassword: "Recuperar senha",
     submit: "Ativar conta",
     title: "Ative sua conta",
@@ -36,6 +46,7 @@ export const ptBR = {
     usedDescription: "Este convite já foi usado para criar uma conta. Entre com o e-mail e a senha cadastrados.",
     usedTitle: "Este convite já foi usado",
     validUntil: "O convite vale até {{date}}.",
+    wholeInstitution: "Toda a instituição",
   },
   common: {
     cancel: "Cancelar",
@@ -77,7 +88,7 @@ export const ptBR = {
     heroSubtitle:
       "Uma experiência executiva para diretores, escola, professores e famílias: cada perfil entra em uma jornada visual própria, com navegação adaptativa, indicadores claros e interações acolhedoras.",
     heroTitle: "Gestão escolar que parece simples, mas opera em 360º.",
-    invalidCredentials: "Credenciais incorretas",
+    invalidCredentials: "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
     logoAlt: "Ícone do SchoolFlow360",
     passwordLabel: "Senha",
     passwordPlaceholder: "Digite sua senha",

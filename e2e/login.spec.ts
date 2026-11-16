@@ -124,13 +124,17 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-errada")
     await page.getByRole("button", { name: "Entrar" }).click()
 
-    await expect(page.getByRole("alert")).toHaveText("Credenciais incorretas")
+    await expect(page.getByRole("alert")).toHaveText(
+      "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+    )
     await expect(page).toHaveURL(/\/login$/)
 
     // Both fields are flagged, described by the message, and cleared as soon as one is edited.
     for (const field of [page.getByRole("textbox", { name: "E-mail" }), page.getByLabel(/^Senha/)]) {
       await expect(field).toHaveAttribute("aria-invalid", "true")
-      await expect(field).toHaveAccessibleDescription("Credenciais incorretas")
+      await expect(field).toHaveAccessibleDescription(
+        "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+      )
     }
 
     await page.getByLabel(/^Senha/).fill("outra-senha")
@@ -145,13 +149,17 @@ test.describe("login page", () => {
 
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-errada")
     await page.getByRole("button", { name: "Entrar" }).click()
-    await expect(page.getByRole("alert")).toHaveText("Credenciais incorretas")
+    await expect(page.getByRole("alert")).toHaveText(
+      "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+    )
 
     await page.getByRole("textbox", { name: "E-mail" }).fill("")
     await page.getByRole("button", { name: "Entrar" }).click()
 
     await expect(page.getByText("Informe seu e-mail.")).toBeVisible()
-    await expect(page.getByText("Credenciais incorretas")).toHaveCount(0)
+    await expect(
+      page.getByText("Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria."),
+    ).toHaveCount(0)
   })
 
   test("tells the user to try again when the backend can't be reached", async ({ page }) => {

@@ -1,24 +1,32 @@
 import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 
 import { toast } from "@/components"
 import { Button, Card, Grid, Text } from "@/ds-components/atoms"
-import { Input, StateMessage } from "@/ds-components/molecules"
+import { DescriptionList, Input, StateMessage } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
-import type { InvitationValidation } from "@/models"
+import type { AcceptInvitationRequest, InvitationValidation, InvitationValidationAssignment } from "@/models"
 import { paths } from "@/routes/paths"
 import { acceptInvitation, getErrorCode, getErrorStatus, validateInvitation } from "@/services"
+import { defaultCountry } from "@/utils/countries"
+import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalPhone } from "@/utils/phone"
 
 import { AcceptInvitationWrapper } from "./AcceptInvitation.styles"
 
 // The backend's password policy: 12 to 128 characters, nothing else required.
 const passwordLength = { max: 128, min: 12 }
 
+// The backend's limits for what the screen collects (longer is a 400 INVALID_REQUEST).
+const nameMaxLength = 150
+const phoneMaxLength = 30
+
 type AcceptInvitationValues = {
   confirmPassword: string
+  fullName: string
   password: string
+  phone: string
 }
 
 // What the link leads to. checking: being validated (the global Loading overlay covers the page).
@@ -37,17 +45,20 @@ const deadEnds: Partial<Record<LinkStatus, "forgotPassword" | "login">> = {
   used: "login",
 }
 
-// Opened from the invitation e-mail (/accept-invitation?token=...&tenant=...): the person creates
-// their own password and the account is born (nobody else ever knows it); they then sign in normally.
-// The link is checked first, so a dead one says so before anything is typed. Roles and units come
-// from the invitation and can't be changed here. Both calls go to the tenant named in the link, the
-// school that sent it. Signed-in or not, the link works (no redirect in the router).
+// Opened from the invitation e-mail (/accept-invitation?token=...&tenant=...): the person confirms
+// their name and phone and creates their own password, and the account is born (nobody else ever
+// knows the password); they then sign in normally. The link is checked first, so a dead one says so
+// before anything is typed, and a valid one shows the institution and what the account will be able
+// to do and where (the invitation's roles and units, which can't be changed here). Every account has
+// a name: the invitation's prefills the field, and the one typed replaces it. Both calls go to the
+// tenant named in the link, the school that sent it. Signed-in or not, the link works (no redirect in
+// the router).
 export const AcceptInvitation = () => {
   const { i18n, t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { formState, getValues, handleSubmit, register, setError } = useForm<AcceptInvitationValues>({
-    defaultValues: { confirmPassword: "", password: "" },
+  const { control, formState, getValues, handleSubmit, register, reset, setError } = useForm<AcceptInvitationValues>({
+    defaultValues: { confirmPassword: "", fullName: "", password: "", phone: "" },
   })
 
   const [linkStatus, setLinkStatus] = useState<LinkStatus>("checking")
@@ -61,6 +72,8 @@ export const AcceptInvitation = () => {
   const hasLinkParams = Boolean(token) && Boolean(tenantId)
   const status: LinkStatus = hasLinkParams ? linkStatus : "invalid"
   const expiresAt = invitation ? new Date(invitation.expiresAt) : null
+  const institution = invitation?.organizationName?.trim() || invitation?.institutionName?.trim() || ""
+  const prefilledPhone = invitation?.phone ? formatPhoneForDisplay(invitation.phone, defaultCountry) : ""
 
   useEffect(() => {
     if (!hasLinkParams) return
@@ -75,6 +88,13 @@ export const AcceptInvitation = () => {
 
         setInvitation(validation)
         setLinkStatus(validation.valid ? "valid" : "invalid")
+        // What the invitation already carries fills the form; the person can still change it.
+        reset({
+          confirmPassword: "",
+          fullName: validation.fullName ?? "",
+          password: "",
+          phone: validation.phone ? formatPhoneForDisplay(validation.phone, defaultCountry) : "",
+        })
       } catch (error) {
         if (isStale) return
 
@@ -88,24 +108,42 @@ export const AcceptInvitation = () => {
     return () => {
       isStale = true
     }
-  }, [hasLinkParams, reloadToken, tenantId, token])
+  }, [hasLinkParams, reloadToken, reset, tenantId, token])
 
   const handleRetry = () => {
     setLinkStatus("checking")
     setReloadToken((current) => current + 1)
   }
 
+  const describeAssignment = (assignment: InvitationValidationAssignment) => {
+    const role = t(`shell.roles.${assignment.role}`)
+    if (assignment.unitId === null)
+      return t("acceptInvitation.assignment", { role, unit: t("acceptInvitation.wholeInstitution") })
+    if (!assignment.unitName) return role
+
+    return t("acceptInvitation.assignment", { role, unit: assignment.unitName })
+  }
+
   const onSubmit = async (values: AcceptInvitationValues) => {
     setHasFailed(false)
 
+    const request: AcceptInvitationRequest = { fullName: values.fullName.trim(), password: values.password, token }
+    // The invitation's own phone (or none) is left out: the backend keeps the invitation's.
+    if (values.phone.trim() !== "" && values.phone !== prefilledPhone) {
+      request.phone = toInternationalPhone(values.phone, defaultCountry)
+    }
+
     try {
-      await acceptInvitation({ password: values.password, token }, { tenantId })
+      await acceptInvitation(request, { tenantId })
       toast.success(t("acceptInvitation.activated"))
       navigate(paths.login, { replace: true })
     } catch (error) {
       switch (getErrorCode(error)) {
         case "WEAK_PASSWORD":
           setError("password", { message: t("acceptInvitation.passwordTooShort", passwordLength) })
+          return
+        case "NAME_REQUIRED":
+          setError("fullName", { message: t("acceptInvitation.nameRequired") })
           return
         case "INVITATION_EXPIRED":
           setLinkStatus("expired")
@@ -141,6 +179,33 @@ export const AcceptInvitation = () => {
     />
   )
 
+  // What the account will be able to do and where (the institution is already in the description).
+  const renderAccess = () => {
+    const assignments = invitation?.assignments ?? []
+    if (assignments.length === 0) return null
+
+    return (
+      <DescriptionList
+        columns={1}
+        items={[
+          {
+            key: "access",
+            label: t("acceptInvitation.accessLabel"),
+            value: (
+              <span style={{ display: "flex", flexDirection: "column", gap: spacing[4] }}>
+                {assignments.map((assignment) => (
+                  <span key={`${assignment.role}-${assignment.unitId ?? "institution"}`}>
+                    {describeAssignment(assignment)}
+                  </span>
+                ))}
+              </span>
+            ),
+          },
+        ]}
+      />
+    )
+  }
+
   const renderContent = () => {
     const deadEnd = deadEnds[status]
     if (deadEnd) return renderDeadEnd(deadEnd)
@@ -164,7 +229,9 @@ export const AcceptInvitation = () => {
           </Text>
 
           <Text as="p" color="secondary">
-            {t("acceptInvitation.description", { email: invitation?.email ?? "" })}
+            {institution
+              ? t("acceptInvitation.descriptionWithInstitution", { email: invitation?.email ?? "", institution })
+              : t("acceptInvitation.description", { email: invitation?.email ?? "" })}
           </Text>
 
           {expiresAt && !Number.isNaN(expiresAt.getTime()) && (
@@ -178,12 +245,58 @@ export const AcceptInvitation = () => {
           )}
         </div>
 
+        {renderAccess()}
+
         <form
           onSubmit={handleSubmit(onSubmit, () => setHasFailed(false))}
           noValidate
           style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
+            <Input
+              autoComplete="name"
+              error={errors.fullName?.message}
+              maxLength={nameMaxLength}
+              placeholder={t("acceptInvitation.namePlaceholder")}
+              title={t("acceptInvitation.nameLabel")}
+              required
+              {...register("fullName", {
+                validate: (value) => value.trim() !== "" || t("acceptInvitation.nameRequired"),
+              })}
+            />
+
+            <Controller
+              control={control}
+              name="phone"
+              render={(controller) => (
+                <Input
+                  autoComplete="tel"
+                  error={controller.fieldState.error?.message}
+                  helperText={t("acceptInvitation.phoneHelper")}
+                  maxLength={phoneMaxLength}
+                  name={controller.field.name}
+                  onBlur={controller.field.onBlur}
+                  onChange={(event) =>
+                    controller.field.onChange(
+                      formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
+                    )
+                  }
+                  ref={controller.field.ref}
+                  title={t("acceptInvitation.phoneLabel")}
+                  type="tel"
+                  value={controller.field.value}
+                />
+              )}
+              rules={{
+                validate: (value) => {
+                  // The invitation's own phone isn't sent again, so it isn't checked either.
+                  if (value.trim() === "" || value === prefilledPhone) return true
+
+                  return isValidPhone(value, defaultCountry) || t("acceptInvitation.phoneInvalid")
+                },
+              }}
+            />
+
             <Input
               autoComplete="new-password"
               error={errors.password?.message}

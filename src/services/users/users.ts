@@ -14,9 +14,8 @@ import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // The P02 user administration (backend docs/P02_CONTRATO.md, 4.2). Admin and Secretaria only: an Admin
-// sees the whole tenant, a Secretaria only her units and never an Admin. The signed-in user is taken
-// from the token - the `actor` the Swagger shows as a query parameter is never sent. Every route may
-// also answer 401 (no session) and 403 ACCESS_DENIED (a role without access to users).
+// sees the whole tenant, a Secretaria only its units and never an Admin. The signed-in user is taken
+// from the token. Every route may also answer 401 (no session) and 403 ACCESS_DENIED (a role without access to users).
 
 // NOT USED YET. GET /api/users: users in the operator's scope, paged; never returns a password.
 export const listUsers = async (params?: UserSearchParams, config?: RequestConfig): Promise<UserPage> => {

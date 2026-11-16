@@ -51,8 +51,7 @@ type SignInLock = {
   minutes: number
 }
 
-// The wait when the 429 doesn't say (the browser can't read Retry-After unless the backend's CORS
-// exposes it): the backend's shortest lock.
+// The wait when the 429 doesn't say how long (no readable Retry-After): the backend's shortest lock.
 const defaultLockSeconds = 60
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase()

@@ -13,9 +13,30 @@ type AcceptCall = { body: unknown; tenant: string | undefined }
 
 // validate answers a valid invitation unless told otherwise; accept answers `acceptAnswer` (201 by
 // default) and records what was sent.
+// What validate answers by default: an invitation with a name and phone, granting a unit and the
+// institution.
+const validInvitation = {
+  assignments: [
+    { role: "SECRETARIA", unitId: 7, unitName: "Unidade Centro" },
+    { role: "PROFESSOR", unitId: 7, unitName: "Unidade Centro" },
+  ],
+  email: "ma***@horizonte.edu.br",
+  expiresAt: "2026-11-17T15:00:00Z",
+  fullName: "Maria Souza",
+  institutionName: "Instituto Educacional Horizonte Ltda.",
+  nameRequired: false,
+  organizationName: "Colégio Horizonte",
+  phone: "+55 85 98888 1100",
+  valid: true,
+}
+
 const mockInvitation = async (
   page: Page,
-  options: { acceptAnswer?: { body: string; contentType: string; status: number }; validateStatus?: number } = {},
+  options: {
+    acceptAnswer?: { body: string; contentType: string; status: number }
+    invitation?: Record<string, unknown>
+    validateStatus?: number
+  } = {},
 ) => {
   const validateTenants: (string | undefined)[] = []
   const acceptCalls: AcceptCall[] = []
@@ -24,7 +45,7 @@ const mockInvitation = async (
     validateTenants.push(route.request().headers()["x-tenant-id"])
     if (options.validateStatus) return route.fulfill(errorBody(options.validateStatus, "INVITATION_INVALID"))
 
-    return route.fulfill(apiAnswer({ email: "ma***@horizonte.edu.br", expiresAt: "2026-11-17T15:00:00Z", valid: true }))
+    return route.fulfill(apiAnswer({ ...validInvitation, ...options.invitation }))
   })
   await page.route("**/api/auth/invitations/accept", (route) => {
     acceptCalls.push({ body: route.request().postDataJSON(), tenant: route.request().headers()["x-tenant-id"] })
@@ -40,15 +61,20 @@ const fillPasswords = async (page: Page, password: string, confirmation = passwo
 }
 
 test.describe("accept invitation", () => {
-  test("shows the invited e-mail, creates the account with the person's own password and goes to the login", async ({
+  test("shows the invitation, creates the account with the person's own password and goes to the login", async ({
     page,
   }) => {
     const { acceptCalls, validateTenants } = await mockInvitation(page)
     await page.goto(invitationLink)
 
     await expect(page.getByRole("heading", { level: 1, name: "Ative sua conta" })).toBeVisible()
-    await expect(page.getByText(/com o e-mail ma\*\*\*@horizonte\.edu\.br/)).toBeVisible()
+    await expect(page.getByText(/acessar Colégio Horizonte com o e-mail ma\*\*\*@horizonte\.edu\.br/)).toBeVisible()
     await expect(page.getByText(/^O convite vale até /)).toBeVisible()
+    await expect(page.getByText("Secretaria · Unidade Centro")).toBeVisible()
+    await expect(page.getByText("Professor · Unidade Centro")).toBeVisible()
+    // The invitation's own name and phone come filled in.
+    await expect(page.getByLabel(/^Nome completo/)).toHaveValue("Maria Souza")
+    await expect(page.getByLabel(/^Telefone/)).toHaveValue("(85) 98888-1100")
 
     await fillPasswords(page, "senha-nova-segura")
     await page.getByRole("button", { name: "Ativar conta" }).click()
@@ -58,8 +84,60 @@ test.describe("accept invitation", () => {
     // Both calls go to the school named in the link.
     expect(validateTenants).toEqual(["escola_horizonte"])
     expect(acceptCalls).toEqual([
-      { body: { password: "senha-nova-segura", token: "invite-token" }, tenant: "escola_horizonte" },
+      {
+        body: { fullName: "Maria Souza", password: "senha-nova-segura", token: "invite-token" },
+        tenant: "escola_horizonte",
+      },
     ])
+  })
+
+  test("asks for the name an invitation came without, and sends what the person typed", async ({ page }) => {
+    const { acceptCalls } = await mockInvitation(page, {
+      invitation: {
+        assignments: [{ role: "ADMIN", unitId: null, unitName: null }],
+        fullName: null,
+        institutionName: null,
+        nameRequired: true,
+        organizationName: null,
+        phone: null,
+      },
+    })
+    await page.goto(invitationLink)
+
+    await expect(page.getByText(/acessar o sistema da escola com o e-mail/)).toBeVisible()
+    await expect(page.getByText("Administrador · Toda a instituição")).toBeVisible()
+    await expect(page.getByLabel(/^Nome completo/)).toHaveValue("")
+
+    await fillPasswords(page, "senha-nova-segura")
+    await page.getByRole("button", { name: "Ativar conta" }).click()
+    await expect(page.getByText("Informe seu nome completo.")).toBeVisible()
+
+    await page.getByLabel(/^Telefone/).fill("85 3333 1100")
+    await expect(page.getByLabel(/^Telefone/)).toHaveValue("(85) 3333-1100")
+    await page.getByLabel(/^Telefone/).fill("123")
+    await page.getByLabel(/^Nome completo/).fill("  Ana Lima ")
+    await page.getByRole("button", { name: "Ativar conta" }).click()
+    await expect(page.getByText("Informe um telefone válido, com DDD.")).toBeVisible()
+    expect(acceptCalls).toEqual([])
+
+    await page.getByLabel(/^Telefone/).fill("85 3333 1100")
+    await page.getByRole("button", { name: "Ativar conta" }).click()
+
+    await expect(page).toHaveURL(/\/login$/)
+    expect(acceptCalls.map((call) => call.body)).toEqual([
+      { fullName: "Ana Lima", password: "senha-nova-segura", phone: "+55 85 3333 1100", token: "invite-token" },
+    ])
+  })
+
+  test("points out a missing name the backend refuses, keeping the invitation usable", async ({ page }) => {
+    await mockInvitation(page, { acceptAnswer: errorBody(422, "NAME_REQUIRED") })
+    await page.goto(invitationLink)
+
+    await fillPasswords(page, "senha-nova-segura")
+    await page.getByRole("button", { name: "Ativar conta" }).click()
+
+    await expect(page.getByText("Informe seu nome completo.")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Ativar conta" })).toBeEnabled()
   })
 
   test("checks the password before sending it", async ({ page }) => {

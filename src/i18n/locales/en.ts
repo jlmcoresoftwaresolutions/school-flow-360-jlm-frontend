@@ -4,12 +4,16 @@ import type { TranslationResource } from "./ptBR"
 // or extra key here is then a compile error, not a silent gap discovered at runtime.
 export const en: TranslationResource = {
   acceptInvitation: {
+    accessLabel: "Your access",
     activated: "Account activated. Sign in with your e-mail and the password you created.",
+    assignment: "{{role}} · {{unit}}",
     confirmPasswordLabel: "Confirm password",
     confirmPasswordPlaceholder: "Repeat the password",
     confirmPasswordRequired: "Confirm the password.",
     description:
-      "You were invited to access the school's system with the e-mail {{email}}. Create your password to finish.",
+      "You received an invitation to access the school's system with the e-mail {{email}}. Check your details and create your password to finish.",
+    descriptionWithInstitution:
+      "You received an invitation to access {{institution}} with the e-mail {{email}}. Check your details and create your password to finish.",
     duplicateDescription: "This e-mail already has an account at this school. Sign in with it or recover the password.",
     duplicateTitle: "You already have an account",
     expiredDescription: "Invitations are valid for 48 hours. Ask whoever invited you for a new one.",
@@ -20,6 +24,9 @@ export const en: TranslationResource = {
     invalidDescription:
       "The link may have been cancelled or replaced by a newer invitation. Check the latest e-mail you received or ask for a new invitation.",
     invalidTitle: "This invitation isn't available",
+    nameLabel: "Full name",
+    namePlaceholder: "Enter your full name",
+    nameRequired: "Enter your full name.",
     passwordHelper: "Use {{min}} to {{max}} characters.",
     passwordLabel: "Password",
     passwordMismatch: "The passwords don't match.",
@@ -27,6 +34,9 @@ export const en: TranslationResource = {
     passwordRequired: "Create a password.",
     passwordTooLong: "Use at most {{max}} characters.",
     passwordTooShort: "Use at least {{min}} characters.",
+    phoneHelper: "Optional. For a number from another country, start with + and the country code.",
+    phoneInvalid: "Enter a valid phone number, with the area code.",
+    phoneLabel: "Phone",
     recoverPassword: "Recover password",
     submit: "Activate account",
     title: "Activate your account",
@@ -39,6 +49,7 @@ export const en: TranslationResource = {
       "This invitation was already used to create an account. Sign in with the registered e-mail and password.",
     usedTitle: "This invitation was already used",
     validUntil: "The invitation is valid until {{date}}.",
+    wholeInstitution: "The whole institution",
   },
   common: {
     cancel: "Cancel",
@@ -79,7 +90,7 @@ export const en: TranslationResource = {
     heroSubtitle:
       "An executive experience for principals, school staff, teachers and families: every profile gets its own visual journey, with adaptive navigation, clear indicators and welcoming interactions.",
     heroTitle: "School management that feels simple, yet runs in 360º.",
-    invalidCredentials: "Incorrect credentials",
+    invalidCredentials: "Couldn't sign in. Check the e-mail and password or contact the school office.",
     logoAlt: "SchoolFlow360 icon",
     passwordLabel: "Password",
     passwordPlaceholder: "Enter your password",
