@@ -7,6 +7,7 @@ import { formatCityState } from "@/utils/address"
 
 import { unitsSummaryLimit } from "../MyUnit.constants"
 import { CountBlock, CountValue, UnitsSummaryCounts, UnitsSummaryItem, UnitsSummaryList } from "../MyUnit.styles"
+import { useCanManageMyUnit } from "../shared/myUnitAccess"
 import { SectionCard } from "../shared/SectionCard"
 import { useStatusLabels } from "../shared/useStatusLabels"
 
@@ -24,6 +25,7 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
 
   const { t } = useTranslation()
   const { statusTone, unitStatusLabel } = useStatusLabels()
+  const canManage = useCanManageMyUnit()
 
   const activeCount = units.filter((unit) => unit.status === "ACTIVE").length
   const inactiveCount = units.length - activeCount
@@ -36,13 +38,15 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
       <SectionCard title={t("myUnit.overview.unitsTitle")}>
         <StateMessage
           action={
-            <Button onClick={onCreateUnit} size="small">
-              {t("myUnit.units.createFirst")}
-            </Button>
+            canManage ? (
+              <Button onClick={onCreateUnit} size="small">
+                {t("myUnit.units.createFirst")}
+              </Button>
+            ) : undefined
           }
-          description={t("myUnit.units.emptyDescription")}
+          description={canManage ? t("myUnit.units.emptyDescription") : t("myUnit.units.emptyAssignedDescription")}
           icon="location-outline"
-          title={t("myUnit.units.emptyTitle")}
+          title={canManage ? t("myUnit.units.emptyTitle") : t("myUnit.units.emptyAssignedTitle")}
         />
       </SectionCard>
     )

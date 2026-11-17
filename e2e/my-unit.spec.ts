@@ -1418,3 +1418,132 @@ test.describe("units", () => {
     await expect(confirm.getByRole("button", { name: "Inativar" })).toBeDisabled()
   })
 })
+
+// A Secretaria of Unidade Aldeota: it reads Minha Unidade (matrix ORG-M01 to M04) and edits nothing.
+const secretaria = {
+  admin: false,
+  assignments: [
+    {
+      assignmentId: 2,
+      createdAt: "2026-10-05T13:00:00Z",
+      origin: "INVITATION",
+      role: "SECRETARIA",
+      status: "ACTIVE",
+      unitId: 1,
+      unitName: "Unidade Aldeota",
+    },
+  ],
+  email: "maria.souza@horizonte.edu.br",
+  fullName: "Maria Souza",
+  roles: ["SECRETARIA"],
+  userId: 2,
+}
+
+// What the backend lets a Secretaria read: the organization's summary (its own units only), the
+// published identity and its units. The Admin-only reads answer 403 and are recorded, so a test can
+// check the page never asks for them.
+const openAsSecretaria = async (page: Page, options: { published?: boolean; units?: ApiUnit[] } = {}) => {
+  const units = options.units ?? apiSchoolUnits.filter((unit) => unit.schoolUnitId === 1)
+  const adminOnlyCalls: string[] = []
+
+  await page.route("**/api/me", (route) => route.fulfill(apiAnswer(secretaria)))
+  await page.route("**/api/organizations/current/editable", (route) => {
+    adminOnlyCalls.push("editable")
+    return route.fulfill(apiError(403, "ACCESS_DENIED"))
+  })
+  await page.route("**/api/organizations/current/branding", (route) => {
+    adminOnlyCalls.push("branding draft")
+    return route.fulfill(apiError(403, "ACCESS_DENIED"))
+  })
+  await page.route("**/api/organizations/current/summary", (route) =>
+    route.fulfill(
+      apiAnswer({
+        orgEmail: apiOrganization.orgEmail,
+        orgId: apiOrganization.orgId,
+        orgInstName: apiOrganization.orgInstName,
+        orgInstTel: apiOrganization.orgInstTel,
+        orgName: apiOrganization.orgName,
+        orgOpType: apiOrganization.orgOpType,
+        orgStatus: apiOrganization.orgStatus,
+        units: units.map((unit) => ({
+          operationalStatus: unit.operationalStatus,
+          schoolUnitId: unit.schoolUnitId,
+          unitName: unit.unitName,
+        })),
+        unitsCount: units.length,
+      }),
+    ),
+  )
+  await page.route("**/api/organizations/current/branding/published", (route) =>
+    route.fulfill(options.published === false ? apiError(404, "NOT_FOUND") : apiAnswer(apiBranding.publishedBranding)),
+  )
+  await page.route("**/api/school-units?*", (route) =>
+    route.fulfill(apiAnswer({ content: units, number: 0, size: 100, totalElements: units.length, totalPages: 1 })),
+  )
+  await page.route("**/api/auth/login", (route) =>
+    route.fulfill(
+      apiAnswer({
+        accessToken: null,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+        refreshToken: "refresh-token",
+        token: "access-token",
+      }),
+    ),
+  )
+
+  await page.goto("/login")
+  await page.getByRole("textbox", { name: "E-mail" }).fill("maria.souza@horizonte.edu.br")
+  await page.getByLabel(/^Senha/).fill("senha-correta")
+  await page.getByRole("button", { name: "Entrar" }).click()
+  await expect(page).toHaveURL(/\/home$/)
+
+  await page.getByRole("complementary").getByRole("button", { name: "Administração" }).click()
+  await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
+
+  return adminOnlyCalls
+}
+
+test.describe("read only, for a Secretaria", () => {
+  test("shows the organization, its own units and the published identity, with nothing to edit", async ({ page }) => {
+    const adminOnlyCalls = await openAsSecretaria(page)
+
+    await expect(page.getByRole("heading", { level: 2, name: apiOrganization.orgName })).toBeVisible()
+    await expect(page.getByText(/^Somente consulta:/)).toBeVisible()
+    await expect(page.getByText(apiOrganization.orgEmail)).toBeVisible()
+    await expect(page.getByRole("button", { name: /^Editar/ })).toHaveCount(0)
+    // Its summary brings no address nor internal note, so neither section is shown.
+    await expect(page.getByRole("heading", { name: "Endereço" })).toHaveCount(0)
+    await expect(page.getByRole("heading", { name: "Observação interna" })).toHaveCount(0)
+
+    await tab(page, "Unidades").click()
+    const table = page.getByRole("table")
+    await expect(table.getByText("Unidade Aldeota")).toBeVisible()
+    await expect(table.getByRole("row")).toHaveCount(2)
+    await expect(page.getByRole("button", { name: "Nova unidade" })).toHaveCount(0)
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await expect(page.getByRole("menuitem")).toHaveText(["Visualizar"])
+    await page.getByRole("menuitem", { name: "Visualizar" }).click()
+    const details = page.getByRole("dialog", { name: "Unidade Aldeota" })
+    await expect(details.getByRole("button", { name: "Editar" })).toHaveCount(0)
+    await details.getByRole("button", { name: "Fechar" }).last().click()
+
+    await tab(page, "Identidade visual").click()
+    await expect(page.getByRole("heading", { name: "Identidade visual publicada" })).toBeVisible()
+    await expect(page.getByText("#00285B")).toBeVisible()
+    await expect(page.getByText("Publicado", { exact: true })).toHaveCount(2)
+    await expect(page.getByRole("button", { name: "Salvar e publicar" })).toHaveCount(0)
+
+    expect(adminOnlyCalls).toEqual([])
+  })
+
+  test("says when nothing was published and no unit is assigned to it", async ({ page }) => {
+    await openAsSecretaria(page, { published: false, units: [] })
+
+    await expect(page.getByText("Nenhuma unidade atribuída a você").first()).toBeVisible()
+    await expect(page.getByRole("button", { name: "Cadastrar unidade" })).toHaveCount(0)
+
+    await tab(page, "Identidade visual").click()
+    await expect(page.getByText("Não publicado", { exact: true })).toHaveCount(2)
+  })
+})

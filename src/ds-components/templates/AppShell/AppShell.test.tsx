@@ -230,11 +230,15 @@ describe("AppShell", () => {
     expect(sidebar.queryByRole("button", { name: "Auditoria" })).not.toBeInTheDocument()
   })
 
-  it("shows a Secretaria the users' pages and the audit, but not the organization's", () => {
+  it("shows a Secretaria Minha Unidade (to read) and the users' pages, but not the audit", () => {
     renderAppShell("/outra", signedInAs("Maria Souza", ["SECRETARIA"]))
 
     const sidebar = within(screen.getByRole("complementary"))
-    expect(sidebar.queryByRole("button", { name: "Administração" })).not.toBeInTheDocument()
+    fireEvent.click(sidebar.getByRole("button", { name: "Administração" }))
+    expect(sidebar.getByRole("button", { name: "Minha Unidade" })).toBeInTheDocument()
+
+    fireEvent.click(sidebar.getByRole("button", { name: "Logs de Acesso" }))
+    expect(sidebar.queryByRole("button", { name: "Auditoria" })).not.toBeInTheDocument()
 
     fireEvent.click(sidebar.getByRole("button", { name: "Usuários" }))
     expect(sidebar.getByRole("button", { name: "Lista de usuários" })).toBeInTheDocument()

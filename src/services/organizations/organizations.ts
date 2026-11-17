@@ -13,11 +13,13 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // The organization endpoints, one function per route, in the backend's own shapes (the names and
 // types of models/organizations). services/organization is the page-facing layer: it answers in the
 // frontend's shapes for Minha Unidade, and its calls are being moved onto these one at a time. All of
-// them are ADMIN only. Prefer the "current" ones to the by-id ones: the backend itself says so.
+// them are ADMIN only, but for the summary, which a Secretaria may also read. Prefer the "current" ones
+// to the by-id ones: the backend itself says so.
 
-// NOT USED YET. GET /api/organizations/current/summary: the read-only view of the signed-in user's
-// organization with its units (404 when the tenant has no organization yet). The overview could be
-// fed by it; for now it reads the mocked organization.
+// USED: Minha Unidade for a Secretaria (through services/organization). GET
+// /api/organizations/current/summary: the read-only view of the signed-in user's organization with its
+// units - for a Secretaria, only its own units (JLM-2/128). No address nor notes. 404 when the tenant
+// has no organization yet.
 export const getCurrentOrganizationSummary = async (config?: RequestConfig): Promise<OrganizationSummary> => {
   const response = await httpClient.get<ApiResponse<OrganizationSummary>>("/api/organizations/current/summary", config)
 
