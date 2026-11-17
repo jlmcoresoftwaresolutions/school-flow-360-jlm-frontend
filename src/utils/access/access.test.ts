@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import type { RoleCode, UserContext } from "@/models"
+import type { Assignment, RoleCode, UserContext } from "@/models"
 
-import { canOpenPage, getDisplayRoles, hasAnyRole } from "./access"
+import { canOpenPage, getDisplayRoles, getGrantableRoles, getManagedUnits, hasAnyRole, roleOrder } from "./access"
 
 const withRoles = (roles: RoleCode[], admin = roles.includes("ADMIN")): UserContext => ({
   admin,
@@ -61,5 +61,57 @@ describe("getDisplayRoles", () => {
 
   it("shows nothing without a context", () => {
     expect(getDisplayRoles(null)).toEqual([])
+  })
+})
+
+const assignment = (role: RoleCode, unitId: number | null, unitName: string | null, revoked = false): Assignment => ({
+  assignmentId: unitId ?? 0,
+  createdAt: "2026-11-01T10:00:00Z",
+  origin: "INVITATION",
+  role,
+  status: revoked ? "REVOKED" : "ACTIVE",
+  unitId,
+  unitName,
+})
+
+describe("getGrantableRoles", () => {
+  it("lets an Admin grant every role", () => {
+    expect(getGrantableRoles(withRoles(["ADMIN"]))).toEqual(roleOrder)
+  })
+
+  it("lets a Secretaria grant only Professor, Responsável and Aluno", () => {
+    expect(getGrantableRoles(withRoles(["SECRETARIA"]))).toEqual(["PROFESSOR", "RESPONSAVEL", "ALUNO"])
+  })
+
+  it("lets nobody else grant anything", () => {
+    expect(getGrantableRoles(withRoles(["PROFESSOR"]))).toEqual([])
+    expect(getGrantableRoles(null)).toEqual([])
+  })
+})
+
+describe("getManagedUnits", () => {
+  it("is the whole tenant (null) for an Admin", () => {
+    expect(getManagedUnits(withRoles(["ADMIN"]))).toBeNull()
+  })
+
+  it("lists a Secretaria's active Secretaria units, each once, by name", () => {
+    const context = {
+      ...withRoles(["SECRETARIA", "PROFESSOR"]),
+      assignments: [
+        assignment("SECRETARIA", 2, "Unidade Norte"),
+        assignment("PROFESSOR", 3, "Unidade Sul"),
+        assignment("SECRETARIA", 1, "Unidade Centro"),
+        assignment("SECRETARIA", 4, "Unidade Leste", true),
+      ],
+    }
+
+    expect(getManagedUnits(context)).toEqual([
+      { id: 1, name: "Unidade Centro" },
+      { id: 2, name: "Unidade Norte" },
+    ])
+  })
+
+  it("is empty without knowing who signed in", () => {
+    expect(getManagedUnits(null)).toEqual([])
   })
 })

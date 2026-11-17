@@ -44,4 +44,8 @@ export const paths = {
 // Where a signed-in user lands: after the login, and when they open /login while already signed in.
 export const homePath = paths.home
 
+// The id of the route that wraps every page behind the login (the AppShell): its loader's data is who
+// signed in, which any page reads with useSignedInUser.
+export const shellRouteId = "shell"
+
 export type PathsType = typeof paths

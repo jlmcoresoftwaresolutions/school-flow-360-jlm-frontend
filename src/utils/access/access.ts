@@ -36,3 +36,43 @@ export const getDisplayRoles = (context: UserContext | null): RoleCode[] => {
 
   return roleOrder.filter((role) => context.roles.includes(role))
 }
+
+// The roles a Secretaria may grant, in its own units: the backend's default (its
+// access.secretaria.grantable setting), until the matrix v2.0 (JLM-208) says otherwise. Never Admin
+// nor Secretaria. The backend checks every grant anyway (403 ROLE_NOT_GRANTABLE).
+export const secretariaGrantableRoles: RoleCode[] = ["PROFESSOR", "RESPONSAVEL", "ALUNO"]
+
+const isAdmin = (context: UserContext) => context.admin || context.roles.includes("ADMIN")
+
+// The roles the signed-in user may grant in an invitation or a manual registration, widest first: an
+// Admin any of them (Admin itself without a unit), a Secretaria only secretariaGrantableRoles, anyone
+// else none.
+export const getGrantableRoles = (context: UserContext | null): RoleCode[] => {
+  if (!context) return []
+  if (isAdmin(context)) return roleOrder
+  if (context.roles.includes("SECRETARIA")) return secretariaGrantableRoles
+
+  return []
+}
+
+export type ManagedUnit = {
+  id: number
+  name: string
+}
+
+// The units a Secretaria manages: those where it holds an active Secretaria assignment, each once, by
+// name. It sees, invites and grants only inside them. Null for an Admin, whose reach is the whole
+// tenant (its units come from the backend's list).
+export const getManagedUnits = (context: UserContext | null): ManagedUnit[] | null => {
+  if (!context) return []
+  if (isAdmin(context)) return null
+
+  const units = new Map<number, string>()
+  for (const assignment of context.assignments) {
+    if (assignment.role === "SECRETARIA" && assignment.status === "ACTIVE" && assignment.unitId !== null) {
+      units.set(assignment.unitId, assignment.unitName ?? "")
+    }
+  }
+
+  return [...units].map(([id, name]) => ({ id, name })).sort((first, second) => first.name.localeCompare(second.name))
+}

@@ -8,7 +8,7 @@ import { buildLoginUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/
 import { clearSession, getSessionState, getSessionToken, hasSession, updateSessionContext } from "@/utils/session"
 
 import { getPageKey, pageRoles } from "./access"
-import { homePath, paths } from "./paths"
+import { homePath, paths, shellRouteId } from "./paths"
 
 // Every page (and the AppShell layout) is loaded on demand through `lazy`, so each one becomes its own
 // chunk: opening /login doesn't download Minha Unidade's date/color pickers, and vice versa. They are
@@ -355,6 +355,7 @@ export const router = createBrowserRouter([
       },
     ],
     hydrateFallbackElement: <GlobalLoading visible />,
+    id: shellRouteId,
     lazy: async () => {
       const { AppShell } = await import("@/ds-components/templates/AppShell")
       return { Component: AppShell }
