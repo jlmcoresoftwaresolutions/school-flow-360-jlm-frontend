@@ -39,6 +39,9 @@ export const en: TranslationResource = {
     phoneLabel: "Phone",
     recoverPassword: "Recover password",
     submit: "Activate account",
+    termsChanged: "The Terms of Use were updated (version {{version}}). Read and accept them again to continue.",
+    termsLabel: "I have read and accept the Terms of Use and the Privacy Notice (version {{version}}).",
+    termsRequired: "Accept the Terms of Use and the Privacy Notice to activate the account.",
     title: "Activate your account",
     unavailableDescription: "Check your connection and try again shortly.",
     unavailableTitle: "We couldn't check the invitation",
@@ -531,12 +534,18 @@ export const en: TranslationResource = {
     role: "Role",
     roleDescriptions: {
       ADMIN: "The whole institution: organization, units, branding, users, invitations and audit.",
-      ALUNO: "What this role allows is still to be defined in the responsibilities matrix.",
-      COORDENACAO: "What this role allows is still to be defined in the responsibilities matrix.",
-      FINANCEIRO: "What this role allows is still to be defined in the responsibilities matrix.",
-      PROFESSOR: "What this role allows is still to be defined in the responsibilities matrix.",
-      RESPONSAVEL: "What this role allows is still to be defined in the responsibilities matrix.",
-      SECRETARIA: "Users, invitations and audit of its units. Grants the Teacher, Guardian and Student roles.",
+      ALUNO:
+        "What this role allows follows the responsibilities matrix and takes effect as each module of the system is delivered.",
+      COORDENACAO:
+        "What this role allows follows the responsibilities matrix and takes effect as each module of the system is delivered.",
+      FINANCEIRO:
+        "What this role allows follows the responsibilities matrix and takes effect as each module of the system is delivered.",
+      PROFESSOR:
+        "What this role allows follows the responsibilities matrix and takes effect as each module of the system is delivered.",
+      RESPONSAVEL:
+        "What this role allows follows the responsibilities matrix and takes effect as each module of the system is delivered.",
+      SECRETARIA:
+        "Users and invitations of its units. Grants the School office, Finance, Coordination, Teacher, Guardian and Student roles in those units, never Administrator.",
     },
     status: "Status",
     unit: "Unit",

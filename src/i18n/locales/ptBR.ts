@@ -38,6 +38,9 @@ export const ptBR = {
     phoneLabel: "Telefone",
     recoverPassword: "Recuperar senha",
     submit: "Ativar conta",
+    termsChanged: "Os Termos de Uso foram atualizados (versão {{version}}). Leia e aceite de novo para continuar.",
+    termsLabel: "Li e aceito os Termos de Uso e o Aviso de Privacidade (versão {{version}}).",
+    termsRequired: "Aceite os Termos de Uso e o Aviso de Privacidade para ativar a conta.",
     title: "Ative sua conta",
     unavailableDescription: "Confira sua conexão e tente novamente em instantes.",
     unavailableTitle: "Não foi possível verificar o convite",
@@ -534,12 +537,18 @@ export const ptBR = {
     role: "Papel",
     roleDescriptions: {
       ADMIN: "Toda a instituição: organização, unidades, identidade visual, usuários, convites e auditoria.",
-      ALUNO: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      COORDENACAO: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      FINANCEIRO: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      PROFESSOR: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      RESPONSAVEL: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      SECRETARIA: "Usuários, convites e auditoria das suas unidades. Concede os papéis Professor, Responsável e Aluno.",
+      ALUNO:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      COORDENACAO:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      FINANCEIRO:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      PROFESSOR:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      RESPONSAVEL:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      SECRETARIA:
+        "Usuários e convites das suas unidades. Concede os papéis Secretaria, Financeiro, Coordenação, Professor, Responsável e Aluno nessas unidades, nunca Administrador.",
     },
     status: "Situação",
     unit: "Unidade",

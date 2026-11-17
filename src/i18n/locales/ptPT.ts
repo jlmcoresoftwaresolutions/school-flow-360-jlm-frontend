@@ -40,6 +40,10 @@ export const ptPT: TranslationResource = {
     phoneLabel: "Telefone",
     recoverPassword: "Recuperar palavra-passe",
     submit: "Ativar conta",
+    termsChanged:
+      "Os Termos de Utilização foram atualizados (versão {{version}}). Leia e aceite novamente para continuar.",
+    termsLabel: "Li e aceito os Termos de Utilização e o Aviso de Privacidade (versão {{version}}).",
+    termsRequired: "Aceite os Termos de Utilização e o Aviso de Privacidade para ativar a conta.",
     title: "Ative a sua conta",
     unavailableDescription: "Verifique a sua ligação e tente novamente dentro de instantes.",
     unavailableTitle: "Não foi possível verificar o convite",
@@ -537,13 +541,18 @@ export const ptPT: TranslationResource = {
     role: "Papel",
     roleDescriptions: {
       ADMIN: "Toda a instituição: organização, unidades, identidade visual, utilizadores, convites e auditoria.",
-      ALUNO: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      COORDENACAO: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      FINANCEIRO: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      PROFESSOR: "O que este papel permite ainda será definido na matriz de responsabilidades.",
-      RESPONSAVEL: "O que este papel permite ainda será definido na matriz de responsabilidades.",
+      ALUNO:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      COORDENACAO:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      FINANCEIRO:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      PROFESSOR:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
+      RESPONSAVEL:
+        "O que este papel permite segue a matriz de responsabilidades e passa a valer à medida que cada módulo do sistema é entregue.",
       SECRETARIA:
-        "Utilizadores, convites e auditoria das suas unidades. Concede os papéis Professor, Encarregado de educação e Aluno.",
+        "Utilizadores e convites das suas unidades. Concede os papéis Secretaria, Financeiro, Coordenação, Professor, Encarregado de educação e Aluno nessas unidades, nunca Administrador.",
     },
     status: "Situação",
     unit: "Unidade",

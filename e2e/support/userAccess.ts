@@ -155,6 +155,8 @@ type UserAccessOptions = {
   listStatus?: { invitations?: number; users?: number }
   // Answers the next resend or cancel with this error code (409).
   stateConflict?: string
+  // The units the units list answers (all of them by default, as for an Admin; a Secretaria gets its own).
+  units?: Item[]
   users?: Item[]
 }
 
@@ -206,8 +208,9 @@ export const mockUserAccessApi = async (page: Page, options: UserAccessOptions =
 
   await page.route("**/api/school-units?*", (route) => {
     record(route.request())
+    const listed = options.units ?? units
     return route.fulfill(
-      apiAnswer({ content: units, number: 0, size: 100, totalElements: units.length, totalPages: 1 }),
+      apiAnswer({ content: listed, number: 0, size: 100, totalElements: listed.length, totalPages: 1 }),
     )
   })
 

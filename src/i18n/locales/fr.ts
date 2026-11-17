@@ -41,6 +41,10 @@ export const fr: TranslationResource = {
     phoneLabel: "Téléphone",
     recoverPassword: "Récupérer le mot de passe",
     submit: "Activer le compte",
+    termsChanged:
+      "Les Conditions d'utilisation ont été mises à jour (version {{version}}). Lisez-les et acceptez-les à nouveau pour continuer.",
+    termsLabel: "J'ai lu et j'accepte les Conditions d'utilisation et l'Avis de confidentialité (version {{version}}).",
+    termsRequired: "Acceptez les Conditions d'utilisation et l'Avis de confidentialité pour activer le compte.",
     title: "Activez votre compte",
     unavailableDescription: "Vérifiez votre connexion et réessayez dans quelques instants.",
     unavailableTitle: "Impossible de vérifier l'invitation",
@@ -545,13 +549,18 @@ export const fr: TranslationResource = {
     role: "Rôle",
     roleDescriptions: {
       ADMIN: "Tout l'établissement : organisation, unités, identité visuelle, utilisateurs, invitations et audit.",
-      ALUNO: "Ce que ce rôle permet sera défini dans la matrice des responsabilités.",
-      COORDENACAO: "Ce que ce rôle permet sera défini dans la matrice des responsabilités.",
-      FINANCEIRO: "Ce que ce rôle permet sera défini dans la matrice des responsabilités.",
-      PROFESSOR: "Ce que ce rôle permet sera défini dans la matrice des responsabilités.",
-      RESPONSAVEL: "Ce que ce rôle permet sera défini dans la matrice des responsabilités.",
+      ALUNO:
+        "Ce que ce rôle permet suit la matrice des responsabilités et s'applique au fur et à mesure de la livraison de chaque module du système.",
+      COORDENACAO:
+        "Ce que ce rôle permet suit la matrice des responsabilités et s'applique au fur et à mesure de la livraison de chaque module du système.",
+      FINANCEIRO:
+        "Ce que ce rôle permet suit la matrice des responsabilités et s'applique au fur et à mesure de la livraison de chaque module du système.",
+      PROFESSOR:
+        "Ce que ce rôle permet suit la matrice des responsabilités et s'applique au fur et à mesure de la livraison de chaque module du système.",
+      RESPONSAVEL:
+        "Ce que ce rôle permet suit la matrice des responsabilités et s'applique au fur et à mesure de la livraison de chaque module du système.",
       SECRETARIA:
-        "Utilisateurs, invitations et audit de ses unités. Attribue les rôles Enseignant, Responsable légal et Élève.",
+        "Utilisateurs et invitations de ses unités. Attribue les rôles Secrétariat, Finances, Coordination, Enseignant, Responsable légal et Élève dans ces unités, jamais Administrateur.",
     },
     status: "Situation",
     unit: "Unité",

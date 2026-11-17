@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "./support/test.ts"
-import { lastCall, mockUserAccessApi, secretariaContext, signInAndOpen } from "./support/userAccess.ts"
+import { lastCall, mockUserAccessApi, secretariaContext, signInAndOpen, units } from "./support/userAccess.ts"
 
 const usersPath = "/users/list"
 
@@ -68,7 +68,7 @@ test.describe("user list", () => {
       "Secretaria · Unidade Aldeota",
     )
     await expect(dialog.getByRole("region", { name: "O que este acesso permite" })).toContainText(
-      "Usuários, convites e auditoria das suas unidades.",
+      "Usuários e convites das suas unidades.",
     )
     await expect(dialog.getByRole("region", { name: "Acessos revogados" })).toContainText(
       "Professor · Unidade Benfica (inativa)",
@@ -206,12 +206,10 @@ test.describe("inviting and registering", () => {
   })
 
   test("offers a Secretaria only the roles and units it may grant", async ({ page }) => {
-    const { calls } = await mockUserAccessApi(page)
+    await mockUserAccessApi(page, { units: [units[0]] })
     await signInAndOpen(page, usersPath, secretariaContext)
 
-    // Its units come with the session: the units list (Admin-only) isn't asked for.
     await expect(rowOf(page, "Maria Souza")).toBeVisible()
-    expect(calls.some((call) => call.path === "/api/school-units")).toBe(false)
 
     await page.getByRole("combobox", { name: /^Papel/ }).click()
     await expect(page.getByRole("option", { name: "Administrador" })).toHaveCount(0)
@@ -220,7 +218,15 @@ test.describe("inviting and registering", () => {
     await page.getByRole("button", { name: "Convidar usuário" }).click()
     const dialog = page.getByRole("dialog", { name: "Convidar usuário" })
     await dialog.getByRole("combobox", { name: /^Papel/ }).click()
-    await expect(page.getByRole("option")).toHaveText(["Professor", "Responsável", "Aluno"])
+    // Every role but Admin, in its own units (the backend lists only those).
+    await expect(page.getByRole("option")).toHaveText([
+      "Secretaria",
+      "Financeiro",
+      "Coordenação",
+      "Professor",
+      "Responsável",
+      "Aluno",
+    ])
     // Tab closes the menu (Escape would close the dialog too).
     await page.keyboard.press("Tab")
     await dialog.getByRole("combobox", { name: /^Unidade/ }).click()

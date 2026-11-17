@@ -77,8 +77,9 @@ export type InvitationValidationAssignment = InvitationAssignment & {
 // A valid invitation link: the invited e-mail (masked), until when the link works, the name and phone
 // the invitation already carries (to prefill the screen), whether the screen must ask for the name
 // (the invitation came without one), the institution (the tenant's organization: its institutional
-// and display names, null when none is registered) and what the account will be able to do and where.
-// Any invalid link (unknown, expired, cancelled, used) is a 404 INVITATION_INVALID instead.
+// and display names, null when none is registered), what the account will be able to do and where,
+// and the Terms of Use version in force (to show, and to send back when accepting). Any invalid link
+// (unknown, expired, cancelled, used) is a 404 INVITATION_INVALID instead.
 export type InvitationValidation = {
   assignments: InvitationValidationAssignment[]
   email: string
@@ -88,14 +89,19 @@ export type InvitationValidation = {
   nameRequired: boolean
   organizationName: string | null
   phone: string | null
+  termsVersion: string
   valid: boolean
 }
 
 // Body of POST /api/auth/invitations/accept: the account is created with this password (12 to 128).
 // `fullName` (up to 150) and `phone` (up to 30) fill or replace the invitation's own; every account
-// has a name, so without one in the invitation `fullName` is required (422 NAME_REQUIRED).
+// has a name, so without one in the invitation `fullName` is required (422 NAME_REQUIRED). The Terms of
+// Use must be accepted: `termsAccepted` true and `termsVersion` the one validate returned (otherwise
+// 422 TERMS_NOT_ACCEPTED or TERMS_VERSION_INVALID, and the invitation stays usable).
 export type AcceptInvitationRequest = {
   password: string
+  termsAccepted: boolean
+  termsVersion: string
   token: string
   fullName?: string
   phone?: string

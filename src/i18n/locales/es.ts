@@ -40,6 +40,10 @@ export const es: TranslationResource = {
     phoneLabel: "Teléfono",
     recoverPassword: "Recuperar contraseña",
     submit: "Activar cuenta",
+    termsChanged:
+      "Los Términos de Uso se actualizaron (versión {{version}}). Léelos y acéptalos de nuevo para continuar.",
+    termsLabel: "Leí y acepto los Términos de Uso y el Aviso de Privacidad (versión {{version}}).",
+    termsRequired: "Acepta los Términos de Uso y el Aviso de Privacidad para activar la cuenta.",
     title: "Activa tu cuenta",
     unavailableDescription: "Revisa tu conexión e inténtalo de nuevo en unos instantes.",
     unavailableTitle: "No pudimos verificar la invitación",
@@ -539,12 +543,18 @@ export const es: TranslationResource = {
     role: "Rol",
     roleDescriptions: {
       ADMIN: "Toda la institución: organización, unidades, identidad visual, usuarios, invitaciones y auditoría.",
-      ALUNO: "Lo que permite este rol aún se definirá en la matriz de responsabilidades.",
-      COORDENACAO: "Lo que permite este rol aún se definirá en la matriz de responsabilidades.",
-      FINANCEIRO: "Lo que permite este rol aún se definirá en la matriz de responsabilidades.",
-      PROFESSOR: "Lo que permite este rol aún se definirá en la matriz de responsabilidades.",
-      RESPONSAVEL: "Lo que permite este rol aún se definirá en la matriz de responsabilidades.",
-      SECRETARIA: "Usuarios, invitaciones y auditoría de sus unidades. Otorga los roles Profesor, Tutor y Alumno.",
+      ALUNO:
+        "Lo que permite este rol sigue la matriz de responsabilidades y entra en vigor a medida que se entrega cada módulo del sistema.",
+      COORDENACAO:
+        "Lo que permite este rol sigue la matriz de responsabilidades y entra en vigor a medida que se entrega cada módulo del sistema.",
+      FINANCEIRO:
+        "Lo que permite este rol sigue la matriz de responsabilidades y entra en vigor a medida que se entrega cada módulo del sistema.",
+      PROFESSOR:
+        "Lo que permite este rol sigue la matriz de responsabilidades y entra en vigor a medida que se entrega cada módulo del sistema.",
+      RESPONSAVEL:
+        "Lo que permite este rol sigue la matriz de responsabilidades y entra en vigor a medida que se entrega cada módulo del sistema.",
+      SECRETARIA:
+        "Usuarios e invitaciones de sus unidades. Otorga los roles Secretaría, Finanzas, Coordinación, Profesor, Tutor y Alumno en esas unidades, nunca Administrador.",
     },
     status: "Situación",
     unit: "Unidad",
