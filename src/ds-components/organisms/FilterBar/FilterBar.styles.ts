@@ -40,4 +40,6 @@ export const StyledFilterBarActions = styled.div`
   flex-wrap: wrap;
   gap: ${spacing[8]};
   margin-left: auto;
+  /* Never wider than the bar: several actions wrap onto more lines instead of overflowing it. */
+  max-width: 100%;
 `

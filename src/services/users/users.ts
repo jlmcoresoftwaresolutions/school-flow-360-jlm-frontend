@@ -17,14 +17,15 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // sees the whole tenant, a Secretaria only its units and never an Admin. The signed-in user is taken
 // from the token. Every route may also answer 401 (no session) and 403 ACCESS_DENIED (a role without access to users).
 
-// NOT USED YET. GET /api/users: users in the operator's scope, paged; never returns a password.
+// USED by the user list. GET /api/users: users in the operator's scope, paged; never returns a
+// password. The list's users come without `eligibleActions` (only the detail has them).
 export const listUsers = async (params?: UserSearchParams, config?: RequestConfig): Promise<UserPage> => {
   const response = await httpClient.get<ApiResponse<UserPage>>("/api/users", { ...config, params })
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/users: manual registration. It creates the same 48 h invitation as
+// USED by the users and invitations pages. POST /api/users: manual registration. It creates the same 48 h invitation as
 // POST /api/invitations (origin MANUAL), without a password: the person sets theirs on accepting.
 // Send an `idempotencyKey` so a repeated click returns the same invitation. Errors: 409 USER_DUPLICATE,
 // 409 INVITATION_PENDING, 403 ROLE_NOT_GRANTABLE, 422 UNIT_INACTIVE, 404 UNIT_NOT_FOUND, 400 INVALID_REQUEST.
@@ -34,7 +35,7 @@ export const createUser = async (request: NewUserRequest, config?: RequestConfig
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/users/{id}: one user, with the actions the operator may take on them
+// USED by the user details. GET /api/users/{id}: one user, with the actions the operator may take on them
 // (`eligibleActions`). Out of scope or missing: 404 USER_NOT_FOUND.
 export const getUser = async (userId: number, config?: RequestConfig): Promise<UserView> => {
   const response = await httpClient.get<ApiResponse<UserView>>(`/api/users/${userId}`, config)
