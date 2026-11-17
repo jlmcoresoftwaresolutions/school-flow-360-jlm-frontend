@@ -5,6 +5,7 @@ import { toast } from "@/components"
 import { Button, Card, Skeleton } from "@/ds-components/atoms"
 import { PageHeader, StateMessage, Tabs } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
+import { useSignedInUser } from "@/hooks"
 import type {
   Organization,
   OrganizationBranding,
@@ -16,16 +17,21 @@ import { getErrorStatus } from "@/services/httpClient"
 import {
   getBranding,
   getCurrentOrganization,
+  getOrganizationOverview,
+  getPublishedOrganizationBranding,
   listSchoolUnits,
   updateBranding,
   updateOrganization,
 } from "@/services/organization"
+import { hasAnyRole } from "@/utils/access"
 import { defaultCountry, isCountry } from "@/utils/countries"
 
 import { BrandingTab } from "./branding/BrandingTab"
+import { PublishedBrandingView } from "./branding/PublishedBrandingView"
 import type { MyUnitTab } from "./MyUnit.constants"
 import { SubCard } from "./MyUnit.styles"
 import { OverviewTab } from "./overview/OverviewTab"
+import { MyUnitAccessContext } from "./shared/myUnitAccess"
 import { OrganizationCountryContext } from "./shared/organizationCountry"
 import type { SaveResult } from "./shared/saveResult"
 import { TabCard } from "./shared/TabCard"
@@ -53,12 +59,15 @@ const LoadingState = () => (
 )
 
 // Minha Unidade: the organization the user works in (JLM-11), in three tabs - its overview, its
-// visual identity and its units. The data comes from services/organization, which is being wired to
-// the backend a call at a time (the rest is mocked). Every tab stays mounted and only the others are hidden, so
-// an edit in progress survives switching tabs. Each tab is one main card (TabCard), attached to the tabs
-// above it, with its sections inside as sub-cards (SectionCard).
+// visual identity and its units, all from the backend through services/organization. Every tab stays
+// mounted and only the others are hidden, so an edit in progress survives switching tabs. Each tab is
+// one main card (TabCard), attached to the tabs above it, with its sections inside as sub-cards
+// (SectionCard). An Admin manages it all; a Secretaria only reads (matrix ORG-M01 to M04): the
+// organization's summary (no address nor notes), its own units and the published identity, with no
+// edit control anywhere (MyUnitAccessContext).
 export const MyUnit = () => {
   const { t } = useTranslation()
+  const user = useSignedInUser()
 
   const [data, setData] = useState<PageData | null>(null)
   // Why there is no data: the tenant has no organization registered yet (the backend's 404), or the
@@ -68,6 +77,8 @@ export const MyUnit = () => {
   const [tab, setTab] = useState<MyUnitTab>("overview")
   const [isCreatingUnit, setIsCreatingUnit] = useState(false)
 
+  const canManage = hasAnyRole(user, ["ADMIN"])
+
   // The fetch is defined inline inside the effect, rather than as an outer useCallback referenced
   // here, so react-hooks/set-state-in-effect doesn't flag it. handleRetry bumps reloadToken instead of
   // calling this fetch directly, re-running the effect; `ignore` drops an answer that arrives after the
@@ -76,9 +87,11 @@ export const MyUnit = () => {
     let ignore = false
 
     const load = async () => {
+      // A reader can't see the editable organization nor the identity's draft: it reads the summary and
+      // the published identity instead. The units list already comes limited to the reader's own.
       const [organization, branding, units] = await Promise.allSettled([
-        getCurrentOrganization({ showLoading: false }),
-        getBranding({ showLoading: false }),
+        canManage ? getCurrentOrganization({ showLoading: false }) : getOrganizationOverview({ showLoading: false }),
+        canManage ? getBranding({ showLoading: false }) : getPublishedOrganizationBranding({ showLoading: false }),
         listSchoolUnits({ showLoading: false }),
       ])
 
@@ -102,7 +115,7 @@ export const MyUnit = () => {
     return () => {
       ignore = true
     }
-  }, [reloadToken])
+  }, [canManage, reloadToken])
 
   const handleRetry = () => {
     setFailure(null)
@@ -209,35 +222,41 @@ export const MyUnit = () => {
     if (!data) return <LoadingState />
 
     return (
-      <OrganizationCountryContext
-        value={isCountry(data.organization.address.country) ? data.organization.address.country : defaultCountry}
-      >
-        <div hidden={tab !== "overview"}>
-          <OverviewTab
-            branding={data.branding}
-            onCreateUnit={handleCreateFromOverview}
-            onSaveOrganization={handleSaveOrganization}
-            onSeeAllUnits={() => setTab("units")}
-            organization={data.organization}
-            units={data.units}
-          />
-        </div>
-        <div hidden={tab !== "branding"}>
-          <BrandingTab
-            branding={data.branding}
-            displayName={data.organization.displayName}
-            onSave={handleSaveBranding}
-          />
-        </div>
-        <div hidden={tab !== "units"}>
-          <UnitsTab
-            isCreating={isCreatingUnit}
-            onCreatingChange={setIsCreatingUnit}
-            onUnitsChange={handleUnitsChange}
-            units={data.units}
-          />
-        </div>
-      </OrganizationCountryContext>
+      <MyUnitAccessContext value={canManage ? "manage" : "read"}>
+        <OrganizationCountryContext
+          value={isCountry(data.organization.address.country) ? data.organization.address.country : defaultCountry}
+        >
+          <div hidden={tab !== "overview"}>
+            <OverviewTab
+              branding={data.branding}
+              onCreateUnit={handleCreateFromOverview}
+              onSaveOrganization={handleSaveOrganization}
+              onSeeAllUnits={() => setTab("units")}
+              organization={data.organization}
+              units={data.units}
+            />
+          </div>
+          <div hidden={tab !== "branding"}>
+            {canManage ? (
+              <BrandingTab
+                branding={data.branding}
+                displayName={data.organization.displayName}
+                onSave={handleSaveBranding}
+              />
+            ) : (
+              <PublishedBrandingView branding={data.branding} displayName={data.organization.displayName} />
+            )}
+          </div>
+          <div hidden={tab !== "units"}>
+            <UnitsTab
+              isCreating={isCreatingUnit}
+              onCreatingChange={setIsCreatingUnit}
+              onUnitsChange={handleUnitsChange}
+              units={data.units}
+            />
+          </div>
+        </OrganizationCountryContext>
+      </MyUnitAccessContext>
     )
   }
 

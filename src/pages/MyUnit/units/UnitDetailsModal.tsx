@@ -6,6 +6,7 @@ import { DescriptionList } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { SchoolUnit } from "@/models"
 
+import { useCanManageMyUnit } from "../shared/myUnitAccess"
 import { useAddressFormatter } from "../shared/useAddressFormatter"
 import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useStatusLabels } from "../shared/useStatusLabels"
@@ -25,6 +26,7 @@ export const UnitDetailsModal = (props: UnitDetailsModalProps) => {
   const { statusTone, unitStatusLabel } = useStatusLabels()
   const formatAddress = useAddressFormatter()
   const formatPhone = usePhoneFormatter()
+  const canManage = useCanManageMyUnit()
 
   const isActive = unit.status === "ACTIVE"
 
@@ -72,7 +74,7 @@ export const UnitDetailsModal = (props: UnitDetailsModalProps) => {
           <Button onClick={onClose} variant="outlined">
             {t("common.close")}
           </Button>
-          {isActive && <Button onClick={() => onEdit(unit)}>{t("common.edit")}</Button>}
+          {isActive && canManage && <Button onClick={() => onEdit(unit)}>{t("common.edit")}</Button>}
         </>
       }
       onClose={onClose}

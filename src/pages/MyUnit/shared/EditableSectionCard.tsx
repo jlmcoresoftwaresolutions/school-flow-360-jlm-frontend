@@ -6,6 +6,7 @@ import { Button, Icon } from "@/ds-components/atoms"
 
 import { AnimatedHeightBox, AnimatedHeightContent, FieldGroup, FormActions, SwappedContent } from "../MyUnit.styles"
 import { ConflictNotice } from "./ConflictNotice"
+import { useCanManageMyUnit } from "./myUnitAccess"
 import { SectionCard } from "./SectionCard"
 import { useAnimatedHeight } from "./useAnimatedHeight"
 
@@ -28,13 +29,15 @@ export type EditableSectionCardProps = {
 // A section that is read first and edited in place: its own "Editar" swaps the read-only `view` for
 // the `form` fields, with Cancelar/Salvar below them. Salvar stays off until something changed. The
 // swap is animated: the section's height glides to the new content's (useAnimatedHeight), which fades
-// in; nothing moves on the page's first render.
+// in; nothing moves on the page's first render. For a reader (useCanManageMyUnit) it is the view only,
+// without "Editar".
 export const EditableSectionCard = (props: EditableSectionCardProps) => {
   const { description, editing, form, hasConflict, isDirty, isSubmitting, onCancel, onEdit, onSubmit, title, view } =
     props
 
   const { t } = useTranslation()
   const { contentRef, handleTransitionEnd, height, isAnimating } = useAnimatedHeight()
+  const canManage = useCanManageMyUnit()
 
   // Whether the mode has changed at least once, so the first content shown doesn't fade in.
   const [hasSwapped, setHasSwapped] = useState(false)
@@ -60,7 +63,7 @@ export const EditableSectionCard = (props: EditableSectionCardProps) => {
   )
 
   return (
-    <SectionCard action={editing ? undefined : editButton} description={description} title={title}>
+    <SectionCard action={editing || !canManage ? undefined : editButton} description={description} title={title}>
       <AnimatedHeightBox $isAnimating={isAnimating} onTransitionEnd={handleTransitionEnd} style={{ height }}>
         <AnimatedHeightContent ref={contentRef}>
           <SwappedContent key={editing ? "form" : "view"} $animate={hasSwapped}>

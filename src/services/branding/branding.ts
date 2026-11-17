@@ -118,9 +118,10 @@ export const removeBrandingFavicon = async (config?: RequestConfig): Promise<Bra
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/organizations/current/branding/published: the branding every screen should
-// apply, open to ANY signed-in user of the tenant, not just an ADMIN. A 404 means nothing was published
-// yet: use the default look. The app could theme itself from it after login.
+// USED: Minha Unidade for a Secretaria (through services/organization). GET
+// /api/organizations/current/branding/published: the branding every screen should apply, open to ANY
+// signed-in user of the tenant, not just an ADMIN. A 404 means nothing was published yet: use the
+// default look. The app could theme itself from it after login.
 export const getPublishedBranding = async (config?: RequestConfig): Promise<PublishedBrandingResponse> => {
   const response = await httpClient.get<ApiResponse<PublishedBrandingResponse>>(
     "/api/organizations/current/branding/published",

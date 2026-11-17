@@ -17,13 +17,19 @@ import { toInternationalPhone } from "@/utils/phone"
 
 import {
   getBrandingDraft,
+  getPublishedBranding,
   publishBranding,
   saveBrandingDraft,
   uploadBrandingFavicon,
   uploadBrandingLogo,
 } from "../branding"
 import type { RequestConfig } from "../httpClient"
-import { getCurrentOrganizationEditable, updateCurrentOrganization } from "../organizations"
+import { getErrorStatus } from "../httpClient"
+import {
+  getCurrentOrganizationEditable,
+  getCurrentOrganizationSummary,
+  updateCurrentOrganization,
+} from "../organizations"
 import {
   addSchoolUnit,
   checkSchoolUnitDeactivation,
@@ -82,6 +88,25 @@ const keepOrganization = (editable: OrganizationEditable): Organization => {
 // The signed-in user's organization (ADMIN only; 404 when the tenant has none registered yet).
 export const getCurrentOrganization = async (config?: RequestConfig): Promise<Organization> =>
   keepOrganization(await getCurrentOrganizationEditable(config))
+
+// The organization for a reader who can't edit it (a Secretaria): the summary, which brings the names,
+// the contacts, the operation model and the status, but no address nor internal notes (those come
+// empty, and the page doesn't show them).
+export const getOrganizationOverview = async (config?: RequestConfig): Promise<Organization> => {
+  const summary = await getCurrentOrganizationSummary(config)
+
+  return {
+    address: { city: "", complement: "", country: "", district: "", number: "", postalCode: "", state: "", street: "" },
+    contactEmail: summary.orgEmail ?? "",
+    contactPhone: summary.orgInstTel ?? "",
+    displayName: summary.orgName ?? "",
+    id: summary.orgId,
+    institutionalName: summary.orgInstName ?? "",
+    internalNotes: "",
+    operationModel: summary.orgOpType,
+    status: summary.orgStatus === "ENABLE" ? "ACTIVE" : "INACTIVE",
+  }
+}
 
 // Saves the section's changes. Every editable field goes in the body - the ones the section did not
 // change exactly as the backend last answered them, so nothing is cleared - with the `version` last
@@ -145,6 +170,30 @@ const keepBranding = (branding: BrandingResponse): OrganizationBranding => {
 // The draft and its publication state (ADMIN only).
 export const getBranding = async (config?: RequestConfig): Promise<OrganizationBranding> =>
   keepBranding(await getBrandingDraft(config))
+
+// What everybody sees: the published identity, for a reader who can't see the draft (a Secretaria).
+// Nothing published yet (the backend's 404) is the app's own look, without logo nor favicon.
+export const getPublishedOrganizationBranding = async (config?: RequestConfig): Promise<OrganizationBranding> => {
+  try {
+    const published = await getPublishedBranding(config)
+    const logoUrl = published.logo?.url ?? undefined
+    const faviconUrl = published.favicon?.url ?? undefined
+
+    return {
+      faviconUrl,
+      hasUnpublishedChanges: false,
+      logoUrl,
+      primaryColor: published.primaryColor || defaultPrimaryColor,
+      publishedFaviconUrl: faviconUrl,
+      publishedLogoUrl: logoUrl,
+      secondaryColor: published.secondaryColor || defaultSecondaryColor,
+    }
+  } catch (error) {
+    if (getErrorStatus(error) !== 404) throw error
+
+    return { hasUnpublishedChanges: false, primaryColor: defaultPrimaryColor, secondaryColor: defaultSecondaryColor }
+  }
+}
 
 // Saves and publishes the identity in one go, as the page has a single "save" for it: the draft (with
 // the organization's display name, which the backend asks for its own copy of), then the new logo and

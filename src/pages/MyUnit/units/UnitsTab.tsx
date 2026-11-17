@@ -13,6 +13,7 @@ import { normalizeForSearch } from "@/utils/strings"
 
 import { unitsPageSize } from "../MyUnit.constants"
 import { FieldGroup } from "../MyUnit.styles"
+import { useCanManageMyUnit } from "../shared/myUnitAccess"
 import { TabCard } from "../shared/TabCard"
 import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useStatusLabels } from "../shared/useStatusLabels"
@@ -49,7 +50,7 @@ const matchesSearch = (unit: SchoolUnit, search: string) => {
 
 // The organization's units the user may access (search and filter only ever narrow that list): a
 // table with a search, a status filter and paging, plus registering, viewing, editing and
-// inactivating (see useUnitActions). An empty organization and a search without results are told apart.
+// inactivating (see useUnitActions). A reader (a Secretaria, only its own units) only views them. An empty organization and a search without results are told apart.
 // The "new unit" form is opened from here or from the overview, so whether it is open lives in the
 // page (isCreating), as does the list itself, which the overview's summary shares.
 export const UnitsTab = (props: UnitsTabProps) => {
@@ -58,6 +59,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
   const { t } = useTranslation()
   const formatPhone = usePhoneFormatter()
   const { statusTone, unitStatusLabel } = useStatusLabels()
+  const canManage = useCanManageMyUnit()
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
@@ -110,16 +112,21 @@ export const UnitsTab = (props: UnitsTabProps) => {
 
   const renderActions = (unit: SchoolUnit) => {
     const isActive = unit.status === "ACTIVE"
+    const view = {
+      icon: "eye-outline" as const,
+      key: "view",
+      label: t("myUnit.units.view"),
+      onClick: () => setDialog({ kind: "details", unit }),
+    }
+
+    if (!canManage) {
+      return <ActionMenu items={[view]} triggerLabel={t("myUnit.units.actionsFor", { name: unit.name })} />
+    }
 
     return (
       <ActionMenu
         items={[
-          {
-            icon: "eye-outline",
-            key: "view",
-            label: t("myUnit.units.view"),
-            onClick: () => setDialog({ kind: "details", unit }),
-          },
+          view,
           {
             disabled: !isActive,
             icon: "pen-outline",
@@ -144,16 +151,20 @@ export const UnitsTab = (props: UnitsTabProps) => {
   return (
     <>
       <TabCard
-        action={units.length > 0 ? createButton : undefined}
-        description={t("myUnit.units.description")}
+        action={units.length > 0 && canManage ? createButton : undefined}
+        description={canManage ? t("myUnit.units.description") : t("myUnit.units.readOnlyDescription")}
         title={t("myUnit.units.title")}
       >
         {units.length === 0 ? (
           <StateMessage
-            action={<Button onClick={() => onCreatingChange(true)}>{t("myUnit.units.createFirst")}</Button>}
-            description={t("myUnit.units.emptyDescription")}
+            action={
+              canManage ? (
+                <Button onClick={() => onCreatingChange(true)}>{t("myUnit.units.createFirst")}</Button>
+              ) : undefined
+            }
+            description={canManage ? t("myUnit.units.emptyDescription") : t("myUnit.units.emptyAssignedDescription")}
             icon="location-outline"
-            title={t("myUnit.units.emptyTitle")}
+            title={canManage ? t("myUnit.units.emptyTitle") : t("myUnit.units.emptyAssignedTitle")}
           />
         ) : (
           <FieldGroup>
