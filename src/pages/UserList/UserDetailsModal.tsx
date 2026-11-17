@@ -5,6 +5,7 @@ import { toast } from "@/components"
 import { Badge, Button, Text } from "@/ds-components/atoms"
 import { DescriptionList, StateMessage } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
+import { useSignedInUser } from "@/hooks"
 import type { RoleCode, UserView } from "@/models"
 import { getErrorStatus } from "@/services/httpClient"
 import { getUser } from "@/services/users"
@@ -13,13 +14,23 @@ import { defaultCountry } from "@/utils/countries"
 import { formatPhoneForDisplay } from "@/utils/phone"
 
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
-import { AccessItem, AccessItems, DetailsSection, DetailsSections } from "../shared/userAccess/userAccess.styles"
+import {
+  AccessItem,
+  AccessItems,
+  ActionRow,
+  DetailsSection,
+  DetailsSections,
+} from "../shared/userAccess/userAccess.styles"
 import type { DirectoryUnit } from "../shared/userAccess/useUnitDirectory"
+
+// What the operator can do from the details, each in its own dialog.
+export type UserDetailsAction = "assignments" | "inactivate" | "profile" | "reactivate" | "revoke"
 
 export type UserDetailsModalProps = {
   // The units the signed-in user knows, to mark an inactive one.
   units: DirectoryUnit[]
   userId: number
+  onAction: (action: UserDetailsAction, user: UserView) => void
   onClose: () => void
   // The user is out of reach now (removed from the operator's scope): the list is read again.
   onUnavailable: () => void
@@ -30,13 +41,15 @@ type LoadState = { kind: "failed" } | { kind: "loaded"; user: UserView } | { kin
 // One user, read again when opened (the list doesn't carry what the operator may do): who they are,
 // whether the account is active, each role in each unit (and since when), what those roles allow and
 // the access revoked before. The capabilities are informative: what a role allows follows the
-// institution's policy, never a per-person setting. The same structure will serve the user's own
-// profile; the actions (change roles, revoke, inactivate) come in the next phase, when the operator
-// may take them (the user's eligibleActions).
+// institution's policy, never a per-person setting. The actions the backend allows the operator on
+// this user (eligibleActions: change roles and units, revoke, inactivate or reactivate) open from
+// here, plus editing the name and phone, which goes with them. Nobody changes their own access (matrix
+// ACC-M09): on the own account only the name and phone can be edited.
 export const UserDetailsModal = (props: UserDetailsModalProps) => {
-  const { onClose, onUnavailable, units, userId } = props
+  const { onAction, onClose, onUnavailable, units, userId } = props
 
   const { t } = useTranslation()
+  const signedIn = useSignedInUser()
   const { accessLabel, formatDate, roleLabel, userStatusLabel, userStatusTone } = useAccessLabels(units)
 
   const [state, setState] = useState<LoadState>({ kind: "loading" })
@@ -74,6 +87,49 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
   // Nothing to show until the user arrives: the global loading overlay covers the wait.
   if (state.kind === "loading") return null
 
+  const renderActions = (user: UserView) => {
+    const isSelf = signedIn?.userId === user.id
+    const can = (action: UserView["eligibleActions"][number]) => !isSelf && user.eligibleActions.includes(action)
+    const canEditProfile = isSelf || user.eligibleActions.length > 0
+
+    if (!canEditProfile) return null
+
+    return (
+      <DetailsSection aria-label={t("users.manage.title")}>
+        <ActionRow>
+          <Button onClick={() => onAction("profile", user)} size="small" variant="outlined">
+            {t("users.manage.editProfile")}
+          </Button>
+          {can("EDIT_ASSIGNMENTS") && (
+            <Button onClick={() => onAction("assignments", user)} size="small" variant="outlined">
+              {t("users.manage.changeAccess")}
+            </Button>
+          )}
+          {can("REVOKE") && user.assignments.some((assignment) => assignment.status === "ACTIVE") && (
+            <Button color="danger" onClick={() => onAction("revoke", user)} size="small" variant="outlined">
+              {t("users.manage.revoke")}
+            </Button>
+          )}
+          {can("INACTIVATE") && (
+            <Button color="danger" onClick={() => onAction("inactivate", user)} size="small" variant="outlined">
+              {t("users.status.inactivate")}
+            </Button>
+          )}
+          {can("REACTIVATE") && (
+            <Button onClick={() => onAction("reactivate", user)} size="small" variant="outlined">
+              {t("users.status.reactivate")}
+            </Button>
+          )}
+        </ActionRow>
+        {isSelf && (
+          <Text color="secondary" fontSize="sm">
+            {t("users.manage.selfNotice")}
+          </Text>
+        )}
+      </DetailsSection>
+    )
+  }
+
   const renderUser = (user: UserView) => {
     const active = sortAccess(user.assignments.filter((assignment) => assignment.status === "ACTIVE"))
     const revoked = sortAccess(user.assignments.filter((assignment) => assignment.status === "REVOKED"))
@@ -81,6 +137,8 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
 
     return (
       <DetailsSections>
+        {renderActions(user)}
+
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[

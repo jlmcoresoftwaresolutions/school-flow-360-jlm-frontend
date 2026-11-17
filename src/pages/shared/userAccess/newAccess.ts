@@ -13,6 +13,11 @@ export type AssignmentDraft = {
   unitId: string
 }
 
+// Any form with a list of roles to grant (the invitation's, the access change's).
+export type AssignmentsFormValues = {
+  assignments: AssignmentDraft[]
+}
+
 export type NewAccessValues = {
   assignments: AssignmentDraft[]
   email: string

@@ -44,7 +44,7 @@ export const getUser = async (userId: number, config?: RequestConfig): Promise<U
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/users/{id}/assignments: replaces the user's roles and units (with the version
+// USED by the access change (user details). PUT /api/users/{id}/assignments: replaces the user's roles and units (with the version
 // read) and ends the user's sessions. Errors: 409 VERSION_CONFLICT, 428 VERSION_REQUIRED, 409 LAST_ADMIN,
 // 403 ROLE_NOT_GRANTABLE or SCOPE_DENIED, 422 UNIT_INACTIVE, 404 USER_NOT_FOUND.
 export const updateUserAssignments = async (
@@ -61,7 +61,7 @@ export const updateUserAssignments = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/users/{id}/profile: changes a user's name and phone (nothing else), with the
+// USED by the profile edit (user details). PUT /api/users/{id}/profile: changes a user's name and phone (nothing else), with the
 // user's version. An Admin edits any account; a Secretaria only non-Admin accounts whose active units are
 // all its own. Errors: 403 SCOPE_DENIED (an account shared with a unit out of reach), 404 USER_NOT_FOUND,
 // 428 VERSION_REQUIRED, 409 VERSION_CONFLICT, 422 NAME_REQUIRED, 400 INVALID_REQUEST.
@@ -75,7 +75,7 @@ export const updateUserProfile = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/users/{id}/revoke: revokes some assignments, or all of them. Errors: 422
+// USED by the access revocation (user details). POST /api/users/{id}/revoke: revokes some assignments, or all of them. Errors: 422
 // IMPACTS_NOT_CONFIRMED without `confirm`, 404 ASSIGNMENT_NOT_FOUND, 409 LAST_ADMIN, 403 SCOPE_DENIED.
 export const revokeUserAssignments = async (
   userId: number,
@@ -91,7 +91,7 @@ export const revokeUserAssignments = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/users/{id}/inactivate: turns the account off and ends its sessions;
+// USED by the account status dialog (user details). POST /api/users/{id}/inactivate: turns the account off and ends its sessions;
 // repeating it changes nothing. Errors: 409 LAST_ADMIN, 403 SCOPE_DENIED (not all of the user's units
 // are in the operator's scope), 404 USER_NOT_FOUND.
 export const inactivateUser = async (userId: number, config?: RequestConfig): Promise<UserView> => {
@@ -100,7 +100,7 @@ export const inactivateUser = async (userId: number, config?: RequestConfig): Pr
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/users/{id}/reactivate: turns the account back on. Errors: 422
+// USED by the account status dialog (user details). POST /api/users/{id}/reactivate: turns the account back on. Errors: 422
 // NO_ACTIVE_ASSIGNMENT (the user has no active role left), 403 SCOPE_DENIED, 404 USER_NOT_FOUND.
 export const reactivateUser = async (userId: number, config?: RequestConfig): Promise<UserView> => {
   const response = await httpClient.post<ApiResponse<UserView>>(`/api/users/${userId}/reactivate`, undefined, config)
