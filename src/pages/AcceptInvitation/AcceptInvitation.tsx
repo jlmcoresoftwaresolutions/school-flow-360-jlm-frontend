@@ -5,7 +5,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom"
 
 import { toast } from "@/components"
 import { Button, Card, Grid, Text } from "@/ds-components/atoms"
-import { DescriptionList, Input, StateMessage } from "@/ds-components/molecules"
+import { Checkbox, DescriptionList, Input, StateMessage } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import type { AcceptInvitationRequest, InvitationValidation, InvitationValidationAssignment } from "@/models"
 import { paths } from "@/routes/paths"
@@ -27,6 +27,7 @@ type AcceptInvitationValues = {
   fullName: string
   password: string
   phone: string
+  termsAccepted: boolean
 }
 
 // What the link leads to. checking: being validated (the global Loading overlay covers the page).
@@ -57,9 +58,10 @@ export const AcceptInvitation = () => {
   const { i18n, t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { control, formState, getValues, handleSubmit, register, reset, setError } = useForm<AcceptInvitationValues>({
-    defaultValues: { confirmPassword: "", fullName: "", password: "", phone: "" },
-  })
+  const { control, formState, getValues, handleSubmit, register, reset, setError, setValue } =
+    useForm<AcceptInvitationValues>({
+      defaultValues: { confirmPassword: "", fullName: "", password: "", phone: "", termsAccepted: false },
+    })
 
   const [linkStatus, setLinkStatus] = useState<LinkStatus>("checking")
   const [invitation, setInvitation] = useState<InvitationValidation | null>(null)
@@ -94,6 +96,7 @@ export const AcceptInvitation = () => {
           fullName: validation.fullName ?? "",
           password: "",
           phone: validation.phone ? formatPhoneForDisplay(validation.phone, defaultCountry) : "",
+          termsAccepted: false,
         })
       } catch (error) {
         if (isStale) return
@@ -127,7 +130,13 @@ export const AcceptInvitation = () => {
   const onSubmit = async (values: AcceptInvitationValues) => {
     setHasFailed(false)
 
-    const request: AcceptInvitationRequest = { fullName: values.fullName.trim(), password: values.password, token }
+    const request: AcceptInvitationRequest = {
+      fullName: values.fullName.trim(),
+      password: values.password,
+      termsAccepted: values.termsAccepted,
+      termsVersion: invitation?.termsVersion ?? "",
+      token,
+    }
     // The invitation's own phone (or none) is left out: the backend keeps the invitation's.
     if (values.phone.trim() !== "" && values.phone !== prefilledPhone) {
       request.phone = toInternationalPhone(values.phone, defaultCountry)
@@ -144,6 +153,12 @@ export const AcceptInvitation = () => {
           return
         case "NAME_REQUIRED":
           setError("fullName", { message: t("acceptInvitation.nameRequired") })
+          return
+        case "TERMS_NOT_ACCEPTED":
+          setError("termsAccepted", { message: t("acceptInvitation.termsRequired") })
+          return
+        case "TERMS_VERSION_INVALID":
+          await refreshTermsVersion()
           return
         case "INVITATION_EXPIRED":
           setLinkStatus("expired")
@@ -163,6 +178,19 @@ export const AcceptInvitation = () => {
         default:
           setHasFailed(true)
       }
+    }
+  }
+
+  // The Terms of Use changed while the form was open: read the version in force again (keeping what was
+  // typed) and ask for the acceptance again, since what was accepted is no longer the current text.
+  const refreshTermsVersion = async () => {
+    try {
+      const validation = await validateInvitation({ token }, { tenantId })
+      setInvitation(validation)
+      setValue("termsAccepted", false)
+      setError("termsAccepted", { message: t("acceptInvitation.termsChanged", { version: validation.termsVersion }) })
+    } catch {
+      setHasFailed(true)
     }
   }
 
@@ -333,6 +361,26 @@ export const AcceptInvitation = () => {
                 required: t("acceptInvitation.confirmPasswordRequired"),
                 validate: (value) => value === getValues("password") || t("acceptInvitation.passwordMismatch"),
               })}
+            />
+
+            {/* The Terms of Use and the Privacy Notice must be accepted, in the version in force. Their
+                text is still being finalized, so there is no link to it yet. */}
+            <Controller
+              control={control}
+              name="termsAccepted"
+              render={(controller) => (
+                <Checkbox
+                  checked={controller.field.value}
+                  error={controller.fieldState.error?.message}
+                  label={t("acceptInvitation.termsLabel", { version: invitation?.termsVersion ?? "" })}
+                  name={controller.field.name}
+                  onBlur={controller.field.onBlur}
+                  onChange={(event) => controller.field.onChange(event.target.checked)}
+                  ref={controller.field.ref}
+                  required
+                />
+              )}
+              rules={{ validate: (value) => value || t("acceptInvitation.termsRequired") }}
             />
           </div>
 

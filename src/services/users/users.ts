@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   InvitationView,
   NewUserRequest,
+  ProfileUpdateRequest,
   RevokeAssignmentsRequest,
   UserAssignmentsChange,
   UserAssignmentsRequest,
@@ -56,6 +57,20 @@ export const updateUserAssignments = async (
     request,
     config,
   )
+
+  return unwrapApiResponse(response)
+}
+
+// NOT USED YET. PUT /api/users/{id}/profile: changes a user's name and phone (nothing else), with the
+// user's version. An Admin edits any account; a Secretaria only non-Admin accounts whose active units are
+// all its own. Errors: 403 SCOPE_DENIED (an account shared with a unit out of reach), 404 USER_NOT_FOUND,
+// 428 VERSION_REQUIRED, 409 VERSION_CONFLICT, 422 NAME_REQUIRED, 400 INVALID_REQUEST.
+export const updateUserProfile = async (
+  userId: number,
+  request: ProfileUpdateRequest,
+  config?: RequestConfig,
+): Promise<UserView> => {
+  const response = await httpClient.put<ApiResponse<UserView>>(`/api/users/${userId}/profile`, request, config)
 
   return unwrapApiResponse(response)
 }

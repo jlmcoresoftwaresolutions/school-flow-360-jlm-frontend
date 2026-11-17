@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 
-import { useSignedInUser } from "@/hooks"
 import { listSchoolUnits } from "@/services/organization"
-import { getManagedUnits } from "@/utils/access"
 
 export type DirectoryUnit = {
   active: boolean
@@ -13,7 +11,7 @@ export type DirectoryUnit = {
 export type UnitDirectory = {
   // The units that can be granted now (active ones), by name.
   activeUnits: DirectoryUnit[]
-  // The units list couldn't be read (an Admin's only: a Secretaria's come with the session).
+  // The units list couldn't be read.
   failed: boolean
   isLoading: boolean
   // Every unit known, active or not, by name: for filters and for naming a unit in a list.
@@ -28,21 +26,14 @@ type LoadResult = {
 
 const byName = (first: DirectoryUnit, second: DirectoryUnit) => first.name.localeCompare(second.name)
 
-// The units the signed-in user manages, for the users and invitations screens. An Admin manages them
-// all: they are read from the backend (only an Admin may list units). A Secretaria manages the units
-// where it holds the Secretaria role, which come with the session, so nothing is read (their status
-// isn't known there: a unit inactivated since is refused by the backend with UNIT_INACTIVE).
+// The units the signed-in user manages, for the users and invitations screens, read from the backend:
+// an Admin gets every unit of the institution, a Secretaria only the units assigned to it (JLM-2/128),
+// each with its status, so an inactive unit is never offered for granting.
 export const useUnitDirectory = (): UnitDirectory => {
-  const user = useSignedInUser()
-
   const [reloadToken, setReloadToken] = useState(0)
   const [result, setResult] = useState<LoadResult | null>(null)
 
-  const managedUnits = useMemo(() => getManagedUnits(user), [user])
-
   useEffect(() => {
-    if (managedUnits) return
-
     let isStale = false
 
     const load = async () => {
@@ -64,15 +55,7 @@ export const useUnitDirectory = (): UnitDirectory => {
     return () => {
       isStale = true
     }
-  }, [managedUnits, reloadToken])
-
-  const reload = () => setReloadToken((current) => current + 1)
-
-  if (managedUnits) {
-    const units = managedUnits.map((unit) => ({ ...unit, active: true }))
-
-    return { activeUnits: units, failed: false, isLoading: false, reload, units }
-  }
+  }, [reloadToken])
 
   const current = result?.token === reloadToken ? result : null
   const units = current?.units ?? []
@@ -81,7 +64,7 @@ export const useUnitDirectory = (): UnitDirectory => {
     activeUnits: units.filter((unit) => unit.active),
     failed: current !== null && current.units === undefined,
     isLoading: current === null,
-    reload,
+    reload: () => setReloadToken((value) => value + 1),
     units,
   }
 }

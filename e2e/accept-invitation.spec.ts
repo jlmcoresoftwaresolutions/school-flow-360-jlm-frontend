@@ -27,6 +27,7 @@ const validInvitation = {
   nameRequired: false,
   organizationName: "Colégio Horizonte",
   phone: "+55 85 98888 1100",
+  termsVersion: "1.0",
   valid: true,
 }
 
@@ -55,9 +56,12 @@ const mockInvitation = async (
   return { acceptCalls, validateTenants }
 }
 
-const fillPasswords = async (page: Page, password: string, confirmation = password) => {
+const termsCheckbox = (page: Page) => page.getByRole("checkbox", { name: /Li e aceito os Termos de Uso/ })
+
+const fillPasswords = async (page: Page, password: string, confirmation = password, acceptTerms = true) => {
   await page.getByLabel(/^Senha/).fill(password)
   await page.getByLabel(/^Confirmar senha/).fill(confirmation)
+  if (acceptTerms) await termsCheckbox(page).check()
 }
 
 test.describe("accept invitation", () => {
@@ -85,7 +89,13 @@ test.describe("accept invitation", () => {
     expect(validateTenants).toEqual(["escola_horizonte"])
     expect(acceptCalls).toEqual([
       {
-        body: { fullName: "Maria Souza", password: "senha-nova-segura", token: "invite-token" },
+        body: {
+          fullName: "Maria Souza",
+          password: "senha-nova-segura",
+          termsAccepted: true,
+          termsVersion: "1.0",
+          token: "invite-token",
+        },
         tenant: "escola_horizonte",
       },
     ])
@@ -125,7 +135,14 @@ test.describe("accept invitation", () => {
 
     await expect(page).toHaveURL(/\/login$/)
     expect(acceptCalls.map((call) => call.body)).toEqual([
-      { fullName: "Ana Lima", password: "senha-nova-segura", phone: "+55 85 3333 1100", token: "invite-token" },
+      {
+        fullName: "Ana Lima",
+        password: "senha-nova-segura",
+        phone: "+55 85 3333 1100",
+        termsAccepted: true,
+        termsVersion: "1.0",
+        token: "invite-token",
+      },
     ])
   })
 
@@ -138,6 +155,39 @@ test.describe("accept invitation", () => {
 
     await expect(page.getByText("Informe seu nome completo.")).toBeVisible()
     await expect(page.getByRole("button", { name: "Ativar conta" })).toBeEnabled()
+  })
+
+  test("requires the Terms of Use, in the version in force, before creating the account", async ({ page }) => {
+    const { acceptCalls } = await mockInvitation(page)
+    await page.goto(invitationLink)
+
+    await expect(termsCheckbox(page)).toHaveAccessibleName(/\(versão 1\.0\)/)
+    await fillPasswords(page, "senha-nova-segura", "senha-nova-segura", false)
+    await page.getByRole("button", { name: "Ativar conta" }).click()
+
+    await expect(page.getByText("Aceite os Termos de Uso e o Aviso de Privacidade para ativar a conta.")).toBeVisible()
+    expect(acceptCalls).toEqual([])
+  })
+
+  test("asks for the terms again when they changed while the form was open, keeping what was typed", async ({
+    page,
+  }) => {
+    await mockInvitation(page, { acceptAnswer: errorBody(422, "TERMS_VERSION_INVALID") })
+    await page.goto(invitationLink)
+    await fillPasswords(page, "senha-nova-segura")
+
+    // The backend now has version 1.1.
+    await mockInvitation(page, { invitation: { termsVersion: "1.1" } })
+    await page.unroute("**/api/auth/invitations/accept")
+    await page.route("**/api/auth/invitations/accept", (route) =>
+      route.fulfill(errorBody(422, "TERMS_VERSION_INVALID")),
+    )
+    await page.getByRole("button", { name: "Ativar conta" }).click()
+
+    await expect(page.getByText(/Os Termos de Uso foram atualizados \(versão 1\.1\)/)).toBeVisible()
+    await expect(termsCheckbox(page)).not.toBeChecked()
+    await expect(termsCheckbox(page)).toHaveAccessibleName(/\(versão 1\.1\)/)
+    await expect(page.getByLabel(/^Senha/)).toHaveValue("senha-nova-segura")
   })
 
   test("checks the password before sending it", async ({ page }) => {

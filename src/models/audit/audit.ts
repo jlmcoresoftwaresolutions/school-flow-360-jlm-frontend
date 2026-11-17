@@ -29,12 +29,14 @@ export type AccessAuditResult = "DENIED" | "SUCCESS"
 
 // One event of the access audit (GET /api/audit): who did it, what, on which entity, in which unit,
 // with which result and when. Kept for 12 months and never changed; it never carries a secret. The
-// actor's name and e-mail are null when the actor is an Admin and the reader isn't.
+// audit is the Admin's only, so the actor's name and e-mail come filled in. `details` names the fields
+// a change touched (e.g. "fields=fullName,phone"), never their values.
 export type AccessAuditEvent = {
   action: string
   actorEmail: string | null
   actorName: string | null
   actorUserId: number | null
+  details: string | null
   entityId: string | null
   entityType: string | null
   id: number
