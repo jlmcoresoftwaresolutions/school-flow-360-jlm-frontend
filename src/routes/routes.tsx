@@ -72,7 +72,7 @@ const getContext = async (stored: UserContext | null | undefined): Promise<UserC
 // Every page behind the login. Without a session the user goes to the login, carrying the page they
 // asked for (to come back to it after signing in); a session whose access token expired is renewed,
 // and one that can't be goes to the login saying it expired. A page the user's roles don't open (see
-// pageRoles) sends them home. Coming back from the login goes through this same check, so a page they
+// pageRoles) sends them to the access-denied page. Coming back from the login goes through this same check, so a page they
 // can no longer open stays closed. The loader's data is who signed in, which the AppShell shows.
 const requireSession = async (args: LoaderFunctionArgs): Promise<Response | UserContext | null> => {
   const { pathname, search } = new URL(args.request.url)
@@ -90,7 +90,8 @@ const requireSession = async (args: LoaderFunctionArgs): Promise<Response | User
   const context = await getContext(state.session.context)
   const pageKey = getPageKey(pathname)
 
-  if (pageKey && !canOpenPage(context, pageRoles[pageKey])) return redirect(homePath)
+  // A page the roles don't open says so on its own page, without telling anything about the one asked for.
+  if (pageKey && !canOpenPage(context, pageRoles[pageKey])) return redirect(paths.accessDenied)
 
   return context
 }
@@ -324,6 +325,20 @@ export const router = createBrowserRouter([
           return { Component: RecentAccess }
         },
         path: paths.recentAccess,
+      },
+      {
+        lazy: async () => {
+          const { AccessDenied } = await import("@/pages/AccessDenied")
+          return { Component: AccessDenied }
+        },
+        path: paths.accessDenied,
+      },
+      {
+        lazy: async () => {
+          const { MyProfile } = await import("@/pages/MyProfile")
+          return { Component: MyProfile }
+        },
+        path: paths.myProfile,
       },
       {
         lazy: async () => {

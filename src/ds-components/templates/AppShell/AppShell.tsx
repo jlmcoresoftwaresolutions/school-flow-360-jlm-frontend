@@ -131,8 +131,9 @@ export const AppShell = () => {
     { disabled: true, icon: "help-outline", key: "help", label: t("shell.help") },
   ]
 
-  // Signing out lives in the menu the user block opens.
+  // The own profile and signing out live in the menu the user block opens.
   const userMenuItems: ActionMenuItem[] = [
+    { icon: "user-outline", key: "myProfile", label: t("shell.myProfile"), onClick: () => navigate(paths.myProfile) },
     { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => navigate(paths.signOut) },
   ]
 

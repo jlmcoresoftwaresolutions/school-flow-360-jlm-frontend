@@ -196,7 +196,7 @@ describe("AppShell", () => {
       within(menu)
         .getAllByRole("menuitem")
         .map((item) => item.textContent),
-    ).toEqual(["Sair"])
+    ).toEqual(["Meu perfil", "Sair"])
   })
 
   it("shows several roles of one person, widest first", () => {

@@ -166,10 +166,14 @@ test("shows who signed in, and keeps a role away from the pages it doesn't open"
   await expect(sidebar.getByRole("button", { name: "Administração" })).toHaveCount(0)
   await expect(sidebar.getByRole("button", { name: "Usuários" })).toHaveCount(0)
 
-  // Typing the address of a page the role doesn't open lands on the home page instead.
+  // Typing the address of a page the role doesn't open lands on a page that says so, telling nothing
+  // about the page asked for, with a way back home.
   await page.goto("/administration/my-unit")
-  await expect(page).toHaveURL(/\/home$/)
+  await expect(page).toHaveURL(/\/access-denied$/)
   await expect(myUnitHeading(page)).toHaveCount(0)
+  await expect(page.getByText("Você não tem acesso a esta página")).toBeVisible()
+  await page.getByRole("link", { name: "Ir para o início" }).click()
+  await expect(page).toHaveURL(/\/home$/)
 })
 
 test("brings a visitor back to the page they opened, without saying a session expired", async ({ page }) => {

@@ -14,14 +14,14 @@ export const getMe = async (config?: RequestConfig): Promise<UserContext> => {
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/me/sessions: the user's own open sessions, the current one marked.
+// USED by the active sessions page. GET /api/me/sessions: the user's own open sessions, the current one marked.
 export const listMySessions = async (config?: RequestConfig): Promise<SessionItem[]> => {
   const response = await httpClient.get<ApiResponse<SessionItem[]>>("/api/me/sessions", config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. DELETE /api/me/sessions/{id}: ends one of the user's own sessions. Another person's
+// USED by the active sessions page. DELETE /api/me/sessions/{id}: ends one of the user's own sessions. Another person's
 // session is a 404 SESSION_NOT_FOUND.
 export const endMySession = async (sessionId: string, config?: RequestConfig): Promise<void> => {
   await httpClient.delete<ApiResponse<null>>(`/api/me/sessions/${encodeURIComponent(sessionId)}`, config)
@@ -35,7 +35,7 @@ export const getMyCapabilities = async (config?: RequestConfig): Promise<AccessM
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/me/profile: the user edits their own name and phone, with the `version` from
+// USED by the profile page. PUT /api/me/profile: the user edits their own name and phone, with the `version` from
 // GET /api/me. Errors: 428 VERSION_REQUIRED, 409 VERSION_CONFLICT, 422 NAME_REQUIRED, 400 INVALID_REQUEST.
 export const updateMyProfile = async (request: ProfileUpdateRequest, config?: RequestConfig): Promise<UserView> => {
   const response = await httpClient.put<ApiResponse<UserView>>("/api/me/profile", request, config)
