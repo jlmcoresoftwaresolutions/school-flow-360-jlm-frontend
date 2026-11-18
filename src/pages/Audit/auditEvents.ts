@@ -1,7 +1,7 @@
 // The kinds of event the access audit records (GET /api/audit), each an action on a kind of entity,
 // as the backend writes them. The key names the event's label (audit.events.<key>) and the filter
 // option; an event the list doesn't know is shown with its own codes. Sign-ins, sign-outs and session
-// events are kept elsewhere by the backend and don't reach this audit.
+// events reach it since backend cd00e52; renewals and events without a known author stay out.
 export type AuditEventType = {
   action: string
   entityType: string
@@ -26,12 +26,22 @@ export type AuditEventKey =
   | "logoSet"
   | "organizationUpdated"
   | "profileUpdated"
+  | "sessionEnded"
+  | "sessionLimitReached"
+  | "sessionReplaced"
+  | "signedIn"
+  | "signedOut"
   | "unitActivated"
   | "unitCreated"
   | "unitInactivated"
   | "unitUpdated"
 
 export const auditEventTypes: AuditEventType[] = [
+  { action: "LOGIN", entityType: "USER", key: "signedIn" },
+  { action: "LOGOUT", entityType: "SESSION", key: "signedOut" },
+  { action: "SESSION_ENDED", entityType: "SESSION", key: "sessionEnded" },
+  { action: "SESSION_LIMIT_REPLACED", entityType: "SESSION", key: "sessionReplaced" },
+  { action: "SESSION_LIMIT_REACHED", entityType: "USER", key: "sessionLimitReached" },
   { action: "ACCESS_DENIED", entityType: "ENDPOINT", key: "accessDenied" },
   { action: "INVITATION_CREATED", entityType: "INVITATION", key: "invitationCreated" },
   { action: "INVITATION_RESENT", entityType: "INVITATION", key: "invitationResent" },

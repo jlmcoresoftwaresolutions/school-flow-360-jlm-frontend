@@ -184,6 +184,8 @@ export const Audit = () => {
     if (event.entityType === "ENDPOINT") return event.entityId ?? ""
     if (event.entityType === "ORGANIZATION") return t("audit.entities.ORGANIZATION")
     if (event.entityType === "SCREEN_PREFERENCE") return t("audit.entities.SCREEN_PREFERENCE")
+    // A session's id means nothing to a person, so the target is just "a session".
+    if (event.entityType === "SESSION") return t("audit.entities.SESSION")
     if (event.entityType === "USER") {
       const person = people.find((item) => String(item.id) === event.entityId)
       return person ? person.fullName || person.email : t("audit.entities.USER", { id: event.entityId })

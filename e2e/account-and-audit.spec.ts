@@ -121,6 +121,45 @@ test.describe("my profile", () => {
 // Events as GET /api/audit answers them for the Admin.
 const auditEvents = [
   {
+    action: "SESSION_LIMIT_REACHED",
+    actorEmail: "pedro.lima@horizonte.edu.br",
+    actorName: "Pedro Lima",
+    actorUserId: 3,
+    details: null,
+    entityId: "3",
+    entityType: "USER",
+    id: 6,
+    occurredAt: "2026-11-17T18:00:00Z",
+    result: "DENIED",
+    schoolUnitId: null,
+  },
+  {
+    action: "LOGOUT",
+    actorEmail: "diretor@schoolflow360.com.br",
+    actorName: "João Silva",
+    actorUserId: 1,
+    details: null,
+    entityId: "6f1c2a9e-0b7d-4e55-9f3a-2c8d1e4b7a10",
+    entityType: "SESSION",
+    id: 5,
+    occurredAt: "2026-11-17T16:00:00Z",
+    result: "SUCCESS",
+    schoolUnitId: null,
+  },
+  {
+    action: "LOGIN",
+    actorEmail: "diretor@schoolflow360.com.br",
+    actorName: "João Silva",
+    actorUserId: 1,
+    details: null,
+    entityId: "1",
+    entityType: "USER",
+    id: 4,
+    occurredAt: "2026-11-17T15:00:00Z",
+    result: "SUCCESS",
+    schoolUnitId: null,
+  },
+  {
     action: "ASSIGNMENTS_CHANGED",
     actorEmail: "diretor@schoolflow360.com.br",
     actorName: "João Silva",
@@ -192,6 +231,11 @@ test.describe("audit", () => {
     await expect(rowOf("Acesso negado")).toContainText("Pedro Lima")
     await expect(rowOf("Acesso negado")).toContainText("GET /api/users")
     await expect(rowOf("Acesso negado")).toContainText("Negado")
+    // Sign-ins, sign-outs and the session limit too (backend cd00e52); a session is never shown by its id.
+    await expect(rowOf("Entrada no sistema")).toContainText("João Silva")
+    await expect(rowOf("Saída do sistema")).toContainText("Sessão")
+    await expect(rowOf("Saída do sistema")).not.toContainText("6f1c2a9e")
+    await expect(rowOf("Limite de sessões atingido")).toContainText("Negado")
 
     // The last 30 days by default, as the backend's own default.
     const first = queries[0]
