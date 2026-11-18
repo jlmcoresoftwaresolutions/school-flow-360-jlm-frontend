@@ -93,3 +93,10 @@ export const AccessItem = styled.li`
   gap: ${spacing[4]};
   padding: ${spacing[12]} ${spacing[16]};
 `
+
+// The actions on a user, side by side, wrapping on a narrow screen.
+export const ActionRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[8]};
+`

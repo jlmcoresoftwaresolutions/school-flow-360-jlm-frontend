@@ -18,11 +18,18 @@ import { PersonSummary } from "../shared/userAccess/PersonSummary"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessLines, ListContent } from "../shared/userAccess/userAccess.styles"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
-import { UserDetailsModal } from "./UserDetailsModal"
+import { AccountStatusDialog } from "./AccountStatusDialog"
+import { AssignmentsModal } from "./AssignmentsModal"
+import { ProfileModal } from "./ProfileModal"
+import { RevokeModal } from "./RevokeModal"
+import { type UserDetailsAction, UserDetailsModal } from "./UserDetailsModal"
 
 const pageSize = 20
 
 type StatusFilter = "" | "ACTIVE" | "INACTIVE"
+
+// Which dialog is open: a user's details (read again when opened), or one of the actions on a user.
+type UserDialog = { kind: "details"; userId: number } | { kind: UserDetailsAction; user: UserView } | null
 
 // What the list shows: the page asked for (by its request key, so a page of an earlier search or
 // filter is never shown under a new one), or why it couldn't be read.
@@ -52,7 +59,7 @@ export const UserList = () => {
   const [reloadToken, setReloadToken] = useState(0)
   const [result, setResult] = useState<ListResult | null>(null)
   const [newAccess, setNewAccess] = useState<NewAccessMode | null>(null)
-  const [detailsUserId, setDetailsUserId] = useState<number | null>(null)
+  const [dialog, setDialog] = useState<UserDialog>(null)
 
   const debouncedSearch = useDebouncedValue(search.trim())
 
@@ -92,7 +99,19 @@ export const UserList = () => {
   }, [params, requestKey])
 
   const reload = useCallback(() => setReloadToken((current) => current + 1), [])
-  const closeDetails = useCallback(() => setDetailsUserId(null), [])
+  const closeDialog = useCallback(() => setDialog(null), [])
+
+  // After an action: the list is read again and the details reopen, read again too.
+  const handleSaved = (user: UserView) => {
+    reload()
+    setDialog({ kind: "details", userId: user.id })
+  }
+
+  // The user went out of reach: the list is read again, without them.
+  const handleGone = () => {
+    reload()
+    setDialog(null)
+  }
 
   const current = result?.key === requestKey ? result : null
   const data = current && "data" in current ? current.data : null
@@ -253,7 +272,7 @@ export const UserList = () => {
                     icon: "eye-outline",
                     key: "view",
                     label: t("users.view"),
-                    onClick: () => setDetailsUserId(row.id),
+                    onClick: () => setDialog({ kind: "details", userId: row.id }),
                   },
                 ]}
                 triggerLabel={t("users.actionsFor", { name: row.fullName || row.email })}
@@ -298,12 +317,52 @@ export const UserList = () => {
         />
       )}
 
-      {detailsUserId !== null && (
+      {dialog?.kind === "details" && (
         <UserDetailsModal
-          onClose={closeDetails}
+          onAction={(kind, user) => setDialog({ kind, user })}
+          onClose={closeDialog}
           onUnavailable={reload}
           units={unitDirectory.units}
-          userId={detailsUserId}
+          userId={dialog.userId}
+        />
+      )}
+
+      {dialog?.kind === "profile" && (
+        <ProfileModal
+          onClose={() => setDialog({ kind: "details", userId: dialog.user.id })}
+          onGone={handleGone}
+          onSaved={handleSaved}
+          user={dialog.user}
+        />
+      )}
+
+      {dialog?.kind === "assignments" && (
+        <AssignmentsModal
+          onClose={() => setDialog({ kind: "details", userId: dialog.user.id })}
+          onGone={handleGone}
+          onSaved={handleSaved}
+          unitDirectory={unitDirectory}
+          user={dialog.user}
+        />
+      )}
+
+      {dialog?.kind === "revoke" && (
+        <RevokeModal
+          onClose={() => setDialog({ kind: "details", userId: dialog.user.id })}
+          onGone={handleGone}
+          onSaved={handleSaved}
+          unitDirectory={unitDirectory}
+          user={dialog.user}
+        />
+      )}
+
+      {(dialog?.kind === "inactivate" || dialog?.kind === "reactivate") && (
+        <AccountStatusDialog
+          action={dialog.kind}
+          onClose={() => setDialog({ kind: "details", userId: dialog.user.id })}
+          onGone={handleGone}
+          onSaved={handleSaved}
+          user={dialog.user}
         />
       )}
     </>

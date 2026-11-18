@@ -6,7 +6,7 @@ import type { SelectOption } from "@/ds-components/molecules"
 import { Select } from "@/ds-components/molecules"
 import type { RoleCode } from "@/models"
 
-import { emptyAssignment, newAccessLimits, type NewAccessValues } from "./newAccess"
+import { type AssignmentsFormValues, emptyAssignment, newAccessLimits } from "./newAccess"
 import { useAccessLabels } from "./useAccessLabels"
 import { AccessBox, AssignmentRow, RemoveSlot } from "./userAccess.styles"
 import type { DirectoryUnit } from "./useUnitDirectory"
@@ -16,8 +16,17 @@ export type AssignmentFieldsProps = {
   roles: RoleCode[]
   // The units that can be granted (active ones in the user's reach).
   units: DirectoryUnit[]
+  // Whether every row may be removed (an access change, where the access already held stays apart);
+  // otherwise at least one row is kept (an invitation).
+  allowEmpty?: boolean
+  description?: string
   // A refusal that concerns the whole access (a role not grantable, a unit gone), shown above the rows.
   error?: string
+  // How many rows fit, besides the access already held (the backend takes up to 10 in all).
+  maxRows?: number
+  // The access the person already holds: choosing it again is refused as a repetition.
+  taken?: { role: RoleCode; unitId: number | null }[]
+  title?: string
 }
 
 // The access part of the invitation form: one row per role, each with its unit (an Admin's is the
@@ -25,27 +34,36 @@ export type AssignmentFieldsProps = {
 // never a permission-by-permission setup: what a role allows follows the institution's policy. A role
 // can't be chosen twice for the same unit.
 export const AssignmentFields = (props: AssignmentFieldsProps) => {
-  const { error, roles, units } = props
+  const {
+    allowEmpty,
+    description,
+    error,
+    maxRows = newAccessLimits.assignments,
+    roles,
+    taken = [],
+    title,
+    units,
+  } = props
 
   const { t } = useTranslation()
   const { roleLabel } = useAccessLabels()
-  const { control } = useFormContext<NewAccessValues>()
+  const { control } = useFormContext<AssignmentsFormValues>()
   const { append, fields, remove } = useFieldArray({ control, name: "assignments" })
 
   const assignments = useWatch({ control, name: "assignments" })
 
   const roleOptions: SelectOption[] = roles.map((role) => ({ label: roleLabel(role), value: role }))
   const unitOptions: SelectOption[] = units.map((unit) => ({ label: unit.name, value: String(unit.id) }))
-  const canAdd = fields.length < newAccessLimits.assignments
+  const canAdd = fields.length < maxRows
 
   return (
     <AccessBox>
       <Text as="legend" fontSize="md" semibold style={{ padding: 0 }}>
-        {t("userAccess.form.accessTitle")}
+        {title ?? t("userAccess.form.accessTitle")}
       </Text>
 
       <Text color="secondary" fontSize="sm">
-        {t("userAccess.form.accessDescription")}
+        {description ?? t("userAccess.form.accessDescription")}
       </Text>
 
       {error && (
@@ -111,6 +129,11 @@ export const AssignmentFields = (props: AssignmentFieldsProps) => {
                   if (row.role !== "ADMIN" && value === "") return t("userAccess.form.unitRequired")
 
                   const unitId = row.role === "ADMIN" ? "" : value
+                  const held = taken.some(
+                    (item) => item.role === row.role && (item.unitId === null ? "" : String(item.unitId)) === unitId,
+                  )
+                  if (held) return t("userAccess.form.alreadyHeld")
+
                   const first = values.assignments.findIndex(
                     (other) => other.role === row.role && (other.role === "ADMIN" ? "" : other.unitId) === unitId,
                   )
@@ -121,7 +144,7 @@ export const AssignmentFields = (props: AssignmentFieldsProps) => {
             />
 
             <RemoveSlot>
-              {fields.length > 1 && (
+              {(allowEmpty || fields.length > 1) && (
                 <Button
                   aria-label={t("userAccess.form.removeAssignmentLabel", { number })}
                   color="danger"
