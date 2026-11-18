@@ -6,6 +6,8 @@ export const paths = {
   academicReports: "/reports/academic",
   // Opened from the invitation e-mail, as /accept-invitation?token=...&tenant=... (the backend builds the link).
   acceptInvitation: "/accept-invitation",
+  // Where a signed-in user lands after opening a page their roles don't open (not in the menu).
+  accessDenied: "/access-denied",
   activeSessions: "/access-logs/active-sessions",
   audit: "/access-logs/audit",
   billing: "/finance/billing",
@@ -22,6 +24,8 @@ export const paths = {
   invites: "/users/invites",
   login: "/login",
   messages: "/communication/messages",
+  // The signed-in user's own profile, opened from the user menu in the topbar (not in the side menu).
+  myProfile: "/account/profile",
   myUnit: "/administration/my-unit",
   notices: "/communication/notices",
   notifications: "/communication/notifications",

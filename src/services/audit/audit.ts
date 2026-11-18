@@ -9,7 +9,7 @@ import type {
 import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
 
-// NOT USED YET. GET /api/audit: the P02 access audit of the whole tenant, paged, for the Admin only.
+// USED by the audit page. GET /api/audit: the P02 access audit of the whole tenant, paged, for the Admin only.
 // Errors: 401, 403 ACCESS_DENIED (any other role, the Secretaria included), 400 INVALID_REQUEST (a
 // period over 366 days).
 export const listAccessAuditEvents = async (
