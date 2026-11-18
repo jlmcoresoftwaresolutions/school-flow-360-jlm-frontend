@@ -6,16 +6,22 @@ export type RoleCode = "ADMIN" | "ALUNO" | "COORDENACAO" | "FINANCEIRO" | "PROFE
 
 export type AssignmentStatus = "ACTIVE" | "REVOKED"
 
-// One role held in one unit. An Admin's assignment has no unit (its reach is the whole tenant).
+// One role held in one unit. An Admin's assignment has no unit (its reach is the whole tenant). A unit
+// turned inactive keeps the assignment but takes its access away (`unitStatus` INACTIVE, `operative`
+// false) until the unit is reactivated.
 export type Assignment = {
   assignmentId: number
   createdAt: string
+  // In force: ACTIVE and, when tied to a unit, that unit is active.
+  operative: boolean
   // Where it came from ("INVITATION", "MANUAL", "LEGACY_MIGRATION"...): for reading only.
   origin: string
   role: RoleCode
   status: AssignmentStatus
   unitId: number | null
   unitName: string | null
+  // The unit's own status; null for the Admin's unit-less assignment.
+  unitStatus: "ACTIVE" | "INACTIVE" | null
 }
 
 // A role to grant and the unit it is granted in (none for ADMIN), as the invitation, the manual
@@ -29,8 +35,10 @@ export type AssignmentRequest = {
 // INACTIVE (turned off by an operator).
 export type UserStatus = "ACTIVE" | "INACTIVE" | "LOCKED"
 
-// What the signed-in operator may do to this user, as the backend decides it.
-export type UserAction = "EDIT_ASSIGNMENTS" | "INACTIVATE" | "REACTIVATE" | "REVOKE"
+// What the signed-in operator may do to this user, as the backend decides it. EDIT_PROFILE (name and
+// phone) comes for the person themselves, the Admin and a Secretaria in scope; on the own account a
+// non-Admin gets only that one.
+export type UserAction = "EDIT_ASSIGNMENTS" | "EDIT_PROFILE" | "INACTIVATE" | "REACTIVATE" | "REVOKE"
 
 // A user as GET /api/users and /api/users/{id} return it. Never carries a password.
 export type UserView = {

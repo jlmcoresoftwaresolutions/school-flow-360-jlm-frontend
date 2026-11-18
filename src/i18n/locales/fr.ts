@@ -39,6 +39,8 @@ export const fr: TranslationResource = {
     phoneHelper: "Facultatif. Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
     phoneInvalid: "Saisissez un téléphone valide, avec l'indicatif.",
     phoneLabel: "Téléphone",
+    readPrivacy: "Lire l'Avis de confidentialité",
+    readTerms: "Lire les Conditions d'utilisation",
     recoverPassword: "Récupérer le mot de passe",
     submit: "Activer le compte",
     termsChanged:

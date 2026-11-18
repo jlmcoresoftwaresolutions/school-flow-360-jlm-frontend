@@ -36,6 +36,8 @@ export const ptBR = {
     phoneHelper: "Opcional. Para um número de outro país, comece com + e o código do país.",
     phoneInvalid: "Informe um telefone válido, com DDD.",
     phoneLabel: "Telefone",
+    readPrivacy: "Ler o Aviso de Privacidade",
+    readTerms: "Ler os Termos de Uso",
     recoverPassword: "Recuperar senha",
     submit: "Ativar conta",
     termsChanged: "Os Termos de Uso foram atualizados (versão {{version}}). Leia e aceite de novo para continuar.",

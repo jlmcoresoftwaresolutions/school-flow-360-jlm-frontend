@@ -43,8 +43,10 @@ type LoadState = { kind: "failed" } | { kind: "loaded"; user: UserView } | { kin
 // the access revoked before. The capabilities are informative: what a role allows follows the
 // institution's policy, never a per-person setting. The actions the backend allows the operator on
 // this user (eligibleActions: change roles and units, revoke, inactivate or reactivate) open from
-// here, plus editing the name and phone, which goes with them. Nobody changes their own access (matrix
-// ACC-M09): on the own account only the name and phone can be edited.
+// here, as does editing the name and phone (EDIT_PROFILE). Nobody changes their own access (matrix
+// ACC-M09): on the own account only the name and phone can be edited. The backend still offers the
+// Admin the access actions on its own account (protected by the last-Admin rule only), pending Lucas's
+// decision; the screen keeps them hidden for everyone.
 export const UserDetailsModal = (props: UserDetailsModalProps) => {
   const { onAction, onClose, onUnavailable, units, userId } = props
 
@@ -90,7 +92,7 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
   const renderActions = (user: UserView) => {
     const isSelf = signedIn?.userId === user.id
     const can = (action: UserView["eligibleActions"][number]) => !isSelf && user.eligibleActions.includes(action)
-    const canEditProfile = isSelf || user.eligibleActions.length > 0
+    const canEditProfile = user.eligibleActions.includes("EDIT_PROFILE")
 
     if (!canEditProfile) return null
 

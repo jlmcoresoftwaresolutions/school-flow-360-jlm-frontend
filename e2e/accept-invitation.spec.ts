@@ -27,6 +27,8 @@ const validInvitation = {
   nameRequired: false,
   organizationName: "Colégio Horizonte",
   phone: "+55 85 98888 1100",
+  privacyUrl: null,
+  termsUrl: null,
   termsVersion: "1.0",
   valid: true,
 }
@@ -167,6 +169,26 @@ test.describe("accept invitation", () => {
 
     await expect(page.getByText("Aceite os Termos de Uso e o Aviso de Privacidade para ativar a conta.")).toBeVisible()
     expect(acceptCalls).toEqual([])
+  })
+
+  test("links the Terms of Use and the Privacy Notice only once the backend publishes them", async ({ page }) => {
+    await mockInvitation(page)
+    await page.goto(invitationLink)
+    await expect(termsCheckbox(page)).toBeVisible()
+    await expect(page.getByRole("link", { name: "Ler os Termos de Uso" })).toHaveCount(0)
+    await expect(page.getByRole("link", { name: "Ler o Aviso de Privacidade" })).toHaveCount(0)
+
+    await mockInvitation(page, {
+      invitation: { privacyUrl: "https://example.test/privacidade", termsUrl: "https://example.test/termos" },
+    })
+    await page.reload()
+    const terms = page.getByRole("link", { name: "Ler os Termos de Uso" })
+    await expect(terms).toHaveAttribute("href", "https://example.test/termos")
+    await expect(terms).toHaveAttribute("target", "_blank")
+    await expect(page.getByRole("link", { name: "Ler o Aviso de Privacidade" })).toHaveAttribute(
+      "href",
+      "https://example.test/privacidade",
+    )
   })
 
   test("asks for the terms again when they changed while the form was open, keeping what was typed", async ({
