@@ -180,10 +180,19 @@ const unitNameOf = (unitId: number | null) =>
 const describeAccess = (assignments: MockAssignment[]) =>
   assignments.filter((a) => a.status === "ACTIVE").map((a) => `${a.role}@${a.unitId ?? "tenant"}`)
 
-// What the backend lets the operator do on a user, as the detail answers it.
+const unitStatusOf = (unitId: number | null) =>
+  unitId === null ? null : (units.find((unit) => unit.schoolUnitId === unitId)?.operationalStatus ?? "ACTIVE")
+
+// What the backend lets the operator do on a user, as the detail answers it (for the Admin operator, who
+// gets every action, its own account included), with each assignment's unit status.
 const withActions = (user: Item) => ({
   ...user,
-  eligibleActions: ["EDIT_ASSIGNMENTS", "REVOKE", user.enabled === false ? "REACTIVATE" : "INACTIVATE"],
+  assignments: (user.assignments as MockAssignment[]).map((item) => ({
+    ...item,
+    operative: item.status === "ACTIVE" && unitStatusOf(item.unitId) !== "INACTIVE",
+    unitStatus: unitStatusOf(item.unitId),
+  })),
+  eligibleActions: ["EDIT_PROFILE", "EDIT_ASSIGNMENTS", "REVOKE", user.enabled === false ? "REACTIVATE" : "INACTIVATE"],
 })
 
 const page0 = (items: Item[], query: Record<string, string>) => {

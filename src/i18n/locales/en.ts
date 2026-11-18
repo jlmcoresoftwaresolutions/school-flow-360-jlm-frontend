@@ -37,6 +37,8 @@ export const en: TranslationResource = {
     phoneHelper: "Optional. For a number from another country, start with + and the country code.",
     phoneInvalid: "Enter a valid phone number, with the area code.",
     phoneLabel: "Phone",
+    readPrivacy: "Read the Privacy Notice",
+    readTerms: "Read the Terms of Use",
     recoverPassword: "Recover password",
     submit: "Activate account",
     termsChanged: "The Terms of Use were updated (version {{version}}). Read and accept them again to continue.",

@@ -78,7 +78,8 @@ export type InvitationValidationAssignment = InvitationAssignment & {
 // the invitation already carries (to prefill the screen), whether the screen must ask for the name
 // (the invitation came without one), the institution (the tenant's organization: its institutional
 // and display names, null when none is registered), what the account will be able to do and where,
-// and the Terms of Use version in force (to show, and to send back when accepting). Any invalid link
+// and the Terms of Use version in force (to show, and to send back when accepting), with where the Terms
+// and the Privacy Notice are published (null until the final texts are). Any invalid link
 // (unknown, expired, cancelled, used) is a 404 INVITATION_INVALID instead.
 export type InvitationValidation = {
   assignments: InvitationValidationAssignment[]
@@ -89,6 +90,8 @@ export type InvitationValidation = {
   nameRequired: boolean
   organizationName: string | null
   phone: string | null
+  privacyUrl: string | null
+  termsUrl: string | null
   termsVersion: string
   valid: boolean
 }

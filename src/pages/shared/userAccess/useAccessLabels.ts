@@ -8,12 +8,13 @@ import type { DirectoryUnit } from "./useUnitDirectory"
 
 type BadgeTone = NonNullable<BadgeProps["tone"]>
 
-// A role in a unit, however the screen got it: a user's assignment carries the unit's name, an
-// invitation's only its id (then looked up among the units the user knows).
+// A role in a unit, however the screen got it: a user's assignment carries the unit's name and status,
+// an invitation's only its id (then looked up among the units the user knows).
 export type GrantedAccess = {
   role: RoleCode
   unitId: number | null
   unitName?: string | null
+  unitStatus?: "ACTIVE" | "INACTIVE" | null
 }
 
 const userStatusTones: Record<UserStatus, BadgeTone> = { ACTIVE: "success", INACTIVE: "neutral", LOCKED: "warning" }
@@ -49,7 +50,9 @@ export const useAccessLabels = (units: DirectoryUnit[] = []) => {
     const name = access.unitName ?? known?.name
     if (!name) return t("userAccess.unknownUnit")
 
-    return known && !known.active ? t("userAccess.inactiveUnit", { name }) : name
+    const isInactive = access.unitStatus === "INACTIVE" || (known !== undefined && !known.active)
+
+    return isInactive ? t("userAccess.inactiveUnit", { name }) : name
   }
 
   const accessLabel = (access: GrantedAccess) =>

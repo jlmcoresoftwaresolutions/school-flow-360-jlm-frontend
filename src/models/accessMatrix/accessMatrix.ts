@@ -8,15 +8,23 @@ export type AccessLevel = "ADM" | "APR" | "AUTH" | "BLOQ" | "COND" | "OP" | "SEL
 export type AccessMatrixKind = "ACESSO" | "AÇÃO" | "APROVAÇÃO" | "CONSULTA"
 
 // One line of the responsibilities matrix: a screen (`screenId`, e.g. ACC-M01) and what can be done in
-// it, per role. `description` joins the module, the screen, the kind and the fields in one text.
+// it, per role. `description` joins the module, the screen, the kind and the fields in one text; the
+// backend also splits it (`moduleName`, `screenName`, `detail`, `detailItems`) and the rule in sentences
+// (`ruleItems`), for a screen to show lists. The split is automatic: `detail` may mix the function with
+// the first field, and seven rows come with these fields null (show `description` then).
 export type AccessMatrixRow = {
   access: Record<RoleCode, AccessLevel>
   description: string
+  detail: string | null
+  detailItems: string[] | null
   id: string
   kind: AccessMatrixKind
   module: string
+  moduleName: string | null
   rule: string | null
+  ruleItems: string[] | null
   screenId: string
+  screenName: string | null
 }
 
 // What the backend already enforces, by capability code (e.g. INVITE_USER), and for whom.

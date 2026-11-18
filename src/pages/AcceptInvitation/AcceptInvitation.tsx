@@ -364,7 +364,9 @@ export const AcceptInvitation = () => {
             />
 
             {/* The Terms of Use and the Privacy Notice must be accepted, in the version in force. Their
-                text is still being finalized, so there is no link to it yet. */}
+                links come from validate, null until the final texts are published: each shows only once
+                it exists, outside the checkbox's label (a click on it reads, never ticks), in a new tab
+                so the form keeps what was typed. */}
             <Controller
               control={control}
               name="termsAccepted"
@@ -382,6 +384,34 @@ export const AcceptInvitation = () => {
               )}
               rules={{ validate: (value) => value || t("acceptInvitation.termsRequired") }}
             />
+            {(invitation?.termsUrl || invitation?.privacyUrl) && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: spacing[16] }}>
+                {invitation.termsUrl && (
+                  <Text
+                    as="a"
+                    color="brand"
+                    fontSize="sm"
+                    href={invitation.termsUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {t("acceptInvitation.readTerms")}
+                  </Text>
+                )}
+                {invitation.privacyUrl && (
+                  <Text
+                    as="a"
+                    color="brand"
+                    fontSize="sm"
+                    href={invitation.privacyUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {t("acceptInvitation.readPrivacy")}
+                  </Text>
+                )}
+              </div>
+            )}
           </div>
 
           {hasFailed && (

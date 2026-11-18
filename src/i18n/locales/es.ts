@@ -38,6 +38,8 @@ export const es: TranslationResource = {
     phoneHelper: "Opcional. Para un número de otro país, empieza con + y el código del país.",
     phoneInvalid: "Escribe un teléfono válido, con código de área.",
     phoneLabel: "Teléfono",
+    readPrivacy: "Leer el Aviso de Privacidad",
+    readTerms: "Leer los Términos de Uso",
     recoverPassword: "Recuperar contraseña",
     submit: "Activar cuenta",
     termsChanged:

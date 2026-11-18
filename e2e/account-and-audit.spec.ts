@@ -116,6 +116,39 @@ test.describe("my profile", () => {
     // The topbar shortens a long name, keeping the whole of it as the title.
     await expect(page.getByRole("banner").getByTitle("João Pedro Silva")).toBeVisible()
   })
+
+  test("marks an access in an inactive unit, as the backend flags it", async ({ page }) => {
+    const secretariaIn = (assignmentId: number, unitId: number, unitName: string, unitStatus: string) => ({
+      assignmentId,
+      createdAt: "2026-10-01T12:00:00Z",
+      operative: unitStatus === "ACTIVE",
+      origin: "INVITATION",
+      role: "SECRETARIA",
+      status: "ACTIVE",
+      unitId,
+      unitName,
+      unitStatus,
+    })
+    const me = {
+      ...signedInUser,
+      admin: false,
+      assignments: [
+        secretariaIn(2, 1, "Unidade Aldeota", "ACTIVE"),
+        secretariaIn(3, 9, "Unidade Messejana", "INACTIVE"),
+      ],
+      fullName: "Maria Souza",
+      phone: null,
+      roles: ["SECRETARIA"],
+      userId: 2,
+      version: 1,
+    }
+    await mockUserAccessApi(page)
+    await page.route("**/api/me", (route) => route.fulfill(apiAnswer(me)))
+    await signInAndOpen(page, "/account/profile", me)
+
+    await expect(page.getByText("Secretaria · Unidade Messejana (inativa)")).toBeVisible()
+    await expect(page.getByText("Secretaria · Unidade Aldeota", { exact: true })).toBeVisible()
+  })
 })
 
 // Events as GET /api/audit answers them for the Admin.

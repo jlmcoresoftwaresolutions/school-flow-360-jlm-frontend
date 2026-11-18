@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "./support/test.ts"
+import { apiAnswer, expect, type Page, test } from "./support/test.ts"
 import { lastCall, mockUserAccessApi, secretariaContext, signInAndOpen, units, users } from "./support/userAccess.ts"
 
 // The actions on a user (Phase 3 of the P02): editing the name and phone, changing roles and units,
@@ -236,6 +236,17 @@ test.describe("profile and own account", () => {
     await expect(details.getByRole("button", { name: "Revogar acesso" })).toHaveCount(0)
     await expect(details.getByRole("button", { name: "Inativar conta" })).toHaveCount(0)
     await expect(details).toContainText("Esta é a sua conta")
+  })
+
+  test("offers no action the backend doesn't allow on the user", async ({ page }) => {
+    await mockUserAccessApi(page)
+    await page.route(/\/api\/users\/3$/, (route) => route.fulfill(apiAnswer({ ...users[2], eligibleActions: [] })))
+    await signInAndOpen(page, usersPath)
+
+    const details = await openDetails(page, users[2].fullName as string)
+    await expect(details).toContainText(users[2].email as string)
+    await expect(details.getByRole("button", { name: "Editar dados" })).toHaveCount(0)
+    await expect(details.getByRole("button", { name: "Alterar acesso" })).toHaveCount(0)
   })
 
   test("keeps a Secretaria away from the access outside its reach", async ({ page }) => {

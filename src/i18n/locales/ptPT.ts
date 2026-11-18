@@ -38,6 +38,8 @@ export const ptPT: TranslationResource = {
     phoneHelper: "Opcional. Para um número de outro país, comece com + e o indicativo do país.",
     phoneInvalid: "Introduza um telefone válido, com indicativo.",
     phoneLabel: "Telefone",
+    readPrivacy: "Ler o Aviso de Privacidade",
+    readTerms: "Ler os Termos de Utilização",
     recoverPassword: "Recuperar palavra-passe",
     submit: "Ativar conta",
     termsChanged:
