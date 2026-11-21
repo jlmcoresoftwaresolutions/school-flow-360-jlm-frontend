@@ -125,6 +125,11 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
           inputId={selectId}
           isDisabled={isDisabled}
           maxMenuHeight={maxMenuHeight}
+          // Portaled with a fixed position, the menu would not follow the control if an ancestor (a Modal
+          // body, the page) scrolled, so scrolling outside the menu is blocked while it is open.
+          menuPortalTarget={typeof document === "undefined" ? undefined : document.body}
+          menuPosition="fixed"
+          menuShouldBlockScroll
           name={name}
           onBlur={onBlur}
           onChange={onChange}

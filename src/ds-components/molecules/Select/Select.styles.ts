@@ -58,11 +58,16 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
       borderRadius,
       boxShadow: shadows.md,
       overflow: "hidden",
-      zIndex: zIndex.dropdown,
     }),
     menuList: (base) => ({
       ...base,
       padding: spacing[4],
+    }),
+    // The menu is portaled to document.body (see Select.tsx), so it is never clipped by a Modal body or a
+    // card with overflow, and this layer keeps it above a Modal (and its overlay) that it opens from.
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: zIndex.popover,
     }),
     option: (base, state) => {
       let background = "transparent"
