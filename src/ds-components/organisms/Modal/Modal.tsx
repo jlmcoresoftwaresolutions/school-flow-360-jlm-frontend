@@ -31,13 +31,13 @@ export type ModalProps = {
 // A dialog over the whole page. While open it behaves like a real modal: focus moves in and is kept
 // inside (Tab wraps), the page behind doesn't scroll, Escape and a click on the backdrop ask to close
 // (onClose - the owner decides, it is a controlled component), and focus returns to whatever opened it.
-// It owns no copy: closeLabel is the accessible name of the X button, and the X is only rendered when
-// it is given (without it, Escape / the backdrop / a footer button are the ways out).
+// The X button in the header is always rendered, so every modal has a way out; closeLabel is its
+// accessible name, in pt-BR by default, and a page passes the translated one.
 export const Modal = (props: ModalProps) => {
   const {
     children,
     className,
-    closeLabel,
+    closeLabel = "Fechar",
     closeOnBackdropClick = true,
     footer,
     onClose,
@@ -134,11 +134,9 @@ export const Modal = (props: ModalProps) => {
             {title}
           </Text>
 
-          {closeLabel && (
-            <StyledModalCloseButton aria-label={closeLabel} onClick={onClose} type="button">
-              <Icon color="secondary" name="x" size={24} />
-            </StyledModalCloseButton>
-          )}
+          <StyledModalCloseButton aria-label={closeLabel} onClick={onClose} type="button">
+            <Icon color="secondary" name="x" size={24} />
+          </StyledModalCloseButton>
         </StyledModalHeader>
 
         <StyledModalBody>{children}</StyledModalBody>

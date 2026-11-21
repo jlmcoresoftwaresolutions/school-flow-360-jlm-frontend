@@ -44,7 +44,7 @@ const meta: Meta<typeof ConfirmDialog> = {
     },
     closeLabel: {
       control: "text",
-      description: "Accessible name of the X button. The button is only rendered when this is given.",
+      description: 'Accessible name of the X button, which is always rendered. Defaults to "Fechar".',
     },
     confirmDisabled: {
       control: "boolean",
