@@ -2,7 +2,7 @@ import type { CSSProperties } from "react"
 import { useEffect, useId, useState } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
-import { Icon, Image } from "@/ds-components/atoms"
+import { IconButton, Image } from "@/ds-components/atoms"
 import { media } from "@/foundation"
 import { useMediaQuery } from "@/hooks"
 
@@ -16,7 +16,6 @@ import {
   SidebarNav,
   SidebarNavContent,
   SidebarPanel,
-  SidebarToggleButton,
   SidebarWrapper,
 } from "./Sidebar.styles"
 import { SidebarItem } from "./SidebarItem"
@@ -137,15 +136,14 @@ export const Sidebar = (props: SidebarProps) => {
           </SidebarBrandInfo>
 
           {isCompact && (
-            <SidebarToggleButton
+            <IconButton
               aria-controls={panelId}
               aria-expanded={isOpen}
-              aria-label={isOpen ? collapseLabel : expandLabel}
+              icon={isOpen ? "x" : "menu"}
+              label={isOpen ? collapseLabel : expandLabel}
               onClick={isOpen ? collapse : expand}
-              type="button"
-            >
-              <Icon color="secondary" name={isOpen ? "x" : "menu"} size={24} />
-            </SidebarToggleButton>
+              tooltip=""
+            />
           )}
         </SidebarBrand>
 

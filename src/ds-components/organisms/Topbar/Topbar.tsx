@@ -1,13 +1,12 @@
 import type { CSSProperties, ReactNode } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
-import { Icon, useTooltip } from "@/ds-components/atoms"
+import { Icon, IconButton } from "@/ds-components/atoms"
 import type { ActionMenuItem } from "@/ds-components/molecules"
 import { UserIdentity } from "@/ds-components/molecules"
 
 import {
   StyledTopbar,
-  StyledTopbarAction,
   StyledTopbarEnd,
   StyledTopbarStart,
   StyledTopbarUser,
@@ -46,22 +45,7 @@ type TopbarActionButtonProps = {
 const TopbarActionButton = (props: TopbarActionButtonProps) => {
   const { action } = props
 
-  const { tooltipElement, tooltipHandlers } = useTooltip(action.label)
-
-  return (
-    <>
-      <StyledTopbarAction
-        aria-label={action.label}
-        disabled={action.disabled}
-        onClick={action.onClick}
-        type="button"
-        {...tooltipHandlers}
-      >
-        <Icon color="secondary" name={action.icon} size={20} />
-      </StyledTopbarAction>
-      {tooltipElement}
-    </>
-  )
+  return <IconButton disabled={action.disabled} icon={action.icon} label={action.label} onClick={action.onClick} />
 }
 
 // The bar across the top of the app shell. `children` fills its leading side (typically a

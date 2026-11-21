@@ -2,13 +2,12 @@ import type { CSSProperties, MouseEvent, ReactNode } from "react"
 import { useEffect, useId, useRef } from "react"
 import { createPortal } from "react-dom"
 
-import { Icon, Text } from "@/ds-components/atoms"
+import { IconButton, Text } from "@/ds-components/atoms"
 import { getFocusableElements } from "@/utils/focus"
 
 import type { ModalSize } from "./Modal.styles"
 import {
   StyledModalBody,
-  StyledModalCloseButton,
   StyledModalDialog,
   StyledModalFooter,
   StyledModalHeader,
@@ -134,9 +133,7 @@ export const Modal = (props: ModalProps) => {
             {title}
           </Text>
 
-          <StyledModalCloseButton aria-label={closeLabel} onClick={onClose} type="button">
-            <Icon color="secondary" name="x" size={24} />
-          </StyledModalCloseButton>
+          <IconButton icon="x" label={closeLabel} onClick={onClose} size="small" tooltip="" />
         </StyledModalHeader>
 
         <StyledModalBody>{children}</StyledModalBody>

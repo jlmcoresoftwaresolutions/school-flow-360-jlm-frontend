@@ -88,28 +88,6 @@ export const StyledModalHeader = styled.div`
   padding: ${spacing[24]} ${spacing[24]} ${spacing[16]};
 `
 
-export const StyledModalCloseButton = styled.button`
-  align-items: center;
-  background: transparent;
-  border: none;
-  border-radius: ${radius.md};
-  cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  justify-content: center;
-  padding: ${spacing[4]};
-  transition: background ${motion.duration.fast} ${motion.easing.ease};
-
-  &:hover {
-    background: ${colors.neutral[100]};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${colors.info[500]};
-    outline-offset: 2px;
-  }
-`
-
 export const StyledModalBody = styled.div`
   display: flex;
   flex: 1;

@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
 import type { IconName } from "@/ds-components/atoms"
-import { Icon } from "@/ds-components/atoms"
+import { Icon, IconButton } from "@/ds-components/atoms"
 import { spacing } from "@/foundation"
 
 import {
@@ -169,20 +169,35 @@ export const ActionMenu = (props: ActionMenuProps) => {
 
   return (
     <>
-      <StyledActionMenuTrigger
-        aria-controls={isOpen ? menuId : undefined}
-        aria-expanded={isOpen}
-        aria-haspopup="menu"
-        aria-label={trigger ? undefined : triggerLabel}
-        className={className}
-        disabled={disabled}
-        onClick={isOpen ? () => setMenuStyle(null) : open}
-        ref={triggerRef}
-        style={style}
-        type="button"
-      >
-        {trigger ?? <Icon color="secondary" name={triggerIcon} size={20} />}
-      </StyledActionMenuTrigger>
+      {trigger ? (
+        <StyledActionMenuTrigger
+          aria-controls={isOpen ? menuId : undefined}
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+          className={className}
+          disabled={disabled}
+          onClick={isOpen ? () => setMenuStyle(null) : open}
+          ref={triggerRef}
+          style={style}
+          type="button"
+        >
+          {trigger}
+        </StyledActionMenuTrigger>
+      ) : (
+        <IconButton
+          aria-controls={isOpen ? menuId : undefined}
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+          className={className}
+          disabled={disabled}
+          icon={triggerIcon}
+          label={triggerLabel}
+          onClick={isOpen ? () => setMenuStyle(null) : open}
+          ref={triggerRef}
+          style={style}
+          tooltip=""
+        />
+      )}
 
       {isOpen &&
         createPortal(
