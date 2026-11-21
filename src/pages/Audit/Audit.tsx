@@ -247,24 +247,28 @@ export const Audit = () => {
           <DateInput maxDate={new Date()} onChange={changeFilter(setFrom)} title={t("audit.from")} value={from} />
           <DateInput maxDate={new Date()} onChange={changeFilter(setTo)} title={t("audit.to")} value={to} />
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setActorUserId)(option?.value ?? "")}
             options={actorOptions}
             title={t("audit.author")}
             value={actorOptions.find((option) => option.value === actorUserId) ?? null}
           />
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setUnitId)(option?.value ?? "")}
             options={unitOptions}
             title={t("userAccess.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
           />
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setEventKey)(option?.value ?? "")}
             options={eventOptions}
             title={t("audit.eventType")}
             value={eventOptions.find((option) => option.value === eventKey) ?? null}
           />
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setResultFilter)((option?.value as AccessAuditResult | undefined) ?? "")}
             options={resultOptions}
             title={t("audit.result")}

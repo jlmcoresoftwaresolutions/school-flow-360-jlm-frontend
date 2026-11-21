@@ -114,6 +114,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
             <Select
               error={controller.fieldState.error?.message}
               name={controller.field.name}
+              noOptionsMessage={t("common.noOptions")}
               onBlur={controller.field.onBlur}
               onChange={(option) =>
                 changeCountry(option?.value ?? "", controller.field.value, controller.field.onChange)
@@ -216,6 +217,7 @@ export const AddressFields = (props: AddressFieldsProps) => {
                   error={controller.fieldState.error?.message}
                   maxMenuHeight={stateMenuMaxHeight}
                   name={controller.field.name}
+                  noOptionsMessage={t("common.noOptions")}
                   onBlur={controller.field.onBlur}
                   onChange={(option) => controller.field.onChange(option?.value ?? "")}
                   options={stateOptions}

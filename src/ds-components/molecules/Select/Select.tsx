@@ -31,6 +31,7 @@ type SelectOwnProps = {
   isDisabled?: boolean
   maxMenuHeight?: number
   name?: string
+  noOptionsMessage?: string
   placeholder?: string
   required?: boolean
   style?: CSSProperties
@@ -85,6 +86,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
     isDisabled,
     maxMenuHeight,
     name,
+    noOptionsMessage = "Nenhuma opção disponível",
     onBlur,
     onChange,
     options,
@@ -131,6 +133,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
           menuPosition="fixed"
           menuShouldBlockScroll
           name={name}
+          noOptionsMessage={() => noOptionsMessage}
           onBlur={onBlur}
           onChange={onChange}
           onMenuClose={() => setIsMenuOpen(false)}

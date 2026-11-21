@@ -125,6 +125,31 @@ describe("Select", () => {
     expect(document.querySelector(".select__menu-list")).toHaveStyle({ maxHeight: "160px" })
   })
 
+  it("tells there are no options in pt-BR by default, instead of react-select's English text", () => {
+    render(<Select options={[]} />)
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    expect(screen.getByText("Nenhuma opção disponível")).toBeInTheDocument()
+    expect(screen.queryByText("No options")).not.toBeInTheDocument()
+  })
+
+  it("shows the message from noOptionsMessage when there are no options", () => {
+    render(<Select noOptionsMessage="No units yet" options={[]} />)
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    expect(screen.getByText("No units yet")).toBeInTheDocument()
+  })
+
+  it("shows the message when a search matches no option", () => {
+    render(<Select noOptionsMessage="No match" options={options} />)
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "zzz" } })
+
+    expect(screen.getByText("No match")).toBeInTheDocument()
+  })
+
   it("renders the open menu in a portal on document.body, above the Modal layer", () => {
     const { container } = render(<Select options={options} />)
 

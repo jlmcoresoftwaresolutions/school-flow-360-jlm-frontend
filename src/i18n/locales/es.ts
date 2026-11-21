@@ -165,6 +165,7 @@ export const es: TranslationResource = {
     hidePassword: "Ocultar contraseña",
     loading: "Cargando...",
     nextPage: "Página siguiente",
+    noOptions: "No hay opciones disponibles",
     notInformed: "No informado",
     pageLabel: "Página {{page}}",
     pageSummary: "Página {{page}} de {{totalPages}}",

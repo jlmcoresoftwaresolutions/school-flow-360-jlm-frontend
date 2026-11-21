@@ -91,6 +91,7 @@ export const AssignmentFields = (props: AssignmentFieldsProps) => {
                 <Select
                   error={controller.fieldState.error?.message}
                   name={controller.field.name}
+                  noOptionsMessage={t("common.noOptions")}
                   onBlur={controller.field.onBlur}
                   onChange={(option) => controller.field.onChange((option?.value as RoleCode | undefined) ?? "")}
                   options={roleOptions}
@@ -111,6 +112,7 @@ export const AssignmentFields = (props: AssignmentFieldsProps) => {
                   error={controller.fieldState.error?.message}
                   isDisabled={isAdmin}
                   name={controller.field.name}
+                  noOptionsMessage={t("common.noOptions")}
                   onBlur={controller.field.onBlur}
                   onChange={(option) => controller.field.onChange(option?.value ?? "")}
                   options={unitOptions}

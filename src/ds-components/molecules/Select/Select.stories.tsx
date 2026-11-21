@@ -44,6 +44,11 @@ const meta: Meta<typeof Select> = {
       description:
         "Maximum height of the open menu, in pixels, past which its options scroll. Forwarded to react-select (300 by default).",
     },
+    noOptionsMessage: {
+      control: "text",
+      description:
+        'Message shown in the open menu when there is no option to pick (an empty list, or a search with no match). Defaults to "Nenhuma opção disponível"; a page passes the translated one.',
+    },
     options: { control: "object", description: "Array of { label, value } options rendered inside the select" },
     placeholder: { control: "text", description: "Placeholder shown before a value is chosen" },
     required: {
@@ -102,6 +107,11 @@ export const BorderRadiuses: Story = {
 // The isDisabled prop, forwarded straight through to react-select
 export const Disabled: Story = {
   args: { defaultValue: turnoOptions[0], isDisabled: true, title: "Turno" },
+}
+
+// The noOptionsMessage prop replacing the text of an open menu that has no options; open it to see it
+export const NoOptions: Story = {
+  args: { noOptionsMessage: "Nenhuma unidade cadastrada", options: [], title: "Unidade" },
 }
 
 // The maxMenuHeight prop keeping a long list's open menu short, its options scrolling
