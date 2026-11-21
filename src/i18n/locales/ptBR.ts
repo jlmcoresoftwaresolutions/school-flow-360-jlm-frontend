@@ -160,6 +160,7 @@ export const ptBR = {
     hidePassword: "Ocultar senha",
     loading: "Carregando...",
     nextPage: "Próxima página",
+    noOptions: "Nenhuma opção disponível",
     notInformed: "Não informado",
     pageLabel: "Página {{page}}",
     pageSummary: "Página {{page}} de {{totalPages}}",

@@ -230,18 +230,21 @@ export const UserList = () => {
           searchValue={search}
         >
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setRoleCode)((option?.value as RoleCode | undefined) ?? "")}
             options={roleOptions}
             title={t("userAccess.role")}
             value={roleOptions.find((option) => option.value === roleCode) ?? null}
           />
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setUnitId)(option?.value ?? "")}
             options={unitOptions}
             title={t("userAccess.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
           />
           <Select
+            noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setStatus)((option?.value as StatusFilter | undefined) ?? "")}
             options={statusOptions}
             title={t("userAccess.status")}

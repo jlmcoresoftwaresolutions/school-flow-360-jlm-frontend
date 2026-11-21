@@ -179,6 +179,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
               searchValue={search}
             >
               <Select
+                noOptionsMessage={t("common.noOptions")}
                 onChange={(option) => setStatusFilter((option?.value as StatusFilter | undefined) ?? "all")}
                 options={statusOptions}
                 title={t("myUnit.units.status")}

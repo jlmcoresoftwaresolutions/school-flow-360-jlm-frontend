@@ -163,6 +163,7 @@ export const ptPT: TranslationResource = {
     hidePassword: "Ocultar palavra-passe",
     loading: "A carregar...",
     nextPage: "Página seguinte",
+    noOptions: "Nenhuma opção disponível",
     notInformed: "Não indicado",
     pageLabel: "Página {{page}}",
     pageSummary: "Página {{page}} de {{totalPages}}",
