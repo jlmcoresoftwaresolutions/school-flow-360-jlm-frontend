@@ -7,13 +7,26 @@ import { StyledIconWrapper } from "./Icon.styles"
 import type { IconName } from "./iconMap"
 import { iconMap } from "./iconMap"
 
-type IconColor = "brand" | "danger" | "default" | "info" | "inverse" | "muted" | "secondary" | "success" | "warning"
+type IconColor =
+  | "brand"
+  | "danger"
+  | "default"
+  | "info"
+  | "inherit"
+  | "inverse"
+  | "muted"
+  | "secondary"
+  | "success"
+  | "warning"
 
 const colorMap: Record<IconColor, string> = {
   brand: colors.primary[500],
   danger: colors.danger[500],
   default: colors.neutral[900],
   info: colors.info[500],
+  // Follows the color of the surrounding text, so an icon inside a Button matches its label in any
+  // variant and color.
+  inherit: "inherit",
   inverse: colors.neutral[0],
   muted: colors.neutral[400],
   secondary: colors.neutral[600],
