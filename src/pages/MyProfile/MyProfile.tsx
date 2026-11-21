@@ -208,7 +208,7 @@ export const MyProfile = () => {
               <Button
                 onClick={startEditing}
                 size="small"
-                startIcon={<Icon color="brand" name="pen-outline" size={16} />}
+                startIcon={<Icon color="inherit" name="pen-outline" size={16} />}
                 variant="outlined"
               >
                 {t("common.edit")}

@@ -165,7 +165,7 @@ export const AssignmentFields = (props: AssignmentFieldsProps) => {
           disabled={!canAdd}
           onClick={() => append(emptyAssignment)}
           size="small"
-          startIcon={<Icon name="plus" size={16} />}
+          startIcon={<Icon color="inherit" name="plus" size={16} />}
           variant="outlined"
         >
           {t("userAccess.form.addAssignment")}

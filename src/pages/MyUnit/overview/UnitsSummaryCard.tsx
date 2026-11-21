@@ -56,7 +56,7 @@ export const UnitsSummaryCard = (props: UnitsSummaryCardProps) => {
     <SectionCard
       action={
         <Button
-          endIcon={<Icon color="brand" name="chevron-right" size={16} />}
+          endIcon={<Icon color="inherit" name="chevron-right" size={16} />}
           onClick={onSeeAllUnits}
           size="small"
           variant="link"
