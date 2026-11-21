@@ -55,7 +55,7 @@ export const EditableSectionCard = (props: EditableSectionCardProps) => {
       aria-label={t("myUnit.editSection", { section: title })}
       onClick={onEdit}
       size="small"
-      startIcon={<Icon color="brand" name="pen-outline" size={16} />}
+      startIcon={<Icon color="inherit" name="pen-outline" size={16} />}
       variant="outlined"
     >
       {t("common.edit")}

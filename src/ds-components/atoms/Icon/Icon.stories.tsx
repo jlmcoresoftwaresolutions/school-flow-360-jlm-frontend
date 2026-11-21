@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { spacing, type SpacingType, typography } from "@/foundation"
+import { colors, spacing, type SpacingType, typography } from "@/foundation"
 
 import { Icon } from "./Icon"
 import type { IconName } from "./iconMap"
@@ -14,8 +14,9 @@ const meta: Meta<typeof Icon> = {
   argTypes: {
     color: {
       control: "select",
-      description: "Semantic color applied to the icon. Defaults to default.",
-      options: ["brand", "danger", "default", "info", "inverse", "muted", "secondary", "success", "warning"],
+      description:
+        "Semantic color applied to the icon. Defaults to default. inherit follows the color of the surrounding text.",
+      options: ["brand", "danger", "default", "info", "inherit", "inverse", "muted", "secondary", "success", "warning"],
     },
     name: {
       control: "select",
@@ -67,6 +68,23 @@ export const Colors: Story = {
       <Icon color="success" name="bell" />
       <Icon color="warning" name="bell" />
     </div>
+  ),
+}
+
+// The inherit color taking the color of the surrounding text, here a brand-colored label
+export const Inherit: Story = {
+  render: () => (
+    <span
+      style={{
+        alignItems: "center",
+        color: colors.primary[600],
+        display: "inline-flex",
+        gap: spacing[8],
+      }}
+    >
+      <Icon color="inherit" name="plus" size={16} />
+      Adicionar
+    </span>
   ),
 }
 
