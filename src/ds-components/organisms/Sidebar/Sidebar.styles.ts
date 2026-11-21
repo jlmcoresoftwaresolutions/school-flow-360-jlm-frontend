@@ -147,28 +147,6 @@ export const SidebarBrandTitle = styled.p`
   white-space: nowrap;
 `
 
-export const SidebarToggleButton = styled.button`
-  align-items: center;
-  background: transparent;
-  border: none;
-  border-radius: ${radius.md};
-  cursor: pointer;
-  display: flex;
-  flex-shrink: 0;
-  justify-content: center;
-  padding: ${spacing[8]};
-  transition: background ${motion.duration.fast} ${motion.easing.ease};
-
-  &:hover {
-    background: ${colors.neutral[100]};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${colors.info[500]};
-    outline-offset: 2px;
-  }
-`
-
 // Right padding is intentionally omitted so the scrollbar sits flush against the sidebar's own
 // right edge instead of floating inset from it; only the left side keeps the panel's inset.
 // SidebarNavContent re-adds a right margin inside the scrollable area so the item highlights
