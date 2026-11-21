@@ -56,7 +56,7 @@ describe("Modal", () => {
     expect(screen.getByRole("dialog").children).toHaveLength(2)
   })
 
-  it("renders the X button only when closeLabel is given, and it calls onClose", () => {
+  it("renders the X button, which calls onClose", () => {
     const { onClose } = renderModal()
 
     fireEvent.click(screen.getByRole("button", { name: "Fechar" }))
@@ -64,10 +64,16 @@ describe("Modal", () => {
     expect(onClose).toHaveBeenCalledTimes(1)
   })
 
-  it("omits the X button without closeLabel", () => {
+  it("renders the X button with the default pt-BR label without closeLabel", () => {
     renderModal({ closeLabel: undefined })
 
-    expect(screen.queryByRole("button")).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Fechar" })).toBeInTheDocument()
+  })
+
+  it("names the X button after closeLabel", () => {
+    renderModal({ closeLabel: "Close" })
+
+    expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument()
   })
 
   it("calls onClose on Escape", () => {
@@ -111,12 +117,6 @@ describe("Modal", () => {
     renderModal()
 
     expect(screen.getByRole("button", { name: "Fechar" })).toHaveFocus()
-  })
-
-  it("focuses the dialog itself when nothing inside is focusable", () => {
-    renderModal({ closeLabel: undefined })
-
-    expect(screen.getByRole("dialog")).toHaveFocus()
   })
 
   it("wraps Tab from the last focusable element to the first", () => {

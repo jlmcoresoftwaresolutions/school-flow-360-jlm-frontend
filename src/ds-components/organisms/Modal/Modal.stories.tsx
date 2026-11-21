@@ -21,7 +21,6 @@ const ModalDemo = (props: Partial<ModalProps>) => {
 
 const meta: Meta<typeof Modal> = {
   args: {
-    closeLabel: "Fechar",
     title: "Editar unidade",
   },
   argTypes: {
@@ -31,7 +30,7 @@ const meta: Meta<typeof Modal> = {
     },
     closeLabel: {
       control: "text",
-      description: "Accessible name of the X button. The button is only rendered when this is given.",
+      description: 'Accessible name of the X button, which is always rendered. Defaults to "Fechar".',
     },
     closeOnBackdropClick: {
       control: "boolean",
@@ -106,10 +105,10 @@ export const LongContent: Story = {
   },
 }
 
-// Without closeLabel the X button is not rendered, leaving Escape and the footer as the ways out
-export const WithoutCloseButton: Story = {
+// The closeLabel prop renaming the X button, for a page that translates it
+export const CustomCloseLabel: Story = {
   args: {
-    closeLabel: undefined,
+    closeLabel: "Close",
     footer: <Button>Entendi</Button>,
   },
 }
