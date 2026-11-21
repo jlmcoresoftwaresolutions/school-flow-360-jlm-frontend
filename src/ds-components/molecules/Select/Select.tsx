@@ -72,6 +72,11 @@ const Input = (props: InputProps<SelectOption, false>) => {
   )
 }
 
+// The menu is portaled to document.body with a fixed position, so it doesn't follow the control when
+// an ancestor scrolls (a Modal body, the page): it closes on any scroll except the menu's own list.
+const closesOnOutsideScroll = (event: Event) =>
+  !(event.target instanceof Element && event.target.closest(".select__menu"))
+
 export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProps>((props, ref) => {
   const {
     "aria-label": ariaLabel,
@@ -124,7 +129,10 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
           defaultValue={defaultValue}
           inputId={selectId}
           isDisabled={isDisabled}
+          closeMenuOnScroll={closesOnOutsideScroll}
           maxMenuHeight={maxMenuHeight}
+          menuPortalTarget={typeof document === "undefined" ? undefined : document.body}
+          menuPosition="fixed"
           name={name}
           onBlur={onBlur}
           onChange={onChange}

@@ -3,7 +3,7 @@ import { createRef } from "react"
 import type { SelectInstance } from "react-select"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, colors, shadows, spacing } from "@/foundation"
+import { borderRadiusLevels, colors, shadows, spacing, zIndex } from "@/foundation"
 
 import { Select, type SelectOption } from "./Select"
 
@@ -118,11 +118,23 @@ describe("Select", () => {
   })
 
   it("limits the open menu's height with maxMenuHeight", () => {
-    const { container } = render(<Select maxMenuHeight={160} options={options} />)
+    render(<Select maxMenuHeight={160} options={options} />)
 
     fireEvent.mouseDown(screen.getByRole("combobox"))
 
-    expect(container.querySelector(".select__menu-list")).toHaveStyle({ maxHeight: "160px" })
+    expect(document.querySelector(".select__menu-list")).toHaveStyle({ maxHeight: "160px" })
+  })
+
+  it("renders the open menu in a portal on document.body, above the Modal layer", () => {
+    const { container } = render(<Select options={options} />)
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    const menu = document.querySelector(".select__menu")
+
+    expect(menu).toBeInTheDocument()
+    expect(container).not.toContainElement(menu as HTMLElement)
+    expect(document.querySelector(".select__menu-portal")).toHaveStyle({ zIndex: String(zIndex.popover) })
   })
 
   it("respects the isDisabled prop", () => {
