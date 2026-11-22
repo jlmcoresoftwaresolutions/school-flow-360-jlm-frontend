@@ -19,6 +19,7 @@ import { updateSessionContext } from "@/utils/session"
 import { newAccessLimits } from "../shared/userAccess/newAccess"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessItem, AccessItems, ActionRow, DetailsSection, FormFields } from "../shared/userAccess/userAccess.styles"
+import { ChangePasswordModal } from "./ChangePasswordModal"
 
 type ProfileValues = {
   fullName: string
@@ -36,7 +37,8 @@ const toValues = (me: UserContext): ProfileValues => ({
 // from the user menu in the topbar. The name and phone are read first and edited in place (PUT
 // /api/me/profile, with the version from /api/me); saving updates the name shown in the topbar too.
 // Below, the person's own access - each role in each unit and what the roles allow, informative only:
-// nobody changes their own roles or units. A link leads to the open sessions.
+// nobody changes their own roles or units. A link leads to the open sessions. Last, the own password,
+// changed in a dialog (the current one, then the new one).
 export const MyProfile = () => {
   const { t } = useTranslation()
   const revalidator = useRevalidator()
@@ -47,6 +49,7 @@ export const MyProfile = () => {
   const [reloadToken, setReloadToken] = useState(0)
   const [isEditing, setIsEditing] = useState(false)
   const [failure, setFailure] = useState("")
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   const { errors, isDirty, isSubmitting } = form.formState
   const me = state.kind === "loaded" ? state.me : null
@@ -278,6 +281,36 @@ export const MyProfile = () => {
             </Button>
           </div>
         </Card>
+
+        <Card
+          elevated
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: spacing[16],
+            marginTop: spacing[24],
+            padding: spacing[32],
+          }}
+        >
+          <ActionRow style={{ alignItems: "center", justifyContent: "space-between" }}>
+            <Text as="h2" fontSize="lg" bold>
+              {t("myProfile.passwordTitle")}
+            </Text>
+            <Button
+              onClick={() => setIsChangingPassword(true)}
+              size="small"
+              startIcon={<Icon color="inherit" name="lock-outline" size={16} />}
+              variant="outlined"
+            >
+              {t("passwordChange.title")}
+            </Button>
+          </ActionRow>
+          <Text color="secondary" fontSize="sm">
+            {t("myProfile.passwordDescription")}
+          </Text>
+        </Card>
+
+        {isChangingPassword && <ChangePasswordModal onClose={() => setIsChangingPassword(false)} />}
       </>
     )
   }

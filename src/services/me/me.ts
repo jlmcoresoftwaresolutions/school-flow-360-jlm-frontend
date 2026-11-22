@@ -1,4 +1,12 @@
-import type { AccessMatrix, ApiResponse, ProfileUpdateRequest, SessionItem, UserContext, UserView } from "@/models"
+import type {
+  AccessMatrix,
+  ApiResponse,
+  PasswordChangeRequest,
+  ProfileUpdateRequest,
+  SessionItem,
+  UserContext,
+  UserView,
+} from "@/models"
 
 import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
@@ -41,4 +49,13 @@ export const updateMyProfile = async (request: ProfileUpdateRequest, config?: Re
   const response = await httpClient.put<ApiResponse<UserView>>("/api/me/profile", request, config)
 
   return unwrapApiResponse(response)
+}
+
+// USED by the password change page and the profile. POST /api/me/password: the person changes their own
+// password, giving the current one (the temporary one, when a temporary password forces the change).
+// While a password is temporary, every other route answers 403 PASSWORD_CHANGE_REQUIRED except GET
+// /api/me, this one and the logout. Errors 422: CURRENT_PASSWORD_INVALID, PASSWORD_INVALID (outside 12
+// to 128 characters), PASSWORD_UNCHANGED (the same as the current one).
+export const changeMyPassword = async (request: PasswordChangeRequest, config?: RequestConfig): Promise<void> => {
+  await httpClient.post<ApiResponse<null>>("/api/me/password", request, config)
 }

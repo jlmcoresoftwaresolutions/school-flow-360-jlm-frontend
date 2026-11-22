@@ -3,12 +3,12 @@ import { AxiosError } from "axios"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { UserContext } from "@/models"
-import { endExpiredSession } from "@/utils/authRedirect"
+import { endExpiredSession, requirePasswordChange } from "@/utils/authRedirect"
 import { getSessionState, saveSession } from "@/utils/session"
 
 import { getErrorData, getRetryAfterSeconds, httpClient } from "./httpClient"
 
-vi.mock("@/utils/authRedirect", () => ({ endExpiredSession: vi.fn() }))
+vi.mock("@/utils/authRedirect", () => ({ endExpiredSession: vi.fn(), requirePasswordChange: vi.fn() }))
 
 const context: UserContext = {
   admin: true,
@@ -67,6 +67,7 @@ describe("httpClient", () => {
   afterEach(() => {
     localStorage.clear()
     vi.mocked(endExpiredSession).mockClear()
+    vi.mocked(requirePasswordChange).mockClear()
   })
 
   it("sends the stored access token and the tenant to the backend", async () => {
@@ -153,6 +154,26 @@ describe("httpClient", () => {
     expect(authorizationOf("/api/users")).toHaveLength(2)
     expect(authorizationOf("/api/auth/refresh")).toHaveLength(1)
     expect(endExpiredSession).toHaveBeenCalledTimes(1)
+  })
+
+  it("goes to the password change when a temporary password must be changed first", async () => {
+    await saveSession({ expiresAt: inOneHour(), refreshToken: "refresh-1", token: "token-1" })
+    handle = () => ({ data: { code: "PASSWORD_CHANGE_REQUIRED", data: null }, status: 403 })
+
+    await expect(httpClient.get("/api/users")).rejects.toThrow()
+
+    expect(requirePasswordChange).toHaveBeenCalledWith("/change-password")
+    expect(endExpiredSession).not.toHaveBeenCalled()
+    expect((await getSessionState()).status).toBe("active")
+  })
+
+  it("leaves any other 403 to the caller", async () => {
+    await saveSession({ expiresAt: inOneHour(), refreshToken: "refresh-1", token: "token-1" })
+    handle = () => ({ data: { code: "SCOPE_DENIED", data: null }, status: 403 })
+
+    await expect(httpClient.get("/api/users")).rejects.toThrow()
+
+    expect(requirePasswordChange).not.toHaveBeenCalled()
   })
 
   it("leaves a 401 without a token to the caller, as wrong credentials on the login", async () => {

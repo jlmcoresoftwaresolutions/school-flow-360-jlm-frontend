@@ -22,6 +22,7 @@ import { AccountStatusDialog } from "./AccountStatusDialog"
 import { AssignmentsModal } from "./AssignmentsModal"
 import { ProfileModal } from "./ProfileModal"
 import { RevokeModal } from "./RevokeModal"
+import { TemporaryPasswordDialog } from "./TemporaryPasswordDialog"
 import { type UserDetailsAction, UserDetailsModal } from "./UserDetailsModal"
 
 const pageSize = 20
@@ -369,6 +370,14 @@ export const UserList = () => {
           onGone={handleGone}
           onSaved={handleSaved}
           unitDirectory={unitDirectory}
+          user={dialog.user}
+        />
+      )}
+
+      {dialog?.kind === "temporaryPassword" && (
+        <TemporaryPasswordDialog
+          onClose={() => setDialog({ kind: "details", userId: dialog.user.id })}
+          onGone={handleGone}
           user={dialog.user}
         />
       )}

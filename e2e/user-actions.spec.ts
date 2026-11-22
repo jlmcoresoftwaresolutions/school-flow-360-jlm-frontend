@@ -212,6 +212,48 @@ test.describe("account status", () => {
   })
 })
 
+test.describe("temporary password", () => {
+  test("generates one after confirming and shows it once, with the way to sign in", async ({ page }) => {
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"])
+    await mockUserAccessApi(page)
+    const issued: string[] = []
+    await page.route(/\/api\/users\/\d+\/temporary-password$/, (route) => {
+      issued.push(new URL(route.request().url()).pathname)
+      return route.fulfill(apiAnswer({ expiresAt: "2026-11-29T15:00:00Z", temporaryPassword: "Kx7mPq2Rt9Wz4N" }))
+    })
+    await signInAndOpen(page, usersPath)
+
+    const details = await openDetails(page, "Maria Souza")
+    await chooseAction(page, details, "Gerar senha temporária")
+    const confirm = page.getByRole("dialog", { name: "Gerar senha temporária para Maria Souza?" })
+    await expect(confirm).toContainText("aparece uma única vez e vale por 7 dias")
+    await confirm.getByRole("button", { name: "Gerar senha" }).click()
+
+    const shown = page.getByRole("dialog", { name: "Senha temporária de Maria Souza" })
+    await expect(shown.getByRole("textbox", { name: "Senha temporária" })).toHaveValue("Kx7mPq2Rt9Wz4N")
+    await expect(shown).toContainText("Esta é a única vez que a senha aparece")
+    await expect(shown).toContainText("maria.souza@horizonte.edu.br")
+    expect(issued).toEqual(["/api/users/2/temporary-password"])
+
+    await shown.getByRole("button", { name: "Copiar senha" }).click()
+    await expect(page.getByText("Senha copiada.")).toBeVisible()
+
+    // Done goes back to the details; the password is gone for good.
+    await shown.getByRole("button", { name: "Concluir" }).click()
+    await expect(page.getByRole("dialog", { name: "Detalhes do usuário" })).toBeVisible()
+    await expect(page.getByText("Kx7mPq2Rt9Wz4N")).toHaveCount(0)
+  })
+
+  test("is not offered on the own account", async ({ page }) => {
+    await mockUserAccessApi(page)
+    await signInAndOpen(page, usersPath)
+
+    const details = await openDetails(page, "João Silva")
+    const menu = await openActions(page, details)
+    await expect(menu.getByRole("menuitem", { name: "Gerar senha temporária" })).toHaveCount(0)
+  })
+})
+
 test.describe("profile and own account", () => {
   test("closes the actions menu on Escape without closing the details", async ({ page }) => {
     await mockUserAccessApi(page)

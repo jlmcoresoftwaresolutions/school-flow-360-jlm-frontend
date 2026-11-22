@@ -251,7 +251,12 @@ export const fr: TranslationResource = {
     heroSubtitle:
       "Une expérience de pilotage pour les directions, l'établissement, les enseignants et les familles : chaque profil accède à son propre parcours visuel, avec une navigation adaptative, des indicateurs clairs et des interactions chaleureuses.",
     heroTitle: "Une gestion scolaire qui paraît simple, mais opère à 360º.",
-    invalidCredentials: "Connexion impossible. Vérifiez l'e-mail et le mot de passe ou contactez le secrétariat.",
+    invalidCredentials:
+      "Connexion impossible. Vérifiez l'e-mail ou le pseudo et le mot de passe, ou contactez le secrétariat.",
+    loginInvalid: "Saisissez une adresse e-mail valide ou votre pseudo.",
+    loginLabel: "E-mail ou pseudo",
+    loginPlaceholder: "Saisissez votre e-mail ou pseudo",
+    loginRequired: "Saisissez votre e-mail ou pseudo.",
     logoAlt: "Icône SchoolFlow360",
     passwordLabel: "Mot de passe",
     passwordPlaceholder: "Saisissez votre mot de passe",
@@ -295,6 +300,9 @@ export const fr: TranslationResource = {
     errorDescription: "Vérifiez votre connexion et réessayez.",
     errorTitle: "Impossible de charger votre profil",
     noAccess: "Aucun rôle actif pour le moment.",
+    passwordDescription:
+      "Changez le mot de passe avec lequel vous vous connectez. Le mot de passe actuel vous sera demandé.",
+    passwordTitle: "Mot de passe",
     saved: "Vos informations ont été mises à jour.",
     seeSessions: "Voir mes sessions ouvertes",
     title: "Mon profil",
@@ -503,6 +511,29 @@ export const fr: TranslationResource = {
       phoneAnyCountry: "Saisissez un téléphone valide.",
       required: "Remplissez ce champ.",
     },
+  },
+  passwordChange: {
+    confirmLabel: "Confirmer le nouveau mot de passe",
+    confirmRequired: "Confirmez le nouveau mot de passe.",
+    currentInvalid: "Le mot de passe actuel est incorrect.",
+    currentLabel: "Mot de passe actuel",
+    currentRequired: "Saisissez le mot de passe actuel.",
+    description: "Saisissez le mot de passe actuel et choisissez le nouveau.",
+    forcedDescription:
+      "Vous vous êtes connecté avec un mot de passe temporaire. Pour continuer, créez votre propre mot de passe.",
+    forcedTitle: "Créez votre mot de passe",
+    mismatch: "Les mots de passe ne correspondent pas.",
+    newHelper: "Utilisez de {{min}} à {{max}} caractères, différent du mot de passe actuel.",
+    newLabel: "Nouveau mot de passe",
+    newPolicy: "Utilisez de {{min}} à {{max}} caractères.",
+    newRequired: "Saisissez le nouveau mot de passe.",
+    saved: "Mot de passe modifié.",
+    signOut: "Se déconnecter",
+    submit: "Enregistrer le nouveau mot de passe",
+    temporaryLabel: "Mot de passe temporaire",
+    title: "Changer le mot de passe",
+    unavailable: "Impossible d'enregistrer pour le moment. Réessayez dans un instant.",
+    unchanged: "Le nouveau mot de passe doit être différent de l'actuel.",
   },
   resetPassword: {
     backToLogin: "Retour à la connexion",
@@ -828,6 +859,25 @@ export const fr: TranslationResource = {
     },
     statusActive: "Actifs",
     statusInactive: "Inactifs",
+    temporaryPassword: {
+      action: "Générer un mot de passe temporaire",
+      confirmDescription:
+        "Le mot de passe n'apparaît qu'une seule fois et reste valable 7 jours. Les sessions ouvertes de {{name}} sont fermées maintenant et, à la prochaine connexion, {{name}} devra créer son propre mot de passe.",
+      confirmTitle: "Générer un mot de passe temporaire pour {{name}} ?",
+      copied: "Mot de passe copié.",
+      copy: "Copier le mot de passe",
+      copyFailed: "Impossible de copier. Sélectionnez le mot de passe et copiez-le manuellement.",
+      done: "Terminer",
+      generate: "Générer le mot de passe",
+      howToSignIn:
+        "{{name}} se connecte avec l'e-mail {{email}} (ou le pseudo) et ce mot de passe jusqu'au {{expiresAt}}, puis crée son propre mot de passe à la première connexion.",
+      howToSignInNoEmail:
+        "{{name}} se connecte avec le pseudo et ce mot de passe jusqu'au {{expiresAt}}, puis crée son propre mot de passe à la première connexion.",
+      issuedTitle: "Mot de passe temporaire de {{name}}",
+      passwordLabel: "Mot de passe temporaire",
+      showOnce:
+        "C'est la seule fois où le mot de passe apparaît. Copiez-le maintenant et remettez-le à la personne par un canal sûr.",
+    },
     view: "Voir les détails",
   },
 }

@@ -99,3 +99,11 @@ export type UserAssignmentsChange = {
   sessionsRevoked: number
   user: UserView
 }
+
+// What POST /api/users/{id}/temporary-password answers: the password, shown only in this answer and
+// never again, and until when it works (7 days by default). The person must change it at the first
+// sign-in.
+export type TemporaryPassword = {
+  expiresAt: string
+  temporaryPassword: string
+}

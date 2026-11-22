@@ -22,7 +22,7 @@ const successBody = {
 }
 
 const fillCredentials = async (page: Page, email: string, password: string) => {
-  await page.getByRole("textbox", { name: "E-mail" }).fill(email)
+  await page.getByRole("textbox", { name: "E-mail ou apelido" }).fill(email)
   await page.getByLabel(/^Senha/).fill(password)
 }
 
@@ -42,10 +42,10 @@ test.describe("login page", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Acesse sua jornada SchoolFlow360º" })).toBeVisible()
   })
 
-  test("asks for e-mail and password, with no way to sign up", async ({ page }) => {
+  test("asks for the e-mail or nickname and the password, with no way to sign up", async ({ page }) => {
     await page.goto("/login")
 
-    await expect(page.getByRole("textbox", { name: "E-mail" })).toHaveAttribute("autocomplete", "username")
+    await expect(page.getByRole("textbox", { name: "E-mail ou apelido" })).toHaveAttribute("autocomplete", "username")
     await expect(page.getByLabel(/^Senha/)).toHaveAttribute("autocomplete", "current-password")
     await expect(page.getByRole("button", { name: "Entrar" })).toBeVisible()
     await expect(page.getByRole("link", { name: "Esqueci minha senha" })).toHaveAttribute("href", "/forgot-password")
@@ -74,9 +74,9 @@ test.describe("login page", () => {
 
     await page.getByRole("button", { name: "Entrar" }).click()
 
-    await expect(page.getByText("Informe seu e-mail.")).toBeVisible()
+    await expect(page.getByText("Informe seu e-mail ou apelido.")).toBeVisible()
     await expect(page.getByText("Informe sua senha.")).toBeVisible()
-    await expect(page.getByRole("textbox", { name: "E-mail" })).toHaveAttribute("aria-invalid", "true")
+    await expect(page.getByRole("textbox", { name: "E-mail ou apelido" })).toHaveAttribute("aria-invalid", "true")
     expect(called).toBe(false)
   })
 
@@ -86,7 +86,7 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@escola", "senha")
     await page.getByRole("button", { name: "Entrar" }).click()
 
-    await expect(page.getByText("Informe um e-mail válido.")).toBeVisible()
+    await expect(page.getByText("Informe um e-mail válido ou o seu apelido.")).toBeVisible()
   })
 
   test("submits with the Enter key", async ({ page }) => {
@@ -99,7 +99,7 @@ test.describe("login page", () => {
     await expect(page).toHaveURL(/\/home$/)
   })
 
-  test("sends e-mail, password and the tenant to the backend", async ({ page }) => {
+  test("sends the e-mail, the password and the tenant to the backend", async ({ page }) => {
     let body: unknown
     let tenantHeader: string | undefined
     await page.route(loginEndpoint, (route) => {
@@ -113,8 +113,39 @@ test.describe("login page", () => {
     await page.getByRole("button", { name: "Entrar" }).click()
 
     await expect(page).toHaveURL(/\/home$/)
-    expect(body).toEqual({ email: "diretor@schoolflow360.com.br", password: "senha-correta" })
+    expect(body).toEqual({ login: "diretor@schoolflow360.com.br", password: "senha-correta" })
     expect(tenantHeader).toBe("schoolflow_demo")
+  })
+
+  test("signs in with a nickname too", async ({ page }) => {
+    let body: unknown
+    await page.route(loginEndpoint, (route) => {
+      body = route.request().postDataJSON()
+      return route.fulfill({ body: JSON.stringify(successBody), contentType: "application/json" })
+    })
+    await page.goto("/login")
+
+    await fillCredentials(page, " Ana.Souza_2 ", "senha-correta")
+    await page.getByRole("button", { name: "Entrar" }).click()
+
+    await expect(page).toHaveURL(/\/home$/)
+    expect(body).toEqual({ login: "Ana.Souza_2", password: "senha-correta" })
+  })
+
+  test("points out what can't be an e-mail or a nickname before sending it", async ({ page }) => {
+    let calls = 0
+    await page.route(loginEndpoint, (route) => {
+      calls += 1
+      return route.fulfill({ body: JSON.stringify(successBody), contentType: "application/json" })
+    })
+    await page.goto("/login")
+
+    for (const typed of ["diretor@escola", "ana souza", "ab"]) {
+      await fillCredentials(page, typed, "senha-correta")
+      await page.getByRole("button", { name: "Entrar" }).click()
+      await expect(page.getByText("Informe um e-mail válido ou o seu apelido.")).toBeVisible()
+    }
+    expect(calls).toBe(0)
   })
 
   test("tells the user when the credentials are wrong", async ({ page }) => {
@@ -125,22 +156,22 @@ test.describe("login page", () => {
     await page.getByRole("button", { name: "Entrar" }).click()
 
     await expect(page.getByRole("alert")).toHaveText(
-      "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+      "Não foi possível entrar. Verifique o e-mail ou apelido e a senha, ou fale com a secretaria.",
     )
     await expect(page).toHaveURL(/\/login$/)
 
     // Both fields are flagged, described by the message, and cleared as soon as one is edited.
-    for (const field of [page.getByRole("textbox", { name: "E-mail" }), page.getByLabel(/^Senha/)]) {
+    for (const field of [page.getByRole("textbox", { name: "E-mail ou apelido" }), page.getByLabel(/^Senha/)]) {
       await expect(field).toHaveAttribute("aria-invalid", "true")
       await expect(field).toHaveAccessibleDescription(
-        "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+        "Não foi possível entrar. Verifique o e-mail ou apelido e a senha, ou fale com a secretaria.",
       )
     }
 
     await page.getByLabel(/^Senha/).fill("outra-senha")
 
     await expect(page.getByRole("alert")).toHaveCount(0)
-    await expect(page.getByRole("textbox", { name: "E-mail" })).not.toHaveAttribute("aria-invalid")
+    await expect(page.getByRole("textbox", { name: "E-mail ou apelido" })).not.toHaveAttribute("aria-invalid")
   })
 
   test("clears the previous error on a new attempt", async ({ page }) => {
@@ -150,15 +181,15 @@ test.describe("login page", () => {
     await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-errada")
     await page.getByRole("button", { name: "Entrar" }).click()
     await expect(page.getByRole("alert")).toHaveText(
-      "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+      "Não foi possível entrar. Verifique o e-mail ou apelido e a senha, ou fale com a secretaria.",
     )
 
-    await page.getByRole("textbox", { name: "E-mail" }).fill("")
+    await page.getByRole("textbox", { name: "E-mail ou apelido" }).fill("")
     await page.getByRole("button", { name: "Entrar" }).click()
 
-    await expect(page.getByText("Informe seu e-mail.")).toBeVisible()
+    await expect(page.getByText("Informe seu e-mail ou apelido.")).toBeVisible()
     await expect(
-      page.getByText("Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria."),
+      page.getByText("Não foi possível entrar. Verifique o e-mail ou apelido e a senha, ou fale com a secretaria."),
     ).toHaveCount(0)
   })
 

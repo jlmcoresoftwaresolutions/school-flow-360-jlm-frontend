@@ -18,7 +18,7 @@ import { AccessItem, AccessItems, DetailsSection, DetailsSections } from "../sha
 import type { DirectoryUnit } from "../shared/userAccess/useUnitDirectory"
 
 // What the operator can do from the details, each in its own dialog.
-export type UserDetailsAction = "assignments" | "inactivate" | "profile" | "reactivate" | "revoke"
+export type UserDetailsAction = "assignments" | "inactivate" | "profile" | "reactivate" | "revoke" | "temporaryPassword"
 
 export type UserDetailsModalProps = {
   // The units the signed-in user knows, to mark an inactive one.
@@ -114,6 +114,17 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
         key: "reactivate",
         label: t("users.status.reactivate"),
         onClick: () => onAction("reactivate", user),
+      })
+    }
+
+    // A temporary password has the same reach as inactivating the account (the backend checks the same
+    // rule), and only an active account can use it.
+    if (can("INACTIVATE")) {
+      items.push({
+        icon: "login-outline",
+        key: "temporaryPassword",
+        label: t("users.temporaryPassword.action"),
+        onClick: () => onAction("temporaryPassword", user),
       })
     }
 

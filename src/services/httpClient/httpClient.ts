@@ -3,7 +3,7 @@ import axios, { isAxiosError } from "axios"
 
 import type { ApiErrorCode } from "@/models"
 import { paths } from "@/routes/paths"
-import { endExpiredSession } from "@/utils/authRedirect"
+import { endExpiredSession, requirePasswordChange } from "@/utils/authRedirect"
 import { markBackendResponse } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { getSessionState, saveSession } from "@/utils/session"
@@ -196,6 +196,12 @@ httpClient.interceptors.response.use(
       }
 
       endExpiredSession(paths.login)
+    }
+
+    // A temporary password must be changed before anything else: the backend refuses every other call
+    // until then, and the app goes to the change page (the routes send there too, from the context).
+    if (error.response?.status === 403 && sentToken && error.response.data?.code === "PASSWORD_CHANGE_REQUIRED") {
+      requirePasswordChange(paths.changePassword)
     }
 
     return Promise.reject(error)

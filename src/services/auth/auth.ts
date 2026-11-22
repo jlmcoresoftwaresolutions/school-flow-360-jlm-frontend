@@ -16,8 +16,9 @@ import type {
 import type { RequestConfig } from "../httpClient"
 import { httpClient, unwrapApiResponse } from "../httpClient"
 
-// USED by the login page. POST /api/auth/login. Signs in with e-mail and password, and says who signed
-// in (`context`). Wrong credentials come back as a 401, which axios rejects, so the caller tells them
+// USED by the login page. POST /api/auth/login. Signs in with the nickname or the e-mail (`login`) and
+// the password, and says who signed in (`context`; `mustChangePassword` after a temporary password).
+// An account without a password, or with an expired temporary one, gets the same 401 as a wrong one. Wrong credentials come back as a 401, which axios rejects, so the caller tells them
 // apart from other failures by the error's response status. An inactive or locked account, or one
 // without an active role, gets the very same 401 (no code), so nobody learns whether an account exists. Also: 429 with Retry-After after repeated
 // wrong passwords, and 409 SESSION_LIMIT_REACHED when 5 sessions are open, its data a
