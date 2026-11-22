@@ -777,6 +777,7 @@ export const en: TranslationResource = {
       errorTitle: "Couldn't load the user",
       history: "Revoked access",
       name: "Name",
+      nickname: "Nickname",
       noAccess: "No active role: the person can't sign in.",
       phone: "Phone",
       revokedSince: "Granted on {{date}}, revoked later",
@@ -858,9 +859,9 @@ export const en: TranslationResource = {
       done: "Done",
       generate: "Generate password",
       howToSignIn:
-        "{{name}} signs in with the email {{email}} (or the nickname) and this password until {{expiresAt}}, and creates their own password at the first sign-in.",
+        "{{name}} signs in with the email {{email}} or the nickname {{nickname}} and this password until {{expiresAt}}, and creates their own password at the first sign-in.",
       howToSignInNoEmail:
-        "{{name}} signs in with the nickname and this password until {{expiresAt}}, and creates their own password at the first sign-in.",
+        "{{name}} signs in with the nickname {{nickname}} and this password until {{expiresAt}}, and creates their own password at the first sign-in.",
       issuedTitle: "Temporary password for {{name}}",
       passwordLabel: "Temporary password",
       showOnce:

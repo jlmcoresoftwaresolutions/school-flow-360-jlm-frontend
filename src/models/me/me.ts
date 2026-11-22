@@ -6,15 +6,17 @@ import type { Assignment, RoleCode } from "../users/users"
 // inactivated is still listed but grants nothing. `phone` and `version` are for editing the own
 // profile (PUT /api/me/profile); a login answered before them may lack both. `mustChangePassword` says
 // the person signed in with a temporary password and must create their own before anything else (every
-// other call answers 403 PASSWORD_CHANGE_REQUIRED meanwhile).
+// other call answers 403 PASSWORD_CHANGE_REQUIRED meanwhile). `nickname` is the sign-in name (a session
+// saved before it came may lack it); `email` is null for a person who signs in only with it.
 export type UserContext = {
   admin: boolean
   assignments: Assignment[]
-  email: string
+  email: string | null
   fullName: string | null
   roles: RoleCode[]
   userId: number
   mustChangePassword?: boolean
+  nickname?: string
   phone?: string | null
   version?: number
 }

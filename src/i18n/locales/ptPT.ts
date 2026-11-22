@@ -787,6 +787,7 @@ export const ptPT: TranslationResource = {
       errorTitle: "Não foi possível carregar o utilizador",
       history: "Acessos revogados",
       name: "Nome",
+      nickname: "Alcunha",
       noAccess: "Nenhum papel ativo: a pessoa não consegue entrar.",
       phone: "Telefone",
       revokedSince: "Concedido em {{date}}, revogado depois",
@@ -869,9 +870,9 @@ export const ptPT: TranslationResource = {
       done: "Concluir",
       generate: "Gerar palavra-passe",
       howToSignIn:
-        "{{name}} entra com o e-mail {{email}} (ou a alcunha) e esta palavra-passe até {{expiresAt}}, e cria a sua própria palavra-passe no primeiro acesso.",
+        "{{name}} entra com o e-mail {{email}} ou a alcunha {{nickname}} e esta palavra-passe até {{expiresAt}}, e cria a sua própria palavra-passe no primeiro acesso.",
       howToSignInNoEmail:
-        "{{name}} entra com a alcunha e esta palavra-passe até {{expiresAt}}, e cria a sua própria palavra-passe no primeiro acesso.",
+        "{{name}} entra com a alcunha {{nickname}} e esta palavra-passe até {{expiresAt}}, e cria a sua própria palavra-passe no primeiro acesso.",
       issuedTitle: "Palavra-passe temporária de {{name}}",
       passwordLabel: "Palavra-passe temporária",
       showOnce: "É a única vez que a palavra-passe aparece. Copie-a agora e entregue-a à pessoa por um canal seguro.",

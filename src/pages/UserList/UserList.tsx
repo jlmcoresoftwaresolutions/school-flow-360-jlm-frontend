@@ -14,6 +14,7 @@ import { roleOrder } from "@/utils/access"
 
 import type { NewAccessMode } from "../shared/userAccess/newAccess"
 import { NewAccessModal } from "../shared/userAccess/NewAccessModal"
+import { getPersonName } from "../shared/userAccess/personName"
 import { PersonSummary } from "../shared/userAccess/PersonSummary"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessLines, ListContent } from "../shared/userAccess/userAccess.styles"
@@ -169,7 +170,9 @@ export const UserList = () => {
     </>
   )
 
-  const renderPerson = (row: UserView) => <PersonSummary email={row.email} fullName={row.fullName} />
+  const renderPerson = (row: UserView) => (
+    <PersonSummary email={row.email} fullName={row.fullName} nickname={row.nickname} />
+  )
 
   const renderAccess = (row: UserView) => {
     const active = sortAccess(row.assignments.filter((assignment) => assignment.status === "ACTIVE"))
@@ -296,7 +299,7 @@ export const UserList = () => {
                     onClick: () => setDialog({ kind: "details", userId: row.id }),
                   },
                 ]}
-                triggerLabel={t("users.actionsFor", { name: row.fullName || row.email })}
+                triggerLabel={t("users.actionsFor", { name: getPersonName(row) })}
               />
             )}
             field="id"

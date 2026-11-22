@@ -24,6 +24,8 @@ test.describe("user list", () => {
     await expect(rowOf(page, "Maria Souza")).not.toContainText("Unidade Benfica")
     await expect(rowOf(page, "Maria Souza")).toContainText("Ativo")
     await expect(rowOf(page, "Pedro Lima")).toContainText("Inativo")
+    // A person without e-mail shows the nickname they sign in with.
+    await expect(rowOf(page, "Lucas Alves")).toContainText("lucas.alves")
 
     expect(lastCall(calls, "GET", "/api/users")?.query).toMatchObject({
       direction: "asc",
@@ -65,6 +67,8 @@ test.describe("user list", () => {
 
     const dialog = page.getByRole("dialog", { name: "Detalhes do usuário" })
     await expect(dialog).toContainText("maria.souza@horizonte.edu.br")
+    await expect(dialog.getByRole("definition").filter({ hasText: "maria.souza" }).first()).toBeVisible()
+    await expect(dialog).toContainText("Apelido")
     await expect(dialog).toContainText("(85) 98888-1100")
     await expect(dialog.getByRole("region", { name: "Papéis e unidades" })).toContainText(
       "Secretaria · Unidade Aldeota",

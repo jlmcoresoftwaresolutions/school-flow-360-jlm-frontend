@@ -9,6 +9,7 @@ export const signedInUser = {
   assignments: [],
   email: "diretor@schoolflow360.com.br",
   fullName: "João Silva",
+  nickname: "joao.silva",
   roles: ["ADMIN"],
   userId: 1,
 }

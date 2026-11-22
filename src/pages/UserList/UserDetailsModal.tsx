@@ -117,9 +117,7 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
       })
     }
 
-    // A temporary password has the same reach as inactivating the account (the backend checks the same
-    // rule), and only an active account can use it.
-    if (can("INACTIVATE")) {
+    if (can("TEMPORARY_PASSWORD")) {
       items.push({
         icon: "login-outline",
         key: "temporaryPassword",
@@ -168,7 +166,8 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
           emptyValue={t("common.notInformed")}
           items={[
             { key: "name", label: t("users.details.name"), value: user.fullName || t("userAccess.noName") },
-            { key: "email", label: t("users.details.email"), value: user.email },
+            { key: "email", label: t("users.details.email"), value: user.email ?? "" },
+            { key: "nickname", label: t("users.details.nickname"), value: user.nickname },
             {
               key: "phone",
               label: t("users.details.phone"),

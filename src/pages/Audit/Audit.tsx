@@ -17,6 +17,7 @@ import { listAccessAuditEvents } from "@/services/audit"
 import { getErrorStatus } from "@/services/httpClient"
 import { listUsers } from "@/services/users"
 
+import { getPersonName } from "../shared/userAccess/personName"
 import { ListContent, PersonCell } from "../shared/userAccess/userAccess.styles"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
 import {
@@ -154,7 +155,7 @@ export const Audit = () => {
 
   const actorOptions: SelectOption[] = [
     { label: t("audit.allAuthors"), value: "" },
-    ...people.map((person) => ({ label: person.fullName || person.email, value: String(person.id) })),
+    ...people.map((person) => ({ label: getPersonName(person), value: String(person.id) })),
   ]
   const unitOptions: SelectOption[] = [
     { label: t("userAccess.allUnits"), value: "" },
@@ -188,7 +189,7 @@ export const Audit = () => {
     if (event.entityType === "SESSION") return t("audit.entities.SESSION")
     if (event.entityType === "USER") {
       const person = people.find((item) => String(item.id) === event.entityId)
-      return person ? person.fullName || person.email : t("audit.entities.USER", { id: event.entityId })
+      return person ? getPersonName(person) : t("audit.entities.USER", { id: event.entityId })
     }
     if (event.entityType === "SCHOOL_UNIT") {
       const unit = unitDirectory.units.find((item) => String(item.id) === event.entityId)

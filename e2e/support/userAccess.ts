@@ -55,6 +55,7 @@ export const users = [
     email: "diretor@schoolflow360.com.br",
     fullName: "João Silva",
     id: 1,
+    nickname: "joao.silva",
     roles: ["ADMIN"],
     status: "ACTIVE",
   },
@@ -68,6 +69,7 @@ export const users = [
     email: "maria.souza@horizonte.edu.br",
     fullName: "Maria Souza",
     id: 2,
+    nickname: "maria.souza",
     phone: "+55 85 98888 1100",
     roles: ["SECRETARIA", "PROFESSOR"],
     status: "ACTIVE",
@@ -79,8 +81,20 @@ export const users = [
     enabled: false,
     fullName: "Pedro Lima",
     id: 3,
+    nickname: "pedro.lima",
     roles: ["PROFESSOR"],
     status: "INACTIVE",
+  },
+  // A student without e-mail: signs in with the nickname only.
+  {
+    ...userBase,
+    assignments: [assignment(6, "ALUNO", 2, "Unidade Caucaia")],
+    email: null,
+    fullName: "Lucas Alves",
+    id: 4,
+    nickname: "lucas.alves",
+    roles: ["ALUNO"],
+    status: "ACTIVE",
   },
 ]
 
@@ -192,7 +206,13 @@ const withActions = (user: Item) => ({
     operative: item.status === "ACTIVE" && unitStatusOf(item.unitId) !== "INACTIVE",
     unitStatus: unitStatusOf(item.unitId),
   })),
-  eligibleActions: ["EDIT_PROFILE", "EDIT_ASSIGNMENTS", "REVOKE", user.enabled === false ? "REACTIVATE" : "INACTIVATE"],
+  eligibleActions: [
+    "EDIT_PROFILE",
+    "EDIT_ASSIGNMENTS",
+    "REVOKE",
+    user.enabled === false ? "REACTIVATE" : "INACTIVATE",
+    "TEMPORARY_PASSWORD",
+  ],
 })
 
 const page0 = (items: Item[], query: Record<string, string>) => {
@@ -211,7 +231,7 @@ const page0 = (items: Item[], query: Record<string, string>) => {
 const matches = (item: Item, query: Record<string, string>) => {
   const q = query.q?.toLowerCase()
   const assignments = item.assignments as { role: string; status?: string; unitId: number | null }[]
-  if (q && !`${item.fullName ?? ""} ${item.email}`.toLowerCase().includes(q)) return false
+  if (q && !`${item.fullName ?? ""} ${item.email ?? ""} ${item.nickname}`.toLowerCase().includes(q)) return false
   if (query.roleCode && !assignments.some((a) => a.role === query.roleCode)) return false
   if (query.unitId && !assignments.some((a) => a.status !== "REVOKED" && String(a.unitId) === query.unitId))
     return false
@@ -479,6 +499,7 @@ export const secretariaContext = {
   ],
   email: "maria.souza@horizonte.edu.br",
   fullName: "Maria Souza",
+  nickname: "maria.souza",
   roles: ["SECRETARIA", "PROFESSOR"],
   userId: 2,
 }
