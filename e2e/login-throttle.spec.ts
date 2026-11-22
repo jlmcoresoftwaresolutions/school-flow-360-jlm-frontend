@@ -20,7 +20,7 @@ const mockBackendLock = async (page: Page, options: { retryAfter?: string } = {}
 }
 
 const tryPassword = async (page: Page, email: string) => {
-  await page.getByRole("textbox", { name: "E-mail" }).fill(email)
+  await page.getByRole("textbox", { name: "E-mail ou apelido" }).fill(email)
   await page.getByLabel(/^Senha/).fill("senha-errada")
   await page.getByRole("button", { name: "Entrar" }).click()
   await expect(page.getByRole("alert")).toBeVisible()
@@ -42,7 +42,7 @@ test("holds sign-in back for as long as the backend says, counting down on the b
 
   await failTimes(page, email, 2)
   await expect(page.getByRole("alert")).toHaveText(
-    "Não foi possível entrar. Verifique o e-mail e a senha ou fale com a secretaria.",
+    "Não foi possível entrar. Verifique o e-mail ou apelido e a senha, ou fale com a secretaria.",
   )
 
   await tryPassword(page, email)
@@ -80,7 +80,7 @@ test("only holds back the locked e-mail", async ({ page }) => {
   await page.goto("/login")
   await failTimes(page, email, 3)
 
-  await page.getByRole("textbox", { name: "E-mail" }).fill("secretaria@schoolflow360.com.br")
+  await page.getByRole("textbox", { name: "E-mail ou apelido" }).fill("secretaria@schoolflow360.com.br")
 
   await expect(page.getByRole("button", { name: "Entrar" })).toBeEnabled()
 })

@@ -27,8 +27,10 @@ export type RegisterUserRequest = {
   schoolUnitId: number
 }
 
+// Body of POST /api/auth/login. `login` is the nickname or the e-mail of the account, with the same
+// password (the backend still reads the old `email` field too).
 export type LoginRequest = {
-  email: string
+  login: string
   password: string
 }
 

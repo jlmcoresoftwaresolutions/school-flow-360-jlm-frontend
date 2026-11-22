@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { buildLoginUrl, getSafeRedirectPath } from "./authRedirect"
+import { buildLoginUrl, buildPasswordChangeUrl, getSafeRedirectPath } from "./authRedirect"
 
 describe("getSafeRedirectPath", () => {
   it.each(["/administration/my-unit", "/administration/my-unit?tab=2#branding", "/"])("keeps %s", (path) => {
@@ -42,5 +42,17 @@ describe("buildLoginUrl", () => {
     expect(buildLoginUrl("/login", { from: "/" })).toBe("/login")
     expect(buildLoginUrl("/login", { from: "/login?expired=1" })).toBe("/login")
     expect(buildLoginUrl("/login", { from: "//other.site", sessionExpired: true })).toBe("/login?expired=1")
+  })
+})
+
+describe("buildPasswordChangeUrl", () => {
+  it("carries the page to go to after the change", () => {
+    expect(buildPasswordChangeUrl("/change-password", "/users/list?page=2")).toBe(
+      "/change-password?redirect=%2Fusers%2Flist%3Fpage%3D2",
+    )
+  })
+
+  it.each([undefined, "/", "/change-password", "https://other.site"])("leaves out a return to %s", (from) => {
+    expect(buildPasswordChangeUrl("/change-password", from)).toBe("/change-password")
   })
 })

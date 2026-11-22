@@ -22,6 +22,7 @@ import { AccountStatusDialog } from "./AccountStatusDialog"
 import { AssignmentsModal } from "./AssignmentsModal"
 import { ProfileModal } from "./ProfileModal"
 import { RevokeModal } from "./RevokeModal"
+import { TemporaryPasswordDialog } from "./TemporaryPasswordDialog"
 import { type UserDetailsAction, UserDetailsModal } from "./UserDetailsModal"
 
 const pageSize = 20
@@ -244,6 +245,7 @@ export const UserList = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setRoleCode)((option?.value as RoleCode | undefined) ?? "")}
             options={roleOptions}
+            placeholder={t("userAccess.allRoles")}
             size="small"
             title={t("userAccess.role")}
             value={roleOptions.find((option) => option.value === roleCode) ?? null}
@@ -252,6 +254,7 @@ export const UserList = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setUnitId)(option?.value ?? "")}
             options={unitOptions}
+            placeholder={t("userAccess.allUnits")}
             size="small"
             title={t("userAccess.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
@@ -260,6 +263,7 @@ export const UserList = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setStatus)((option?.value as StatusFilter | undefined) ?? "")}
             options={statusOptions}
+            placeholder={t("userAccess.allStatuses")}
             size="small"
             title={t("userAccess.status")}
             value={statusOptions.find((option) => option.value === status) ?? null}
@@ -369,6 +373,14 @@ export const UserList = () => {
           onGone={handleGone}
           onSaved={handleSaved}
           unitDirectory={unitDirectory}
+          user={dialog.user}
+        />
+      )}
+
+      {dialog?.kind === "temporaryPassword" && (
+        <TemporaryPasswordDialog
+          onClose={() => setDialog({ kind: "details", userId: dialog.user.id })}
+          onGone={handleGone}
           user={dialog.user}
         />
       )}

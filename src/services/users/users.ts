@@ -4,6 +4,7 @@ import type {
   NewUserRequest,
   ProfileUpdateRequest,
   RevokeAssignmentsRequest,
+  TemporaryPassword,
   UserAssignmentsChange,
   UserAssignmentsRequest,
   UserPage,
@@ -104,6 +105,22 @@ export const inactivateUser = async (userId: number, config?: RequestConfig): Pr
 // NO_ACTIVE_ASSIGNMENT (the user has no active role left), 403 SCOPE_DENIED, 404 USER_NOT_FOUND.
 export const reactivateUser = async (userId: number, config?: RequestConfig): Promise<UserView> => {
   const response = await httpClient.post<ApiResponse<UserView>>(`/api/users/${userId}/reactivate`, undefined, config)
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the temporary password dialog (user details). POST /api/users/{id}/temporary-password: a
+// 14-character password, shown only in this answer, valid for 7 days; it ends the person's sessions
+// and makes them create their own at the next sign-in. It also gives access to someone who had no
+// password. Same reach as inactivating (the Admin, or a Secretaria for people only in its units).
+// Errors: 422 OWN_ACCOUNT (the own account uses the password change), 403 SCOPE_DENIED, 404
+// USER_NOT_FOUND.
+export const issueTemporaryPassword = async (userId: number, config?: RequestConfig): Promise<TemporaryPassword> => {
+  const response = await httpClient.post<ApiResponse<TemporaryPassword>>(
+    `/api/users/${userId}/temporary-password`,
+    undefined,
+    config,
+  )
 
   return unwrapApiResponse(response)
 }

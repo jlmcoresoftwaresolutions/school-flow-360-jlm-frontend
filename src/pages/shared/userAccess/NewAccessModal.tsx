@@ -270,6 +270,7 @@ export const NewAccessModal = (props: NewAccessModalProps) => {
                       formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
                     )
                   }
+                  placeholder={t("userAccess.form.phonePlaceholder")}
                   ref={controller.field.ref}
                   title={t("userAccess.form.phoneLabel")}
                   type="tel"

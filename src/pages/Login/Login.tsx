@@ -40,21 +40,32 @@ const commonTagStartIconProps: Omit<IconProps, "name"> = {
 // such as a missing "@" or domain before a request is spent on them.
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
+// A nickname as the backend makes them: 3 to 60 letters, digits, ".", "_" or "-" (case doesn't matter
+// to sign in).
+const nicknamePattern = /^[a-z0-9._-]{3,60}$/i
+
+// What signs in: an e-mail (with an "@") or a nickname (without one).
+const isValidLogin = (value: string) => {
+  const login = value.trim()
+
+  return login.includes("@") ? emailPattern.test(login) : nicknamePattern.test(login)
+}
+
 const signInErrorId = "login-sign-in-error"
 
 type SignInError = "invalidCredentials" | "sessionLimitExpired" | "signInUnavailable"
 
-// Sign-in held back by the backend after repeated wrong passwords (its 429): for which e-mail, and the
-// wait announced when it started, in whole minutes.
+// Sign-in held back by the backend after repeated wrong passwords (its 429): for which e-mail or
+// nickname, and the wait announced when it started, in whole minutes.
 type SignInLock = {
-  email: string
+  login: string
   minutes: number
 }
 
 // The wait when the 429 doesn't say how long (no readable Retry-After): the backend's shortest lock.
 const defaultLockSeconds = 60
 
-const normalizeEmail = (email: string) => email.trim().toLowerCase()
+const normalizeLogin = (login: string) => login.trim().toLowerCase()
 
 // The challenge of the login's 409 SESSION_LIMIT_REACHED, if the error carries a usable one.
 const toSessionLimitChallenge = (error: unknown): SessionLimitChallenge | null => {
@@ -70,11 +81,13 @@ const toSessionLimitChallenge = (error: unknown): SessionLimitChallenge | null =
   }
 }
 
-// The entry page of the app. There is no sign-up here on purpose: accounts are created for users,
-// never by them. On success the session is stored (see utils/session) and the user goes back to the
+// The entry page of the app, signing in with the e-mail or the nickname (a student without an e-mail
+// has only the nickname) and the password. There is no sign-up here on purpose: accounts are created
+// for users, never by them. Someone who signs in with a temporary password is sent by the routes to
+// create their own first. On success the session is stored (see utils/session) and the user goes back to the
 // page they were sent from (?redirect=, only an in-app path) or home; the router keeps a signed-in
 // user from coming back here (see routes.tsx). Arriving with ?expired=1 says the session ended.
-// Repeated wrong passwords make the backend hold the e-mail back for a while (its 429: 1 minute on the
+// Repeated wrong passwords make the backend hold the e-mail or nickname back for a while (its 429: 1 minute on the
 // 3rd, 3 minutes on every 5th), shown as a countdown on the button. With 5 sessions already open, the
 // person picks one to end and signs in in the same step (SessionLimitDialog).
 export const Login = () => {
@@ -82,9 +95,9 @@ export const Login = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { control, formState, handleSubmit, register } = useForm<LoginRequest>({
-    defaultValues: { email: "", password: "" },
+    defaultValues: { login: "", password: "" },
   })
-  const typedEmail = useWatch({ control, name: "email" })
+  const typedLogin = useWatch({ control, name: "login" })
   const lockCountdown = useCountdown()
 
   const [signInError, setSignInError] = useState<SignInError | null>(null)
@@ -95,13 +108,13 @@ export const Login = () => {
   const credentialsRejected = signInError === "invalidCredentials"
   const sessionExpired = searchParams.get(sessionExpiredParam) === "1"
   const redirectPath = getSafeRedirectPath(searchParams.get(loginRedirectParam)) ?? homePath
-  // Only the locked e-mail is held back: typing another one frees the button.
-  const isLocked = lockCountdown.isRunning && signInLock?.email === normalizeEmail(typedEmail)
+  // Only the locked e-mail or nickname is held back: typing another one frees the button.
+  const isLocked = lockCountdown.isRunning && signInLock?.login === normalizeLogin(typedLogin)
 
   const clearSignInError = () => setSignInError(null)
 
-  const startLock = (email: string, seconds: number) => {
-    setSignInLock({ email: normalizeEmail(email), minutes: Math.ceil(seconds / 60) })
+  const startLock = (login: string, seconds: number) => {
+    setSignInLock({ login: normalizeLogin(login), minutes: Math.ceil(seconds / 60) })
     lockCountdown.start(seconds)
   }
 
@@ -121,11 +134,11 @@ export const Login = () => {
     setSignInError(null)
 
     try {
-      await finishSignIn(await login(credentials))
+      await finishSignIn(await login({ ...credentials, login: credentials.login.trim() }))
     } catch (error) {
       const status = getErrorStatus(error)
 
-      // 401 is the backend's answer to a wrong e-mail/password, 429 to too many of them, a 409 with a
+      // 401 is the backend's answer to a wrong e-mail, nickname or password, 429 to too many of them, a 409 with a
       // challenge to a 6th session. Anything else (no response, a 5xx) isn't the user's fault, so they
       // are told to try again.
       if (status === 401) {
@@ -134,7 +147,7 @@ export const Login = () => {
       }
 
       if (status === 429) {
-        startLock(credentials.email, getRetryAfterSeconds(error) ?? defaultLockSeconds)
+        startLock(credentials.login, getRetryAfterSeconds(error) ?? defaultLockSeconds)
         return
       }
 
@@ -231,17 +244,19 @@ export const Login = () => {
                       the one message under the form. */}
                   <Input
                     aria-describedby={credentialsRejected ? signInErrorId : undefined}
+                    autoCapitalize="none"
                     autoComplete="username"
-                    error={errors.email?.message}
-                    placeholder={t("login.emailPlaceholder")}
-                    title={t("login.emailLabel")}
-                    type="email"
+                    error={errors.login?.message}
+                    placeholder={t("login.loginPlaceholder")}
+                    spellCheck={false}
+                    title={t("login.loginLabel")}
+                    type="text"
                     invalid={credentialsRejected}
                     required
-                    {...register("email", {
+                    {...register("login", {
                       onChange: clearSignInError,
-                      pattern: { message: t("login.emailInvalid"), value: emailPattern },
-                      required: t("login.emailRequired"),
+                      required: t("login.loginRequired"),
+                      validate: (value) => isValidLogin(value) || t("login.loginInvalid"),
                     })}
                   />
 

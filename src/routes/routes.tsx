@@ -4,7 +4,7 @@ import { createBrowserRouter, Navigate, redirect } from "react-router-dom"
 import { GlobalLoading } from "@/components"
 import type { UserContext } from "@/models"
 import { canOpenPage } from "@/utils/access"
-import { buildLoginUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/authRedirect"
+import { buildLoginUrl, buildPasswordChangeUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/authRedirect"
 import { clearSession, getSessionState, getSessionToken, hasSession, updateSessionContext } from "@/utils/session"
 
 import { getPageKey, pageRoles } from "./access"
@@ -73,7 +73,8 @@ const getContext = async (stored: UserContext | null | undefined): Promise<UserC
 // asked for (to come back to it after signing in); a session whose access token expired is renewed,
 // and one that can't be goes to the login saying it expired. A page the user's roles don't open (see
 // pageRoles) sends them to the access-denied page. Coming back from the login goes through this same check, so a page they
-// can no longer open stays closed. The loader's data is who signed in, which the AppShell shows.
+// can no longer open stays closed. Someone who signed in with a temporary password goes to create their
+// own first, and comes back here after. The loader's data is who signed in, which the AppShell shows.
 const requireSession = async (args: LoaderFunctionArgs): Promise<Response | UserContext | null> => {
   const { pathname, search } = new URL(args.request.url)
   const toLogin = (sessionExpired: boolean) =>
@@ -88,12 +89,45 @@ const requireSession = async (args: LoaderFunctionArgs): Promise<Response | User
   }
 
   const context = await getContext(state.session.context)
+  if (context?.mustChangePassword) return redirect(buildPasswordChangeUrl(paths.changePassword, `${pathname}${search}`))
+
   const pageKey = getPageKey(pathname)
 
   // A page the roles don't open says so on its own page, without telling anything about the one asked for.
   if (pageKey && !canOpenPage(context, pageRoles[pageKey])) return redirect(paths.accessDenied)
 
   return context
+}
+
+// The password change a temporary password forces. Without a session it goes to the login (which
+// brings the person back here); a session that doesn't need the change goes on to the page it was
+// headed for, or home. Whether it is needed is read from /api/me every time, never from the stored
+// reading, which may be older than the backend's own answer (its 403 PASSWORD_CHANGE_REQUIRED sends
+// here too): trusting it could bounce the person between this page and the refused one. When /api/me
+// can't be read, the page still opens: the backend decides.
+const requirePendingPasswordChange = async (args: LoaderFunctionArgs): Promise<Response | null> => {
+  const { pathname, search, searchParams } = new URL(args.request.url)
+  const toLogin = (sessionExpired: boolean) =>
+    redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired }))
+
+  const state = await getSessionState()
+  if (state.status === "none") return toLogin(false)
+
+  if (state.status === "stale" && !(await renewForLoader())) {
+    clearSession()
+    return toLogin(true)
+  }
+
+  try {
+    const { getMe } = await import("@/services/me")
+    const context = await getMe({ showLoading: false })
+    await updateSessionContext(context)
+    if (context.mustChangePassword) return null
+  } catch {
+    return null
+  }
+
+  return redirect(getSafeRedirectPath(searchParams.get(loginRedirectParam)) ?? homePath)
 }
 
 // The AppShell's loader runs again on every change of page (not only when the layout first mounts),
@@ -153,6 +187,16 @@ export const router = createBrowserRouter([
       return { Component: ResetPassword }
     },
     path: paths.resetPassword,
+  },
+  // Outside the AppShell: until the temporary password is changed, the backend answers nothing else.
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
+      const { ChangePassword } = await import("@/pages/ChangePassword")
+      return { Component: ChangePassword }
+    },
+    loader: requirePendingPasswordChange,
+    path: paths.changePassword,
   },
   // No redirect either: an invitation link works whoever is signed in in this browser.
   {

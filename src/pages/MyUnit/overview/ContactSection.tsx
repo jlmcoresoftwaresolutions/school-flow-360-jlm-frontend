@@ -45,6 +45,7 @@ export const ContactSection = (props: ContactSectionProps) => {
           <Input
             error={errors.contactEmail?.message}
             maxLength={contactEmailMaxLength}
+            placeholder={t("myUnit.overview.contactEmailPlaceholder")}
             title={t("myUnit.overview.contactEmail")}
             type="email"
             required
@@ -68,6 +69,7 @@ export const ContactSection = (props: ContactSectionProps) => {
                 onChange={(event) =>
                   controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, country))
                 }
+                placeholder={t("myUnit.overview.contactPhonePlaceholder")}
                 ref={controller.field.ref}
                 title={t("myUnit.overview.contactPhone")}
                 type="tel"

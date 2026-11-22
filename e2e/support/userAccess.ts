@@ -447,7 +447,7 @@ export const signInAndOpen = async (page: Page, path: string, context?: Item) =>
   )
 
   await page.goto("/login")
-  await page.getByRole("textbox", { name: "E-mail" }).fill("diretor@schoolflow360.com.br")
+  await page.getByRole("textbox", { name: "E-mail ou apelido" }).fill("diretor@schoolflow360.com.br")
   await page.getByLabel(/^Senha/).fill("senha-correta")
   await page.getByRole("button", { name: "Entrar" }).click()
   await expect(page).toHaveURL(/\/home$/)

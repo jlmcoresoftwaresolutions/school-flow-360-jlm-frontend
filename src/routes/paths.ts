@@ -11,6 +11,8 @@ export const paths = {
   activeSessions: "/access-logs/active-sessions",
   audit: "/access-logs/audit",
   billing: "/finance/billing",
+  // Where a temporary password forces the person to create their own before anything else (not in the menu).
+  changePassword: "/change-password",
   classDiary: "/academic/class-diary",
   classes: "/academic/classes",
   contactSupport: "/help/contact-support",

@@ -4,7 +4,9 @@ import type { Assignment, RoleCode } from "../users/users"
 // `roles` are the effective ones, already joined across the active assignments; `admin` says whether
 // one of them is ADMIN (an Admin can do everything a Secretaria can). An assignment in a unit that was
 // inactivated is still listed but grants nothing. `phone` and `version` are for editing the own
-// profile (PUT /api/me/profile); a login answered before them may lack both.
+// profile (PUT /api/me/profile); a login answered before them may lack both. `mustChangePassword` says
+// the person signed in with a temporary password and must create their own before anything else (every
+// other call answers 403 PASSWORD_CHANGE_REQUIRED meanwhile).
 export type UserContext = {
   admin: boolean
   assignments: Assignment[]
@@ -12,8 +14,16 @@ export type UserContext = {
   fullName: string | null
   roles: RoleCode[]
   userId: number
+  mustChangePassword?: boolean
   phone?: string | null
   version?: number
+}
+
+// Body of POST /api/me/password: the person changes their own password, proving the current one (the
+// temporary one, after a temporary password). The new one has 12 to 128 characters and differs from it.
+export type PasswordChangeRequest = {
+  currentPassword: string
+  newPassword: string
 }
 
 // Body of PUT /api/me/profile and PUT /api/users/{id}/profile: a replacement of the only two fields a

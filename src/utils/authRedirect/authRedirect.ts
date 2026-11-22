@@ -50,3 +50,24 @@ export const endExpiredSession = (loginPath: string): void => {
 
   window.location.replace(buildLoginUrl(loginPath, { from: `${pathname}${search}${hash}`, sessionExpired: true }))
 }
+
+// The password change page that a temporary password forces, carrying the page to go to afterwards
+// (left out when it is the root or the change page itself).
+export const buildPasswordChangeUrl = (changePasswordPath: string, from?: string): string => {
+  const redirectPath = getSafeRedirectPath(from)
+  const redirectPathname = redirectPath?.split(/[?#]/)[0]
+
+  if (!redirectPath || redirectPathname === "/" || redirectPathname === changePasswordPath) return changePasswordPath
+
+  return `${changePasswordPath}?${new URLSearchParams({ [loginRedirectParam]: redirectPath }).toString()}`
+}
+
+// A call refused because the person must change a temporary password first (403
+// PASSWORD_CHANGE_REQUIRED): the app reloads on the change page, which brings them back here after.
+// The session stays: changing the password is all it takes to go on.
+export const requirePasswordChange = (changePasswordPath: string): void => {
+  const { hash, pathname, search } = window.location
+  if (pathname === changePasswordPath) return
+
+  window.location.replace(buildPasswordChangeUrl(changePasswordPath, `${pathname}${search}${hash}`))
+}

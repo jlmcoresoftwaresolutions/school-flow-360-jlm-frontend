@@ -186,6 +186,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
                 disabled={disabled}
                 maxLength={3}
                 onChange={handleRgbChange("r")}
+                placeholder="0"
                 size="small"
                 style={{ width: spacing[64] }}
                 title="R"
@@ -196,6 +197,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
                 disabled={disabled}
                 maxLength={3}
                 onChange={handleRgbChange("g")}
+                placeholder="0"
                 size="small"
                 style={{ width: spacing[64] }}
                 title="G"
@@ -206,6 +208,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
                 disabled={disabled}
                 maxLength={3}
                 onChange={handleRgbChange("b")}
+                placeholder="0"
                 size="small"
                 style={{ width: spacing[64] }}
                 title="B"
