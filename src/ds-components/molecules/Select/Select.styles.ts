@@ -12,11 +12,13 @@ export const SelectWrapper = styled.div`
 export type SelectStylesConfig = {
   borderRadius: string
   elevated: boolean
+  size: "medium" | "small"
   hasError?: boolean
 }
 
 export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfig<Option, false> => {
-  const { borderRadius, elevated, hasError } = config
+  const { borderRadius, elevated, hasError, size } = config
+  const isSmall = size === "small"
 
   // An error keeps the border red even while focused, so the state doesn't vanish on focus.
   const borderColorFor = (isFocused: boolean) => {
@@ -36,7 +38,7 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
       boxShadow: state.isFocused ? "none" : elevated ? shadows.sm : shadows.none,
       cursor: state.isDisabled ? "not-allowed" : "pointer",
       minHeight: "unset",
-      padding: `${spacing[12]} ${spacing[4]}`,
+      padding: `${isSmall ? spacing[8] : spacing[12]} ${spacing[4]}`,
       transition: `border-color ${motion.duration.normal} ${motion.easing.ease}`,
     }),
     dropdownIndicator: (base) => ({
@@ -84,6 +86,7 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
         borderRadius,
         color: state.isSelected ? colors.neutral[0] : colors.neutral[900],
         cursor: "pointer",
+        fontSize: isSmall ? `${typography.fontSize.sm}px` : undefined,
         padding: `${spacing[8]} ${spacing[12]}`,
       }
     },
@@ -98,7 +101,7 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
     valueContainer: (base) => ({
       ...base,
       fontFamily: typography.fontFamily.sans,
-      fontSize: typography.fontSize.md,
+      fontSize: isSmall ? typography.fontSize.sm : typography.fontSize.md,
       padding: `0 ${spacing[8]}`,
     }),
   }

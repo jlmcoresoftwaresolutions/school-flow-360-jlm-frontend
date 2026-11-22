@@ -159,7 +159,10 @@ export const ptPT: TranslationResource = {
   common: {
     cancel: "Cancelar",
     close: "Fechar",
+    collapseFilters: "Ocultar filtros",
     edit: "Editar",
+    expandFilters: "Expandir filtros",
+    filters: "Filtros",
     hidePassword: "Ocultar palavra-passe",
     loading: "A carregar...",
     nextPage: "Página seguinte",

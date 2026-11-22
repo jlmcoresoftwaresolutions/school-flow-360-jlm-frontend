@@ -169,19 +169,23 @@ export const UnitsTab = (props: UnitsTabProps) => {
         ) : (
           <FieldGroup>
             <FilterBar
-              clearDisabled={!hasFilters}
               clearLabel={t("myUnit.units.clearFilters")}
+              collapseLabel={t("common.collapseFilters")}
+              expandLabel={t("common.expandFilters")}
+              hasActiveFilters={hasFilters}
               label={t("myUnit.units.filtersLabel")}
               onClear={clearFilters}
               onSearchChange={setSearch}
               searchLabel={t("myUnit.units.searchLabel")}
               searchPlaceholder={t("myUnit.units.searchPlaceholder")}
               searchValue={search}
+              title={t("common.filters")}
             >
               <Select
                 noOptionsMessage={t("common.noOptions")}
                 onChange={(option) => setStatusFilter((option?.value as StatusFilter | undefined) ?? "all")}
                 options={statusOptions}
+                size="small"
                 title={t("myUnit.units.status")}
                 value={statusOptions.find((option) => option.value === statusFilter) ?? null}
               />

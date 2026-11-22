@@ -56,6 +56,11 @@ const meta: Meta<typeof Select> = {
       description:
         "Marks the select as required (native form validation and aria-required). Also adds a red asterisk to the title.",
     },
+    size: {
+      control: "select",
+      description: "Font size and padding level of the field: small or medium. Defaults to medium.",
+      options: ["small", "medium"],
+    },
     title: { control: "text", description: "Label rendered above the select" },
   },
   component: Select,
@@ -102,6 +107,11 @@ export const BorderRadiuses: Story = {
       ))}
     </div>
   ),
+}
+
+// The size prop set to small, a compact field with a smaller font, padding and chevron
+export const Small: Story = {
+  args: { size: "small", title: "Turno" },
 }
 
 // The isDisabled prop, forwarded straight through to react-select

@@ -13,6 +13,9 @@ import { getSelectStyles, SelectWrapper } from "./Select.styles"
 // message under the field reaches the custom Input below through this context instead.
 const SelectMessageContext = createContext<string | undefined>(undefined)
 
+// The size reaches the dropdown indicator the same way, to shrink its chevron with the field.
+const SelectSizeContext = createContext<"medium" | "small">("medium")
+
 export type SelectOption = {
   label: string
   value: string
@@ -34,6 +37,7 @@ type SelectOwnProps = {
   noOptionsMessage?: string
   placeholder?: string
   required?: boolean
+  size?: "medium" | "small"
   style?: CSSProperties
   title?: string
   value?: SelectOption | null
@@ -43,19 +47,23 @@ type SelectOwnProps = {
 
 export type SelectProps = SelectOwnProps
 
-const DropdownIndicator = (props: DropdownIndicatorProps<SelectOption, false>) => (
-  <components.DropdownIndicator {...props}>
-    <Icon
-      color="secondary"
-      name="chevron-down"
-      size={16}
-      style={{
-        transform: props.selectProps.menuIsOpen ? "rotate(180deg)" : "rotate(0deg)",
-        transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
-      }}
-    />
-  </components.DropdownIndicator>
-)
+const DropdownIndicator = (props: DropdownIndicatorProps<SelectOption, false>) => {
+  const size = useContext(SelectSizeContext)
+
+  return (
+    <components.DropdownIndicator {...props}>
+      <Icon
+        color="secondary"
+        name="chevron-down"
+        size={size === "small" ? 12 : 16}
+        style={{
+          transform: props.selectProps.menuIsOpen ? "rotate(180deg)" : "rotate(0deg)",
+          transition: `transform ${motion.duration.fast} ${motion.easing.ease}`,
+        }}
+      />
+    </components.DropdownIndicator>
+  )
+}
 
 // Adds the message under the field to the input's own description (react-select's aria-describedby
 // points at its placeholder), and announces required, which react-select only enforces natively.
@@ -92,6 +100,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
     options,
     placeholder,
     required,
+    size = "medium",
     style,
     title,
     value,
@@ -107,6 +116,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
     borderRadius: borderRadiusLevels[borderRadius],
     elevated,
     hasError: Boolean(error),
+    size,
   })
 
   return (
@@ -116,36 +126,38 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
           {title}
         </FieldLabel>
       )}
-      <SelectMessageContext.Provider value={error || helperText ? messageId : undefined}>
-        <ReactSelect
-          aria-errormessage={error ? messageId : undefined}
-          aria-label={ariaLabel}
-          aria-invalid={error ? true : undefined}
-          classNamePrefix="select"
-          components={{ DropdownIndicator, Input }}
-          defaultValue={defaultValue}
-          inputId={selectId}
-          isDisabled={isDisabled}
-          maxMenuHeight={maxMenuHeight}
-          // Portaled with a fixed position, the menu would not follow the control if an ancestor (a Modal
-          // body, the page) scrolled, so scrolling outside the menu is blocked while it is open.
-          menuPortalTarget={typeof document === "undefined" ? undefined : document.body}
-          menuPosition="fixed"
-          menuShouldBlockScroll
-          name={name}
-          noOptionsMessage={() => noOptionsMessage}
-          onBlur={onBlur}
-          onChange={onChange}
-          onMenuClose={() => setIsMenuOpen(false)}
-          onMenuOpen={() => setIsMenuOpen(true)}
-          options={options}
-          placeholder={placeholder}
-          ref={ref}
-          required={required}
-          styles={selectStyles}
-          value={value}
-        />
-      </SelectMessageContext.Provider>
+      <SelectSizeContext.Provider value={size}>
+        <SelectMessageContext.Provider value={error || helperText ? messageId : undefined}>
+          <ReactSelect
+            aria-errormessage={error ? messageId : undefined}
+            aria-label={ariaLabel}
+            aria-invalid={error ? true : undefined}
+            classNamePrefix="select"
+            components={{ DropdownIndicator, Input }}
+            defaultValue={defaultValue}
+            inputId={selectId}
+            isDisabled={isDisabled}
+            maxMenuHeight={maxMenuHeight}
+            // Portaled with a fixed position, the menu would not follow the control if an ancestor (a Modal
+            // body, the page) scrolled, so scrolling outside the menu is blocked while it is open.
+            menuPortalTarget={typeof document === "undefined" ? undefined : document.body}
+            menuPosition="fixed"
+            menuShouldBlockScroll
+            name={name}
+            noOptionsMessage={() => noOptionsMessage}
+            onBlur={onBlur}
+            onChange={onChange}
+            onMenuClose={() => setIsMenuOpen(false)}
+            onMenuOpen={() => setIsMenuOpen(true)}
+            options={options}
+            placeholder={placeholder}
+            ref={ref}
+            required={required}
+            styles={selectStyles}
+            value={value}
+          />
+        </SelectMessageContext.Provider>
+      </SelectSizeContext.Provider>
       <FieldMessage
         error={error}
         helperText={helperText}

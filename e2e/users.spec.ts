@@ -36,6 +36,7 @@ test.describe("user list", () => {
     const { calls } = await mockUserAccessApi(page)
     await signInAndOpen(page, usersPath)
     await expect(rowOf(page, "Pedro Lima")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Limpar filtros" })).toHaveCount(0)
 
     await page.getByRole("searchbox", { name: "Buscar usuários" }).fill("maria")
     await expect(rowOf(page, "Pedro Lima")).toHaveCount(0)
@@ -43,6 +44,7 @@ test.describe("user list", () => {
     expect(lastCall(calls, "GET", "/api/users")?.query.q).toBe("maria")
 
     await page.getByRole("button", { name: "Limpar filtros" }).click()
+    await expect(page.getByRole("button", { name: "Limpar filtros" })).toHaveCount(0)
     await pick(page, page, /^Situação/, "Inativos")
     await expect(rowOf(page, "Maria Souza")).toHaveCount(0)
     await expect(rowOf(page, "Pedro Lima")).toBeVisible()

@@ -25,6 +25,16 @@ describe("DateInput", () => {
     expect(screen.getByPlaceholderText("dd/mm/aaaa").tagName).toBe("INPUT")
   })
 
+  it("defaults to the medium size and applies the small one", () => {
+    const { rerender } = render(<DateInput title="Data" />)
+
+    expect(screen.getByRole("textbox")).toHaveStyle({ paddingLeft: spacing[12] })
+
+    rerender(<DateInput size="small" title="Data" />)
+
+    expect(screen.getByRole("textbox")).toHaveStyle({ paddingLeft: spacing[8] })
+  })
+
   it("renders the title as a label associated with the input", () => {
     render(<DateInput title="Data de nascimento" />)
 
