@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
 import { Button, Text } from "../../atoms"
+import { ActionMenu } from "../../molecules"
 import { Modal, type ModalProps } from "./Modal"
 
 // Modal is controlled, so every story wraps it in a button that owns the open state.
@@ -39,6 +40,11 @@ const meta: Meta<typeof Modal> = {
     footer: {
       control: false,
       description: "Element rendered in the bottom bar, usually the action buttons. No bar without it.",
+    },
+    headerAction: {
+      control: false,
+      description:
+        "Element rendered in the header, before the X button, usually an ActionMenu with the actions of the content. Escape pressed inside its open menu closes the menu, not the modal.",
     },
     onClose: {
       control: false,
@@ -102,6 +108,23 @@ export const LongContent: Story = {
       </Text>
     )),
     footer: <Button>Entendi</Button>,
+  },
+}
+
+// The headerAction prop placing an actions menu in the header, before the X button
+export const WithHeaderAction: Story = {
+  args: {
+    footer: <Button>Entendi</Button>,
+    headerAction: (
+      <ActionMenu
+        items={[
+          { icon: "pen-outline", key: "edit", label: "Editar dados" },
+          { icon: "lock-outline", key: "inactivate", label: "Inativar", tone: "danger" },
+        ]}
+        size="small"
+        triggerLabel="Ações da unidade"
+      />
+    ),
   },
 }
 

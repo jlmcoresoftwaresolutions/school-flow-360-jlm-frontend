@@ -11,6 +11,7 @@ import {
   StyledModalDialog,
   StyledModalFooter,
   StyledModalHeader,
+  StyledModalHeaderActions,
   StyledModalOverlay,
 } from "./Modal.styles"
 
@@ -22,6 +23,7 @@ export type ModalProps = {
   closeLabel?: string
   closeOnBackdropClick?: boolean
   footer?: ReactNode
+  headerAction?: ReactNode
   size?: ModalSize
   style?: CSSProperties
   onClose: () => void
@@ -39,6 +41,7 @@ export const Modal = (props: ModalProps) => {
     closeLabel = "Fechar",
     closeOnBackdropClick = true,
     footer,
+    headerAction,
     onClose,
     open,
     size = "md",
@@ -74,7 +77,14 @@ export const Modal = (props: ModalProps) => {
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        onClose()
+        // Escape belongs to the menu or list open under the focus (an ActionMenu, a Select): it closes
+        // that, and only the next one closes the modal.
+        const target = event.target
+        const isInOpenPopup =
+          target instanceof Element &&
+          (target.closest("[role='menu']") !== null || target.getAttribute("aria-expanded") === "true")
+
+        if (!isInOpenPopup) onClose()
         return
       }
 
@@ -133,7 +143,10 @@ export const Modal = (props: ModalProps) => {
             {title}
           </Text>
 
-          <IconButton icon="x" label={closeLabel} onClick={onClose} size="small" tooltip="" />
+          <StyledModalHeaderActions>
+            {headerAction}
+            <IconButton icon="x" label={closeLabel} onClick={onClose} size="small" tooltip="" />
+          </StyledModalHeaderActions>
         </StyledModalHeader>
 
         <StyledModalBody>{children}</StyledModalBody>

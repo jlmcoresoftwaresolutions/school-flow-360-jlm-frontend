@@ -16,6 +16,17 @@ const openDetails = async (page: Page, name: string) => {
   return page.getByRole("dialog", { name: "Detalhes do usuário" })
 }
 
+// The actions on the user live in the menu in the header of the details.
+const chooseAction = async (page: Page, details: ReturnType<Page["getByRole"]>, name: string) => {
+  await details.getByRole("button", { name: "Ações sobre o usuário" }).click()
+  await page.getByRole("menuitem", { name }).click()
+}
+
+const openActions = async (page: Page, details: ReturnType<Page["getByRole"]>) => {
+  await details.getByRole("button", { name: "Ações sobre o usuário" }).click()
+  return page.getByRole("menu", { name: "Ações sobre o usuário" })
+}
+
 const pick = async (page: Page, scope: ReturnType<Page["getByRole"]>, label: RegExp, option: string) => {
   await scope.getByRole("combobox", { name: label }).click()
   await page.getByRole("option", { exact: true, name: option }).click()
@@ -27,7 +38,7 @@ test.describe("changing access", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Alterar acesso" }).click()
+    await chooseAction(page, details, "Alterar acesso")
     const dialog = page.getByRole("dialog", { name: "Alterar acesso de Maria Souza" })
 
     await dialog.getByRole("button", { name: "Remover Professor · Unidade Caucaia" }).click()
@@ -72,7 +83,7 @@ test.describe("changing access", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Alterar acesso" }).click()
+    await chooseAction(page, details, "Alterar acesso")
     const dialog = page.getByRole("dialog", { name: "Alterar acesso de Maria Souza" })
 
     await dialog.getByRole("button", { name: "Remover Secretaria · Unidade Aldeota" }).click()
@@ -101,7 +112,7 @@ test.describe("changing access", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Alterar acesso" }).click()
+    await chooseAction(page, details, "Alterar acesso")
     const dialog = page.getByRole("dialog", { name: "Alterar acesso de Maria Souza" })
     await dialog.getByRole("button", { name: "Adicionar papel" }).click()
     const row = dialog.getByRole("group", { name: "Papel 1" })
@@ -125,7 +136,7 @@ test.describe("revoking access", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Revogar acesso" }).click()
+    await chooseAction(page, details, "Revogar acesso")
     const dialog = page.getByRole("dialog", { name: "Revogar acesso de Maria Souza" })
 
     await expect(dialog.getByRole("button", { name: "Revisar" })).toBeDisabled()
@@ -151,7 +162,7 @@ test.describe("revoking access", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Revogar acesso" }).click()
+    await chooseAction(page, details, "Revogar acesso")
     const dialog = page.getByRole("dialog", { name: "Revogar acesso de Maria Souza" })
     await dialog.getByRole("checkbox", { name: "Secretaria · Unidade Aldeota" }).check()
     await dialog.getByRole("checkbox", { name: "Professor · Unidade Caucaia" }).check()
@@ -168,7 +179,7 @@ test.describe("account status", () => {
     await signInAndOpen(page, usersPath)
 
     let details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Inativar conta" }).click()
+    await chooseAction(page, details, "Inativar conta")
     const confirm = page.getByRole("dialog", { name: "Inativar a conta de Maria Souza?" })
     await expect(confirm).toContainText("a conta pode ser reativada depois")
     await confirm.getByRole("button", { name: "Inativar conta" }).click()
@@ -178,7 +189,7 @@ test.describe("account status", () => {
     details = page.getByRole("dialog", { name: "Detalhes do usuário" })
     await expect(details).toContainText("Inativo")
 
-    await details.getByRole("button", { name: "Reativar conta" }).click()
+    await chooseAction(page, details, "Reativar conta")
     await page
       .getByRole("dialog", { name: "Reativar a conta de Maria Souza?" })
       .getByRole("button", {
@@ -193,7 +204,7 @@ test.describe("account status", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Inativar conta" }).click()
+    await chooseAction(page, details, "Inativar conta")
     const confirm = page.getByRole("dialog", { name: "Inativar a conta de Maria Souza?" })
     await confirm.getByRole("button", { name: "Inativar conta" }).click()
 
@@ -202,12 +213,28 @@ test.describe("account status", () => {
 })
 
 test.describe("profile and own account", () => {
+  test("closes the actions menu on Escape without closing the details", async ({ page }) => {
+    await mockUserAccessApi(page)
+    await signInAndOpen(page, usersPath)
+
+    const details = await openDetails(page, "Maria Souza")
+    const menu = await openActions(page, details)
+    await expect(menu.getByRole("menuitem", { name: "Alterar acesso" })).toBeVisible()
+
+    await page.keyboard.press("Escape")
+    await expect(menu).toHaveCount(0)
+    await expect(details).toBeVisible()
+
+    await page.keyboard.press("Escape")
+    await expect(details).toHaveCount(0)
+  })
+
   test("edits a user's name and phone", async ({ page }) => {
     const { calls } = await mockUserAccessApi(page)
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "Maria Souza")
-    await details.getByRole("button", { name: "Editar dados" }).click()
+    await chooseAction(page, details, "Editar dados")
     const dialog = page.getByRole("dialog", { name: "Editar dados de Maria Souza" })
 
     await dialog.getByRole("textbox", { name: /^Nome completo/ }).fill("")
@@ -231,10 +258,8 @@ test.describe("profile and own account", () => {
     await signInAndOpen(page, usersPath)
 
     const details = await openDetails(page, "João Silva")
-    await expect(details.getByRole("button", { name: "Editar dados" })).toBeVisible()
-    await expect(details.getByRole("button", { name: "Alterar acesso" })).toHaveCount(0)
-    await expect(details.getByRole("button", { name: "Revogar acesso" })).toHaveCount(0)
-    await expect(details.getByRole("button", { name: "Inativar conta" })).toHaveCount(0)
+    const menu = await openActions(page, details)
+    await expect(menu.getByRole("menuitem")).toHaveText(["Editar dados"])
     await expect(details).toContainText("Esta é a sua conta")
   })
 
@@ -245,8 +270,7 @@ test.describe("profile and own account", () => {
 
     const details = await openDetails(page, users[2].fullName as string)
     await expect(details).toContainText(users[2].email as string)
-    await expect(details.getByRole("button", { name: "Editar dados" })).toHaveCount(0)
-    await expect(details.getByRole("button", { name: "Alterar acesso" })).toHaveCount(0)
+    await expect(details.getByRole("button", { name: "Ações sobre o usuário" })).toHaveCount(0)
   })
 
   test("keeps a Secretaria away from the access outside its reach", async ({ page }) => {
@@ -266,7 +290,7 @@ test.describe("profile and own account", () => {
     await signInAndOpen(page, usersPath, secretariaContext)
 
     const details = await openDetails(page, "Rui Lopes")
-    await details.getByRole("button", { name: "Alterar acesso" }).click()
+    await chooseAction(page, details, "Alterar acesso")
     const dialog = page.getByRole("dialog", { name: "Alterar acesso de Rui Lopes" })
     await expect(dialog.getByRole("button", { name: "Remover Professor · Unidade Aldeota" })).toBeVisible()
     await expect(dialog.getByRole("button", { name: /Remover Professor · / })).toHaveCount(1)

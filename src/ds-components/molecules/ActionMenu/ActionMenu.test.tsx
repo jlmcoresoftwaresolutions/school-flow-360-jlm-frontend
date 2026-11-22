@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
-import { colors } from "@/foundation"
+import { colors, spacing } from "@/foundation"
 
 import { ActionMenu, type ActionMenuItem, type ActionMenuProps } from "./ActionMenu"
 
@@ -285,6 +285,12 @@ describe("ActionMenu", () => {
 
     expect(screen.getByRole("button", { name: "Ações da unidade" })).toHaveClass("custom")
     expect(screen.getByRole("button", { name: "Ações da unidade" })).toHaveStyle({ margin: "4px" })
+  })
+
+  it("sizes the icon-only trigger with size, like an IconButton", () => {
+    render(<ActionMenu items={[{ key: "a", label: "A" }]} size="large" triggerLabel="Ações" />)
+
+    expect(screen.getByRole("button", { name: "Ações" })).toHaveStyle({ width: spacing[48] })
   })
 
   it("shows triggerIcon on the trigger instead of the kebab", () => {

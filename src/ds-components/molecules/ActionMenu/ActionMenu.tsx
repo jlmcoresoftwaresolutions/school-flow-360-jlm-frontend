@@ -2,7 +2,7 @@ import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { useEffect, useId, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 
-import type { IconName } from "@/ds-components/atoms"
+import type { IconButtonProps, IconName } from "@/ds-components/atoms"
 import { Icon, IconButton } from "@/ds-components/atoms"
 import { spacing } from "@/foundation"
 
@@ -29,6 +29,7 @@ export type ActionMenuProps = {
   align?: "end" | "start"
   className?: string
   disabled?: boolean
+  size?: IconButtonProps["size"]
   style?: CSSProperties
   trigger?: ReactNode
   triggerIcon?: IconName
@@ -78,6 +79,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
     className,
     disabled,
     items,
+    size,
     style,
     trigger,
     triggerIcon = "dots-vertical",
@@ -211,6 +213,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
           label={triggerLabel}
           onClick={isOpen ? () => setMenuStyle(null) : open}
           ref={triggerRef}
+          size={size}
           style={style}
           tooltip=""
         />
