@@ -27,8 +27,10 @@ export type TableColumnProps<T> = {
 
 // Lowercase on purpose: never rendered as JSX, only read for its props (see the `columns` filter
 // below) and attached onto Table as Table.Column - a capitalized top-level const here would make
-// eslint-plugin-react-refresh treat it as an orphaned, un-exported component.
-const columnMarker = <T,>(_props: TableColumnProps<T>) => null
+// eslint-plugin-react-refresh treat it as an orphaned, un-exported component. The props are typed on the
+// variable, not as a parameter, since the function never reads them: they only tell TypeScript what
+// <Table.Column> accepts.
+const columnMarker: <T>(props: TableColumnProps<T>) => null = () => null
 
 type SortOrder = "asc" | "desc"
 
