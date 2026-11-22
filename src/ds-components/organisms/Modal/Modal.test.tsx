@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 
+import { ActionMenu } from "../../molecules"
 import { Modal, type ModalProps } from "./Modal"
 
 const renderModal = (overrides: Partial<ModalProps> = {}) => {
@@ -80,6 +81,33 @@ describe("Modal", () => {
     const { onClose } = renderModal()
 
     fireEvent.keyDown(document, { key: "Escape" })
+
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it("renders headerAction in the header, before the X button", () => {
+    renderModal({ headerAction: <button type="button">Ações</button> })
+
+    const header = screen.getByRole("heading", { name: "Editar unidade" }).parentElement as HTMLElement
+    const buttons = Array.from(header.querySelectorAll("button")).map(
+      (button) => button.getAttribute("aria-label") ?? button.textContent,
+    )
+
+    expect(buttons).toEqual(["Ações", "Fechar"])
+  })
+
+  it("leaves Escape to an open menu inside the modal instead of closing the modal", () => {
+    const { onClose } = renderModal({
+      headerAction: <ActionMenu items={[{ key: "a", label: "Editar dados" }]} triggerLabel="Ações" />,
+    })
+
+    fireEvent.click(screen.getByRole("button", { name: "Ações" }))
+    fireEvent.keyDown(screen.getByRole("menuitem", { name: "Editar dados" }), { key: "Escape" })
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+
+    fireEvent.keyDown(screen.getByRole("button", { name: "Ações" }), { key: "Escape" })
 
     expect(onClose).toHaveBeenCalledTimes(1)
   })

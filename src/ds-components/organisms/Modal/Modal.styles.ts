@@ -88,6 +88,13 @@ export const StyledModalHeader = styled.div`
   padding: ${spacing[24]} ${spacing[24]} ${spacing[16]};
 `
 
+export const StyledModalHeaderActions = styled.div`
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: ${spacing[8]};
+`
+
 export const StyledModalBody = styled.div`
   display: flex;
   flex: 1;

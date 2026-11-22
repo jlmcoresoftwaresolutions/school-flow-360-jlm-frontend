@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { toast } from "@/components"
 import { Badge, Button, Text } from "@/ds-components/atoms"
-import { DescriptionList, StateMessage } from "@/ds-components/molecules"
+import { ActionMenu, type ActionMenuItem, DescriptionList, StateMessage } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import { useSignedInUser } from "@/hooks"
 import type { RoleCode, UserView } from "@/models"
@@ -14,13 +14,7 @@ import { defaultCountry } from "@/utils/countries"
 import { formatPhoneForDisplay } from "@/utils/phone"
 
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
-import {
-  AccessItem,
-  AccessItems,
-  ActionRow,
-  DetailsSection,
-  DetailsSections,
-} from "../shared/userAccess/userAccess.styles"
+import { AccessItem, AccessItems, DetailsSection, DetailsSections } from "../shared/userAccess/userAccess.styles"
 import type { DirectoryUnit } from "../shared/userAccess/useUnitDirectory"
 
 // What the operator can do from the details, each in its own dialog.
@@ -43,7 +37,7 @@ type LoadState = { kind: "failed" } | { kind: "loaded"; user: UserView } | { kin
 // the access revoked before. The capabilities are informative: what a role allows follows the
 // institution's policy, never a per-person setting. The actions the backend allows the operator on
 // this user (eligibleActions: change roles and units, revoke, inactivate or reactivate) open from
-// here, as does editing the name and phone (EDIT_PROFILE). Nobody changes their own access (matrix
+// the actions menu in the header, as does editing the name and phone (EDIT_PROFILE). Nobody changes their own access (matrix
 // ACC-M09): on the own account only the name and phone can be edited. The backend still offers the
 // Admin the access actions on its own account (protected by the last-Admin rule only), pending Lucas's
 // decision; the screen keeps them hidden for everyone.
@@ -89,47 +83,61 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
   // Nothing to show until the user arrives: the global loading overlay covers the wait.
   if (state.kind === "loading") return null
 
-  const renderActions = (user: UserView) => {
+  // The actions menu in the header: the same actions, in the same order, that the backend allows on this user.
+  const renderActionMenu = (user: UserView) => {
     const isSelf = signedIn?.userId === user.id
     const can = (action: UserView["eligibleActions"][number]) => !isSelf && user.eligibleActions.includes(action)
-    const canEditProfile = user.eligibleActions.includes("EDIT_PROFILE")
 
-    if (!canEditProfile) return null
+    if (!user.eligibleActions.includes("EDIT_PROFILE")) return undefined
 
-    return (
-      <DetailsSection aria-label={t("users.manage.title")}>
-        <ActionRow>
-          <Button onClick={() => onAction("profile", user)} size="small" variant="outlined">
-            {t("users.manage.editProfile")}
-          </Button>
-          {can("EDIT_ASSIGNMENTS") && (
-            <Button onClick={() => onAction("assignments", user)} size="small" variant="outlined">
-              {t("users.manage.changeAccess")}
-            </Button>
-          )}
-          {can("REVOKE") && user.assignments.some((assignment) => assignment.status === "ACTIVE") && (
-            <Button color="danger" onClick={() => onAction("revoke", user)} size="small" variant="outlined">
-              {t("users.manage.revoke")}
-            </Button>
-          )}
-          {can("INACTIVATE") && (
-            <Button color="danger" onClick={() => onAction("inactivate", user)} size="small" variant="outlined">
-              {t("users.status.inactivate")}
-            </Button>
-          )}
-          {can("REACTIVATE") && (
-            <Button onClick={() => onAction("reactivate", user)} size="small" variant="outlined">
-              {t("users.status.reactivate")}
-            </Button>
-          )}
-        </ActionRow>
-        {isSelf && (
-          <Text color="secondary" fontSize="sm">
-            {t("users.manage.selfNotice")}
-          </Text>
-        )}
-      </DetailsSection>
-    )
+    const items: ActionMenuItem[] = [
+      {
+        icon: "pen-outline",
+        key: "profile",
+        label: t("users.manage.editProfile"),
+        onClick: () => onAction("profile", user),
+      },
+    ]
+
+    if (can("EDIT_ASSIGNMENTS")) {
+      items.push({
+        icon: "shield-user-outline",
+        key: "assignments",
+        label: t("users.manage.changeAccess"),
+        onClick: () => onAction("assignments", user),
+      })
+    }
+
+    if (can("REACTIVATE")) {
+      items.push({
+        icon: "unlock-outline",
+        key: "reactivate",
+        label: t("users.status.reactivate"),
+        onClick: () => onAction("reactivate", user),
+      })
+    }
+
+    if (can("REVOKE") && user.assignments.some((assignment) => assignment.status === "ACTIVE")) {
+      items.push({
+        icon: "x-circle-outline",
+        key: "revoke",
+        label: t("users.manage.revoke"),
+        onClick: () => onAction("revoke", user),
+        tone: "danger",
+      })
+    }
+
+    if (can("INACTIVATE")) {
+      items.push({
+        icon: "lock-outline",
+        key: "inactivate",
+        label: t("users.status.inactivate"),
+        onClick: () => onAction("inactivate", user),
+        tone: "danger",
+      })
+    }
+
+    return <ActionMenu items={items} size="small" triggerLabel={t("users.manage.title")} />
   }
 
   const renderUser = (user: UserView) => {
@@ -139,7 +147,11 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
 
     return (
       <DetailsSections>
-        {renderActions(user)}
+        {signedIn?.userId === user.id && user.eligibleActions.includes("EDIT_PROFILE") && (
+          <Text color="secondary" fontSize="sm">
+            {t("users.manage.selfNotice")}
+          </Text>
+        )}
 
         <DescriptionList
           emptyValue={t("common.notInformed")}
@@ -237,6 +249,7 @@ export const UserDetailsModal = (props: UserDetailsModalProps) => {
           {t("common.close")}
         </Button>
       }
+      headerAction={state.kind === "loaded" ? renderActionMenu(state.user) : undefined}
       onClose={onClose}
       size="md"
       title={t("users.details.title")}

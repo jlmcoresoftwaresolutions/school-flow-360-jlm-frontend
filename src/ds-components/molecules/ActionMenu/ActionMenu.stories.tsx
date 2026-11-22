@@ -30,6 +30,12 @@ const meta: Meta<typeof ActionMenu> = {
       description:
         "The actions: key, label and optionally icon, tone (danger paints it red), disabled, onClick and checked. Selecting one runs its onClick and closes the menu. An item with checked set (true or false) becomes a menuitemradio, for picking one option out of several.",
     },
+    size: {
+      control: "select",
+      description:
+        "Size of the icon-only trigger, as in IconButton (medium by default). Ignored when a custom trigger is given.",
+      options: ["small", "medium", "large"],
+    },
     trigger: {
       control: false,
       description:
@@ -56,6 +62,13 @@ type Story = StoryObj<typeof ActionMenu>
 
 // Default rendering, a kebab button opening a menu with a destructive item in red
 export const Default: Story = {}
+
+// The size prop set to small, a compact trigger for tight spots such as a modal header
+export const SmallTrigger: Story = {
+  args: {
+    size: "small",
+  },
+}
 
 // The align prop set to start, lining the menu up with the trigger's left edge
 export const AlignedToStart: Story = {
