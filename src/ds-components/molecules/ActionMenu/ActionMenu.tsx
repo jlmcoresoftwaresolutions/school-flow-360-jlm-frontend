@@ -42,10 +42,30 @@ const enabledItemSelector = "[role^='menuitem']:not(:disabled)"
 const menuGap = parseInt(spacing[4])
 const estimatedItemHeight = parseInt(spacing[40])
 
+// Where the menu is drawn for a trigger at `rect`: below it, or above when there isn't room below (judged
+// from a rough row height, since the menu isn't measured yet), lined up with the trigger's `align` edge.
+const menuPosition = (rect: DOMRect, itemCount: number, align: "end" | "start"): CSSProperties => {
+  const estimatedHeight = itemCount * estimatedItemHeight
+  const spaceBelow = window.innerHeight - rect.bottom
+  const opensUpward = spaceBelow < estimatedHeight && rect.top > spaceBelow
+
+  const position: CSSProperties = opensUpward
+    ? { bottom: window.innerHeight - rect.top + menuGap }
+    : { top: rect.bottom + menuGap }
+
+  if (align === "end") position.right = window.innerWidth - rect.right
+  else position.left = rect.left
+
+  return position
+}
+
+const isOutOfView = (rect: DOMRect) =>
+  rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth
+
 // A "more actions" button (the kebab of a table row) that opens a menu of actions. The menu is
 // rendered in a portal at fixed coordinates so it isn't clipped by overflow on a parent; it opens
-// downward, or upward when there isn't room below, and closes when the page scrolls or resizes since
-// those would leave it detached from its trigger. Keyboard follows the WAI-ARIA menu pattern: focus
+// downward, or upward when there isn't room below, follows its trigger when the page scrolls (closing
+// once the trigger leaves the screen) and closes when the window resizes. Keyboard follows the WAI-ARIA menu pattern: focus
 // moves into the menu when it opens, arrows/Home/End move between the enabled items, Escape closes it
 // and returns focus to the trigger. It owns no copy: triggerLabel is the trigger's accessible name.
 // An item with `checked` set (true or false) is a menuitemradio instead, for picking one option out
@@ -73,6 +93,7 @@ export const ActionMenu = (props: ActionMenuProps) => {
   const [menuStyle, setMenuStyle] = useState<CSSProperties | null>(null)
 
   const isOpen = menuStyle !== null
+  const itemCount = items.length
 
   useEffect(() => {
     if (!isOpen) return
@@ -83,6 +104,10 @@ export const ActionMenu = (props: ActionMenuProps) => {
       menuRef.current?.querySelector<HTMLElement>(enabledItemSelector)
 
     initialItem?.focus()
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
 
     const handleMouseDown = (event: MouseEvent) => {
       const target = event.target as Node
@@ -99,15 +124,19 @@ export const ActionMenu = (props: ActionMenuProps) => {
 
     const handleDetach = () => setMenuStyle(null)
 
-    // Only a scroll that moves the trigger detaches the menu: the page, or a container around the
-    // trigger. Others don't - e.g. a text field elsewhere scrolling its own text back when it loses
-    // focus to the menu.
+    // Only a scroll that moves the trigger matters: the page, or a container around the trigger (not,
+    // e.g., a text field elsewhere scrolling its own text back when it loses focus to the menu). The menu
+    // then follows the trigger - which also covers the scroll that brought the trigger into view just
+    // before it was clicked, whose event arrives after the menu opened - and closes once the trigger is
+    // off the screen.
     const handleScroll = (event: Event) => {
       const target = event.target
+      const trigger = triggerRef.current
 
-      if (target instanceof Node && triggerRef.current && !target.contains(triggerRef.current)) return
+      if (!trigger || (target instanceof Node && !target.contains(trigger))) return
 
-      handleDetach()
+      const rect = trigger.getBoundingClientRect()
+      setMenuStyle(isOutOfView(rect) ? null : menuPosition(rect, itemCount, align))
     }
 
     document.addEventListener("mousedown", handleMouseDown)
@@ -121,25 +150,13 @@ export const ActionMenu = (props: ActionMenuProps) => {
       window.removeEventListener("resize", handleDetach)
       window.removeEventListener("scroll", handleScroll, true)
     }
-  }, [isOpen])
+  }, [align, isOpen, itemCount])
 
   const open = () => {
     const trigger = triggerRef.current
     if (!trigger) return
 
-    const rect = trigger.getBoundingClientRect()
-    const estimatedHeight = items.length * estimatedItemHeight
-    const spaceBelow = window.innerHeight - rect.bottom
-    const opensUpward = spaceBelow < estimatedHeight && rect.top > spaceBelow
-
-    const position: CSSProperties = opensUpward
-      ? { bottom: window.innerHeight - rect.top + menuGap }
-      : { top: rect.bottom + menuGap }
-
-    if (align === "end") position.right = window.innerWidth - rect.right
-    else position.left = rect.left
-
-    setMenuStyle(position)
+    setMenuStyle(menuPosition(trigger.getBoundingClientRect(), itemCount, align))
   }
 
   const handleSelect = (item: ActionMenuItem) => {

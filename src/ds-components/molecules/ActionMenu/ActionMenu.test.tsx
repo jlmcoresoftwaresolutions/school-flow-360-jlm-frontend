@@ -129,13 +129,36 @@ describe("ActionMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument()
   })
 
-  it("closes when the page scrolls or the window resizes", () => {
+  it("follows the trigger when the page scrolls, closing once the trigger is off the screen", () => {
+    const rect = { bottom: 140, left: 0, right: 40, top: 100 }
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() =>
+      DOMRect.fromRect({
+        height: rect.bottom - rect.top,
+        width: rect.right - rect.left,
+        x: rect.left,
+        y: rect.top,
+      }),
+    )
     renderMenu()
 
     openMenu()
-    fireEvent.scroll(window)
+    expect(screen.getByRole("menu")).toHaveStyle({ top: "144px" })
 
+    rect.top = 60
+    rect.bottom = 100
+    fireEvent.scroll(window)
+    expect(screen.getByRole("menu")).toHaveStyle({ top: "104px" })
+
+    rect.top = -80
+    rect.bottom = -40
+    fireEvent.scroll(window)
     expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+
+    vi.restoreAllMocks()
+  })
+
+  it("closes when the window resizes", () => {
+    renderMenu()
 
     openMenu()
     fireEvent(window, new Event("resize"))
