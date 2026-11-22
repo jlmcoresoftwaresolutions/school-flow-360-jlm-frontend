@@ -63,12 +63,16 @@ export type PeopleSearchParams = {
   unitId?: number
 }
 
+// What of a person matched the searched term: the name (without accents), or an exact document, e-mail
+// (of login or contact), nickname or student code.
+export type PeopleSearchMatch = "DOCUMENT" | "EMAIL" | "NAME" | "NICKNAME" | "STUDENT_CODE"
+
 // One person found by the search, within the operator's reach. `matchedBy` says what matched the search.
 export type PeopleSearchItem = {
   fullName: string
   guardianStatus: PersonStatus | null
   id: number
-  matchedBy: string[]
+  matchedBy: PeopleSearchMatch[]
   maskedDocument: string | null
   nickname: string | null
   studentCode: string | null

@@ -21,7 +21,7 @@ import { httpClient, toFileFormData, unwrapApiResponse } from "../httpClient"
 // person out of reach answers 404 PERSON_NOT_FOUND. The search and the check are limited to 30 a minute
 // per person (429 SEARCH_RATE_LIMITED) and audited without the typed value.
 
-// NOT USED YET. GET /api/people/search: students and guardians in the operator's reach (a Secretaria:
+// USED by the people search page. GET /api/people/search: students and guardians in the operator's reach (a Secretaria:
 // its units; an Admin: everyone), the document always masked. 400 for an invalid filter.
 export const searchPeople = async (params: PeopleSearchParams, config?: RequestConfig): Promise<PeopleSearchPage> => {
   const response = await httpClient.get<ApiResponse<PeopleSearchPage>>("/api/people/search", { ...config, params })
