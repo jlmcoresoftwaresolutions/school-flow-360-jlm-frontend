@@ -20,6 +20,7 @@ export const paths = {
   exports: "/reports/exports",
   financialReports: "/reports/financial",
   forgotPassword: "/forgot-password",
+  guardians: "/administration/guardians",
   helpCenter: "/help/help-center",
   home: "/home",
   integrations: "/settings/integrations",
@@ -42,6 +43,7 @@ export const paths = {
   // No page: its loader ends the session and goes to the login. Being a navigation, it goes through
   // the unsaved-changes warning like any other way out of a page.
   signOut: "/sign-out",
+  students: "/administration/students",
   subjects: "/academic/subjects",
   tuition: "/finance/tuition",
   userList: "/users/list",
