@@ -156,7 +156,10 @@ export const ptBR = {
   common: {
     cancel: "Cancelar",
     close: "Fechar",
+    collapseFilters: "Ocultar filtros",
     edit: "Editar",
+    expandFilters: "Expandir filtros",
+    filters: "Filtros",
     hidePassword: "Ocultar senha",
     loading: "Carregando...",
     nextPage: "Próxima página",

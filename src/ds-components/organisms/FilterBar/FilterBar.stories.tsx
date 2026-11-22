@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
-import { Badge, Button } from "../../atoms"
+import { Badge, Button, Icon } from "../../atoms"
 import { Select, type SelectOption } from "../../molecules"
 import { Table } from "../Table"
 import { FilterBar, type FilterBarProps } from "./FilterBar"
@@ -55,8 +55,12 @@ const FilteredListing = (props: Partial<FilterBarProps>) => {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <FilterBar
-        actions={<Button>Nova unidade</Button>}
-        clearDisabled={!hasFilters}
+        actions={
+          <Button size="small" startIcon={<Icon color="inherit" name="plus" size={16} />}>
+            Nova unidade
+          </Button>
+        }
+        hasActiveFilters={hasFilters}
         clearLabel="Limpar filtros"
         label="Filtrar unidades"
         onClear={clear}
@@ -87,19 +91,36 @@ const meta: Meta<typeof FilterBar> = {
   argTypes: {
     actions: {
       control: false,
-      description: "Content of the trailing side, typically the listing's primary action.",
+      description:
+        "Content on the right of the bottom row, after the clear button, typically the listing's primary action.",
     },
     children: {
       control: false,
-      description: "The filter controls (e.g. Selects). Each one gets an evenly shared, wrapping slot.",
-    },
-    clearDisabled: {
-      control: "boolean",
-      description: "Disables the clear button, e.g. while no filter is applied.",
+      description:
+        "The filter controls (e.g. Selects), in a grid of at most four equal columns, each filling its column. A narrow screen has fewer columns.",
     },
     clearLabel: {
       control: "text",
       description: "Text of the clear button. The button only shows when both this and onClear are given.",
+    },
+    collapseLabel: {
+      control: "text",
+      description:
+        'Label of the button while the filters are open. Defaults to "Ocultar filtros"; a page passes the translated one.',
+    },
+    defaultOpen: {
+      control: "boolean",
+      description: "Whether the filters start open. Defaults to true.",
+    },
+    expandLabel: {
+      control: "text",
+      description:
+        'Label of the button while the filters are hidden. Defaults to "Expandir filtros"; a page passes the translated one.',
+    },
+    hasActiveFilters: {
+      control: "boolean",
+      description:
+        "Whether any filter or search is set. The clear button only shows while this is true (and clearLabel and onClear are given). Defaults to false.",
     },
     label: {
       control: "text",
@@ -125,6 +146,10 @@ const meta: Meta<typeof FilterBar> = {
       control: "text",
       description: "Current search text. The search field is controlled.",
     },
+    title: {
+      control: "text",
+      description: 'Title in the first row. Defaults to "Filtros"; a page passes the translated one.',
+    },
   },
   component: FilterBar,
   parameters: { layout: "padded" },
@@ -137,8 +162,30 @@ export default meta
 
 type Story = StoryObj<typeof FilterBar>
 
-// Default rendering: search, two labelled filters, clear and a primary action, filtering a table below
+// Default rendering: the title, two labelled filters, then the search on the left with clear and a primary
+// action on the right (all small), filtering a table below
 export const Default: Story = {}
+
+// The defaultOpen prop set to false, starting with the filters hidden behind the "Expandir filtros" button
+export const StartsCollapsed: Story = {
+  args: { defaultOpen: false },
+}
+
+// The title prop renaming the heading of the first row
+export const CustomTitle: Story = {
+  args: { title: "Filtrar unidades" },
+}
+
+// Six filters wrapping onto a second row of the four-column grid, each one filling its column
+export const ManyFilters: Story = {
+  render: () => (
+    <FilterBar clearLabel="Limpar filtros" label="Filtrar alunos" onClear={() => {}}>
+      {["Turma", "Turno", "Série", "Unidade", "Situação", "Ano letivo"].map((title) => (
+        <Select key={title} options={statusOptions} placeholder="Todos" title={title} />
+      ))}
+    </FilterBar>
+  ),
+}
 
 // Only the search field, with no filters, clear button or actions
 export const SearchOnly: Story = {

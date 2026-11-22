@@ -165,7 +165,10 @@ export const fr: TranslationResource = {
   common: {
     cancel: "Annuler",
     close: "Fermer",
+    collapseFilters: "Masquer les filtres",
     edit: "Modifier",
+    expandFilters: "Afficher les filtres",
+    filters: "Filtres",
     hidePassword: "Masquer le mot de passe",
     loading: "Chargement...",
     nextPage: "Page suivante",

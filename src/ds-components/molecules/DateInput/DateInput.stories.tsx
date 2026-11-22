@@ -51,6 +51,11 @@ const meta: Meta<typeof DateInput> = {
       description:
         "Marks the input as required (native validation and aria-required). Also adds a red asterisk to the title.",
     },
+    size: {
+      control: "select",
+      description: "Font size and padding level of the field, as in Input: small, medium or large. Defaults to medium.",
+      options: ["small", "medium", "large"],
+    },
     title: { control: "text", description: "Label rendered above the input" },
   },
   component: DateInput,
@@ -140,6 +145,11 @@ export const WithError: Story = {
     helperText: "Primeiro dia letivo.",
     title: "Início do ano letivo",
   },
+}
+
+// The size prop set to small, a compact field with a smaller font and calendar icon
+export const Small: Story = {
+  args: { size: "small", title: "Data" },
 }
 
 // The required prop, which also adds a red asterisk to the title

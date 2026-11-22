@@ -159,7 +159,10 @@ export const en: TranslationResource = {
   common: {
     cancel: "Cancel",
     close: "Close",
+    collapseFilters: "Hide filters",
     edit: "Edit",
+    expandFilters: "Show filters",
+    filters: "Filters",
     hidePassword: "Hide password",
     loading: "Loading...",
     nextPage: "Next page",

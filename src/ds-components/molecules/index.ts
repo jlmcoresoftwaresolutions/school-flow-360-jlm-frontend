@@ -1,6 +1,7 @@
 export * from "./ActionMenu"
 export * from "./Breadcrumb"
 export * from "./Checkbox"
+export * from "./Collapsible"
 export * from "./ColorPicker"
 export * from "./DateInput"
 export * from "./DescriptionList"

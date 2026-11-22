@@ -64,6 +64,7 @@ type DateInputOwnProps = {
   name?: string
   placeholder?: string
   required?: boolean
+  size?: InputSize
   style?: CSSProperties
   title?: string
   value?: Date | null
@@ -92,6 +93,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
     onChange,
     placeholder,
     required,
+    size = "medium",
     style,
     title,
     value,
@@ -146,7 +148,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
                 $borderRadius={borderRadiusLevels[borderRadius]}
                 $elevated={elevated}
                 $hasError={Boolean(error)}
-                $size="medium"
+                $size={size}
                 ref={ref}
               />
             }
@@ -180,7 +182,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
               </ClearButton>
             )}
             <CalendarIconWrapper>
-              <Icon color="secondary" name="calendar-outline" size={20} />
+              <Icon color="secondary" name="calendar-outline" size={size === "small" ? 16 : 20} />
             </CalendarIconWrapper>
           </InputIconsWrapper>
         </DatePickerWrapper>
