@@ -148,6 +148,7 @@ export const MyProfile = () => {
           <Input
             error={errors.fullName?.message}
             maxLength={newAccessLimits.fullName}
+            placeholder={t("myProfile.namePlaceholder")}
             title={t("userAccess.form.nameLabel")}
             required
             {...form.register("fullName", {
@@ -169,6 +170,7 @@ export const MyProfile = () => {
                     formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
                   )
                 }
+                placeholder={t("myProfile.phonePlaceholder")}
                 ref={controller.field.ref}
                 title={t("userAccess.form.phoneLabel")}
                 type="tel"

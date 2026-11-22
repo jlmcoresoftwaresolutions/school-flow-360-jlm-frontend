@@ -120,6 +120,7 @@ export const ProfileModal = (props: ProfileModalProps) => {
           <Input
             error={errors.fullName?.message}
             maxLength={newAccessLimits.fullName}
+            placeholder={t("userAccess.form.namePlaceholder")}
             title={t("userAccess.form.nameLabel")}
             required
             {...form.register("fullName", {
@@ -142,6 +143,7 @@ export const ProfileModal = (props: ProfileModalProps) => {
                     formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
                   )
                 }
+                placeholder={t("userAccess.form.phonePlaceholder")}
                 ref={controller.field.ref}
                 title={t("userAccess.form.phoneLabel")}
                 type="tel"

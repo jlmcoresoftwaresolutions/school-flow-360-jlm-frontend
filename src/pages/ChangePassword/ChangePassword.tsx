@@ -69,7 +69,11 @@ export const ChangePassword = () => {
                 noValidate
                 style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}
               >
-                <PasswordChangeFields currentLabel={t("passwordChange.temporaryLabel")} form={form} />
+                <PasswordChangeFields
+                  currentLabel={t("passwordChange.temporaryLabel")}
+                  currentPlaceholder={t("passwordChange.temporaryPlaceholder")}
+                  form={form}
+                />
 
                 {failure && (
                   <Text as="p" color="danger" fontSize="sm" role="alert">

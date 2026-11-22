@@ -41,6 +41,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
           <Input
             error={errors.institutionalName?.message}
             maxLength={institutionalNameMaxLength}
+            placeholder={t("myUnit.overview.institutionalNamePlaceholder")}
             title={t("myUnit.overview.institutionalName")}
             required
             {...section.form.register("institutionalName", {
@@ -51,6 +52,7 @@ export const InstitutionalSection = (props: InstitutionalSectionProps) => {
             error={errors.displayName?.message}
             helperText={t("myUnit.overview.displayNameHelper")}
             maxLength={displayNameMaxLength}
+            placeholder={t("myUnit.overview.displayNamePlaceholder")}
             title={t("myUnit.overview.displayName")}
             required
             {...section.form.register("displayName", {

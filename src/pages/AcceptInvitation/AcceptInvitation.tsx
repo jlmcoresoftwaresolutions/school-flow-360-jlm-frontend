@@ -309,6 +309,7 @@ export const AcceptInvitation = () => {
                       formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
                     )
                   }
+                  placeholder={t("acceptInvitation.phonePlaceholder")}
                   ref={controller.field.ref}
                   title={t("acceptInvitation.phoneLabel")}
                   type="tel"

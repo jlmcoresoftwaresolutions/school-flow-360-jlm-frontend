@@ -150,6 +150,7 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
         helperText={t("myUnit.validation.maxLength", { max: inactivationReasonMaxLength })}
         maxLength={inactivationReasonMaxLength}
         onChange={(event) => setReason(event.target.value)}
+        placeholder={t("myUnit.units.inactivationReasonPlaceholder")}
         title={t("myUnit.units.inactivationReason")}
         value={reason}
       />

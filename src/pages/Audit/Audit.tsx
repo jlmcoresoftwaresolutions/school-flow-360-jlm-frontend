@@ -250,6 +250,7 @@ export const Audit = () => {
           <DateInput
             maxDate={new Date()}
             onChange={changeFilter(setFrom)}
+            placeholder={t("common.datePlaceholder")}
             size="small"
             title={t("audit.from")}
             value={from}
@@ -257,6 +258,7 @@ export const Audit = () => {
           <DateInput
             maxDate={new Date()}
             onChange={changeFilter(setTo)}
+            placeholder={t("common.datePlaceholder")}
             size="small"
             title={t("audit.to")}
             value={to}
@@ -265,6 +267,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setActorUserId)(option?.value ?? "")}
             options={actorOptions}
+            placeholder={t("audit.allAuthors")}
             size="small"
             title={t("audit.author")}
             value={actorOptions.find((option) => option.value === actorUserId) ?? null}
@@ -273,6 +276,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setUnitId)(option?.value ?? "")}
             options={unitOptions}
+            placeholder={t("userAccess.allUnits")}
             size="small"
             title={t("userAccess.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
@@ -281,6 +285,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setEventKey)(option?.value ?? "")}
             options={eventOptions}
+            placeholder={t("audit.allEvents")}
             size="small"
             title={t("audit.eventType")}
             value={eventOptions.find((option) => option.value === eventKey) ?? null}
@@ -289,6 +294,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setResultFilter)((option?.value as AccessAuditResult | undefined) ?? "")}
             options={resultOptions}
+            placeholder={t("userAccess.allStatuses")}
             size="small"
             title={t("audit.result")}
             value={resultOptions.find((option) => option.value === resultFilter) ?? null}

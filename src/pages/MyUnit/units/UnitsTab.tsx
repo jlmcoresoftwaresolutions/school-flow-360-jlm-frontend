@@ -185,6 +185,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
                 noOptionsMessage={t("common.noOptions")}
                 onChange={(option) => setStatusFilter((option?.value as StatusFilter | undefined) ?? "all")}
                 options={statusOptions}
+                placeholder={t("myUnit.units.filterAll")}
                 size="small"
                 title={t("myUnit.units.status")}
                 value={statusOptions.find((option) => option.value === statusFilter) ?? null}

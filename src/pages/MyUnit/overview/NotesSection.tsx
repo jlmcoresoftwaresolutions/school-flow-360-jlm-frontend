@@ -31,6 +31,7 @@ export const NotesSection = (props: NotesSectionProps) => {
         <Textarea
           helperText={t("myUnit.validation.maxLength", { max: notesMaxLength })}
           maxLength={notesMaxLength}
+          placeholder={t("myUnit.overview.notesPlaceholder")}
           title={t("myUnit.overview.notesTitle")}
           {...section.form.register("internalNotes")}
         />

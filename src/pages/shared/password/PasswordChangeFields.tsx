@@ -10,13 +10,15 @@ export type PasswordChangeFieldsProps = {
   form: UseFormReturn<PasswordChangeValues>
   // How the current password is called: "Senha temporária" when a temporary password forces the change.
   currentLabel?: string
+  // The current password's placeholder, following `currentLabel`.
+  currentPlaceholder?: string
 }
 
 // The three fields of the own password change: the current password, the new one (with the policy as
 // its help) and its confirmation. The new one is checked here for the policy and for being different
 // from the current one, as the backend would refuse it.
 export const PasswordChangeFields = (props: PasswordChangeFieldsProps) => {
-  const { currentLabel, form } = props
+  const { currentLabel, currentPlaceholder, form } = props
 
   const { t } = useTranslation()
 
@@ -28,6 +30,7 @@ export const PasswordChangeFields = (props: PasswordChangeFieldsProps) => {
         autoComplete="current-password"
         error={errors.currentPassword?.message}
         hidePasswordLabel={t("common.hidePassword")}
+        placeholder={currentPlaceholder ?? t("passwordChange.currentPlaceholder")}
         showPasswordLabel={t("common.showPassword")}
         title={currentLabel ?? t("passwordChange.currentLabel")}
         type="password"
@@ -40,6 +43,7 @@ export const PasswordChangeFields = (props: PasswordChangeFieldsProps) => {
         error={errors.newPassword?.message}
         helperText={t("passwordChange.newHelper", passwordLength)}
         hidePasswordLabel={t("common.hidePassword")}
+        placeholder={t("passwordChange.newPlaceholder")}
         showPasswordLabel={t("common.showPassword")}
         title={t("passwordChange.newLabel")}
         type="password"
@@ -56,6 +60,7 @@ export const PasswordChangeFields = (props: PasswordChangeFieldsProps) => {
         autoComplete="new-password"
         error={errors.confirmPassword?.message}
         hidePasswordLabel={t("common.hidePassword")}
+        placeholder={t("passwordChange.confirmPlaceholder")}
         showPasswordLabel={t("common.showPassword")}
         title={t("passwordChange.confirmLabel")}
         type="password"
