@@ -239,17 +239,33 @@ export const Audit = () => {
     return (
       <ListContent>
         <FilterBar
-          clearDisabled={!hasFilters}
           clearLabel={t("userAccess.clearFilters")}
+          collapseLabel={t("common.collapseFilters")}
+          expandLabel={t("common.expandFilters")}
+          hasActiveFilters={hasFilters}
           label={t("audit.filtersLabel")}
           onClear={clearFilters}
+          title={t("common.filters")}
         >
-          <DateInput maxDate={new Date()} onChange={changeFilter(setFrom)} title={t("audit.from")} value={from} />
-          <DateInput maxDate={new Date()} onChange={changeFilter(setTo)} title={t("audit.to")} value={to} />
+          <DateInput
+            maxDate={new Date()}
+            onChange={changeFilter(setFrom)}
+            size="small"
+            title={t("audit.from")}
+            value={from}
+          />
+          <DateInput
+            maxDate={new Date()}
+            onChange={changeFilter(setTo)}
+            size="small"
+            title={t("audit.to")}
+            value={to}
+          />
           <Select
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setActorUserId)(option?.value ?? "")}
             options={actorOptions}
+            size="small"
             title={t("audit.author")}
             value={actorOptions.find((option) => option.value === actorUserId) ?? null}
           />
@@ -257,6 +273,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setUnitId)(option?.value ?? "")}
             options={unitOptions}
+            size="small"
             title={t("userAccess.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
           />
@@ -264,6 +281,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setEventKey)(option?.value ?? "")}
             options={eventOptions}
+            size="small"
             title={t("audit.eventType")}
             value={eventOptions.find((option) => option.value === eventKey) ?? null}
           />
@@ -271,6 +289,7 @@ export const Audit = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setResultFilter)((option?.value as AccessAuditResult | undefined) ?? "")}
             options={resultOptions}
+            size="small"
             title={t("audit.result")}
             value={resultOptions.find((option) => option.value === resultFilter) ?? null}
           />

@@ -3,7 +3,7 @@ import { createRef } from "react"
 import type { SelectInstance } from "react-select"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, colors, shadows, spacing, zIndex } from "@/foundation"
+import { borderRadiusLevels, colors, shadows, spacing, typography, zIndex } from "@/foundation"
 
 import { Select, type SelectOption } from "./Select"
 
@@ -148,6 +148,17 @@ describe("Select", () => {
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "zzz" } })
 
     expect(screen.getByText("No match")).toBeInTheDocument()
+  })
+
+  it("defaults to the medium size and applies the small one", () => {
+    const { container, rerender } = render(<Select options={options} title="Turno" />)
+
+    expect(container.querySelector(".select__control")).toHaveStyle({ padding: `${spacing[12]} ${spacing[4]}` })
+
+    rerender(<Select options={options} size="small" title="Turno" />)
+
+    expect(container.querySelector(".select__control")).toHaveStyle({ padding: `${spacing[8]} ${spacing[4]}` })
+    expect(container.querySelector(".select__value-container")).toHaveStyle({ fontSize: `${typography.fontSize.sm}px` })
   })
 
   it("renders the open menu in a portal on document.body, above the Modal layer", () => {

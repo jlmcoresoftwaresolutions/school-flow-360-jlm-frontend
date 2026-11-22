@@ -151,10 +151,18 @@ export const UserList = () => {
 
   const actions = (
     <>
-      <Button onClick={() => setNewAccess("register")} variant="outlined">
+      <Button
+        onClick={() => setNewAccess("register")}
+        size="small"
+        startIcon={<Icon color="inherit" name="user-add-outline" size={16} />}
+      >
         {t("userAccess.register")}
       </Button>
-      <Button onClick={() => setNewAccess("invite")} startIcon={<Icon color="inverse" name="plus" size={16} />}>
+      <Button
+        onClick={() => setNewAccess("invite")}
+        size="small"
+        startIcon={<Icon color="inherit" name="mail-outline" size={16} />}
+      >
         {t("userAccess.invite")}
       </Button>
     </>
@@ -220,19 +228,23 @@ export const UserList = () => {
       <ListContent>
         <FilterBar
           actions={actions}
-          clearDisabled={!hasFilters && search === ""}
           clearLabel={t("userAccess.clearFilters")}
+          collapseLabel={t("common.collapseFilters")}
+          expandLabel={t("common.expandFilters")}
+          hasActiveFilters={hasFilters || search !== ""}
           label={t("users.filtersLabel")}
           onClear={clearFilters}
           onSearchChange={changeFilter(setSearch)}
           searchLabel={t("users.searchLabel")}
           searchPlaceholder={t("users.searchPlaceholder")}
           searchValue={search}
+          title={t("common.filters")}
         >
           <Select
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setRoleCode)((option?.value as RoleCode | undefined) ?? "")}
             options={roleOptions}
+            size="small"
             title={t("userAccess.role")}
             value={roleOptions.find((option) => option.value === roleCode) ?? null}
           />
@@ -240,6 +252,7 @@ export const UserList = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setUnitId)(option?.value ?? "")}
             options={unitOptions}
+            size="small"
             title={t("userAccess.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
           />
@@ -247,6 +260,7 @@ export const UserList = () => {
             noOptionsMessage={t("common.noOptions")}
             onChange={(option) => changeFilter(setStatus)((option?.value as StatusFilter | undefined) ?? "")}
             options={statusOptions}
+            size="small"
             title={t("userAccess.status")}
             value={statusOptions.find((option) => option.value === status) ?? null}
           />
