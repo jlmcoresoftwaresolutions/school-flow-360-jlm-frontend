@@ -31,12 +31,12 @@ export const TooltipBalloon = styled.div<TooltipBalloonProps>`
           `}
       z-index: ${zIndex.tooltip};
       max-width: ${spacing[240]};
-      padding: ${spacing[8]} ${spacing[12]};
+      padding: ${spacing[4]} ${spacing[8]};
       border-radius: ${radius.sm};
       background: ${colors.neutral[900]};
       color: ${colors.neutral[0]};
-      font-size: ${typography.fontSize.sm}px;
-      line-height: ${typography.lineHeight.sm};
+      font-size: ${typography.fontSize.xs}px;
+      line-height: ${typography.lineHeight.xs};
       box-shadow: ${shadows.md};
       pointer-events: none;
       word-wrap: break-word;
