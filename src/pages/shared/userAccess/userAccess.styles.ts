@@ -162,6 +162,14 @@ export const AccessItem = styled.li`
   padding: ${spacing[12]} ${spacing[16]};
 `
 
+// An access with an action on its right (remove or keep it), the text taking the rest of the line.
+export const ActionableAccessItem = styled(AccessItem)`
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-right: ${spacing[8]};
+`
+
 // The actions on a user, side by side, wrapping on a narrow screen.
 export const ActionRow = styled.div`
   display: flex;

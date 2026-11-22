@@ -3,7 +3,7 @@ import { FormProvider, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { toast, useUnsavedChanges } from "@/components"
-import { Button, Text } from "@/ds-components/atoms"
+import { Button, IconButton, Text } from "@/ds-components/atoms"
 import { Checkbox } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import { useSignedInUser } from "@/hooks"
@@ -16,7 +16,7 @@ import { AccessChangeSummary } from "../shared/userAccess/AccessChangeSummary"
 import { AssignmentFields } from "../shared/userAccess/AssignmentFields"
 import { type AssignmentsFormValues, newAccessLimits } from "../shared/userAccess/newAccess"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
-import { AccessItem, AccessItems, DetailsSection, FormFields, RemoveSlot } from "../shared/userAccess/userAccess.styles"
+import { AccessItems, ActionableAccessItem, DetailsSection, FormFields } from "../shared/userAccess/userAccess.styles"
 import type { UnitDirectory } from "../shared/userAccess/useUnitDirectory"
 import { useUserActionErrors } from "./useUserActionErrors"
 
@@ -194,32 +194,29 @@ export const AssignmentsModal = (props: AssignmentsModalProps) => {
                   const label = accessLabel(assignment)
 
                   return (
-                    <AccessItem key={assignment.assignmentId}>
+                    <ActionableAccessItem key={assignment.assignmentId}>
                       <Text color={removed ? "danger" : "default"} fontSize="sm">
                         {removed ? t("users.assignments.willBeRemoved", { access: label }) : label}
                       </Text>
-                      <RemoveSlot style={{ justifyContent: "flex-start", paddingTop: 0 }}>
-                        {isLocked(assignment) ? (
-                          <Text color="secondary" fontSize="xs">
-                            {t("users.assignments.outOfReach")}
-                          </Text>
-                        ) : (
-                          <Button
-                            aria-label={
-                              removed
-                                ? t("users.assignments.keepLabel", { access: label })
-                                : t("users.assignments.removeLabel", { access: label })
-                            }
-                            color={removed ? "brand" : "danger"}
-                            onClick={() => toggleRemoved(assignment)}
-                            size="small"
-                            variant="link"
-                          >
-                            {removed ? t("users.assignments.keep") : t("userAccess.form.removeAssignment")}
-                          </Button>
-                        )}
-                      </RemoveSlot>
-                    </AccessItem>
+                      {isLocked(assignment) ? (
+                        <Text color="secondary" fontSize="xs">
+                          {t("users.assignments.outOfReach")}
+                        </Text>
+                      ) : (
+                        <IconButton
+                          color={removed ? "brand" : "danger"}
+                          icon={removed ? "undo" : "trash-outline"}
+                          label={
+                            removed
+                              ? t("users.assignments.keepLabel", { access: label })
+                              : t("users.assignments.removeLabel", { access: label })
+                          }
+                          onClick={() => toggleRemoved(assignment)}
+                          size="small"
+                          tooltip={removed ? t("users.assignments.keep") : t("userAccess.form.removeAssignment")}
+                        />
+                      )}
+                    </ActionableAccessItem>
                   )
                 })}
               </AccessItems>
