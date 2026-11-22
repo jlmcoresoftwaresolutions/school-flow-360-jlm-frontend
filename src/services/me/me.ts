@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   PasswordChangeRequest,
   ProfileUpdateRequest,
+  SelfStudent,
   SessionItem,
   UserContext,
   UserView,
@@ -58,4 +59,13 @@ export const updateMyProfile = async (request: ProfileUpdateRequest, config?: Re
 // to 128 characters), PASSWORD_UNCHANGED (the same as the current one).
 export const changeMyPassword = async (request: PasswordChangeRequest, config?: RequestConfig): Promise<void> => {
   await httpClient.post<ApiResponse<null>>("/api/me/password", request, config)
+}
+
+// NOT USED YET. GET /api/me/students: what the signed-in guardian (or student) sees of their own students -
+// only active links, with the responsibilities of their own link. GET /api/me/students/{id} answers 404
+// PERSON_NOT_FOUND for a student of another family.
+export const listMyStudents = async (config?: RequestConfig): Promise<SelfStudent[]> => {
+  const response = await httpClient.get<ApiResponse<SelfStudent[]>>("/api/me/students", config)
+
+  return unwrapApiResponse(response)
 }
