@@ -32,6 +32,7 @@ export const paths = {
   myUnit: "/administration/my-unit",
   notices: "/communication/notices",
   notifications: "/communication/notifications",
+  peopleSearch: "/administration/people-search",
   preferences: "/settings/preferences",
   profilesAndPermissions: "/users/profiles-and-permissions",
   recentAccess: "/access-logs/recent-access",

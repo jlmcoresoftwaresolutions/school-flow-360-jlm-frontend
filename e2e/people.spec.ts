@@ -133,6 +133,65 @@ test.describe("guardians list", () => {
   })
 })
 
+test.describe("people search", () => {
+  const searchPath = "/administration/people-search"
+
+  test("reads nothing until a term is searched, then shows who matched and how", async ({ page }) => {
+    const { calls } = await mockPeopleApi(page)
+    await signInAndOpen(page, searchPath)
+
+    await expect(page.getByRole("heading", { level: 1, name: "Pesquisar pessoas" })).toBeVisible()
+    await expect(page.getByText("Pesquise antes de cadastrar")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Pesquisar", exact: true })).toBeDisabled()
+    expect(lastCall(calls, "GET", "/api/people/search")).toBeUndefined()
+
+    await page.getByRole("searchbox", { name: "Pesquisar pessoas" }).fill("souza")
+    await page.getByRole("searchbox", { name: "Pesquisar pessoas" }).press("Enter")
+
+    await expect(rowOf(page, "Ana Beatriz Souza")).toContainText("Aluno · Ativo")
+    await expect(rowOf(page, "Ana Beatriz Souza")).toContainText("ALU-000001")
+    await expect(rowOf(page, "Ana Beatriz Souza")).toContainText("Nome")
+    // A person who is both: each record with its own status.
+    await expect(rowOf(page, "Fernanda Souza")).toContainText("Aluno · Rascunho")
+    await expect(rowOf(page, "Fernanda Souza")).toContainText("Responsável · Ativo")
+    await expect(rowOf(page, "Fernanda Souza")).toContainText("Unidade Aldeota, Unidade Caucaia")
+    expect(lastCall(calls, "GET", "/api/people/search")?.query).toMatchObject({ page: "0", q: "souza", type: "ANY" })
+  })
+
+  test("searches the same term again for each filter, and says nobody was found in reach", async ({ page }) => {
+    const { calls } = await mockPeopleApi(page)
+    await signInAndOpen(page, searchPath)
+
+    await page.getByRole("searchbox", { name: "Pesquisar pessoas" }).fill("gustavo.lima310")
+    await page.getByRole("button", { name: "Pesquisar", exact: true }).click()
+    await expect(rowOf(page, "Gustavo Lima")).toContainText("Apelido")
+    await expect(rowOf(page, "Gustavo Lima")).toContainText("Responsável · Inativo")
+
+    await pick(page, /^Tipo/, "Aluno")
+    await expect(table(page)).toContainText("Ninguém encontrado com essa pesquisa nas unidades que você acessa.")
+    expect(lastCall(calls, "GET", "/api/people/search")?.query).toMatchObject({
+      page: "0",
+      q: "gustavo.lima310",
+      type: "STUDENT",
+    })
+
+    // Clearing goes back to the start: nothing searched.
+    await page.getByRole("button", { name: "Limpar filtros" }).click()
+    await expect(page.getByText("Pesquise antes de cadastrar")).toBeVisible()
+    await expect(page.getByRole("searchbox", { name: "Pesquisar pessoas" })).toHaveValue("")
+  })
+
+  test("asks to wait when the search limit is reached", async ({ page }) => {
+    await mockPeopleApi(page, { listFailure: { search: { code: "SEARCH_RATE_LIMITED", status: 429 } } })
+    await signInAndOpen(page, searchPath)
+
+    await page.getByRole("searchbox", { name: "Pesquisar pessoas" }).fill("souza")
+    await page.getByRole("button", { name: "Pesquisar", exact: true }).click()
+
+    await expect(page.getByText("Muitas buscas em pouco tempo")).toBeVisible()
+  })
+})
+
 test.describe("people access", () => {
   test("opens the people pages for a Secretaria", async ({ page }) => {
     await mockPeopleApi(page)

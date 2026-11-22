@@ -94,12 +94,49 @@ export const guardians = [
   },
 ]
 
+// The people the global search finds: a student, a guardian who is also a student, and a guardian.
+export const searchablePeople = [
+  {
+    fullName: "Ana Beatriz Souza",
+    guardianStatus: null,
+    id: 201,
+    maskedDocument: "***.456.789-**",
+    nickname: "ana.souza482",
+    studentCode: "ALU-000001",
+    studentStatus: "ACTIVE",
+    types: ["STUDENT"],
+    units: [unitRef(1)],
+  },
+  {
+    fullName: "Fernanda Souza",
+    guardianStatus: "ACTIVE",
+    id: 301,
+    maskedDocument: "***.111.222-**",
+    nickname: "fernanda.souza120",
+    studentCode: "ALU-000009",
+    studentStatus: "DRAFT",
+    types: ["STUDENT", "GUARDIAN"],
+    units: [unitRef(1), unitRef(2)],
+  },
+  {
+    fullName: "Gustavo Lima",
+    guardianStatus: "INACTIVE",
+    id: 302,
+    maskedDocument: null,
+    nickname: "gustavo.lima310",
+    studentCode: null,
+    studentStatus: null,
+    types: ["GUARDIAN"],
+    units: [unitRef(2)],
+  },
+]
+
 type ListFailure = { code?: string; status: number }
 
 type PeopleOptions = {
   guardians?: Item[]
   // Answers every read of this list with an error (403, 429 SEARCH_RATE_LIMITED, 500...).
-  listFailure?: { guardians?: ListFailure; students?: ListFailure }
+  listFailure?: { guardians?: ListFailure; search?: ListFailure; students?: ListFailure }
   students?: Item[]
 }
 
@@ -190,6 +227,29 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (failure) return route.fulfill(apiError(failure.status, failure.code))
 
     const found = guardianList.filter((item) => matches(item, call.query)).map(withoutUnitIds)
+    return route.fulfill(apiAnswer(toPage(found, call.query)))
+  })
+
+  // The global search: by name (without accents), or an exact nickname or student code; the type, status
+  // and unit filters as the backend applies them, with what matched.
+  await page.route("**/api/people/search?*", (route) => {
+    const call = record(route.request())
+    const failure = options.listFailure?.search
+    if (failure) return route.fulfill(apiError(failure.status, failure.code))
+
+    const { q = "", status, type, unitId } = call.query
+    const found = searchablePeople
+      .map((person) => {
+        const matchedBy = []
+        if (fold(person.fullName).includes(fold(q))) matchedBy.push("NAME")
+        if (fold(person.nickname) === fold(q)) matchedBy.push("NICKNAME")
+        if (fold(person.studentCode) === fold(q)) matchedBy.push("STUDENT_CODE")
+        return { ...person, matchedBy }
+      })
+      .filter((person) => person.matchedBy.length > 0)
+      .filter((person) => !type || type === "ANY" || person.types.includes(type))
+      .filter((person) => !status || person.studentStatus === status || person.guardianStatus === status)
+      .filter((person) => !unitId || person.units.some((unit) => String(unit?.id) === unitId))
     return route.fulfill(apiAnswer(toPage(found, call.query)))
   })
 

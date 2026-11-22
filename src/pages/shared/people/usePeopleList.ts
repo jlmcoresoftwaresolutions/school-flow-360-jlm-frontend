@@ -10,7 +10,7 @@ export type PeopleListError = "failed" | "forbidden" | "rateLimited"
 
 // What a people list shows: the page asked for (by its request key, so a page of an earlier search or
 // filter is never shown under a new one), or why it couldn't be read. `current` is null while the
-// page for the present key is on its way.
+// page for the present key is on its way, and while there is nothing to read (no params).
 export type PeopleListState<T> = {
   current: { data: ApiItemsPage<T> } | { error: PeopleListError } | null
   reload: () => void
@@ -25,11 +25,12 @@ const toListError = (error: unknown): PeopleListError => {
   return "failed"
 }
 
-// Reads a page of a people list (students, guardians) for the given query, without the global overlay
-// (the table shows its own loading). A newer query drops the answer of an older one.
+// Reads a page of a people list (students, guardians, the people search) for the given query, without
+// the global overlay (the table shows its own loading). A newer query drops the answer of an older one.
+// Null params read nothing: the people search only reads once a term is searched.
 export const usePeopleList = <T, P>(
   load: (params: P, config?: RequestConfig) => Promise<ApiItemsPage<T>>,
-  params: P,
+  params: P | null,
 ): PeopleListState<T> => {
   const [reloadToken, setReloadToken] = useState(0)
   const [result, setResult] = useState<ListResult<T> | null>(null)
@@ -37,6 +38,8 @@ export const usePeopleList = <T, P>(
   const requestKey = `${JSON.stringify(params)}#${reloadToken}`
 
   useEffect(() => {
+    if (params === null) return
+
     let isStale = false
 
     const read = async () => {
