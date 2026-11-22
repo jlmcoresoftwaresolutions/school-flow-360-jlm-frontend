@@ -12,6 +12,7 @@ import { defaultCountry } from "@/utils/countries"
 import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalPhone } from "@/utils/phone"
 
 import { newAccessLimits } from "../shared/userAccess/newAccess"
+import { getPersonName } from "../shared/userAccess/personName"
 import { FormFields } from "../shared/userAccess/userAccess.styles"
 import { useUserActionErrors } from "./useUserActionErrors"
 
@@ -50,7 +51,7 @@ export const ProfileModal = (props: ProfileModalProps) => {
   const [failure, setFailure] = useState("")
 
   const { errors, isDirty, isSubmitting } = form.formState
-  const name = user.fullName || user.email
+  const name = getPersonName(user)
 
   useUnsavedChanges(isDirty)
 
@@ -65,7 +66,7 @@ export const ProfileModal = (props: ProfileModalProps) => {
     try {
       const saved = await updateUserProfile(user.id, { fullName: values.fullName.trim(), phone: savedPhone, version })
       form.reset(values)
-      toast.success(t("users.profile.saved", { name: saved.fullName || saved.email }))
+      toast.success(t("users.profile.saved", { name: getPersonName(saved) }))
       onSaved(saved)
     } catch (error) {
       const result = toFailure(error)

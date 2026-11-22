@@ -11,6 +11,7 @@ import { getUser, revokeUserAssignments } from "@/services/users"
 
 import { describeAccessChange } from "../shared/userAccess/accessChange"
 import { AccessChangeSummary } from "../shared/userAccess/AccessChangeSummary"
+import { getPersonName } from "../shared/userAccess/personName"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessItem, AccessItems, FormFields } from "../shared/userAccess/userAccess.styles"
 import type { UnitDirectory } from "../shared/userAccess/useUnitDirectory"
@@ -46,7 +47,7 @@ export const RevokeModal = (props: RevokeModalProps) => {
 
   const isAdmin = Boolean(signedIn?.admin || signedIn?.roles.includes("ADMIN"))
   const held = sortAccess(current.assignments.filter((assignment) => assignment.status === "ACTIVE"))
-  const name = current.fullName || current.email
+  const name = getPersonName(current)
   const change = describeAccessChange(
     held,
     held.filter((assignment) => !selectedIds.includes(assignment.assignmentId)),

@@ -7,6 +7,7 @@ import { ConfirmDialog } from "@/ds-components/organisms"
 import type { UserView } from "@/models"
 import { inactivateUser, reactivateUser } from "@/services/users"
 
+import { getPersonName } from "../shared/userAccess/personName"
 import { useUserActionErrors } from "./useUserActionErrors"
 
 export type AccountStatusDialogProps = {
@@ -31,7 +32,7 @@ export const AccountStatusDialog = (props: AccountStatusDialogProps) => {
   const [failure, setFailure] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
-  const name = user.fullName || user.email
+  const name = getPersonName(user)
   const isInactivating = action === "inactivate"
 
   const confirm = async () => {

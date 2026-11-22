@@ -8,6 +8,7 @@ import { ConfirmDialog, Modal } from "@/ds-components/organisms"
 import type { TemporaryPassword, UserView } from "@/models"
 import { issueTemporaryPassword } from "@/services/users"
 
+import { getPersonName } from "../shared/userAccess/personName"
 import { FormFields } from "../shared/userAccess/userAccess.styles"
 import { useUserActionErrors } from "./useUserActionErrors"
 
@@ -31,7 +32,7 @@ export const TemporaryPasswordDialog = (props: TemporaryPasswordDialogProps) => 
   const [failure, setFailure] = useState("")
   const [isIssuing, setIsIssuing] = useState(false)
 
-  const name = user.fullName || user.email
+  const name = getPersonName(user)
 
   const issue = async () => {
     setIsIssuing(true)
@@ -123,8 +124,8 @@ export const TemporaryPasswordDialog = (props: TemporaryPasswordDialogProps) => 
 
         <Text color="secondary" fontSize="sm">
           {user.email
-            ? t("users.temporaryPassword.howToSignIn", { email: user.email, expiresAt, name })
-            : t("users.temporaryPassword.howToSignInNoEmail", { expiresAt, name })}
+            ? t("users.temporaryPassword.howToSignIn", { email: user.email, expiresAt, name, nickname: user.nickname })
+            : t("users.temporaryPassword.howToSignInNoEmail", { expiresAt, name, nickname: user.nickname })}
         </Text>
       </FormFields>
     </Modal>

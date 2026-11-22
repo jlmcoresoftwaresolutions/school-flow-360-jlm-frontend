@@ -232,7 +232,7 @@ test.describe("temporary password", () => {
     const shown = page.getByRole("dialog", { name: "Senha temporária de Maria Souza" })
     await expect(shown.getByRole("textbox", { name: "Senha temporária" })).toHaveValue("Kx7mPq2Rt9Wz4N")
     await expect(shown).toContainText("Esta é a única vez que a senha aparece")
-    await expect(shown).toContainText("maria.souza@horizonte.edu.br")
+    await expect(shown).toContainText("maria.souza@horizonte.edu.br ou o apelido maria.souza")
     expect(issued).toEqual(["/api/users/2/temporary-password"])
 
     await shown.getByRole("button", { name: "Copiar senha" }).click()
@@ -242,6 +242,39 @@ test.describe("temporary password", () => {
     await shown.getByRole("button", { name: "Concluir" }).click()
     await expect(page.getByRole("dialog", { name: "Detalhes do usuário" })).toBeVisible()
     await expect(page.getByText("Kx7mPq2Rt9Wz4N")).toHaveCount(0)
+  })
+
+  test("tells a person without e-mail to sign in with the nickname", async ({ page }) => {
+    await mockUserAccessApi(page)
+    await page.route(/\/api\/users\/\d+\/temporary-password$/, (route) =>
+      route.fulfill(apiAnswer({ expiresAt: "2026-11-29T15:00:00Z", temporaryPassword: "Kx7mPq2Rt9Wz4N" })),
+    )
+    await signInAndOpen(page, usersPath)
+
+    const details = await openDetails(page, "Lucas Alves")
+    await expect(details).toContainText("lucas.alves")
+    await chooseAction(page, details, "Gerar senha temporária")
+    await page
+      .getByRole("dialog", { name: "Gerar senha temporária para Lucas Alves?" })
+      .getByRole("button", { name: "Gerar senha" })
+      .click()
+
+    await expect(page.getByRole("dialog", { name: "Senha temporária de Lucas Alves" })).toContainText(
+      "entra com o apelido lucas.alves",
+    )
+  })
+
+  test("is offered only when the backend allows it", async ({ page }) => {
+    await mockUserAccessApi(page)
+    await page.route(/\/api\/users\/2$/, (route) =>
+      route.fulfill(apiAnswer({ ...users[1], eligibleActions: ["EDIT_PROFILE", "INACTIVATE"] })),
+    )
+    await signInAndOpen(page, usersPath)
+
+    const details = await openDetails(page, "Maria Souza")
+    const menu = await openActions(page, details)
+    await expect(menu.getByRole("menuitem", { name: "Inativar conta" })).toBeVisible()
+    await expect(menu.getByRole("menuitem", { name: "Gerar senha temporária" })).toHaveCount(0)
   })
 
   test("is not offered on the own account", async ({ page }) => {

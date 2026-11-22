@@ -119,7 +119,7 @@ export const AppShell = () => {
 
   const bottomItems: SidebarNavItem[] = toNavItems(bottomGroups)
 
-  const userName = user?.fullName?.trim() || user?.email || t("shell.account")
+  const userName = user?.fullName?.trim() || user?.email || user?.nickname || t("shell.account")
   const userRoles = getDisplayRoles(user)
     .map((role) => t(`shell.roles.${role}`))
     .join(", ")

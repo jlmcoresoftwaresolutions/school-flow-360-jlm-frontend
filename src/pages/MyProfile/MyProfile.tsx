@@ -126,7 +126,8 @@ export const MyProfile = () => {
           emptyValue={t("common.notInformed")}
           items={[
             { key: "name", label: t("users.details.name"), value: current.fullName ?? "" },
-            { key: "email", label: t("users.details.email"), value: current.email },
+            { key: "email", label: t("users.details.email"), value: current.email ?? "" },
+            { key: "nickname", label: t("users.details.nickname"), value: current.nickname ?? "" },
             {
               key: "phone",
               label: t("users.details.phone"),

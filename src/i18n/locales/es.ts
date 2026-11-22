@@ -789,6 +789,7 @@ export const es: TranslationResource = {
       errorTitle: "No fue posible cargar el usuario",
       history: "Accesos revocados",
       name: "Nombre",
+      nickname: "Apodo",
       noAccess: "Ningún rol activo: la persona no puede entrar.",
       phone: "Teléfono",
       revokedSince: "Otorgado el {{date}}, revocado después",
@@ -872,9 +873,9 @@ export const es: TranslationResource = {
       done: "Terminar",
       generate: "Generar contraseña",
       howToSignIn:
-        "{{name}} entra con el correo {{email}} (o el apodo) y esta contraseña hasta {{expiresAt}}, y crea su propia contraseña en el primer acceso.",
+        "{{name}} entra con el correo {{email}} o el apodo {{nickname}} y esta contraseña hasta {{expiresAt}}, y crea su propia contraseña en el primer acceso.",
       howToSignInNoEmail:
-        "{{name}} entra con el apodo y esta contraseña hasta {{expiresAt}}, y crea su propia contraseña en el primer acceso.",
+        "{{name}} entra con el apodo {{nickname}} y esta contraseña hasta {{expiresAt}}, y crea su propia contraseña en el primer acceso.",
       issuedTitle: "Contraseña temporal de {{name}}",
       passwordLabel: "Contraseña temporal",
       showOnce:

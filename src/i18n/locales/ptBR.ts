@@ -781,6 +781,7 @@ export const ptBR = {
       errorTitle: "Não foi possível carregar o usuário",
       history: "Acessos revogados",
       name: "Nome",
+      nickname: "Apelido",
       noAccess: "Nenhum papel ativo: a pessoa não consegue entrar.",
       phone: "Telefone",
       revokedSince: "Concedido em {{date}}, revogado depois",
@@ -863,9 +864,9 @@ export const ptBR = {
       done: "Concluir",
       generate: "Gerar senha",
       howToSignIn:
-        "{{name}} entra com o e-mail {{email}} (ou o apelido) e esta senha até {{expiresAt}}, e cria a própria senha no primeiro acesso.",
+        "{{name}} entra com o e-mail {{email}} ou o apelido {{nickname}} e esta senha até {{expiresAt}}, e cria a própria senha no primeiro acesso.",
       howToSignInNoEmail:
-        "{{name}} entra com o apelido e esta senha até {{expiresAt}}, e cria a própria senha no primeiro acesso.",
+        "{{name}} entra com o apelido {{nickname}} e esta senha até {{expiresAt}}, e cria a própria senha no primeiro acesso.",
       issuedTitle: "Senha temporária de {{name}}",
       passwordLabel: "Senha temporária",
       showOnce: "Esta é a única vez que a senha aparece. Copie agora e entregue à pessoa por um canal seguro.",

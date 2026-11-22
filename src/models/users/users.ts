@@ -37,18 +37,27 @@ export type UserStatus = "ACTIVE" | "INACTIVE" | "LOCKED"
 
 // What the signed-in operator may do to this user, as the backend decides it. EDIT_PROFILE (name and
 // phone) comes for the person themselves, the Admin and a Secretaria in scope; on the own account a
-// non-Admin gets only that one.
-export type UserAction = "EDIT_ASSIGNMENTS" | "EDIT_PROFILE" | "INACTIVATE" | "REACTIVATE" | "REVOKE"
+// non-Admin gets only that one. TEMPORARY_PASSWORD comes for whoever manages the account, never on the
+// own account (not even an Admin's).
+export type UserAction =
+  | "EDIT_ASSIGNMENTS"
+  | "EDIT_PROFILE"
+  | "INACTIVATE"
+  | "REACTIVATE"
+  | "REVOKE"
+  | "TEMPORARY_PASSWORD"
 
-// A user as GET /api/users and /api/users/{id} return it. Never carries a password.
+// A user as GET /api/users and /api/users/{id} return it. Never carries a password. `nickname` is the
+// sign-in name every account has; `email` is null for a person who signs in only with it.
 export type UserView = {
   assignments: Assignment[]
   eligibleActions: UserAction[]
-  email: string
+  email: string | null
   enabled: boolean
   fullName: string | null
   id: number
   locked: boolean
+  nickname: string
   phone: string | null
   roles: RoleCode[]
   status: UserStatus

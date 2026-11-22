@@ -802,6 +802,7 @@ export const fr: TranslationResource = {
       errorTitle: "Impossible de charger l'utilisateur",
       history: "Accès révoqués",
       name: "Nom",
+      nickname: "Pseudo",
       noAccess: "Aucun rôle actif : la personne ne peut pas se connecter.",
       phone: "Téléphone",
       revokedSince: "Attribué le {{date}}, révoqué ensuite",
@@ -885,9 +886,9 @@ export const fr: TranslationResource = {
       done: "Terminer",
       generate: "Générer le mot de passe",
       howToSignIn:
-        "{{name}} se connecte avec l'e-mail {{email}} (ou le pseudo) et ce mot de passe jusqu'au {{expiresAt}}, puis crée son propre mot de passe à la première connexion.",
+        "{{name}} se connecte avec l'e-mail {{email}} ou le pseudo {{nickname}} et ce mot de passe jusqu'au {{expiresAt}}, puis crée son propre mot de passe à la première connexion.",
       howToSignInNoEmail:
-        "{{name}} se connecte avec le pseudo et ce mot de passe jusqu'au {{expiresAt}}, puis crée son propre mot de passe à la première connexion.",
+        "{{name}} se connecte avec le pseudo {{nickname}} et ce mot de passe jusqu'au {{expiresAt}}, puis crée son propre mot de passe à la première connexion.",
       issuedTitle: "Mot de passe temporaire de {{name}}",
       passwordLabel: "Mot de passe temporaire",
       showOnce:
