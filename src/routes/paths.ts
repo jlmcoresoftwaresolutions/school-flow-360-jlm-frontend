@@ -20,6 +20,11 @@ export const paths = {
   exports: "/reports/exports",
   financialReports: "/reports/financial",
   forgotPassword: "/forgot-password",
+  // A guardian's profile, its edition and a new guardian (not in the menu; under the guardians page, so
+  // they get its access rule). Built with generatePath (react-router-dom).
+  guardianEdit: "/administration/guardians/:guardianId/edit",
+  guardianNew: "/administration/guardians/new",
+  guardianProfile: "/administration/guardians/:guardianId",
   guardians: "/administration/guardians",
   helpCenter: "/help/help-center",
   home: "/home",

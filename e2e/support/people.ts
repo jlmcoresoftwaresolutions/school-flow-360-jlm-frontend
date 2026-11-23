@@ -242,6 +242,53 @@ const toProfile = (student: Item): Item => ({
   student,
 })
 
+// A guardian as GET /api/guardians/{id} returns it, from a list row (its units from `unitIds`).
+const toGuardian = (summary: Item): Item => ({
+  activeStudents: summary.activeStudents,
+  address: null,
+  birthDate: null,
+  contactEmail: summary.maskedEmail ? "fernanda@gmail.com" : null,
+  createdAt: "2026-11-20T12:00:00Z",
+  documentType: summary.maskedDocument ? "CPF" : null,
+  fullName: summary.fullName,
+  hasAccess: false,
+  id: summary.id,
+  loginEmail: null,
+  maskedDocument: summary.maskedDocument,
+  nickname: null,
+  phone: summary.phone,
+  socialName: null,
+  status: summary.status,
+  units: ((summary.unitIds as number[] | undefined) ?? [1]).map(unitRef),
+  updatedAt: "2026-11-20T12:00:00Z",
+  version: 0,
+})
+
+const linkedStudentNames = ["Ana Beatriz Souza", "Bruno Lima"]
+
+// The detail of a guardian: one active link for each student counted.
+const toGuardianProfile = (guardian: Item): Item => ({
+  guardian,
+  sections: ["IDENTITY", "STUDENTS", "DOCUMENTS", "HISTORY"],
+  students: Array.from({ length: Number(guardian.activeStudents) }, (_, index) => ({
+    consentAt: "2026-11-20T12:00:00Z",
+    consentTermsVersion: "v1",
+    contactAuthorized: true,
+    endDate: null,
+    endReason: null,
+    financialResponsible: index === 0,
+    guardian: { code: null, id: guardian.id, name: guardian.fullName },
+    id: 800 + index,
+    pedagogicalResponsible: true,
+    relationshipCode: "MOTHER",
+    relationshipLabel: "Mãe",
+    startDate: "2026-02-01",
+    status: "ACTIVE",
+    student: { code: `ALU-00000${index + 1}`, id: 201 + index, name: linkedStudentNames[index] },
+    version: 0,
+  })),
+})
+
 const nextStatus: Record<string, string> = {
   activate: "ACTIVE",
   discard: "INACTIVE",
@@ -455,6 +502,62 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
       return route.fulfill(apiError(422, "JUSTIFICATION_REQUIRED"))
     }
     return route.fulfill(apiAnswer({ decision: body.decision, reuseRef: null, reviewId: 41, status: "DECIDED" }))
+  })
+
+  // The guardians' records. Guardian 301 is the only guardian of an active student: inactivating it is
+  // refused (LAST_GUARDIAN).
+  const guardianRecords = new Map<number, Item>(guardianList.map((item) => [item.id as number, toGuardian(item)]))
+  let nextGuardianId = 350
+
+  await page.route(/\/api\/guardians\/\d+(\/[a-z-]+)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, action] = /\/api\/guardians\/(\d+)(?:\/([a-z-]+))?$/.exec(call.path) ?? []
+    const guardian = guardianRecords.get(Number(id))
+    if (!guardian) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+
+    if (!action && call.method === "GET") return route.fulfill(apiAnswer(guardian))
+    if (action === "profile") return route.fulfill(apiAnswer(toGuardianProfile(guardian)))
+
+    const body = call.body as Item
+    if (body.version !== guardian.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+
+    if (!action && call.method === "PUT") {
+      const updated = { ...guardian, ...body, version: Number(guardian.version) + 1 }
+      guardianRecords.set(Number(id), updated)
+      return route.fulfill(apiAnswer(updated))
+    }
+
+    if (action === "inactivate" && guardian.id === 301) return route.fulfill(apiError(422, "LAST_GUARDIAN"))
+
+    const changed = { ...guardian, status: nextStatus[action], version: Number(guardian.version) + 1 }
+    guardianRecords.set(Number(id), changed)
+    return route.fulfill(apiAnswer(changed))
+  })
+
+  await page.route("**/api/guardians", (route) => {
+    const call = record(route.request())
+    const body = call.body as Item
+    if (options.duplicateEmail && body.contactEmail === options.duplicateEmail && !body.duplicateReviewId) {
+      return route.fulfill(apiError(409, "DUPLICATE_REVIEW_REQUIRED"))
+    }
+    if (body.documentNumber === "11122233344") return route.fulfill(apiError(409, "DOCUMENT_IN_USE"))
+
+    const id = nextGuardianId++
+    const created = {
+      ...toGuardian({
+        activeStudents: 0,
+        fullName: body.fullName,
+        id,
+        maskedDocument: body.documentNumber ? "***.***.***-**" : null,
+        maskedEmail: null,
+        phone: body.phone ?? null,
+        status: "ACTIVE",
+        unitIds: [body.unitId],
+      }),
+      contactEmail: body.contactEmail ?? null,
+    }
+    guardianRecords.set(id, created)
+    return route.fulfill(apiAnswer(created))
   })
 
   await page.route(/\/api\/users\/\d+\/temporary-password$/, (route) => {

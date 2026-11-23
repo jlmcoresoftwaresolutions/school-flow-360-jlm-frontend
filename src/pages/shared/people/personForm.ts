@@ -1,4 +1,4 @@
-import type { PersonAddress, StudentFields } from "@/models"
+import type { PersonAddress, PersonSignals, StudentFields } from "@/models"
 import { defaultCountry } from "@/utils/countries"
 import { fromIsoDate, toIsoDate } from "@/utils/dates"
 import { toInternationalPhone } from "@/utils/phone"
@@ -107,4 +107,47 @@ export const toPersonFields = (values: PersonFormValues): Omit<StudentFields, "r
     state: optional(values.state),
     street: optional(values.street),
   }
+}
+
+// The data the backend checks for a duplicate when a person (a student or a guardian) is saved, the same
+// it checks: on a create, the contact e-mail, the document and the name with the birth date; on an edit,
+// only an e-mail or a document that changed (`current`, the person as read).
+export const toPersonSignals = (
+  values: PersonFormValues,
+  current: { contactEmail: string | null } | null,
+): PersonSignals => {
+  const fields = toPersonFields(values)
+
+  if (!current) {
+    return {
+      birthDate: fields.birthDate,
+      documentNumber: fields.documentNumber,
+      documentType: fields.documentType,
+      email: fields.contactEmail,
+      fullName: fields.fullName,
+    }
+  }
+
+  const emailChanged = (fields.contactEmail ?? "").toLowerCase() !== (current.contactEmail ?? "").toLowerCase()
+
+  return {
+    documentNumber: fields.documentNumber,
+    documentType: fields.documentType,
+    email: emailChanged ? fields.contactEmail : undefined,
+  }
+}
+
+// A person's address in one line, skipping what is missing (street, number and complement; district;
+// city/state; postal code).
+export const formatPersonAddress = (address: PersonAddress | null): string => {
+  if (!address) return ""
+
+  return [
+    [address.street, address.number, address.complement].filter(Boolean).join(", "),
+    address.neighborhood,
+    [address.city, address.state].filter(Boolean).join("/"),
+    address.postalCode,
+  ]
+    .filter(Boolean)
+    .join(" · ")
 }

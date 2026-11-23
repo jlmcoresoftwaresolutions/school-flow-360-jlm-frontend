@@ -1,4 +1,4 @@
-import type { PersonSignals, Student } from "@/models"
+import type { Student } from "@/models"
 
 import { emptyPerson, type PersonFormValues, toPersonFields, toPersonFormValues } from "../shared/people/personForm"
 
@@ -34,28 +34,3 @@ export const toStudentFields = (values: StudentFormValues) => ({
   observation: values.observation.trim() || undefined,
   referenceUnitId: Number(values.referenceUnitId),
 })
-
-// The data the backend checks for a duplicate when a student is saved, the same it checks: on a create,
-// the contact e-mail, the document and the name with the birth date; on an edit, only an e-mail or a
-// document that changed (`current`, the student as read).
-export const toStudentSignals = (values: StudentFormValues, current: Student | null): PersonSignals => {
-  const fields = toPersonFields(values)
-
-  if (!current) {
-    return {
-      birthDate: fields.birthDate,
-      documentNumber: fields.documentNumber,
-      documentType: fields.documentType,
-      email: fields.contactEmail,
-      fullName: fields.fullName,
-    }
-  }
-
-  const emailChanged = (fields.contactEmail ?? "").toLowerCase() !== (current.contactEmail ?? "").toLowerCase()
-
-  return {
-    documentNumber: fields.documentNumber,
-    documentType: fields.documentType,
-    email: emailChanged ? fields.contactEmail : undefined,
-  }
-}

@@ -29,14 +29,14 @@ export const listGuardians = async (params?: GuardianSearchParams, config?: Requ
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/guardians/{id}.
+// USED by the guardian form. GET /api/guardians/{id}.
 export const getGuardian = async (guardianId: number, config?: RequestConfig): Promise<Guardian> => {
   const response = await httpClient.get<ApiResponse<Guardian>>(`/api/guardians/${guardianId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/guardians: registers a guardian in one of the operator's units (active unless
+// USED by the guardian form. POST /api/guardians: registers a guardian in one of the operator's units (active unless
 // `activate` is false). Errors: 409 DOCUMENT_IN_USE, DUPLICATE_REVIEW_REQUIRED (the same contact e-mail
 // as someone else); 422 NAME_REQUIRED, EMAIL_INVALID, DOCUMENT_TYPE_INVALID, DOCUMENT_INCOMPLETE.
 export const createGuardian = async (request: GuardianCreateRequest, config?: RequestConfig): Promise<Guardian> => {
@@ -45,7 +45,7 @@ export const createGuardian = async (request: GuardianCreateRequest, config?: Re
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/guardians/{id}: replaces the editable data.
+// USED by the guardian form. PUT /api/guardians/{id}: replaces the editable data.
 export const updateGuardian = async (
   guardianId: number,
   request: GuardianUpdateRequest,
@@ -56,7 +56,7 @@ export const updateGuardian = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/guardians/{id}/activate, /inactivate, /reactivate. Inactivating the only
+// USED by the guardian profile. POST /api/guardians/{id}/activate, /inactivate, /reactivate. Inactivating the only
 // guardian of an active student: 422 LAST_GUARDIAN.
 export const changeGuardianState = async (
   guardianId: number,
@@ -73,7 +73,7 @@ export const changeGuardianState = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/guardians/{id}/profile: the guardian with its links to the students in reach.
+// USED by the guardian profile. GET /api/guardians/{id}/profile: the guardian with its links to the students in reach.
 export const getGuardianProfile = async (guardianId: number, config?: RequestConfig): Promise<GuardianProfile> => {
   const response = await httpClient.get<ApiResponse<GuardianProfile>>(`/api/guardians/${guardianId}/profile`, config)
 

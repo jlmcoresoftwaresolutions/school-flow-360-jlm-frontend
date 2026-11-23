@@ -1,4 +1,3 @@
-import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Badge, Text } from "@/ds-components/atoms"
@@ -8,24 +7,13 @@ import { defaultCountry } from "@/utils/countries"
 import { formatDate } from "@/utils/dates"
 import { formatPhoneForDisplay } from "@/utils/phone"
 
-import { PersonSection, PersonSections } from "../shared/people/people.styles"
+import { PersonSections } from "../shared/people/people.styles"
+import { PersonBlock } from "../shared/people/PersonBlock"
+import { formatPersonAddress } from "../shared/people/personForm"
 
 export type StudentDataProps = {
   documentTypes: CatalogItem[]
   student: Student
-}
-
-const Block = (props: { children: ReactNode; title: string }) => {
-  const { children, title } = props
-
-  return (
-    <PersonSection aria-label={title}>
-      <Text as="h2" fontSize="md" semibold>
-        {title}
-      </Text>
-      {children}
-    </PersonSection>
-  )
 }
 
 // The student's registration data, read only, in blocks: identity (with the registration code - not an
@@ -36,17 +24,7 @@ export const StudentData = (props: StudentDataProps) => {
 
   const { t } = useTranslation()
 
-  const address = student.address
-  const addressLine = address
-    ? [
-        [address.street, address.number, address.complement].filter(Boolean).join(", "),
-        address.neighborhood,
-        [address.city, address.state].filter(Boolean).join("/"),
-        address.postalCode,
-      ]
-        .filter(Boolean)
-        .join(" · ")
-    : ""
+  const addressLine = formatPersonAddress(student.address)
   const documentLabel = documentTypes.find((type) => type.code === student.documentType)?.label ?? student.documentType
   const blockers = student.status === "DRAFT" ? student.activationBlockers : []
 
@@ -60,7 +38,7 @@ export const StudentData = (props: StudentDataProps) => {
         </Text>
       )}
 
-      <Block title={t("people.form.identityTitle")}>
+      <PersonBlock title={t("people.form.identityTitle")}>
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[
@@ -85,9 +63,9 @@ export const StudentData = (props: StudentDataProps) => {
             { key: "unit", label: t("students.referenceUnit"), value: student.referenceUnit?.name ?? "" },
           ]}
         />
-      </Block>
+      </PersonBlock>
 
-      <Block title={t("people.form.contactTitle")}>
+      <PersonBlock title={t("people.form.contactTitle")}>
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[
@@ -99,9 +77,9 @@ export const StudentData = (props: StudentDataProps) => {
             },
           ]}
         />
-      </Block>
+      </PersonBlock>
 
-      <Block title={t("people.form.documentTitle")}>
+      <PersonBlock title={t("people.form.documentTitle")}>
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[
@@ -109,16 +87,16 @@ export const StudentData = (props: StudentDataProps) => {
             { key: "number", label: t("people.form.documentNumberLabel"), value: student.maskedDocument ?? "" },
           ]}
         />
-      </Block>
+      </PersonBlock>
 
-      <Block title={t("people.form.addressTitle")}>
+      <PersonBlock title={t("people.form.addressTitle")}>
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[{ fullWidth: true, key: "address", label: t("people.form.addressTitle"), value: addressLine }]}
         />
-      </Block>
+      </PersonBlock>
 
-      <Block title={t("students.form.observationTitle")}>
+      <PersonBlock title={t("students.form.observationTitle")}>
         <DescriptionList
           emptyValue={t("common.notInformed")}
           items={[
@@ -130,7 +108,7 @@ export const StudentData = (props: StudentDataProps) => {
             },
           ]}
         />
-      </Block>
+      </PersonBlock>
     </PersonSections>
   )
 }

@@ -55,3 +55,19 @@ export const CandidateTags = styled.span`
   flex-wrap: wrap;
   gap: ${spacing[4]};
 `
+
+// Below a person's page header: the status and identifiers on the left, the actions on the right.
+export const ProfileBar = styled.div`
+  align-items: center;
+  display: flex;
+  gap: ${spacing[12]};
+  justify-content: space-between;
+  margin-bottom: ${spacing[16]};
+`
+
+export const ProfileBarInfo = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[12]};
+`

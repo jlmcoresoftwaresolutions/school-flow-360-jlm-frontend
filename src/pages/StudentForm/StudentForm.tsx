@@ -21,7 +21,9 @@ import {
   PersonDocumentFields,
   PersonIdentityFields,
 } from "../shared/people/PersonFields"
+import { toPersonSignals } from "../shared/people/personForm"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
+import { usePersonFieldErrors } from "../shared/people/usePersonFieldErrors"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
 import {
   emptyStudentForm,
@@ -30,7 +32,6 @@ import {
   type StudentFormValues,
   toStudentFields,
   toStudentFormValues,
-  toStudentSignals,
 } from "./studentFormValues"
 
 type LoadState = "failed" | "gone" | "loading" | "ready"
@@ -50,6 +51,7 @@ export const StudentForm = () => {
   const navigate = useNavigate()
   const unitDirectory = useUnitDirectory()
   const documentTypes = useDocumentTypes()
+  const toPersonFieldError = usePersonFieldErrors()
   const form = useForm<StudentFormValues>({ defaultValues: emptyStudentForm })
 
   const [student, setStudent] = useState<Student | null>(null)
@@ -105,20 +107,12 @@ export const StudentForm = () => {
     const code = getErrorCode(error)
     const status = getErrorStatus(error)
 
+    const personError = toPersonFieldError(error)
+
     if (code === "DUPLICATE_REVIEW_REQUIRED") {
-      setReview(toStudentSignals(values, student))
-    } else if (code === "NAME_REQUIRED") {
-      fieldError("fullName", t("people.form.fullNameRequired"))
-    } else if (code === "BIRTH_DATE_FUTURE") {
-      fieldError("birthDate", t("people.form.birthDateFuture"))
-    } else if (code === "EMAIL_INVALID") {
-      fieldError("contactEmail", t("people.form.emailInvalid"))
-    } else if (code === "DOCUMENT_TYPE_INVALID") {
-      fieldError("documentType", t("people.form.documentTypeInvalid"))
-    } else if (code === "DOCUMENT_INCOMPLETE" || code === "DOCUMENT_INVALID") {
-      fieldError("documentNumber", t("people.form.documentInvalid"))
-    } else if (code === "DOCUMENT_IN_USE") {
-      fieldError("documentNumber", t("people.form.documentInUse"))
+      setReview(toPersonSignals(values, student))
+    } else if (personError) {
+      fieldError(personError.field, personError.message)
     } else if (code === "NICKNAME_IN_USE") {
       fieldError("nickname", t("students.form.nicknameInUse"))
     } else if (code === "UNIT_INACTIVE" || code === "UNIT_REQUIRED" || code === "UNIT_NOT_FOUND") {
