@@ -21,7 +21,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // Professor only sees the classes where they have a current link (404 otherwise). Common errors: 404
 // ACADEMIC_NOT_FOUND, 403 ACCESS_DENIED/SCOPE_DENIED, 428 VERSION_REQUIRED, 409 VERSION_CONFLICT.
 
-// NOT USED YET. GET /api/academic/classes: the classes in the caller's scope.
+// USED. GET /api/academic/classes: the classes in the caller's scope.
 export const listAcademicClasses = async (
   params?: AcademicClassSearchParams,
   config?: RequestConfig,
@@ -34,7 +34,7 @@ export const listAcademicClasses = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/classes: creates the class in PREPARATION, inside an existing active
+// USED. POST /api/academic/classes: creates the class in PREPARATION, inside an existing active
 // offer. Errors: 422 ACADEMIC_FIELD_INCOMPATIBLE (no such offer, a room of another unit, a subject not of
 // the offer...); 409 ACADEMIC_DUPLICATE_CODE (code in the unit and period).
 export const createAcademicClass = async (
@@ -46,14 +46,14 @@ export const createAcademicClass = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}.
+// USED. GET /api/academic/classes/{id}.
 export const getAcademicClass = async (classId: number, config?: RequestConfig): Promise<AcademicClass> => {
   const response = await httpClient.get<ApiResponse<AcademicClass>>(`/api/academic/classes/${classId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/classes/{id}: the name, the shift and the room, with `version`.
+// USED. PUT /api/academic/classes/{id}: the name, the shift and the room, with `version`.
 export const updateAcademicClass = async (
   classId: number,
   request: AcademicClassUpdate,
@@ -64,7 +64,7 @@ export const updateAcademicClass = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/impact: what stops activating and what blocks inactivating.
+// USED. GET /api/academic/classes/{id}/impact: what stops activating and what blocks inactivating.
 export const getAcademicClassImpact = async (classId: number, config?: RequestConfig): Promise<AcademicClassImpact> => {
   const response = await httpClient.get<ApiResponse<AcademicClassImpact>>(
     `/api/academic/classes/${classId}/impact`,
@@ -74,7 +74,7 @@ export const getAcademicClassImpact = async (classId: number, config?: RequestCo
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/classes/{id}/activate: 422 ACADEMIC_NOT_ELIGIBLE naming what stops it.
+// USED. POST /api/academic/classes/{id}/activate: 422 ACADEMIC_NOT_ELIGIBLE naming what stops it.
 export const activateAcademicClass = async (
   classId: number,
   request: AcademicClassStateChange,
@@ -89,7 +89,7 @@ export const activateAcademicClass = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/classes/{id}/inactivate: checks again the teacher links, the
+// USED. POST /api/academic/classes/{id}/inactivate: checks again the teacher links, the
 // enrollments and the enrollment source: while the enrollment (EPIC 6) doesn't exist it is 503
 // ACADEMIC_SOURCE_UNAVAILABLE (the silence doesn't prove there is no student); 409 ACADEMIC_DEPENDENCY_ACTIVE.
 export const inactivateAcademicClass = async (

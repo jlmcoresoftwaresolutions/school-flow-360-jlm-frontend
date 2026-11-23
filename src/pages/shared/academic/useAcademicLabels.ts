@@ -1,6 +1,13 @@
 import { useTranslation } from "react-i18next"
 
-import type { AcademicCatalogStatus, AcademicPeriodKind, AcademicPeriodStatus } from "@/models"
+import type {
+  AcademicCatalogStatus,
+  AcademicClassPendency,
+  AcademicClassStatus,
+  AcademicPeriodKind,
+  AcademicPeriodStatus,
+  AcademicShiftCode,
+} from "@/models"
 import { formatDate } from "@/utils/dates"
 
 import { readAcademicBlocker } from "./academicBlockers"
@@ -11,6 +18,12 @@ type Tone = "neutral" | "success" | "warning"
 const catalogStatusTones: Record<AcademicCatalogStatus, Tone> = {
   ACTIVE: "success",
   INACTIVE: "neutral",
+}
+
+const classStatusTones: Record<AcademicClassStatus, Tone> = {
+  ACTIVE: "success",
+  INACTIVE: "neutral",
+  PREPARATION: "warning",
 }
 
 const periodStatusTones: Record<AcademicPeriodStatus, Tone> = {
@@ -30,6 +43,10 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
   const periodKindLabel = (kind: AcademicPeriodKind) => t(`academic.periodKinds.${kind}`)
   const catalogStatusLabel = (status: AcademicCatalogStatus) => t(`academic.catalogStatuses.${status}`)
   const catalogStatusTone = (status: AcademicCatalogStatus) => catalogStatusTones[status]
+  const classStatusLabel = (status: AcademicClassStatus) => t(`academic.classStatuses.${status}`)
+  const classStatusTone = (status: AcademicClassStatus) => classStatusTones[status]
+  const shiftLabel = (shift: AcademicShiftCode) => t(`academic.shifts.${shift}`)
+  const pendencyLabel = (pendency: AcademicClassPendency) => t(`academic.pendencies.${pendency}`)
 
   const dateRange = (start: string, end: string | null) =>
     end
@@ -51,9 +68,13 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
     blockerText,
     catalogStatusLabel,
     catalogStatusTone,
+    classStatusLabel,
+    classStatusTone,
     dateRange,
+    pendencyLabel,
     periodKindLabel,
     periodStatusLabel,
     periodStatusTone,
+    shiftLabel,
   }
 }

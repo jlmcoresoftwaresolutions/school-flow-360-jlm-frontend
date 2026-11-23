@@ -150,6 +150,96 @@ const roomBlockers: Record<number, string[]> = {
   51: ["1 class(es) that use this room"],
 }
 
+// The classes: an active one in Aldeota (whose inactivation the silent enrollment source blocks), one in
+// preparation without capacity nor teacher, one in preparation on Caucaia's inactive offer, and one in
+// preparation ready to be activated.
+const classBase = (fields: Item): Item => ({
+  eligibleForEnrollment: false,
+  noPhysicalRoom: false,
+  pendencies: [],
+  roomId: null,
+  updatedAt: "2026-11-20T12:00:00Z",
+  version: 0,
+  ...fields,
+})
+
+export const classes = [
+  classBase({
+    capacity: 30,
+    code: "1A-MAN",
+    eligibleForEnrollment: true,
+    gradeId: 21,
+    id: 61,
+    name: "1º ano A",
+    offerId: 41,
+    periodId: 10,
+    roomId: 51,
+    shift: "MANHA",
+    status: "ACTIVE",
+    subjectIds: [31, 32],
+    unitId: 1,
+  }),
+  classBase({
+    capacity: 0,
+    code: "1B-TAR",
+    gradeId: 21,
+    id: 62,
+    name: "1º ano B",
+    noPhysicalRoom: true,
+    offerId: 41,
+    pendencies: ["NO_TEACHER"],
+    periodId: 10,
+    shift: "TARDE",
+    status: "PREPARATION",
+    subjectIds: [31],
+    unitId: 1,
+  }),
+  classBase({
+    capacity: 25,
+    code: "1A-NOI",
+    gradeId: 21,
+    id: 63,
+    name: "1º ano Noite",
+    offerId: 43,
+    pendencies: ["NO_TEACHER"],
+    periodId: 13,
+    roomId: 53,
+    shift: "NOITE",
+    status: "PREPARATION",
+    subjectIds: [31],
+    unitId: 2,
+  }),
+  classBase({
+    capacity: 28,
+    code: "2A-MAN",
+    gradeId: 22,
+    id: 64,
+    name: "2º ano A",
+    offerId: 42,
+    pendencies: ["NO_TEACHER"],
+    periodId: 10,
+    roomId: 51,
+    shift: "MANHA",
+    status: "PREPARATION",
+    subjectIds: [],
+    unitId: 1,
+  }),
+]
+
+const classActions: Record<string, string[]> = {
+  ACTIVE: ["EDIT", "ADD_TEACHER", "INACTIVATE"],
+  INACTIVE: ["EDIT", "ACTIVATE"],
+  PREPARATION: ["EDIT", "ACTIVATE"],
+}
+
+const shiftLabels: Record<string, string> = { INTEGRAL: "Integral", MANHA: "Manhã", NOITE: "Noite", TARDE: "Tarde" }
+
+const notEligible = (message: string) => ({
+  body: JSON.stringify({ code: "ACADEMIC_NOT_ELIGIBLE", data: null, message, status: "Error" }),
+  contentType: "application/json",
+  status: 422,
+})
+
 const dependencyError = (blockers: string[]) => ({
   body: JSON.stringify({
     code: "ACADEMIC_DEPENDENCY_ACTIVE",
@@ -164,6 +254,8 @@ const dependencyError = (blockers: string[]) => ({
 type AcademicOptions = {
   // Someone else changes this catalog item ("subjects/32") before its first save (409 VERSION_CONFLICT).
   changedCatalogItem?: string
+  // Someone else changes this class before its first change (409 VERSION_CONFLICT).
+  changedClassId?: number
   // Someone else changes this offer before its first change (409 VERSION_CONFLICT).
   changedOfferId?: number
   // Someone else changes this period before the first save of the spec (409 VERSION_CONFLICT).
@@ -201,6 +293,7 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
   const periodList = periods.map((item) => ({ ...item }))
   let nextPeriodId = 20
   let periodChanged = false
+  let classChanged = false
   let offerChanged = false
   let roomChanged = false
 
@@ -528,6 +621,153 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
     const status = action === "inactivate" ? "INACTIVE" : "ACTIVE"
     roomList[index] = room({ ...current, status, version: Number(current.version) + 1 })
     return route.fulfill(apiAnswer(roomList[index]))
+  })
+
+  // The classes: listed in scope (searched by code or name), created in preparation inside an active
+  // offer with a code unique in the unit and period, edited (name, shift and room) with the version, and
+  // activated or inactivated as the backend decides it - what stops activating comes from the unit, the
+  // offer, the period, the capacity and the room; inactivating always meets the silent enrollment source.
+  const classList = classes.map((item) => ({ ...item }))
+  let nextClassId = 160
+
+  const impediments = (item: Item) => {
+    const out: string[] = []
+    const itemOffer = offerList.find((entry) => entry.id === item.offerId)
+    if (!itemOffer || itemOffer.status !== "ACTIVE") out.push("the offer is inactive")
+    const itemPeriod = periodList.find((entry) => entry.id === item.periodId)
+    if (!itemPeriod || itemPeriod.status === "CLOSED") out.push("the period is closed")
+    if (Number(item.capacity) <= 0) out.push("the capacity must be above zero")
+    const itemRoom = roomList.find((entry) => entry.id === item.roomId)
+    if (item.roomId && (!itemRoom || itemRoom.status !== "ACTIVE")) out.push("the room is inactive")
+    return out
+  }
+
+  const classView = (item: Item): Item => {
+    const computed = {
+      ...item,
+      eligibleActions: classActions[String(item.status)],
+      eligibleForEnrollment: item.status === "ACTIVE" && impediments(item).length === 0,
+      shiftLabel: shiftLabels[String(item.shift)],
+    }
+    return view(computed)
+  }
+
+  await page.route(/\/api\/academic\/classes(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    if (call.method === "GET") {
+      const { gradeId, periodId, q, status, unitId } = call.query
+      const found = classList
+        .filter((item) => !unitId || String(item.unitId) === unitId)
+        .filter((item) => !periodId || String(item.periodId) === periodId)
+        .filter((item) => !gradeId || String(item.gradeId) === gradeId)
+        .filter((item) => !status || item.status === status)
+        .filter((item) => !q || fold(item.name).includes(fold(q)) || fold(item.code).includes(fold(q)))
+        .map(classView)
+      return route.fulfill(apiAnswer(toPage(found, call.query)))
+    }
+
+    const body = call.body as Item
+    const itemOffer = offerList.find(
+      (entry) =>
+        entry.unitId === body.unitId &&
+        entry.periodId === body.periodId &&
+        entry.gradeId === body.gradeId &&
+        entry.status === "ACTIVE",
+    )
+    if (!itemOffer) return route.fulfill(apiError(422, "ACADEMIC_FIELD_INCOMPATIBLE"))
+    const repeated = classList.some(
+      (item) => item.unitId === body.unitId && item.periodId === body.periodId && fold(item.code) === fold(body.code),
+    )
+    if (repeated) return route.fulfill(apiError(409, "ACADEMIC_DUPLICATE_CODE"))
+    const created = classBase({
+      ...body,
+      id: nextClassId++,
+      noPhysicalRoom: Boolean(body.noPhysicalRoom),
+      offerId: itemOffer.id,
+      pendencies: ["NO_TEACHER"],
+      roomId: body.roomId ?? null,
+      status: "PREPARATION",
+    })
+    classList.push(created)
+    return route.fulfill(apiAnswer(classView(created)))
+  })
+
+  await page.route(/\/api\/academic\/classes\/\d+(\/(impact|activate|inactivate|overview|general))?$/, (route) => {
+    const call = record(route.request())
+    const [, id, , action] =
+      /\/api\/academic\/classes\/(\d+)(\/(impact|activate|inactivate|overview|general))?$/.exec(call.path) ?? []
+    const index = classList.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = classList[index]
+
+    if (action === "impact") {
+      return route.fulfill(
+        apiAnswer({
+          activationImpediments: impediments(current),
+          classId: Number(id),
+          enrollmentSourceAvailable: false,
+          inactivationBlockers: ["the enrollment source is not available, so the absence of students cannot be proved"],
+        }),
+      )
+    }
+    if (action === "overview") {
+      const tabs = options.readOnly
+        ? ["GENERAL", "STUDENTS", "TEACHERS"]
+        : ["GENERAL", "STUDENTS", "TEACHERS", "CAPACITY", "HISTORY"]
+      return route.fulfill(apiAnswer({ schoolClass: classView(current), tabs }))
+    }
+    if (action === "general") {
+      const itemGrade = catalog.grades.find((entry) => entry.id === current.gradeId)
+      return route.fulfill(
+        apiAnswer({
+          gradeName: itemGrade?.name,
+          periodName: periodList.find((entry) => entry.id === current.periodId)?.name,
+          roomName: roomList.find((entry) => entry.id === current.roomId)?.name ?? null,
+          schoolClass: classView(current),
+          stageName: catalog.stages.find((entry) => entry.id === itemGrade?.stageId)?.name,
+          subjects: catalog.subjects
+            .filter((entry) => (current.subjectIds as number[]).includes(Number(entry.id)))
+            .map((entry) => ({ code: entry.code, id: entry.id, name: entry.name })),
+          unitName: units.find((unit) => unit.schoolUnitId === current.unitId)?.unitName,
+        }),
+      )
+    }
+    if (call.method === "GET") return route.fulfill(apiAnswer(classView(current)))
+
+    if (options.changedClassId === Number(id) && !classChanged) {
+      classChanged = true
+      classList[index] = {
+        ...current,
+        name: `${String(current.name)} (revisada)`,
+        version: Number(current.version) + 1,
+      }
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+
+    const body = call.body as Item
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+
+    if (!action) {
+      classList[index] = {
+        ...current,
+        name: body.name,
+        noPhysicalRoom: Boolean(body.noPhysicalRoom),
+        roomId: body.roomId ?? null,
+        shift: body.shift,
+        version: Number(current.version) + 1,
+      }
+      return route.fulfill(apiAnswer(classView(classList[index])))
+    }
+
+    if (action === "activate") {
+      const found = impediments(current)
+      if (found.length > 0) return route.fulfill(notEligible(`The class cannot be activated: ${found.join("; ")}.`))
+      classList[index] = { ...current, status: "ACTIVE", version: Number(current.version) + 1 }
+      return route.fulfill(apiAnswer(classView(classList[index])))
+    }
+
+    if (current.status !== "ACTIVE") return route.fulfill(notEligible("Only an active class can be inactivated."))
+    return route.fulfill(apiError(503, "ACADEMIC_SOURCE_UNAVAILABLE"))
   })
 
   return { calls }
