@@ -16,7 +16,10 @@ import { type ClassStateAction, ClassStateDialog } from "../Classes/ClassStateDi
 import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import { useAcademicUnits } from "../shared/academic/useAcademicUnits"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
+import { ClassCapacity } from "./capacity/ClassCapacity"
 import { ClassGeneral } from "./ClassGeneral"
+import { ClassHistory } from "./history/ClassHistory"
+import { ClassStudents } from "./students/ClassStudents"
 import { ClassTeachers } from "./teachers/ClassTeachers"
 
 type OverviewResult = { error: "failed" | "gone"; key: string } | { key: string; overview: AcademicClassOverview }
@@ -122,7 +125,7 @@ export const ClassProfile = () => {
     })
   }
 
-  // The tabs come one by one in the phases of the academic structure; only the ones built are shown.
+  // The tabs the backend lets the person open, each read in its own call.
   const tabs: TabsItem[] = []
   if (overview.tabs.includes("GENERAL")) {
     tabs.push({
@@ -136,6 +139,18 @@ export const ClassProfile = () => {
       label: t("classes.profile.tabs.general"),
     })
   }
+  if (overview.tabs.includes("STUDENTS")) {
+    tabs.push({
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <ClassStudents classId={schoolClass.id} refreshKey={reloadToken} />
+        </Card>
+      ),
+      icon: "school-outline",
+      key: "students",
+      label: t("classes.profile.tabs.students"),
+    })
+  }
   if (overview.tabs.includes("TEACHERS")) {
     tabs.push({
       content: (
@@ -146,6 +161,30 @@ export const ClassProfile = () => {
       icon: "users-outline",
       key: "teachers",
       label: t("classes.profile.tabs.teachers"),
+    })
+  }
+  if (overview.tabs.includes("CAPACITY")) {
+    tabs.push({
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <ClassCapacity classId={schoolClass.id} onChanged={reload} refreshKey={reloadToken} />
+        </Card>
+      ),
+      icon: "analytics-outline",
+      key: "capacity",
+      label: t("classes.profile.tabs.capacity"),
+    })
+  }
+  if (overview.tabs.includes("HISTORY")) {
+    tabs.push({
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <ClassHistory classId={schoolClass.id} refreshKey={reloadToken} />
+        </Card>
+      ),
+      icon: "history",
+      key: "history",
+      label: t("classes.profile.tabs.history"),
     })
   }
 
