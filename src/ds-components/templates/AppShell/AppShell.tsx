@@ -35,7 +35,22 @@ type NavGroup = {
 // children, so those are plausible placeholders, each with its own page (blank for now, except
 // Minha Unidade).
 const menuGroups: NavGroup[] = [
-  { children: ["classes", "subjects", "classDiary", "reportCards"], icon: "school-outline", key: "academic" },
+  {
+    children: [
+      "academicOverview",
+      "periods",
+      "gradeLevels",
+      "subjects",
+      "offers",
+      "rooms",
+      "classes",
+      "academicCalendar",
+      "classDiary",
+      "reportCards",
+    ],
+    icon: "school-outline",
+    key: "academic",
+  },
   { children: ["tuition", "billing", "contracts", "reconciliation"], icon: "money-outline", key: "finance" },
   { children: ["notices", "messages", "notifications"], icon: "chat-outline", key: "communication" },
   { children: ["academicReports", "financialReports", "exports"], icon: "file-outline", key: "reports" },

@@ -3,6 +3,8 @@
 // so a page doesn't have to import the router itself. A page reached from the menu is keyed by its
 // menu entry (shell.nav), so the AppShell finds its path by that key.
 export const paths = {
+  academicCalendar: "/academic/calendar",
+  academicOverview: "/academic/overview",
   academicReports: "/reports/academic",
   // Opened from the invitation e-mail, as /accept-invitation?token=...&tenant=... (the backend builds the link).
   acceptInvitation: "/accept-invitation",
@@ -20,6 +22,7 @@ export const paths = {
   exports: "/reports/exports",
   financialReports: "/reports/financial",
   forgotPassword: "/forgot-password",
+  gradeLevels: "/academic/grade-levels",
   // A guardian's profile, its edition and a new guardian (not in the menu; under the guardians page, so
   // they get its access rule). Built with generatePath (react-router-dom).
   guardianEdit: "/administration/guardians/:guardianId/edit",
@@ -37,7 +40,9 @@ export const paths = {
   myUnit: "/administration/my-unit",
   notices: "/communication/notices",
   notifications: "/communication/notifications",
+  offers: "/academic/offers",
   peopleSearch: "/administration/people-search",
+  periods: "/academic/periods",
   preferences: "/settings/preferences",
   profilesAndPermissions: "/users/profiles-and-permissions",
   recentAccess: "/access-logs/recent-access",
@@ -45,6 +50,7 @@ export const paths = {
   reportCards: "/academic/report-cards",
   // Opened from the reset e-mail, as /reset-password?token=...&tenant=... (the backend builds the link).
   resetPassword: "/reset-password",
+  rooms: "/academic/rooms",
   security: "/settings/security",
   // No page: its loader ends the session and goes to the login. Being a navigation, it goes through
   // the unsaved-changes warning like any other way out of a page.

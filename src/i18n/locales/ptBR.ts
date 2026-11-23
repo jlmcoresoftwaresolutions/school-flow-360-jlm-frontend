@@ -2,6 +2,18 @@
 // locale) is typed against TranslationResource, so adding a key here without adding it there is a
 // compile error instead of a silently untranslated string in production.
 export const ptBR = {
+  academic: {
+    descriptions: {
+      academicCalendar: "Dias letivos, feriados e eventos de cada unidade e período, preparados e publicados.",
+      academicOverview: "Turmas, capacidade e pendências da estrutura acadêmica nas suas unidades.",
+      classes: "As turmas de cada unidade e período, com série, turno, sala, capacidade e professores.",
+      gradeLevels: "As etapas de ensino da instituição e as séries de cada uma.",
+      offers: "As séries oferecidas em cada unidade e período, com as disciplinas que ensinam.",
+      periods: "Os períodos letivos da instituição e as unidades onde valem.",
+      rooms: "As salas físicas de cada unidade, para as turmas.",
+      subjects: "As disciplinas da instituição, usadas pelas ofertas de cada unidade.",
+    },
+  },
   acceptInvitation: {
     accessLabel: "Seu acesso",
     activated: "Conta ativada. Entre com seu e-mail e a senha que você criou.",
@@ -690,9 +702,11 @@ export const ptBR = {
         "Esta unidade foi alterada desde que o impacto foi verificado. Confira o impacto atualizado e confirme de novo.",
       inactivateDescription:
         "{{name}} deixa de aparecer nas novas operações, mas continua no histórico da organização.",
+      inactivateImpactAcademic:
+        "Na estrutura acadêmica: {{classes}} turma(s) em preparação ou ativa(s), {{links}} vínculo(s) de professor em andamento e {{periods}} período(s) aberto(s).",
       inactivateImpactError: "Não foi possível verificar o impacto da inativação. Feche e tente novamente.",
       inactivateImpactLoading: "Verificando o impacto da inativação...",
-      inactivateImpactNone: "Nenhum usuário está vinculado a esta unidade.",
+      inactivateImpactNone: "Nenhum usuário nem estrutura acadêmica está vinculado a esta unidade.",
       inactivateImpactUsers:
         "Usuários vinculados a esta unidade: {{assigned}} ({{enabled}} com acesso ativo). Eles não são alterados nem bloqueados.",
       inactivateTitle: "Inativar unidade?",
@@ -1092,6 +1106,8 @@ export const ptBR = {
     myProfile: "Meu perfil",
     nav: {
       academic: "Acadêmico",
+      academicCalendar: "Calendário",
+      academicOverview: "Visão geral",
       academicReports: "Relatórios acadêmicos",
       accessLogs: "Logs de Acesso",
       activeSessions: "Sessões ativas",
@@ -1106,6 +1122,7 @@ export const ptBR = {
       exports: "Exportações",
       finance: "Financeiro",
       financialReports: "Relatórios financeiros",
+      gradeLevels: "Etapas e séries",
       guardians: "Responsáveis",
       help: "Ajuda",
       helpCenter: "Central de ajuda",
@@ -1116,13 +1133,16 @@ export const ptBR = {
       myUnit: "Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
+      offers: "Ofertas",
       peopleSearch: "Pesquisar pessoas",
+      periods: "Períodos letivos",
       preferences: "Preferências",
       profilesAndPermissions: "Perfis e permissões",
       recentAccess: "Acessos recentes",
       reconciliation: "Conciliação",
       reportCards: "Boletins",
       reports: "Relatórios",
+      rooms: "Salas",
       security: "Segurança",
       settings: "Configurações",
       students: "Alunos",

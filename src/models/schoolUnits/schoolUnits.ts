@@ -90,11 +90,15 @@ export type ActivateSchoolUnitRequest = {
 
 // GET /api/school-units/{id}/deactivation-check: what deactivating would affect, read-only.
 // `requiresConfirmation` is true when there are users tied to the unit (they are not changed or
-// blocked). `version` is the one to send to deactivate.
+// blocked) or, since the academic structure (P04, CT10), classes in preparation or active, teacher
+// links that have not ended or open periods. `version` is the one to send to deactivate.
 export type SchoolUnitDeactivationCheck = {
   assignedUsers: number
   canDeactivate: boolean
   enabledAssignedUsers: number
+  liveClasses: number
+  openPeriods: number
+  openTeacherLinks: number
   operationalStatus: ApiSchoolUnitStatus
   requiresConfirmation: boolean
   schoolUnitId: number

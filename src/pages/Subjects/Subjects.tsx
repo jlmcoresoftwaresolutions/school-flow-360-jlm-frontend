@@ -7,6 +7,6 @@ export const Subjects = () => {
   const { t } = useTranslation()
 
   return (
-    <PageHeader description={t("common.placeholderDescription")} icon="book-outline" title={t("shell.nav.subjects")} />
+    <PageHeader description={t("academic.descriptions.subjects")} icon="book-outline" title={t("shell.nav.subjects")} />
   )
 }

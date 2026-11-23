@@ -3,6 +3,18 @@ import type { TranslationResource } from "./ptBR"
 // Typed against TranslationResource (ptBR's own shape) instead of inferring its own type: a missing
 // or extra key here is then a compile error, not a silent gap discovered at runtime.
 export const en: TranslationResource = {
+  academic: {
+    descriptions: {
+      academicCalendar: "School days, holidays and events of each unit and period, prepared and published.",
+      academicOverview: "Classes, capacity and pending items of the academic structure in your units.",
+      classes: "The classes of each unit and period, with grade, shift, room, capacity and teachers.",
+      gradeLevels: "The institution's education stages and the grades of each one.",
+      offers: "The grades offered in each unit and period, with the subjects they teach.",
+      periods: "The institution's school periods and the units where they apply.",
+      rooms: "The physical rooms of each unit, for the classes.",
+      subjects: "The institution's subjects, used by each unit's offerings.",
+    },
+  },
   acceptInvitation: {
     accessLabel: "Your access",
     activated: "Account activated. Sign in with your e-mail and the password you created.",
@@ -688,9 +700,11 @@ export const en: TranslationResource = {
         "This unit changed since its impact was checked. Review the updated impact and confirm again.",
       inactivateDescription:
         "{{name}} will no longer appear in new operations, but stays in the organization's history.",
+      inactivateImpactAcademic:
+        "In the academic structure: {{classes}} class(es) in preparation or active, {{links}} ongoing teacher link(s) and {{periods}} open period(s).",
       inactivateImpactError: "We couldn't check the impact of inactivating it. Close this and try again.",
       inactivateImpactLoading: "Checking the impact of inactivating it...",
-      inactivateImpactNone: "No user is linked to this unit.",
+      inactivateImpactNone: "No user nor academic structure is linked to this unit.",
       inactivateImpactUsers:
         "Users linked to this unit: {{assigned}} ({{enabled}} with active access). They are not changed or blocked.",
       inactivateTitle: "Inactivate unit?",
@@ -1088,6 +1102,8 @@ export const en: TranslationResource = {
     myProfile: "My profile",
     nav: {
       academic: "Academic",
+      academicCalendar: "Calendar",
+      academicOverview: "Overview",
       academicReports: "Academic reports",
       accessLogs: "Access logs",
       activeSessions: "Active sessions",
@@ -1102,6 +1118,7 @@ export const en: TranslationResource = {
       exports: "Exports",
       finance: "Finance",
       financialReports: "Financial reports",
+      gradeLevels: "Stages and grades",
       guardians: "Guardians",
       help: "Help",
       helpCenter: "Help center",
@@ -1112,13 +1129,16 @@ export const en: TranslationResource = {
       myUnit: "My Unit",
       notices: "Announcements",
       notifications: "Notifications",
+      offers: "Offerings",
       peopleSearch: "Search people",
+      periods: "School periods",
       preferences: "Preferences",
       profilesAndPermissions: "Profiles and permissions",
       recentAccess: "Recent access",
       reconciliation: "Reconciliation",
       reportCards: "Report cards",
       reports: "Reports",
+      rooms: "Rooms",
       security: "Security",
       settings: "Settings",
       students: "Students",

@@ -99,12 +99,17 @@ export type SchoolUnit = {
 export type SchoolUnitInput = Pick<SchoolUnit, "address" | "contactEmail" | "contactPhone" | "name" | "notes">
 
 // What inactivating a unit would affect, read before asking for the confirmation: the users tied to
-// the unit (who are not changed or blocked by it). `requiresConfirmation` says the backend wants the
-// impact acknowledged, and `version` is the unit's, to send with the inactivation.
+// the unit (who are not changed or blocked by it) and its academic structure - the classes in
+// preparation or active, the teacher links that have not ended and the open periods.
+// `requiresConfirmation` says the backend wants the impact acknowledged, and `version` is the unit's,
+// to send with the inactivation.
 export type SchoolUnitInactivationImpact = {
   assignedUsers: number
   canInactivate: boolean
   enabledAssignedUsers: number
+  liveClasses: number
+  openPeriods: number
+  openTeacherLinks: number
   requiresConfirmation: boolean
   version: number
 }
