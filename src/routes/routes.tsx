@@ -295,6 +295,13 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { ClassProfile } = await import("@/pages/ClassProfile")
+          return { Component: ClassProfile }
+        },
+        path: paths.classProfile,
+      },
+      {
+        lazy: async () => {
           const { Subjects } = await import("@/pages/Subjects")
           return { Component: Subjects }
         },

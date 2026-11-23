@@ -37,7 +37,7 @@ export const getAcademicOverview = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/overview: the class and the tabs the caller may open.
+// USED. GET /api/academic/classes/{id}/overview: the class and the tabs the caller may open.
 export const getAcademicClassOverview = async (
   classId: number,
   config?: RequestConfig,
@@ -50,7 +50,7 @@ export const getAcademicClassOverview = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/general: the class with the names it refers to.
+// USED. GET /api/academic/classes/{id}/general: the class with the names it refers to.
 export const getAcademicClassGeneral = async (
   classId: number,
   config?: RequestConfig,

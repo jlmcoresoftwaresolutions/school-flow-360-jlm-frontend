@@ -19,6 +19,7 @@ export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   academicCalendar: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR", "ALUNO", "RESPONSAVEL"],
   academicOverview: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   audit: ["ADMIN"],
+  classProfile: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   classes: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   gradeLevels: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   guardianEdit: ["ADMIN", "SECRETARIA"],

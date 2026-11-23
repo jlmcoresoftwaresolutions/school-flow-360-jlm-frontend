@@ -16,6 +16,8 @@ export const paths = {
   // Where a temporary password forces the person to create their own before anything else (not in the menu).
   changePassword: "/change-password",
   classDiary: "/academic/class-diary",
+  // A class's detail (not in the menu; under the classes page, whose access rule it follows).
+  classProfile: "/academic/classes/:classId",
   classes: "/academic/classes",
   contactSupport: "/help/contact-support",
   contracts: "/finance/contracts",
