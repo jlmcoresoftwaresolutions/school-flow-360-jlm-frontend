@@ -760,6 +760,7 @@ export const ptPT: TranslationResource = {
   },
   people: {
     allStatuses: "Todas as situações",
+    anonymizedLocked: "Esta pessoa foi anonimizada e não pode mais ser alterada.",
     duplicates: {
       back: "Voltar ao formulário",
       description:
@@ -786,6 +787,7 @@ export const ptPT: TranslationResource = {
       title: "Possível registo repetido",
       weak: "Coincidência fraca",
     },
+    failureWithReference: "{{message}} Referência para o suporte: {{reference}}.",
     form: {
       addressNumberLabel: "Número",
       addressNumberPlaceholder: "N.º",
@@ -845,6 +847,40 @@ export const ptPT: TranslationResource = {
       DRAFT: "Rascunho",
       INACTIVE: "Inativo",
     },
+  },
+  peoplePrivacy: {
+    anonymize: {
+      action: "Anonimizar (RGPD/LGPD)",
+      adminAccount: "Uma conta de Admin não pode ser anonimizada por aqui.",
+      confirm: "Anonimizar",
+      description:
+        'Apaga de vez os dados pessoais: o nome passa a "Pessoa anonimizada", e e-mail, telefone, documento, morada e ficheiros são apagados; o acesso e as sessões são terminados. Vínculos e histórico ficam, sem identificar a pessoa. Não tem volta.',
+      done: "Pessoa anonimizada.",
+      failed: "Não foi possível anonimizar. Tente de novo.",
+      mustBeInactive: "Inative a pessoa antes de anonimizá-la.",
+      requestRef: "Protocolo do pedido do titular",
+      requestRefHelper: "De {{min}} a {{max}} caracteres. Fica registado na auditoria.",
+      requestRefInvalid: "Indique o protocolo com {{min}} a {{max}} caracteres.",
+      requestRefPlaceholder: "Ex.: LGPD-2026-0042",
+      title: "Anonimizar {{name}}?",
+      understood: "Entendo que a anonimização não pode ser desfeita",
+    },
+    draftCleanup: {
+      action: "Limpar rascunhos",
+      confirm: "Limpar rascunhos",
+      description:
+        "Apaga de vez os rascunhos de aluno parados além do prazo de retenção, sem vínculo, convite aberto nem documento. Os demais ficam. A limpeza também roda toda noite.",
+      done_one: "{{count}} rascunho removido.",
+      done_other: "{{count}} rascunhos removidos.",
+      failed: "Não foi possível limpar os rascunhos. Tente de novo.",
+      title: "Limpar rascunhos abandonados?",
+    },
+    export: {
+      action: "Exportar dados (RGPD/LGPD)",
+      done: "Dados exportados. A exportação fica registada na auditoria.",
+      failed: "Não foi possível exportar os dados. Tente de novo.",
+    },
+    gone: "A pessoa não está mais disponível para você.",
   },
   peopleSearch: {
     actions: "Ações",

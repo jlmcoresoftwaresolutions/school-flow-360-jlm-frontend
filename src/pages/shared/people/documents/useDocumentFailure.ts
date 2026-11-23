@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next"
 
 import { getErrorCode, getErrorStatus } from "@/services/httpClient"
 
+import { useFailureMessage } from "../useFailureMessage"
+
 // Where a refusal of a document goes: the file, a field of the new document, the whole form, or one of
 // the outcomes the dialog handles itself (the document changed meanwhile, or it is archived or out of
 // reach now and the list is read again).
@@ -12,6 +14,7 @@ export type DocumentFailure =
 // The refusals of the personal documents (P03 contract, slice 4), read by the stable code.
 export const useDocumentFailure = () => {
   const { t } = useTranslation()
+  const toFailureMessage = useFailureMessage()
 
   return (error: unknown): DocumentFailure => {
     switch (getErrorCode(error)) {
@@ -29,6 +32,8 @@ export const useDocumentFailure = () => {
         return { field: "expiresOn", kind: "field", message: t("personDocuments.form.expiryNotApplicable") }
       case "DATES_INVALID":
         return { field: "expiresOn", kind: "field", message: t("personDocuments.form.datesInvalid") }
+      case "PERSON_ANONYMIZED":
+        return { kind: "form", message: toFailureMessage("", error) }
       case "VERSION_CONFLICT":
         return { kind: "conflict", message: t("personDocuments.conflict") }
       case "DOCUMENT_ARCHIVED":
@@ -37,7 +42,7 @@ export const useDocumentFailure = () => {
         return { kind: "stale", message: t("personDocuments.fileGone") }
       default:
         if (getErrorStatus(error) === 404) return { kind: "stale", message: t("personDocuments.gone") }
-        return { kind: "form", message: t("personDocuments.failed") }
+        return { kind: "form", message: toFailureMessage(t("personDocuments.failed"), error) }
     }
   }
 }

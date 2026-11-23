@@ -14,6 +14,7 @@ import { getErrorStatus } from "@/services/httpClient"
 import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
 import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
+import { usePersonPrivacy } from "../shared/people/privacy/usePersonPrivacy"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
 import { GuardianData } from "./GuardianData"
@@ -69,6 +70,12 @@ export const GuardianProfile = () => {
   // Another guardian's answer is never shown while this one is read.
   const current = result?.key.startsWith(`${guardianId}#`) ? result : null
   const profile = current && "profile" in current ? current.profile : null
+  const privacy = usePersonPrivacy(
+    profile
+      ? { name: profile.guardian.fullName, personId: profile.guardian.id, status: profile.guardian.status }
+      : null,
+    reload,
+  )
 
   if (!current || !profile) {
     return (
@@ -132,6 +139,8 @@ export const GuardianProfile = () => {
       onClick: () => setDialog("reactivate"),
     })
   }
+
+  actions.push(...privacy.items)
 
   const tabs: TabsItem[] = []
   if (profile.sections.includes("IDENTITY")) {
@@ -218,6 +227,8 @@ export const GuardianProfile = () => {
           onGone={reload}
         />
       )}
+
+      {privacy.dialog}
     </>
   )
 }

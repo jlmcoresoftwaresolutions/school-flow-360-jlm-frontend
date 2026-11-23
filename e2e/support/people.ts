@@ -188,6 +188,22 @@ export const awaitingInvitation = {
   studentId: 203,
 }
 
+// A student saved with this name fails unexpectedly: a 500 without a code, with the call's correlation id.
+export const unexpectedFailureName = "Erro Inesperado"
+
+const unexpectedFailure = {
+  body: JSON.stringify({
+    code: null,
+    correlationId: "c0ffee42",
+    data: null,
+    message: "Unexpected error",
+    status: "Error",
+    tenantId: "schoolflow_demo",
+  }),
+  contentType: "application/json",
+  status: 500,
+}
+
 // Where the mocked download links point.
 export const filesHost = "https://files.schoolflow.test"
 
@@ -525,6 +541,7 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
   // The students' records, kept like the backend keeps them (every change bumps the version).
   const records = new Map<number, Item>(studentList.map((item) => [item.id as number, toStudent(item)]))
   let nextStudentId = 250
+  const anonymized = new Set<number>()
 
   // The links (active and ended, never deleted) and the guardian invitations.
   const links: Item[] = studentList.flatMap(initialLinks)
@@ -756,7 +773,9 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (action === "guardian-invitations") return route.fallback()
 
     const body = call.body as Item
+    if (anonymized.has(Number(id))) return route.fulfill(apiError(409, "PERSON_ANONYMIZED"))
     if (body.version !== student.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    if (body.fullName === unexpectedFailureName) return route.fulfill(unexpectedFailure)
 
     if (!action && call.method === "PUT") {
       const updated = { ...student, ...body, version: Number(student.version) + 1 }
@@ -850,6 +869,7 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (action === "profile") return route.fulfill(apiAnswer(toGuardianProfile(guardian)))
 
     const body = call.body as Item
+    if (anonymized.has(Number(id))) return route.fulfill(apiError(409, "PERSON_ANONYMIZED"))
     if (body.version !== guardian.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
 
     if (!action && call.method === "PUT") {
@@ -889,6 +909,47 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     }
     guardianRecords.set(id, created)
     return route.fulfill(apiAnswer(created))
+  })
+
+  // The LGPD tools (Admin): the export of everything kept, the anonymization of an inactive person (with
+  // the protocol of the request; afterwards any change answers 409 PERSON_ANONYMIZED) and the cleanup of
+  // abandoned drafts, which removes the drafts without a guardian.
+  await page.route(/\/api\/people\/\d+\/(anonymize|export)$/, (route) => {
+    const call = record(route.request())
+    const [, id, action] = /\/api\/people\/(\d+)\/(anonymize|export)$/.exec(call.path) ?? []
+    const personId = Number(id)
+    const student = records.get(personId)
+    const guardian = guardianRecords.get(personId)
+    const person = student ?? guardian
+    if (!person) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+
+    if (action === "export") {
+      return route.fulfill(
+        apiAnswer({
+          cadastre: { birthDate: person.birthDate ?? null, contactEmail: person.contactEmail ?? null },
+          documents: documentsByPerson.get(personId) ?? [],
+          person: { fullName: person.fullName, id: personId, nickname: person.nickname ?? null },
+        }),
+      )
+    }
+
+    if (anonymized.has(personId)) return route.fulfill(apiAnswer(null))
+    const ref = String((call.body as Item | undefined)?.requestRef ?? "").trim()
+    if (ref.length < 3 || ref.length > 60) return route.fulfill(apiError(422, "REQUEST_REF_REQUIRED"))
+    if (person.status !== "INACTIVE") return route.fulfill(apiError(422, "MUST_BE_INACTIVE"))
+
+    anonymized.add(personId)
+    const erased = { contactEmail: null, fullName: "Pessoa anonimizada", maskedDocument: null, phone: null }
+    if (student) records.set(personId, { ...student, ...erased })
+    else guardianRecords.set(personId, { ...person, ...erased })
+    return route.fulfill(apiAnswer(null))
+  })
+
+  await page.route("**/api/people/maintenance/draft-cleanup", (route) => {
+    record(route.request())
+    const drafts = studentList.filter((item) => item.status === "DRAFT" && item.activeGuardians === 0)
+    drafts.forEach((draft) => studentList.splice(studentList.indexOf(draft), 1))
+    return route.fulfill(apiAnswer({ removedDrafts: drafts.length }))
   })
 
   // The personal documents, kept like the backend keeps them (never deleted; every change bumps the

@@ -8,6 +8,8 @@ import type { Guardian } from "@/models"
 import { changeGuardianState } from "@/services/guardians"
 import { getErrorCode, getErrorStatus } from "@/services/httpClient"
 
+import { useFailureMessage } from "../shared/people/useFailureMessage"
+
 export type GuardianStateAction = "activate" | "inactivate" | "reactivate"
 
 export type GuardianStateDialogProps = {
@@ -26,6 +28,7 @@ export const GuardianStateDialog = (props: GuardianStateDialogProps) => {
   const { action, guardian, onChanged, onClose, onGone } = props
 
   const { t } = useTranslation()
+  const toFailureMessage = useFailureMessage()
 
   const [failure, setFailure] = useState("")
   const [isSaving, setIsSaving] = useState(false)
@@ -49,7 +52,7 @@ export const GuardianStateDialog = (props: GuardianStateDialogProps) => {
       } else if (code === "NAME_REQUIRED") {
         setFailure(t("guardians.state.nameRequired"))
       } else {
-        setFailure(t("guardians.state.failed"))
+        setFailure(toFailureMessage(t("guardians.state.failed"), error))
       }
     } finally {
       setIsSaving(false)

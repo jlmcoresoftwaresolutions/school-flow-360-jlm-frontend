@@ -14,6 +14,7 @@ import { getStudentProfile } from "@/services/students"
 import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
 import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
+import { usePersonPrivacy } from "../shared/people/privacy/usePersonPrivacy"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
 import { useRelationshipTypes } from "../shared/people/useRelationshipTypes"
@@ -97,6 +98,10 @@ export const StudentProfile = () => {
   const current = loadedKey.startsWith(`${studentId}#`) ? result : null
   const profile = current && "profile" in current ? current.profile : null
   const student = profile?.student ?? null
+  const privacy = usePersonPrivacy(
+    student ? { name: student.fullName, personId: student.id, status: student.status } : null,
+    reload,
+  )
 
   const renderState = () => {
     if (!current) return null
@@ -188,6 +193,8 @@ export const StudentProfile = () => {
       onClick: () => setDialog("reactivate"),
     })
   }
+
+  actions.push(...privacy.items)
 
   const tabs = [
     profile.sections.includes("IDENTITY") && {
@@ -342,6 +349,8 @@ export const StudentProfile = () => {
           }}
         />
       )}
+
+      {privacy.dialog}
     </>
   )
 }

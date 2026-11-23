@@ -23,6 +23,7 @@ import {
 } from "../shared/people/PersonFields"
 import { toPersonSignals } from "../shared/people/personForm"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
+import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { usePersonFieldErrors } from "../shared/people/usePersonFieldErrors"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
 import {
@@ -52,6 +53,7 @@ export const StudentForm = () => {
   const unitDirectory = useUnitDirectory()
   const documentTypes = useDocumentTypes()
   const toPersonFieldError = usePersonFieldErrors()
+  const toFailureMessage = useFailureMessage()
   const form = useForm<StudentFormValues>({ defaultValues: emptyStudentForm })
 
   const [student, setStudent] = useState<Student | null>(null)
@@ -131,7 +133,7 @@ export const StudentForm = () => {
     } else if (status === undefined && !isEdit) {
       setFailure(t("students.form.noAnswer"))
     } else {
-      setFailure(t("students.form.failed"))
+      setFailure(toFailureMessage(t("students.form.failed"), error))
     }
   }
 
