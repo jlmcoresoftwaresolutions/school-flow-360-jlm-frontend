@@ -113,6 +113,36 @@ export const AttachedWithContent: Story = {
   },
 }
 
+const narrowItems: TabsProps["items"] = [
+  { icon: "info-outline", key: "dados", label: "Dados" },
+  { icon: "users-outline", key: "responsaveis", label: "Responsáveis" },
+  { icon: "file-outline", key: "documentos", label: "Documentos" },
+  { icon: "history", key: "historico", label: "Histórico" },
+  { icon: "shield-outline", key: "privacidade", label: "Privacidade" },
+]
+
+// A narrow screen: smaller tabs, a bar that scrolls sideways with a fade on each edge hiding tabs, and
+// the selected tab scrolled into view
+export const NarrowScreen: Story = {
+  args: {
+    attached: true,
+    items: narrowItems.map((item) => ({
+      ...item,
+      content: (
+        <Card style={{ padding: spacing[24] }}>
+          <Text as="p">Conteúdo da aba {item.label}.</Text>
+        </Card>
+      ),
+    })),
+    value: "documentos",
+  },
+  render: (args) => (
+    <div style={{ maxWidth: spacing[256] }}>
+      <TabsDemo {...args} />
+    </div>
+  ),
+}
+
 // Tabs without content, acting only as a selector for pages that swap the content themselves
 export const SelectorOnly: Story = {
   args: {

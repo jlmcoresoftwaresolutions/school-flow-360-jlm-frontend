@@ -1,12 +1,15 @@
 import styled, { css } from "styled-components"
 
-import { colors, motion, opacity, radius, shadows, spacing, typography } from "@/foundation"
+import { colors, media, motion, opacity, radius, shadows, spacing, typography } from "@/foundation"
 
 const borderColor = colors.neutral[200]
 
 // A baseline across the whole width it is given, with the tabs set slightly apart on top of it.
 // overflow-x lets a long list of tabs scroll sideways on a narrow screen instead of wrapping or
-// squeezing the labels; the bar's own look is the global scrollbar style (see GlobalStyle.ts).
+// squeezing the labels; the bar's own look is the global scrollbar style (see GlobalStyle.ts). The
+// scroll snaps to whole tabs, and an edge with tabs hidden past it fades out (a mask, so it works on any
+// background), showing there is more to scroll; the edges are flagged by Tabs.tsx in
+// data-overflow-start / data-overflow-end.
 export type StyledTabListProps = {
   $attached: boolean
 }
@@ -21,13 +24,39 @@ const attachedListStyles = css`
   z-index: 1;
 `
 
+const fadeWidth = spacing[24]
+
 export const StyledTabList = styled.div<StyledTabListProps>`
   border-bottom: 1px solid ${borderColor};
   display: flex;
   gap: ${spacing[4]};
   overflow-x: auto;
-  padding: 0 ${spacing[16]};
+  padding: 0 ${spacing[8]};
+  scroll-padding-inline: ${fadeWidth};
+  scroll-snap-type: x proximity;
   width: 100%;
+
+  &[data-overflow-start] {
+    mask-image: linear-gradient(to right, transparent, black ${fadeWidth});
+  }
+
+  &[data-overflow-end] {
+    mask-image: linear-gradient(to left, transparent, black ${fadeWidth});
+  }
+
+  &[data-overflow-start][data-overflow-end] {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black ${fadeWidth},
+      black calc(100% - ${fadeWidth}),
+      transparent
+    );
+  }
+
+  @media ${media.md} {
+    padding: 0 ${spacing[16]};
+  }
 
   ${(props) => props.$attached && attachedListStyles}
 `
@@ -62,7 +91,8 @@ const attachedStyles = css<StyledTabProps>`
     `}
 `
 
-// Each tab is its own white box, bordered and rounded at the top only, like a browser tab.
+// Each tab is its own white box, bordered and rounded at the top only, like a browser tab. Below the md
+// breakpoint it is a step smaller (padding, font and the gap to its icon), so more tabs fit a phone.
 export const StyledTab = styled.button<StyledTabProps>`
   align-items: center;
   background: ${colors.neutral[0]};
@@ -73,12 +103,13 @@ export const StyledTab = styled.button<StyledTabProps>`
   display: inline-flex;
   flex-shrink: 0;
   font-family: ${typography.fontFamily.sans};
-  font-size: ${typography.fontSize.md}px;
+  font-size: ${typography.fontSize.sm}px;
   font-weight: ${typography.fontWeight.regular};
-  gap: ${spacing[8]};
-  line-height: ${typography.lineHeight.md};
+  gap: ${spacing[4]};
+  line-height: ${typography.lineHeight.sm};
   margin-bottom: -1px;
-  padding: ${spacing[8]} ${spacing[16]};
+  padding: ${spacing[8]} ${spacing[12]};
+  scroll-snap-align: start;
   // A light transition when the selection moves from one tab to another (and on hover).
   transition:
     background ${motion.duration.normal} ${motion.easing.ease},
@@ -86,6 +117,13 @@ export const StyledTab = styled.button<StyledTabProps>`
     box-shadow ${motion.duration.normal} ${motion.easing.ease},
     color ${motion.duration.normal} ${motion.easing.ease};
   white-space: nowrap;
+
+  @media ${media.md} {
+    font-size: ${typography.fontSize.md}px;
+    gap: ${spacing[8]};
+    line-height: ${typography.lineHeight.md};
+    padding: ${spacing[8]} ${spacing[16]};
+  }
 
   ${(props) => props.$selected && selectedStyles}
   ${(props) => props.$attached && attachedStyles}
