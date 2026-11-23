@@ -11,6 +11,8 @@ import { paths } from "@/routes/paths"
 import { getGuardianProfile } from "@/services/guardians"
 import { getErrorStatus } from "@/services/httpClient"
 
+import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
+import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
@@ -22,8 +24,8 @@ type ProfileResult = { error: "failed" | "gone"; key: string } | { key: string; 
 
 // A guardian's detail (P03-S07): the header with the status, the units and the actions the status allows
 // (edit, activate a draft, inactivate, reactivate), and the sections the backend lets the operator open
-// (`sections`), each in its own tab - the data and the students it is linked to (only the ones in the
-// operator's reach). A guardian's access comes only from an invitation, never from here. Everything is
+// (`sections`), each in its own tab - the data, the students it is linked to (only the ones in the
+// operator's reach), its documents and its history. A guardian's access comes only from an invitation, never from here. Everything is
 // read again after a change.
 export const GuardianProfile = () => {
   const { guardianId } = useParams()
@@ -154,6 +156,30 @@ export const GuardianProfile = () => {
       icon: "school-outline",
       key: "students",
       label: t("guardians.profile.tabs.students"),
+    })
+  }
+  if (profile.sections.includes("DOCUMENTS")) {
+    tabs.push({
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <PersonDocuments documentTypes={documentTypes} personId={guardian.id} />
+        </Card>
+      ),
+      icon: "file-outline",
+      key: "documents",
+      label: t("personDocuments.tab"),
+    })
+  }
+  if (profile.sections.includes("HISTORY")) {
+    tabs.push({
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <PersonHistory kind="guardian" personId={guardian.id} refreshKey={reloadToken} />
+        </Card>
+      ),
+      icon: "history",
+      key: "history",
+      label: t("personHistory.tab"),
     })
   }
 

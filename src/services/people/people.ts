@@ -83,14 +83,14 @@ export const viewDuplicateReview = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/people/{personId}/documents: a person's documents, archived ones included.
+// USED by the documents tab. GET /api/people/{personId}/documents: a person's documents, archived ones included.
 export const listPersonDocuments = async (personId: number, config?: RequestConfig): Promise<PersonDocument[]> => {
   const response = await httpClient.get<ApiResponse<PersonDocument[]>>(`/api/people/${personId}/documents`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/{personId}/documents: registers a document (without the file yet).
+// USED by the documents tab. POST /api/people/{personId}/documents: registers a document (without the file yet).
 // Errors 422: DOCUMENT_TYPE_INVALID, EXPIRY_NOT_APPLICABLE, DATES_INVALID.
 export const createPersonDocument = async (
   personId: number,
@@ -106,7 +106,7 @@ export const createPersonDocument = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/{personId}/documents/{id}/file?version=n: sends (or replaces) the file,
+// USED by the documents tab. POST /api/people/{personId}/documents/{id}/file?version=n: sends (or replaces) the file,
 // PDF, JPEG or PNG by its content, up to 10 MB. Errors: 428 VERSION_REQUIRED, 409 VERSION_CONFLICT, 413
 // FILE_TOO_LARGE, 415 FILE_TYPE_NOT_ALLOWED, 422 FILE_REQUIRED, 503 STORAGE_DISABLED.
 export const uploadPersonDocumentFile = async (
@@ -125,7 +125,7 @@ export const uploadPersonDocumentFile = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/people/{personId}/documents/{id}/download: a 5-minute link (never keep it);
+// USED by the documents tab. GET /api/people/{personId}/documents/{id}/download: a 5-minute link (never keep it);
 // audited. 404 FILE_NOT_FOUND.
 export const getPersonDocumentDownload = async (
   personId: number,
@@ -140,7 +140,7 @@ export const getPersonDocumentDownload = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/{personId}/documents/{id}/archive?version=n: archives the document
+// USED by the documents tab. POST /api/people/{personId}/documents/{id}/archive?version=n: archives the document
 // (never deletes it).
 export const archivePersonDocument = async (
   personId: number,

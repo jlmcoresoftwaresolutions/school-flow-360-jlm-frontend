@@ -137,12 +137,16 @@ type ListFailure = { code?: string; status: number }
 type PeopleOptions = {
   // Someone else changes this link before the first save of the spec: that save gets 409 VERSION_CONFLICT.
   changedLinkId?: number
+  // The documents of the people, by person id (initialDocuments by default).
+  documents?: Record<number, Item[]>
   // Answers a student save with this contact e-mail, without a review, with 409 DUPLICATE_REVIEW_REQUIRED
   // (someone else already has it).
   duplicateEmail?: string
   guardians?: Item[]
   // The guardian invitations of the students (none by default).
   invitations?: Item[]
+  // Answers every file upload with 503 STORAGE_DISABLED (no bucket configured).
+  storageDisabled?: boolean
   // Answers every read of this list with an error (403, 429 SEARCH_RATE_LIMITED, 500...).
   listFailure?: { guardians?: ListFailure; search?: ListFailure; students?: ListFailure }
   students?: Item[]
@@ -183,6 +187,83 @@ export const awaitingInvitation = {
   status: "AWAITING_CONFIRMATION",
   studentId: 203,
 }
+
+// Where the mocked download links point.
+export const filesHost = "https://files.schoolflow.test"
+
+// The documents of the people, by person id: Ana Beatriz Souza has a valid CPF with its file and an
+// expired passport; everyone else has none.
+export const initialDocuments: Record<number, Item[]> = {
+  201: [
+    {
+      contentType: "image/jpeg",
+      documentType: "PASSPORT",
+      documentTypeLabel: "Passaporte",
+      expiresOn: "2024-01-10",
+      fileName: "passaporte-ana.jpg",
+      fileSize: 512_000,
+      hasFile: true,
+      id: 502,
+      issuedOn: "2019-01-10",
+      maskedNumber: "***4567",
+      status: "EXPIRED",
+      version: 1,
+    },
+    {
+      contentType: "application/pdf",
+      documentType: "CPF",
+      documentTypeLabel: "CPF",
+      expiresOn: null,
+      fileName: "cpf-ana.pdf",
+      fileSize: 245_760,
+      hasFile: true,
+      id: 501,
+      issuedOn: "2020-05-10",
+      maskedNumber: "***.456.789-**",
+      status: "VALID",
+      version: 1,
+    },
+  ],
+}
+
+const historyEvent = (id: number, action: string, entityType: string, entityId: number, details: string | null) => ({
+  action,
+  actorName: id % 2 === 0 ? "João Silva" : "Administracao",
+  details,
+  entityId: String(entityId),
+  entityType,
+  id,
+  occurredAt: `2026-11-${String(22 - (id % 20)).padStart(2, "0")}T13:30:00Z`,
+  result: "SUCCESS",
+})
+
+// A student's history: the registration, a change of the data, a link changed (only the financial
+// responsibility) and an event this screen doesn't know; Ana Beatriz Souza (201) has 23 events, for
+// a second page.
+const studentHistory = (id: number) => {
+  const events = [
+    historyEvent(1, "STUDENT_UPDATED", "STUDENT", id, "fields=fullName,phone"),
+    historyEvent(
+      2,
+      "STUDENT_GUARDIAN_LINK_UPDATED",
+      "STUDENT_GUARDIAN_LINK",
+      id * 10,
+      "before:rel=MOTHER;ped=true;fin=true;con=true;start=2026-02-01|after:rel=MOTHER;ped=true;fin=false;con=true;start=2026-02-01",
+    ),
+    historyEvent(3, "SOMETHING_NEW", "STUDENT", id, null),
+    historyEvent(4, "STUDENT_CREATED", "STUDENT", id, "fields=fullName,birthDate"),
+  ]
+  if (id !== 201) return events
+  const filler = Array.from({ length: 19 }, (_, index) =>
+    historyEvent(10 + index, "STUDENT_UPDATED", "STUDENT", id, "fields=observation"),
+  )
+  return [...events, ...filler]
+}
+
+const guardianHistory = (id: number) => [
+  historyEvent(1, "GUARDIAN_UPDATED", "GUARDIAN", id, "fields=socialName"),
+  historyEvent(2, "GUARDIAN_CREATED", "GUARDIAN", id, "fields=fullName"),
+]
 
 // What the duplicate review finds for `duplicateEmail`: a student in reach and a guardian out of it.
 export const duplicateCandidates = [
@@ -366,10 +447,18 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
   const studentList = [...(options.students ?? students)]
   const guardianList = [...(options.guardians ?? guardians)]
 
+  // A JSON body is kept parsed; a file upload (multipart), as the raw text, where the file name shows.
+  const readBody = (request: Request) => {
+    const raw = request.postData()
+    if (!raw) return undefined
+    if (!(request.headers()["content-type"] ?? "").includes("application/json")) return raw
+    return request.postDataJSON()
+  }
+
   const record = (request: Request) => {
     const url = new URL(request.url())
     const call: RecordedCall = {
-      body: request.postData() ? request.postDataJSON() : undefined,
+      body: readBody(request),
       headers: request.headers(),
       method: request.method(),
       path: url.pathname,
@@ -800,6 +889,97 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     }
     guardianRecords.set(id, created)
     return route.fulfill(apiAnswer(created))
+  })
+
+  // The personal documents, kept like the backend keeps them (never deleted; every change bumps the
+  // version). The file's content isn't checked here: its name comes from the multipart body.
+  const documentsByPerson = new Map<number, Item[]>(
+    Object.entries(options.documents ?? initialDocuments).map(([id, items]) => [
+      Number(id),
+      items.map((item) => ({ ...item })),
+    ]),
+  )
+  let nextDocumentId = 560
+
+  await page.route(/\/api\/people\/\d+\/documents$/, (route) => {
+    const call = record(route.request())
+    const personId = Number(/\/api\/people\/(\d+)\//.exec(call.path)?.[1])
+    const documents = documentsByPerson.get(personId) ?? []
+    if (call.method === "GET") return route.fulfill(apiAnswer(documents))
+
+    const body = call.body as Item
+    const type = documentTypes.find((item) => item.code === body.documentType)
+    if (!type) return route.fulfill(apiError(422, "DOCUMENT_TYPE_INVALID"))
+    if (body.expiresOn && !type.hasExpiry) return route.fulfill(apiError(422, "EXPIRY_NOT_APPLICABLE"))
+    const created = {
+      contentType: null,
+      documentType: type.code,
+      documentTypeLabel: type.label,
+      expiresOn: body.expiresOn ?? null,
+      fileName: null,
+      fileSize: null,
+      hasFile: false,
+      id: nextDocumentId++,
+      issuedOn: body.issuedOn ?? null,
+      maskedNumber: body.documentNumber ? `***${String(body.documentNumber).slice(-4)}` : null,
+      status: "NO_FILE",
+      version: 0,
+    }
+    documentsByPerson.set(personId, [created, ...documents])
+    return route.fulfill(apiAnswer(created))
+  })
+
+  await page.route(/\/api\/people\/\d+\/documents\/\d+\/(file|download|archive)(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const [, personId, documentId, action] =
+      /\/api\/people\/(\d+)\/documents\/(\d+)\/(file|download|archive)$/.exec(call.path) ?? []
+    const documents = documentsByPerson.get(Number(personId)) ?? []
+    const index = documents.findIndex((item) => item.id === Number(documentId))
+    if (index < 0) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+    const document = documents[index]
+
+    if (action === "download") {
+      if (!document.hasFile) return route.fulfill(apiError(404, "FILE_NOT_FOUND"))
+      return route.fulfill(
+        apiAnswer({ expiresInSeconds: 300, fileName: document.fileName, url: `${filesHost}/${document.id}` }),
+      )
+    }
+
+    if (Number(call.query.version) !== document.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+
+    if (action === "archive") {
+      documents[index] = { ...document, status: "ARCHIVED", version: Number(document.version) + 1 }
+      return route.fulfill(apiAnswer(documents[index]))
+    }
+
+    if (document.status === "ARCHIVED") return route.fulfill(apiError(409, "DOCUMENT_ARCHIVED"))
+    if (options.storageDisabled) return route.fulfill(apiError(503, "STORAGE_DISABLED"))
+    const fileName = /filename="([^"]+)"/.exec(String(call.body ?? ""))?.[1] ?? "arquivo.pdf"
+    documents[index] = {
+      ...document,
+      contentType: fileName.endsWith(".pdf") ? "application/pdf" : "image/jpeg",
+      fileName,
+      fileSize: 120_000,
+      hasFile: true,
+      status: document.status === "EXPIRED" ? "EXPIRED" : "VALID",
+      version: Number(document.version) + 1,
+    }
+    return route.fulfill(apiAnswer(documents[index]))
+  })
+
+  // Where a download link points (opened in a new tab, so routed for the whole context): the file as it is.
+  await page
+    .context()
+    .route(`${filesHost}/**`, (route) =>
+      route.fulfill({ body: "%PDF-1.4 documento", contentType: "application/pdf", status: 200 }),
+    )
+
+  // The registration history of a student or a guardian, paged (newest first).
+  await page.route(/\/api\/(students|guardians)\/\d+\/history(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const [, kind, id] = /\/api\/(students|guardians)\/(\d+)\/history$/.exec(call.path) ?? []
+    const events = kind === "students" ? studentHistory(Number(id)) : guardianHistory(Number(id))
+    return route.fulfill(apiAnswer(toPage(events, call.query)))
   })
 
   await page.route(/\/api\/users\/\d+\/temporary-password$/, (route) => {

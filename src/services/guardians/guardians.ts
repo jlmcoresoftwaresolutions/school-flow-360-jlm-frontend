@@ -80,7 +80,7 @@ export const getGuardianProfile = async (guardianId: number, config?: RequestCon
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/guardians/{id}/history: the registration history, paged.
+// USED by the history tab. GET /api/guardians/{id}/history: the registration history, paged.
 export const getGuardianHistory = async (
   guardianId: number,
   params?: { page?: number; size?: number },
