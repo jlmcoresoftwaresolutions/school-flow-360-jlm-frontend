@@ -43,7 +43,7 @@ const periodStatusTones: Record<AcademicPeriodStatus, Tone> = {
 // backend's text), the dates of a range, and the blockers the backend describes in English, in the
 // person's language. A blocker naming a unit uses the unit's name when the person knows it.
 export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
-  const { t } = useTranslation()
+  const { i18n, t } = useTranslation()
 
   const periodStatusLabel = (status: AcademicPeriodStatus) => t(`academic.periodStatuses.${status}`)
   const periodStatusTone = (status: AcademicPeriodStatus) => periodStatusTones[status]
@@ -61,6 +61,10 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
     end
       ? t("academic.dateRange", { end: formatDate(end), start: formatDate(start) })
       : t("academic.dateFrom", { start: formatDate(start) })
+
+  // A moment (an event, a reading of the enrollment) in the person's language and time zone.
+  const formatMoment = (value: string) =>
+    new Intl.DateTimeFormat(i18n.language, { dateStyle: "short", timeStyle: "short" }).format(new Date(value))
 
   const blockerText = (sentence: string) => {
     const blocker = readAcademicBlocker(sentence)
@@ -80,6 +84,7 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
     classStatusLabel,
     classStatusTone,
     dateRange,
+    formatMoment,
     linkStateLabel,
     linkStateTone,
     pendencyLabel,

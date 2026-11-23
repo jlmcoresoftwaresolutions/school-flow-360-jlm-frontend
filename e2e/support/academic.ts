@@ -280,6 +280,76 @@ export const teacherLinks: Item[] = [
 
 const isoToday = () => new Date().toLocaleDateString("en-CA")
 
+// The history of the active class (newest first) and its students, when the enrollment answers.
+export const classEvents: Item[] = [
+  {
+    action: "CAPACITY_REVIEWED",
+    actorName: "João Silva",
+    actorUserId: 1,
+    after: "30",
+    before: "28",
+    category: "CAPACITY",
+    changedFields: ["capacity"],
+    classId: 61,
+    id: 904,
+    objectId: 61,
+    objectType: "CLASS",
+    occurredAt: "2026-03-10T13:00:00Z",
+    reason: "Sala maior",
+  },
+  {
+    action: "TEACHER_LINK_CREATED",
+    actorName: "João Silva",
+    actorUserId: 1,
+    after: "2026-02-02..",
+    before: null,
+    category: "TEACHER_LINK",
+    changedFields: ["teacher", "subject", "startDate", "endDate", "joint"],
+    classId: 61,
+    id: 903,
+    objectId: 71,
+    objectType: "TEACHER_LINK",
+    occurredAt: "2026-02-01T12:00:00Z",
+    reason: null,
+  },
+  {
+    action: "CLASS_ACTIVATED",
+    actorName: null,
+    actorUserId: null,
+    after: "ACTIVE",
+    before: "PREPARATION",
+    category: "STATUS",
+    changedFields: ["status"],
+    classId: 61,
+    id: 902,
+    objectId: 61,
+    objectType: "CLASS",
+    occurredAt: "2026-01-20T12:00:00Z",
+    reason: null,
+  },
+  {
+    action: "CLASS_CREATED",
+    actorName: "João Silva",
+    actorUserId: 1,
+    after: null,
+    before: null,
+    category: "CONFIG",
+    changedFields: ["code", "name", "shift", "room", "capacity", "subjects"],
+    classId: 61,
+    id: 901,
+    objectId: 61,
+    objectType: "CLASS",
+    occurredAt: "2026-01-15T12:00:00Z",
+    reason: null,
+  },
+]
+
+export const classStudents = [
+  { enrollmentId: 801, name: "Ana Beatriz Lima", status: "ACTIVE", studentId: 11 },
+  { enrollmentId: 802, name: "Bruno Costa", status: "ACTIVE", studentId: 12 },
+  { enrollmentId: 803, name: "Carlos Eduardo Reis", status: "LOCKED", studentId: 13 },
+]
+
 const dependencyError = (blockers: string[]) => ({
   body: JSON.stringify({
     code: "ACADEMIC_DEPENDENCY_ACTIVE",
@@ -302,6 +372,10 @@ type AcademicOptions = {
   changedPeriodId?: number
   // Someone else changes this room before its first change (409 VERSION_CONFLICT).
   changedRoomId?: number
+  // The academic structure hasn't started: the overview answers EMPTY.
+  emptyStructure?: boolean
+  // The enrollment answers (occupation, seats and students); otherwise UNAVAILABLE, as today.
+  enrollmentAvailable?: boolean
   // The caller only reads (a Professor): no item comes with an action.
   readOnly?: boolean
 }
@@ -941,6 +1015,139 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
       version: Number(current.version) + 1,
     }
     return route.fulfill(apiAnswer(linkView(linkList[index])))
+  })
+
+  // The class detail's other tabs and the overview: the occupation and the students come from the
+  // enrollment (UNAVAILABLE unless the spec turns it on), the capacity is reviewed with a reason (lowering
+  // it needs the enrollment), the history is filtered by type and dates, and the overview counts the
+  // classes of the asked unit and period.
+  const eventList = classEvents.map((item) => ({ ...item }))
+  let nextEventId = 950
+
+  const occupancyOf = (classId: unknown) =>
+    options.enrollmentAvailable && classId === 61
+      ? classStudents.filter((student) => student.status === "ACTIVE").length
+      : 0
+
+  const capacityView = (item: Item): Item => {
+    const available = Boolean(options.enrollmentAvailable)
+    const occupation = occupancyOf(item.id)
+    const actions = options.readOnly || item.status === "INACTIVE" ? [] : ["REVIEW_CAPACITY"]
+    return {
+      capacity: item.capacity,
+      classId: item.id,
+      eligibleActions: actions,
+      exceptionEnabled: false,
+      excess: available ? Math.max(occupation - Number(item.capacity), 0) : null,
+      occupation: available
+        ? { asOf: "2026-11-20T15:00:00Z", status: "AVAILABLE", value: occupation }
+        : { asOf: null, status: "UNAVAILABLE", value: null },
+      queriedAt: "2026-11-20T15:00:00Z",
+      seats: available ? Math.max(Number(item.capacity) - occupation, 0) : null,
+      version: item.version,
+    }
+  }
+
+  await page.route(/\/api\/academic\/overview(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const { periodId, unitId } = call.query
+    const found = classList
+      .filter((item) => !unitId || String(item.unitId) === unitId)
+      .filter((item) => !periodId || String(item.periodId) === periodId)
+    const count = (status: string) => found.filter((item) => item.status === status).length
+    const active = found.filter((item) => item.status === "ACTIVE")
+    const available = Boolean(options.enrollmentAvailable) || active.length === 0
+    const capacity = active.reduce((sum, item) => sum + Number(item.capacity), 0)
+    const occupation = active.reduce((sum, item) => sum + occupancyOf(item.id), 0)
+    const shortcuts = options.readOnly
+      ? []
+      : ["CREATE_PERIOD", "CREATE_CLASS", "LINK_TEACHER", ...(active.length > 0 ? ["REVIEW_CAPACITY"] : [])]
+    return route.fulfill(
+      apiAnswer({
+        active: active.length,
+        capacity,
+        classes: options.emptyStructure ? 0 : found.length,
+        classesWithoutTeacher: active.filter(
+          (item) => !linkList.some((link) => link.classId === item.id && linkState(link) !== "ENDED"),
+        ).length,
+        contextKey: `u${unitId ?? 0}:p${periodId ?? 0}`,
+        inPreparation: count("PREPARATION"),
+        inactive: count("INACTIVE"),
+        occupation: available
+          ? { asOf: null, status: "AVAILABLE", value: occupation }
+          : { asOf: null, status: "UNAVAILABLE", value: null },
+        periodId: periodId ? Number(periodId) : null,
+        seats: available ? Math.max(capacity - occupation, 0) : null,
+        shortcuts,
+        state: options.emptyStructure ? "EMPTY" : "READY",
+        unitId: unitId ? Number(unitId) : null,
+      }),
+    )
+  })
+
+  await page.route(/\/api\/academic\/classes\/\d+\/(students|capacity|capacity-review|history)(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, part] = /\/classes\/(\d+)\/(students|capacity|capacity-review|history)$/.exec(call.path) ?? []
+    const index = classList.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = classList[index]
+
+    if (part === "students") {
+      if (!options.enrollmentAvailable) {
+        return route.fulfill(
+          apiAnswer({ asOf: null, items: [], page: 0, size: 20, status: "UNAVAILABLE", total: null }),
+        )
+      }
+      const q = fold(call.query.q)
+      const items = current.id === 61 ? classStudents.filter((student) => fold(student.name).includes(q)) : []
+      return route.fulfill(
+        apiAnswer({ asOf: "2026-11-20T15:00:00Z", items, page: 0, size: 20, status: "AVAILABLE", total: items.length }),
+      )
+    }
+
+    if (part === "capacity") {
+      if (options.readOnly) return route.fulfill(apiError(403, "ACCESS_DENIED"))
+      return route.fulfill(apiAnswer(capacityView(current)))
+    }
+
+    if (part === "capacity-review") {
+      const body = call.body as Item
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      const newCapacity = Number(body.newCapacity)
+      if (newCapacity < Number(current.capacity)) {
+        if (!options.enrollmentAvailable) return route.fulfill(apiError(503, "ACADEMIC_SOURCE_UNAVAILABLE"))
+        if (occupancyOf(current.id) > newCapacity) {
+          return route.fulfill(apiError(409, "ACADEMIC_CAPACITY_BELOW_OCCUPATION"))
+        }
+      }
+      eventList.unshift({
+        action: "CAPACITY_REVIEWED",
+        actorName: "João Silva",
+        actorUserId: 1,
+        after: String(newCapacity),
+        before: String(current.capacity),
+        category: "CAPACITY",
+        changedFields: ["capacity"],
+        classId: current.id,
+        id: nextEventId++,
+        objectId: current.id,
+        objectType: "CLASS",
+        occurredAt: new Date().toISOString(),
+        reason: body.reason,
+      })
+      classList[index] = { ...current, capacity: newCapacity, version: Number(current.version) + 1 }
+      return route.fulfill(apiAnswer(capacityView(classList[index])))
+    }
+
+    if (options.readOnly) return route.fulfill(apiError(403, "ACCESS_DENIED"))
+    const { from, to, type } = call.query
+    if (from && to && to < from) return route.fulfill(apiError(422, "ACADEMIC_INVALID_RANGE"))
+    const found = eventList
+      .filter((event) => event.classId === current.id)
+      .filter((event) => !type || event.category === type)
+      .filter((event) => !from || String(event.occurredAt).slice(0, 10) >= from)
+      .filter((event) => !to || String(event.occurredAt).slice(0, 10) <= to)
+    return route.fulfill(apiAnswer(toPage(found, call.query)))
   })
 
   return { calls }

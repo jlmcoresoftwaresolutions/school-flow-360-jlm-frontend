@@ -23,7 +23,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // ACCESS_DENIED/SCOPE_DENIED. The enrollment doesn't exist yet: the occupation and the students answer
 // UNAVAILABLE, never zero.
 
-// NOT USED YET. GET /api/academic/overview: the academic overview of the caller's scope, narrowed by unit
+// USED. GET /api/academic/overview: the academic overview of the caller's scope, narrowed by unit
 // and period (a unit out of scope: 404).
 export const getAcademicOverview = async (
   params?: AcademicOverviewParams,
@@ -63,7 +63,7 @@ export const getAcademicClassGeneral = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/students: the enrollment's list (UNAVAILABLE is not an empty
+// USED. GET /api/academic/classes/{id}/students: the enrollment's list (UNAVAILABLE is not an empty
 // class). Nothing adds or removes a student from here.
 export const listAcademicClassStudents = async (
   classId: number,
@@ -78,7 +78,7 @@ export const listAcademicClassStudents = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/capacity: the unit's management only (Professor: 403).
+// USED. GET /api/academic/classes/{id}/capacity: the unit's management only (Professor: 403).
 export const getAcademicClassCapacity = async (
   classId: number,
   config?: RequestConfig,
@@ -91,7 +91,7 @@ export const getAcademicClassCapacity = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/classes/{id}/capacity-review: raising the limit needs no count; lowering
+// USED. POST /api/academic/classes/{id}/capacity-review: raising the limit needs no count; lowering
 // it counts the occupation again (503 ACADEMIC_SOURCE_UNAVAILABLE; 409 ACADEMIC_CAPACITY_BELOW_OCCUPATION);
 // an inactive class is 422.
 export const reviewAcademicClassCapacity = async (
@@ -108,7 +108,7 @@ export const reviewAcademicClassCapacity = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/classes/{id}/capacity-exceptions: the Admin only, and only when the
+// USED. POST /api/academic/classes/{id}/capacity-exceptions: the Admin only, and only when the
 // exception is turned on; off (the default), 403 CAPACITY_EXCEPTION_DISABLED to everyone.
 export const authorizeAcademicCapacityException = async (
   classId: number,
@@ -124,7 +124,7 @@ export const authorizeAcademicCapacityException = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/history: the class history, newest first (the unit's
+// USED. GET /api/academic/classes/{id}/history: the class history, newest first (the unit's
 // management only; Professor: 403). An inverted range is 422; an unknown type 400.
 export const listAcademicClassHistory = async (
   classId: number,
