@@ -65,6 +65,18 @@ export const getErrorData = (error: unknown): unknown => {
   return body.data ?? undefined
 }
 
+// The backend's own text of a failed call (the envelope's `message`), or undefined. Never decide by it -
+// the `code` is for that; it is only read where the backend puts data in it that has no field of its own
+// (the dependencies an academic change waits on, listed in its 409 ACADEMIC_DEPENDENCY_ACTIVE).
+export const getErrorMessage = (error: unknown): string | undefined => {
+  if (!isAxiosError(error)) return undefined
+
+  const body: unknown = error.response?.data
+  if (typeof body !== "object" || body === null || !("message" in body)) return undefined
+
+  return typeof body.message === "string" && body.message ? body.message : undefined
+}
+
 // The id the backend gave a failed call (the envelope's `correlationId`, or its X-Correlation-ID header),
 // which finds the call in the backend's logs: shown as a reference on an unexpected failure, for support.
 // Undefined when there was no answer, or the answer has none.

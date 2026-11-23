@@ -2,6 +2,16 @@
 // of the backend's docs/P02_CONTRATO.md says when each comes). The *_NOT_FOUND codes also mean "out of
 // your scope": the backend never tells the two apart. Some errors come without a code.
 export type ApiErrorCode =
+  | "ACADEMIC_CAPACITY_BELOW_OCCUPATION"
+  | "ACADEMIC_DEPENDENCY_ACTIVE"
+  | "ACADEMIC_DUPLICATE_CODE"
+  | "ACADEMIC_FIELD_INCOMPATIBLE"
+  | "ACADEMIC_INVALID_RANGE"
+  | "ACADEMIC_JOINT_REQUIRED"
+  | "ACADEMIC_NOT_ELIGIBLE"
+  | "ACADEMIC_NOT_FOUND"
+  | "ACADEMIC_PERIOD_OVERLAP"
+  | "ACADEMIC_SOURCE_UNAVAILABLE"
   | "ACCESS_DENIED"
   | "ADMIN_CANNOT_BE_ANONYMIZED"
   | "ADMIN_EXCEPTION_ONLY"
@@ -9,6 +19,7 @@ export type ApiErrorCode =
   | "BIRTH_DATE_FUTURE"
   | "BIRTH_DATE_REQUIRED"
   | "CANDIDATE_NOT_IN_REVIEW"
+  | "CAPACITY_EXCEPTION_DISABLED"
   | "CHALLENGE_INVALID"
   | "CONSENT_REQUIRED"
   | "CURRENT_PASSWORD_INVALID"

@@ -6,7 +6,7 @@ import type { UserContext } from "@/models"
 import { endExpiredSession, requirePasswordChange } from "@/utils/authRedirect"
 import { getSessionState, saveSession } from "@/utils/session"
 
-import { getErrorCorrelationId, getErrorData, getRetryAfterSeconds, httpClient } from "./httpClient"
+import { getErrorCorrelationId, getErrorData, getErrorMessage, getRetryAfterSeconds, httpClient } from "./httpClient"
 
 vi.mock("@/utils/authRedirect", () => ({ endExpiredSession: vi.fn(), requirePasswordChange: vi.fn() }))
 
@@ -220,6 +220,14 @@ describe("httpClient", () => {
 
     expect(getErrorData(error)).toEqual({ sessions: [] })
     expect(getErrorData(new Error("other"))).toBeUndefined()
+  })
+
+  it("reads the backend's own text of a failed call", async () => {
+    handle = () => ({ data: { code: "ACADEMIC_DEPENDENCY_ACTIVE", message: "Depends on: 2 x." }, status: 409 })
+    const error = await httpClient.post("/api/academic/periods/1/close", {}).catch((caught: unknown) => caught)
+
+    expect(getErrorMessage(error)).toBe("Depends on: 2 x.")
+    expect(getErrorMessage(new Error("offline"))).toBeUndefined()
   })
 
   it("reads a failed call's correlation id from its envelope, or else from its header", async () => {

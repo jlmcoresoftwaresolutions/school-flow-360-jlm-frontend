@@ -1,0 +1,44 @@
+import { useTranslation } from "react-i18next"
+
+import type { AcademicPeriodKind, AcademicPeriodStatus } from "@/models"
+import { formatDate } from "@/utils/dates"
+
+import { readAcademicBlocker } from "./academicBlockers"
+import type { AcademicUnits } from "./useAcademicUnits"
+
+type Tone = "neutral" | "success" | "warning"
+
+const periodStatusTones: Record<AcademicPeriodStatus, Tone> = {
+  ACTIVE: "success",
+  CLOSED: "neutral",
+  CONFIGURED: "warning",
+}
+
+// The texts of the academic screens that come from codes: the statuses and kinds (by code, never by the
+// backend's text), the dates of a range, and the blockers the backend describes in English, in the
+// person's language. A blocker naming a unit uses the unit's name when the person knows it.
+export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
+  const { t } = useTranslation()
+
+  const periodStatusLabel = (status: AcademicPeriodStatus) => t(`academic.periodStatuses.${status}`)
+  const periodStatusTone = (status: AcademicPeriodStatus) => periodStatusTones[status]
+  const periodKindLabel = (kind: AcademicPeriodKind) => t(`academic.periodKinds.${kind}`)
+
+  const dateRange = (start: string, end: string | null) =>
+    end
+      ? t("academic.dateRange", { end: formatDate(end), start: formatDate(start) })
+      : t("academic.dateFrom", { start: formatDate(start) })
+
+  const blockerText = (sentence: string) => {
+    const blocker = readAcademicBlocker(sentence)
+    if (blocker.key === "activeOffersInUnit") {
+      const unitId = blocker.unitId ?? 0
+      return t("academic.blockers.activeOffersInUnit", {
+        unit: units?.nameOf(unitId) ?? t("academic.unitNumber", { id: unitId }),
+      })
+    }
+    return t(`academic.blockers.${blocker.key}`, { count: blocker.count ?? 0 })
+  }
+
+  return { blockerText, dateRange, periodKindLabel, periodStatusLabel, periodStatusTone }
+}
