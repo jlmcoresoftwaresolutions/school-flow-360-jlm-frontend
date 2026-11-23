@@ -106,7 +106,7 @@ export const inactivateAcademicClass = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/teachers/search: the active Professors of the unit (at least 2
+// USED. GET /api/academic/teachers/search: the active Professors of the unit (at least 2
 // characters); the unit's management only.
 export const searchAcademicTeachers = async (
   params: { q: string; unitId: number },
@@ -120,7 +120,7 @@ export const searchAcademicTeachers = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/classes/{id}/teachers: the links of the class (a Professor: only theirs).
+// USED. GET /api/academic/classes/{id}/teachers: the links of the class (a Professor: only theirs).
 export const listAcademicTeacherLinks = async (
   classId: number,
   config?: RequestConfig,
@@ -133,7 +133,7 @@ export const listAcademicTeacherLinks = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/classes/{id}/teachers: links a Professor of the unit to a subject of
+// USED. POST /api/academic/classes/{id}/teachers: links a Professor of the unit to a subject of
 // the class. Errors: 422 ACADEMIC_INVALID_RANGE (outside the period); 409 ACADEMIC_DUPLICATE_CODE (the same
 // teacher in overlapping dates), ACADEMIC_JOINT_REQUIRED; 403 a date in the past without being the Admin
 // or the Coordenação; 400 a date in the past without a reason.
@@ -151,7 +151,7 @@ export const createAcademicTeacherLink = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/teacher-links/{id}: the dates and `joint` of a link not ended.
+// USED. PUT /api/academic/teacher-links/{id}: the dates and `joint` of a link not ended.
 export const updateAcademicTeacherLink = async (
   linkId: number,
   request: AcademicTeacherLinkUpdate,
@@ -166,7 +166,7 @@ export const updateAcademicTeacherLink = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/teacher-links/{id}/end: ends it with a reason, deleting nothing; ending
+// USED. POST /api/academic/teacher-links/{id}/end: ends it with a reason, deleting nothing; ending
 // again returns it as it is.
 export const endAcademicTeacherLink = async (
   linkId: number,
