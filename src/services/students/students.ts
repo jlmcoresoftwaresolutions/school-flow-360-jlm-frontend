@@ -122,7 +122,7 @@ export const listGuardianInvitations = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/students/{id}/guardian-invitations: invites a guardian by e-mail (48 hours).
+// USED by the student profile. POST /api/students/{id}/guardian-invitations: invites a guardian by e-mail (48 hours).
 // Errors 409: INVITATION_PENDING, GUARDIAN_HAS_ACCESS (link it directly instead), USER_DUPLICATE.
 export const inviteGuardian = async (
   studentId: number,
@@ -138,7 +138,7 @@ export const inviteGuardian = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/students/{id}/guardian-invitations/{n}/confirm: the school confirms an accepted
+// USED by the student profile. POST /api/students/{id}/guardian-invitations/{n}/confirm: the school confirms an accepted
 // invitation, creating the active link with the guardian's own consent. 409 INVITATION_LINK_STATE_INVALID.
 export const confirmGuardianInvitation = async (
   studentId: number,
@@ -154,7 +154,7 @@ export const confirmGuardianInvitation = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/students/{id}/guardian-invitations/{n}/reject: the school rejects it (the
+// USED by the student profile. POST /api/students/{id}/guardian-invitations/{n}/reject: the school rejects it (the
 // account stays, the link isn't born). 409 INVITATION_LINK_STATE_INVALID.
 export const rejectGuardianInvitation = async (
   studentId: number,

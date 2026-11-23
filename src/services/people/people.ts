@@ -29,7 +29,7 @@ export const searchPeople = async (params: PeopleSearchParams, config?: RequestC
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/check: whether someone already has these identifiers anywhere in the
+// USED by the guardian picker of a link. POST /api/people/check: whether someone already has these identifiers anywhere in the
 // tenant. Out of reach only a partial name, masked identifiers and a proof of reuse come. A name alone
 // is not a check (400).
 export const checkPerson = async (signals: PersonSignals, config?: RequestConfig): Promise<PersonCheckResult> => {

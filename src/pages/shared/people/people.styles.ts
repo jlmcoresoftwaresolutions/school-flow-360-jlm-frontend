@@ -1,6 +1,6 @@
 import styled from "styled-components"
 
-import { colors, media, spacing } from "@/foundation"
+import { borderRadiusLevels, colors, media, spacing } from "@/foundation"
 
 // A block of a person's form or profile: a titled group of fields or data, with a line between blocks.
 export const PersonSection = styled.section`
@@ -14,6 +14,27 @@ export const PersonSection = styled.section`
     border-top: none;
     padding-top: 0;
   }
+`
+
+// A block's title, with its actions on the right (wrapping below it on a narrow screen).
+export const PersonBlockHeader = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[12]};
+  justify-content: space-between;
+`
+
+// The guardian chosen in a picker: the name and what identifies it, with "Trocar" on the right.
+export const PickedPerson = styled.div`
+  align-items: center;
+  background: ${colors.neutral[50]};
+  border: 1px solid ${colors.neutral[200]};
+  border-radius: ${borderRadiusLevels.medium};
+  display: flex;
+  gap: ${spacing[12]};
+  justify-content: space-between;
+  padding: ${spacing[12]} ${spacing[16]};
 `
 
 export const PersonSections = styled.div`

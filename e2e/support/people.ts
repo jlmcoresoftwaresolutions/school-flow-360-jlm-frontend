@@ -4,8 +4,9 @@ import { apiAnswer, type Page } from "./test.ts"
 import { apiError, type RecordedCall, units } from "./userAccess.ts"
 
 // A mocked backend for the people screens (P03): the units an Admin lists, the students and the
-// guardians, each list filtered and paged like the backend does it, plus every call recorded for the
-// specs to check what was sent.
+// guardians, each list filtered and paged like the backend does it, the links between them and the
+// guardian invitations (kept like the backend keeps them), plus every call recorded for the specs to
+// check what was sent.
 
 type Item = Record<string, unknown>
 
@@ -134,10 +135,14 @@ export const searchablePeople = [
 type ListFailure = { code?: string; status: number }
 
 type PeopleOptions = {
+  // Someone else changes this link before the first save of the spec: that save gets 409 VERSION_CONFLICT.
+  changedLinkId?: number
   // Answers a student save with this contact e-mail, without a review, with 409 DUPLICATE_REVIEW_REQUIRED
   // (someone else already has it).
   duplicateEmail?: string
   guardians?: Item[]
+  // The guardian invitations of the students (none by default).
+  invitations?: Item[]
   // Answers every read of this list with an error (403, 429 SEARCH_RATE_LIMITED, 500...).
   listFailure?: { guardians?: ListFailure; search?: ListFailure; students?: ListFailure }
   students?: Item[]
@@ -148,6 +153,36 @@ export const documentTypes = [
   { code: "RG", hasExpiry: false, label: "RG" },
   { code: "PASSPORT", hasExpiry: true, label: "Passaporte" },
 ]
+
+export const relationshipTypes = [
+  { code: "MOTHER", hasExpiry: false, label: "Mãe" },
+  { code: "FATHER", hasExpiry: false, label: "Pai" },
+  { code: "GRANDMOTHER", hasExpiry: false, label: "Avó" },
+  { code: "OTHER", hasExpiry: false, label: "Outro" },
+]
+
+// A guardian of another unit, out of the operator's reach: the exact check by this e-mail finds it, with
+// only a partial name and the proof of reuse.
+export const otherUnitGuardian = { email: "antonio@escola.com", id: 390, name: "Antônio Ribeiro", ref: "ref-390" }
+
+// Gustavo Lima accepted an invitation sent from the draft student Carla Dias: the school confirms it.
+export const awaitingInvitation = {
+  channelResult: "SENT",
+  contactAuthorized: true,
+  email: "gustavo@gmail.com",
+  expiresAt: "2026-11-25T12:00:00Z",
+  financialResponsible: true,
+  guardianId: 302,
+  guardianName: "Gustavo Lima",
+  id: 61,
+  invitationId: 15,
+  invitationStatus: "ACCEPTED",
+  linkId: null,
+  pedagogicalResponsible: true,
+  relationshipCode: "FATHER",
+  status: "AWAITING_CONFIRMATION",
+  studentId: 203,
+}
 
 // What the duplicate review finds for `duplicateEmail`: a student in reach and a guardian out of it.
 export const duplicateCandidates = [
@@ -206,41 +241,30 @@ const toStudent = (summary: Item): Item => ({
 
 const guardianNames = ["Fernanda Souza", "Gustavo Lima"]
 
-// The 360 profile of a student: one active link for each guardian counted.
-const toProfile = (student: Item): Item => ({
-  guardianInvitations: [],
-  guardians: Array.from({ length: Number(student.activeGuardians) }, (_, index) => ({
-    guardian: {
-      activeStudents: 1,
-      fullName: guardianNames[index],
-      hasFinancialLink: index === 0,
-      id: 301 + index,
-      maskedDocument: null,
-      maskedEmail: "f*****@gmail.com",
-      phone: null,
-      status: "ACTIVE",
-    },
-    link: {
-      consentAt: "2026-11-20T12:00:00Z",
-      consentTermsVersion: "v1",
-      contactAuthorized: true,
-      endDate: null,
-      endReason: null,
-      financialResponsible: index === 0,
-      guardian: { code: null, id: 301 + index, name: guardianNames[index] },
-      id: 700 + index,
-      pedagogicalResponsible: true,
-      relationshipCode: index === 0 ? "MOTHER" : "FATHER",
-      relationshipLabel: index === 0 ? "Mãe" : "Pai",
-      startDate: "2026-02-01",
-      status: "ACTIVE",
-      student: { code: student.studentCode, id: student.id, name: student.fullName },
-      version: 0,
-    },
-  })),
-  sections: ["IDENTITY", "GUARDIANS", "INVITATIONS", "DOCUMENTS", "HISTORY"],
-  student,
-})
+const relationshipLabel = (code: unknown) => relationshipTypes.find((type) => type.code === code)?.label ?? code
+
+// The links a list row counts: one active link for each guardian (Fernanda the mother, Gustavo the father),
+// each id made of the student's id and its position (2010, 2011...).
+const initialLinks = (student: Item): Item[] =>
+  Array.from({ length: Number(student.activeGuardians) }, (_, index) => ({
+    consentAt: "2026-11-20T12:00:00Z",
+    consentTermsVersion: "v1",
+    contactAuthorized: true,
+    endDate: null,
+    endReason: null,
+    financialResponsible: index === 0,
+    guardian: { code: null, id: 301 + index, name: guardianNames[index] },
+    id: Number(student.id) * 10 + index,
+    pedagogicalResponsible: true,
+    relationshipCode: index === 0 ? "MOTHER" : "FATHER",
+    relationshipLabel: index === 0 ? "Mãe" : "Pai",
+    startDate: "2026-02-01",
+    status: "ACTIVE",
+    student: { code: student.studentCode, id: student.id, name: student.fullName },
+    version: 0,
+  }))
+
+const today = () => new Date().toISOString().slice(0, 10)
 
 // A guardian as GET /api/guardians/{id} returns it, from a list row (its units from `unitIds`).
 const toGuardian = (summary: Item): Item => ({
@@ -413,6 +437,222 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
   const records = new Map<number, Item>(studentList.map((item) => [item.id as number, toStudent(item)]))
   let nextStudentId = 250
 
+  // The links (active and ended, never deleted) and the guardian invitations.
+  const links: Item[] = studentList.flatMap(initialLinks)
+  const invitations: Item[] = (options.invitations ?? []).map((item) => ({ ...item }))
+  const guardianSummaries = new Map<number, Item>(guardianList.map((item) => [item.id as number, withoutUnitIds(item)]))
+  guardianSummaries.set(otherUnitGuardian.id, {
+    activeStudents: 0,
+    fullName: otherUnitGuardian.name,
+    hasFinancialLink: false,
+    id: otherUnitGuardian.id,
+    maskedDocument: null,
+    maskedEmail: "a*****@escola.com",
+    phone: null,
+    status: "ACTIVE",
+  })
+  let nextLinkId = 900
+  let nextInvitationId = 70
+  let linkChanged = false
+
+  const toProfile = (student: Item): Item => ({
+    guardianInvitations: invitations.filter((item) => item.studentId === student.id),
+    guardians: links
+      .filter((link) => (link.student as Item).id === student.id)
+      .map((link) => ({ guardian: guardianSummaries.get((link.guardian as Item).id as number), link })),
+    sections: ["IDENTITY", "GUARDIANS", "INVITATIONS", "DOCUMENTS", "HISTORY"],
+    student,
+  })
+
+  // A new active link: the student loses the NO_GUARDIAN blocker.
+  const addLink = (student: Item, guardianId: number, body: Item, consent: boolean): Item => {
+    const guardian = guardianSummaries.get(guardianId) as Item
+    const link = {
+      consentAt: consent ? "2026-11-23T12:00:00Z" : null,
+      consentTermsVersion: consent ? "v1" : null,
+      contactAuthorized: body.contactAuthorized ?? true,
+      endDate: null,
+      endReason: null,
+      financialResponsible: body.financialResponsible ?? false,
+      guardian: { code: null, id: guardianId, name: guardian.fullName },
+      id: nextLinkId++,
+      pedagogicalResponsible: body.pedagogicalResponsible ?? true,
+      relationshipCode: body.relationshipCode,
+      relationshipLabel: relationshipLabel(body.relationshipCode),
+      startDate: body.startDate ?? today(),
+      status: "ACTIVE",
+      student: { code: student.studentCode, id: student.id, name: student.fullName },
+      version: 0,
+    }
+    links.push(link)
+    records.set(student.id as number, {
+      ...student,
+      activationBlockers: (student.activationBlockers as string[]).filter((blocker) => blocker !== "NO_GUARDIAN"),
+    })
+    return link
+  }
+
+  await page.route("**/api/catalogs/relationship-types", (route) => route.fulfill(apiAnswer(relationshipTypes)))
+
+  // The exact check in every unit: the e-mail of the guardian of another unit finds it, out of reach.
+  await page.route("**/api/people/check", (route) => {
+    const call = record(route.request())
+    const body = call.body as Item
+    if (body.email !== otherUnitGuardian.email) {
+      return route.fulfill(apiAnswer({ candidates: [], found: false, strength: null }))
+    }
+    return route.fulfill(
+      apiAnswer({
+        candidates: [
+          {
+            fullName: null,
+            id: null,
+            inScope: false,
+            maskedDocument: null,
+            maskedEmail: "a*****@escola.com",
+            partialName: "Antônio R.",
+            ref: otherUnitGuardian.ref,
+            signals: ["EMAIL"],
+            strong: true,
+            types: ["GUARDIAN"],
+          },
+        ],
+        found: true,
+        strength: "STRONG",
+      }),
+    )
+  })
+
+  await page.route("**/api/student-guardian-links", (route) => {
+    const call = record(route.request())
+    const body = call.body as Item
+    const student = records.get(Number(body.studentId))
+    if (!student) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+    if (body.consentConfirmed !== true) return route.fulfill(apiError(422, "CONSENT_REQUIRED"))
+
+    const guardianId = body.reuseRef === otherUnitGuardian.ref ? otherUnitGuardian.id : Number(body.guardianId)
+    const guardian = guardianSummaries.get(guardianId)
+    if (!guardian) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+    if (guardian.status === "INACTIVE") return route.fulfill(apiError(422, "GUARDIAN_INACTIVE"))
+    const duplicate = links.some(
+      (link) =>
+        link.status === "ACTIVE" &&
+        (link.student as Item).id === student.id &&
+        (link.guardian as Item).id === guardianId,
+    )
+    if (duplicate) return route.fulfill(apiError(409, "LINK_DUPLICATE"))
+
+    return route.fulfill(apiAnswer(addLink(student, guardianId, body, true)))
+  })
+
+  await page.route(/\/api\/student-guardian-links\/\d+(\/end)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, end] = /\/api\/student-guardian-links\/(\d+)(\/end)?$/.exec(call.path) ?? []
+    const index = links.findIndex((link) => link.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "LINK_NOT_FOUND"))
+    const link = links[index]
+
+    if (call.method === "GET") return route.fulfill(apiAnswer(link))
+
+    // Someone else changes the link first: the relationship becomes "Avó" and the version moves on.
+    if (options.changedLinkId === link.id && !linkChanged) {
+      linkChanged = true
+      links[index] = {
+        ...link,
+        relationshipCode: "GRANDMOTHER",
+        relationshipLabel: "Avó",
+        version: Number(link.version) + 1,
+      }
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+
+    const body = call.body as Item
+    if (body.version !== link.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    if (link.status !== "ACTIVE") return route.fulfill(apiError(409, "LINK_ENDED"))
+
+    if (!end) {
+      const updated = {
+        ...link,
+        ...body,
+        relationshipLabel: relationshipLabel(body.relationshipCode),
+        version: Number(link.version) + 1,
+      }
+      links[index] = updated
+      return route.fulfill(apiAnswer(updated))
+    }
+
+    if (!String(body.reason ?? "").trim()) return route.fulfill(apiError(422, "REASON_REQUIRED"))
+    const studentId = (link.student as Item).id as number
+    const student = records.get(studentId) as Item
+    const others = links.filter(
+      (item) => item.id !== link.id && item.status === "ACTIVE" && (item.student as Item).id === studentId,
+    )
+    if (student.status === "ACTIVE" && others.length === 0 && !body.exceptionReason) {
+      return route.fulfill(apiError(422, "LAST_GUARDIAN"))
+    }
+    const ended = {
+      ...link,
+      endDate: body.endDate ?? today(),
+      endReason: body.reason,
+      status: "ENDED",
+      version: Number(link.version) + 1,
+    }
+    links[index] = ended
+    return route.fulfill(apiAnswer(ended))
+  })
+
+  await page.route(/\/api\/students\/\d+\/guardian-invitations$/, (route) => {
+    const call = record(route.request())
+    const studentId = Number(/\/api\/students\/(\d+)\//.exec(call.path)?.[1])
+    if (!records.get(studentId)) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+    if (call.method === "GET")
+      return route.fulfill(apiAnswer(invitations.filter((item) => item.studentId === studentId)))
+
+    const body = call.body as Item
+    if (body.email === "fernanda@gmail.com") return route.fulfill(apiError(409, "USER_DUPLICATE"))
+    const guardianId = body.guardianId ? Number(body.guardianId) : null
+    const invitation = {
+      channelResult: "SENT",
+      contactAuthorized: body.contactAuthorized ?? true,
+      email: body.email,
+      expiresAt: "2026-11-25T12:00:00Z",
+      financialResponsible: body.financialResponsible ?? false,
+      guardianId,
+      guardianName: guardianId ? (guardianSummaries.get(guardianId)?.fullName ?? null) : null,
+      id: nextInvitationId++,
+      invitationId: 20,
+      invitationStatus: "PENDING",
+      linkId: null,
+      pedagogicalResponsible: body.pedagogicalResponsible ?? true,
+      relationshipCode: body.relationshipCode,
+      status: "WAITING_ACCEPTANCE",
+      studentId,
+    }
+    invitations.unshift(invitation)
+    return route.fulfill(apiAnswer(invitation))
+  })
+
+  await page.route(/\/api\/students\/\d+\/guardian-invitations\/\d+\/(confirm|reject)$/, (route) => {
+    const call = record(route.request())
+    const [, studentId, id, decision] =
+      /\/api\/students\/(\d+)\/guardian-invitations\/(\d+)\/(confirm|reject)$/.exec(call.path) ?? []
+    const index = invitations.findIndex((item) => item.id === Number(id) && item.studentId === Number(studentId))
+    if (index < 0) return route.fulfill(apiError(404, "PERSON_NOT_FOUND"))
+    const invitation = invitations[index]
+    if (invitation.status !== "AWAITING_CONFIRMATION") {
+      return route.fulfill(apiError(409, "INVITATION_LINK_STATE_INVALID"))
+    }
+
+    if (decision === "reject") {
+      invitations[index] = { ...invitation, status: "REJECTED" }
+      return route.fulfill(apiAnswer(invitations[index]))
+    }
+    const student = records.get(Number(studentId)) as Item
+    const link = addLink(student, invitation.guardianId as number, invitation, true)
+    invitations[index] = { ...invitation, linkId: link.id, status: "CONFIRMED" }
+    return route.fulfill(apiAnswer(link))
+  })
+
   await page.route("**/api/catalogs/document-types", (route) => route.fulfill(apiAnswer(documentTypes)))
 
   await page.route(/\/api\/students\/\d+(\/[a-z-]+)?$/, (route) => {
@@ -423,6 +663,8 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
 
     if (!action && call.method === "GET") return route.fulfill(apiAnswer(student))
     if (action === "profile") return route.fulfill(apiAnswer(toProfile(student)))
+    // The invitations have their own route.
+    if (action === "guardian-invitations") return route.fallback()
 
     const body = call.body as Item
     if (body.version !== student.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))

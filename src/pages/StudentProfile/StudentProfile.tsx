@@ -6,7 +6,7 @@ import { Badge, Button, Card, Text } from "@/ds-components/atoms"
 import type { ActionMenuItem } from "@/ds-components/molecules"
 import { ActionMenu, PageHeader, StateMessage, Tabs } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
-import type { Student360 } from "@/models"
+import type { GuardianInvitation, Student360, StudentGuardianLink } from "@/models"
 import { paths } from "@/routes/paths"
 import { getErrorStatus } from "@/services/httpClient"
 import { getStudentProfile } from "@/services/students"
@@ -14,7 +14,13 @@ import { getStudentProfile } from "@/services/students"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
+import { useRelationshipTypes } from "../shared/people/useRelationshipTypes"
 import { TemporaryPasswordDialog } from "../shared/userAccess/TemporaryPasswordDialog"
+import { EditLinkModal } from "./links/EditLinkModal"
+import { EndLinkDialog } from "./links/EndLinkDialog"
+import { type InvitationDecision, InvitationDecisionDialog } from "./links/InvitationDecisionDialog"
+import { InviteGuardianModal } from "./links/InviteGuardianModal"
+import { NewLinkModal } from "./links/NewLinkModal"
 import { StudentData } from "./StudentData"
 import { StudentGuardians } from "./StudentGuardians"
 import { type StudentStateAction, StudentStateDialog } from "./StudentStateDialog"
@@ -23,10 +29,19 @@ type ProfileResult = { error: "failed" | "gone" } | { profile: Student360 } | nu
 
 type Dialog = StudentStateAction | "access" | null
 
+// A dialog of the guardians tab: a new link or invitation, a change or the end of a link, or the
+// school's decision on an accepted invitation.
+type LinkDialog =
+  | { decision: InvitationDecision; invitation: GuardianInvitation; kind: "decide" }
+  | { guardianName: string; kind: "edit" | "end"; link: StudentGuardianLink }
+  | { kind: "invite" | "new" }
+  | null
+
 // A student's 360 profile (P03-S04): the header with the status, the registration code and the actions
 // the status allows, and the sections the backend lets the operator open (`sections`), each in its own
-// tab - the data and the guardians with their links and invitations. A section that doesn't come isn't
-// shown. The actions: edit the data, the status changes (activate, discard, inactivate, reactivate)
+// tab - the data and the guardians with their links and invitations (where a guardian is linked or
+// invited, a link changed or ended, and an accepted invitation confirmed or rejected). A section that
+// doesn't come isn't shown. The actions: edit the data, the status changes (activate, discard, inactivate, reactivate)
 // and, for an active student, its access (a temporary password: the student signs in with the nickname,
 // without an e-mail). Everything is read again after a change.
 export const StudentProfile = () => {
@@ -35,12 +50,14 @@ export const StudentProfile = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const documentTypes = useDocumentTypes()
+  const relationshipTypes = useRelationshipTypes()
   const { personStatusLabel, personStatusTone } = usePeopleLabels()
 
   const [result, setResult] = useState<ProfileResult>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [tab, setTab] = useState("data")
   const [dialog, setDialog] = useState<Dialog>(null)
+  const [linkDialog, setLinkDialog] = useState<LinkDialog>(null)
 
   const requestKey = `${studentId}#${reloadToken}`
   const [loadedKey, setLoadedKey] = useState("")
@@ -70,6 +87,7 @@ export const StudentProfile = () => {
 
   const reload = () => {
     setDialog(null)
+    setLinkDialog(null)
     setReloadToken((current) => current + 1)
   }
 
@@ -114,6 +132,9 @@ export const StudentProfile = () => {
       </>
     )
   }
+
+  const activeLinks = profile.guardians.filter((item) => item.link.status === "ACTIVE")
+  const linkedGuardianIds = activeLinks.map((item) => item.guardian.id)
 
   const actions: ActionMenuItem[] = [
     {
@@ -181,8 +202,15 @@ export const StudentProfile = () => {
       content: (
         <Card elevated style={{ padding: spacing[32] }}>
           <StudentGuardians
+            canAdd={student.status !== "INACTIVE"}
             guardians={profile.guardians}
             invitations={profile.guardianInvitations}
+            onDecide={(invitation, decision) => setLinkDialog({ decision, invitation, kind: "decide" })}
+            onEditLink={(link, guardianName) => setLinkDialog({ guardianName, kind: "edit", link })}
+            onEndLink={(link, guardianName) => setLinkDialog({ guardianName, kind: "end", link })}
+            onInvite={() => setLinkDialog({ kind: "invite" })}
+            onNewLink={() => setLinkDialog({ kind: "new" })}
+            relationshipTypes={relationshipTypes}
             showInvitations={profile.sections.includes("INVITATIONS")}
           />
         </Card>
@@ -225,6 +253,57 @@ export const StudentProfile = () => {
           onClose={() => setDialog(null)}
           onGone={reload}
           student={student}
+        />
+      )}
+
+      {linkDialog?.kind === "new" && (
+        <NewLinkModal
+          documentTypes={documentTypes}
+          linkedGuardianIds={linkedGuardianIds}
+          onChanged={reload}
+          onClose={() => setLinkDialog(null)}
+          relationshipTypes={relationshipTypes}
+          student={student}
+        />
+      )}
+
+      {linkDialog?.kind === "invite" && (
+        <InviteGuardianModal
+          documentTypes={documentTypes}
+          linkedGuardianIds={linkedGuardianIds}
+          onChanged={reload}
+          onClose={() => setLinkDialog(null)}
+          relationshipTypes={relationshipTypes}
+          student={student}
+        />
+      )}
+
+      {linkDialog?.kind === "edit" && (
+        <EditLinkModal
+          guardianName={linkDialog.guardianName}
+          link={linkDialog.link}
+          onChanged={reload}
+          onClose={() => setLinkDialog(null)}
+          relationshipTypes={relationshipTypes}
+        />
+      )}
+
+      {linkDialog?.kind === "end" && (
+        <EndLinkDialog
+          guardianName={linkDialog.guardianName}
+          isLastGuardian={student.status === "ACTIVE" && activeLinks.length === 1}
+          link={linkDialog.link}
+          onChanged={reload}
+          onClose={() => setLinkDialog(null)}
+        />
+      )}
+
+      {linkDialog?.kind === "decide" && (
+        <InvitationDecisionDialog
+          decision={linkDialog.decision}
+          invitation={linkDialog.invitation}
+          onChanged={reload}
+          onClose={() => setLinkDialog(null)}
         />
       )}
 

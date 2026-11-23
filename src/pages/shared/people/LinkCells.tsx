@@ -10,8 +10,13 @@ export type LinkCellProps = {
   link: StudentGuardianLink
 }
 
-// The three independent responsibilities a link carries, one per line.
-export const LinkResponsibilities = (props: LinkCellProps) => {
+export type LinkResponsibilitiesProps = {
+  link: Pick<StudentGuardianLink, "contactAuthorized" | "financialResponsible" | "pedagogicalResponsible">
+}
+
+// The three independent responsibilities a link (or an invitation, which proposes one) carries, one per
+// line.
+export const LinkResponsibilities = (props: LinkResponsibilitiesProps) => {
   const { link } = props
 
   const { t } = useTranslation()
