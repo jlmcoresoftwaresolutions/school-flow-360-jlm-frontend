@@ -157,7 +157,7 @@ export const archivePersonDocument = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/{id}/anonymize (Admin): erases an inactive person's personal data, with
+// USED by the profiles (Admin). POST /api/people/{id}/anonymize: erases an inactive person's personal data, with
 // the protocol of the request; no way back. Errors 422: MUST_BE_INACTIVE, REQUEST_REF_REQUIRED,
 // ADMIN_CANNOT_BE_ANONYMIZED; afterwards any change answers 409 PERSON_ANONYMIZED.
 export const anonymizePerson = async (
@@ -168,7 +168,7 @@ export const anonymizePerson = async (
   await httpClient.post<ApiResponse<null>>(`/api/people/${personId}/anonymize`, request, config)
 }
 
-// NOT USED YET. GET /api/people/{id}/export (Admin): everything kept about the person, for the data
+// USED by the profiles (Admin). GET /api/people/{id}/export: everything kept about the person, for the data
 // subject's right of access; audited.
 export const exportPerson = async (personId: number, config?: RequestConfig): Promise<Record<string, unknown>> => {
   const response = await httpClient.get<ApiResponse<Record<string, unknown>>>(`/api/people/${personId}/export`, config)
@@ -176,7 +176,7 @@ export const exportPerson = async (personId: number, config?: RequestConfig): Pr
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/maintenance/draft-cleanup (Admin): runs now the removal of abandoned
+// USED by the students page (Admin). POST /api/people/maintenance/draft-cleanup: runs now the removal of abandoned
 // student drafts (no link, open invitation or document, older than 30 days).
 export const cleanUpDraftStudents = async (config?: RequestConfig): Promise<{ removedDrafts: number }> => {
   const response = await httpClient.post<ApiResponse<{ removedDrafts: number }>>(

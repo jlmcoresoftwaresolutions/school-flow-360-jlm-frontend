@@ -6,7 +6,7 @@ import type { UserContext } from "@/models"
 import { endExpiredSession, requirePasswordChange } from "@/utils/authRedirect"
 import { getSessionState, saveSession } from "@/utils/session"
 
-import { getErrorData, getRetryAfterSeconds, httpClient } from "./httpClient"
+import { getErrorCorrelationId, getErrorData, getRetryAfterSeconds, httpClient } from "./httpClient"
 
 vi.mock("@/utils/authRedirect", () => ({ endExpiredSession: vi.fn(), requirePasswordChange: vi.fn() }))
 
@@ -220,5 +220,24 @@ describe("httpClient", () => {
 
     expect(getErrorData(error)).toEqual({ sessions: [] })
     expect(getErrorData(new Error("other"))).toBeUndefined()
+  })
+
+  it("reads a failed call's correlation id from its envelope, or else from its header", async () => {
+    handle = () => ({ data: { code: null, correlationId: "c0ffee42" }, status: 500 })
+    const fromBody = await httpClient.get("/api/students").catch((caught: unknown) => caught)
+
+    expect(getErrorCorrelationId(fromBody)).toBe("c0ffee42")
+
+    const config = { headers: {} } as InternalAxiosRequestConfig
+    const fromHeader = new AxiosError("Failed", "500", config, null, {
+      config,
+      data: "Bad gateway",
+      headers: { "x-correlation-id": "beef0001" },
+      status: 502,
+      statusText: "",
+    })
+
+    expect(getErrorCorrelationId(fromHeader)).toBe("beef0001")
+    expect(getErrorCorrelationId(new Error("offline"))).toBeUndefined()
   })
 })

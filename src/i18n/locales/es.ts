@@ -763,6 +763,7 @@ export const es: TranslationResource = {
   },
   people: {
     allStatuses: "Todas las situaciones",
+    anonymizedLocked: "Esta persona fue anonimizada y ya no puede modificarse.",
     duplicates: {
       back: "Volver al formulario",
       description:
@@ -789,6 +790,7 @@ export const es: TranslationResource = {
       title: "Posible registro repetido",
       weak: "Coincidencia débil",
     },
+    failureWithReference: "{{message}} Referencia para soporte: {{reference}}.",
     form: {
       addressNumberLabel: "Número",
       addressNumberPlaceholder: "N.º",
@@ -848,6 +850,40 @@ export const es: TranslationResource = {
       DRAFT: "Borrador",
       INACTIVE: "Inactivo",
     },
+  },
+  peoplePrivacy: {
+    anonymize: {
+      action: "Anonimizar (protección de datos)",
+      adminAccount: "Una cuenta de Admin no puede anonimizarse aquí.",
+      confirm: "Anonimizar",
+      description:
+        'Borra para siempre los datos personales: el nombre pasa a "Pessoa anonimizada", y se borran el correo, el teléfono, el documento, la dirección y los archivos; el acceso y las sesiones terminan. Los vínculos y el historial se mantienen, sin identificar a la persona. No tiene vuelta atrás.',
+      done: "Persona anonimizada.",
+      failed: "No se pudo anonimizar. Inténtelo de nuevo.",
+      mustBeInactive: "Inactive a la persona antes de anonimizarla.",
+      requestRef: "Protocolo de la solicitud del titular",
+      requestRefHelper: "De {{min}} a {{max}} caracteres. Queda registrado en la auditoría.",
+      requestRefInvalid: "Indique el protocolo con {{min}} a {{max}} caracteres.",
+      requestRefPlaceholder: "Ej.: LGPD-2026-0042",
+      title: "¿Anonimizar a {{name}}?",
+      understood: "Entiendo que la anonimización no puede deshacerse",
+    },
+    draftCleanup: {
+      action: "Limpiar borradores",
+      confirm: "Limpiar borradores",
+      description:
+        "Borra para siempre los borradores de alumno inactivos más allá del plazo de retención, sin vínculo, invitación abierta ni documento. Los demás se mantienen. La limpieza también se ejecuta cada noche.",
+      done_one: "{{count}} borrador eliminado.",
+      done_other: "{{count}} borradores eliminados.",
+      failed: "No se pudieron limpiar los borradores. Inténtelo de nuevo.",
+      title: "¿Limpiar borradores abandonados?",
+    },
+    export: {
+      action: "Exportar datos (protección de datos)",
+      done: "Datos exportados. La exportación queda registrada en la auditoría.",
+      failed: "No se pudieron exportar los datos. Inténtelo de nuevo.",
+    },
+    gone: "La persona ya no está disponible para usted.",
   },
   peopleSearch: {
     actions: "Acciones",

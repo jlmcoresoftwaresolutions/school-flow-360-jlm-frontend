@@ -30,6 +30,7 @@ import {
   toPersonSignals,
 } from "../shared/people/personForm"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
+import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { usePersonFieldErrors } from "../shared/people/usePersonFieldErrors"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
 
@@ -56,6 +57,7 @@ export const GuardianForm = () => {
   const unitDirectory = useUnitDirectory()
   const documentTypes = useDocumentTypes()
   const toPersonFieldError = usePersonFieldErrors()
+  const toFailureMessage = useFailureMessage()
   const form = useForm<GuardianFormValues>({ defaultValues: emptyGuardianForm })
 
   const [guardian, setGuardian] = useState<Guardian | null>(null)
@@ -128,7 +130,7 @@ export const GuardianForm = () => {
     } else if (status === undefined && !isEdit) {
       setFailure(t("guardians.form.noAnswer"))
     } else {
-      setFailure(t("guardians.form.failed"))
+      setFailure(toFailureMessage(t("guardians.form.failed"), error))
     }
   }
 

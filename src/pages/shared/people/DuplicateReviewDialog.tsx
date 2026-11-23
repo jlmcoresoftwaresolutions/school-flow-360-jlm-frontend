@@ -10,6 +10,7 @@ import { decideDuplicateReview, openDuplicateReview } from "@/services/people"
 
 import { AccessItem, AccessItems, FormFields } from "../userAccess/userAccess.styles"
 import { CandidateHeader, CandidateTags } from "./people.styles"
+import { useFailureMessage } from "./useFailureMessage"
 
 export type DuplicateReviewDialogProps = {
   kind: DuplicateReviewKind
@@ -34,6 +35,7 @@ export const DuplicateReviewDialog = (props: DuplicateReviewDialogProps) => {
   const { kind, onClose, onOpenExisting, onResolved, signals } = props
 
   const { t } = useTranslation()
+  const toFailureMessage = useFailureMessage()
 
   const [review, setReview] = useState<DuplicateReview | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
@@ -88,7 +90,7 @@ export const DuplicateReviewDialog = (props: DuplicateReviewDialogProps) => {
     } else if (code === "JUSTIFICATION_REQUIRED") {
       setJustificationError(t("people.duplicates.justificationRequired", { min: justificationMin }))
     } else {
-      setFailure(t("people.duplicates.failed"))
+      setFailure(toFailureMessage(t("people.duplicates.failed"), error))
     }
   }
 

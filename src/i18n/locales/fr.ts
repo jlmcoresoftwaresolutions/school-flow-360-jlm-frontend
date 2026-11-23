@@ -778,6 +778,7 @@ export const fr: TranslationResource = {
   },
   people: {
     allStatuses: "Toutes les situations",
+    anonymizedLocked: "Cette personne a été anonymisée et ne peut plus être modifiée.",
     duplicates: {
       back: "Retour au formulaire",
       description:
@@ -804,6 +805,7 @@ export const fr: TranslationResource = {
       title: "Fiche peut-être en double",
       weak: "Correspondance faible",
     },
+    failureWithReference: "{{message}} Référence pour le support : {{reference}}.",
     form: {
       addressNumberLabel: "Numéro",
       addressNumberPlaceholder: "N°",
@@ -864,6 +866,40 @@ export const fr: TranslationResource = {
       DRAFT: "Brouillon",
       INACTIVE: "Inactif",
     },
+  },
+  peoplePrivacy: {
+    anonymize: {
+      action: "Anonymiser (protection des données)",
+      adminAccount: "Un compte Admin ne peut pas être anonymisé ici.",
+      confirm: "Anonymiser",
+      description:
+        "Efface définitivement les données personnelles : le nom devient « Pessoa anonimizada », et l'e-mail, le téléphone, le document, l'adresse et les fichiers sont effacés ; l'accès et les sessions prennent fin. Les liens et l'historique restent, sans identifier la personne. C'est irréversible.",
+      done: "Personne anonymisée.",
+      failed: "Impossible d'anonymiser. Réessayez.",
+      mustBeInactive: "Désactivez la personne avant de l'anonymiser.",
+      requestRef: "Protocole de la demande de la personne concernée",
+      requestRefHelper: "De {{min}} à {{max}} caractères. Il est enregistré dans l'audit.",
+      requestRefInvalid: "Indiquez le protocole avec {{min}} à {{max}} caractères.",
+      requestRefPlaceholder: "Ex. : LGPD-2026-0042",
+      title: "Anonymiser {{name}} ?",
+      understood: "Je comprends que l'anonymisation ne peut pas être annulée",
+    },
+    draftCleanup: {
+      action: "Nettoyer les brouillons",
+      confirm: "Nettoyer les brouillons",
+      description:
+        "Supprime définitivement les brouillons d'élève inactifs au-delà de la durée de conservation, sans lien, invitation ouverte ni document. Les autres restent. Le nettoyage s'exécute aussi chaque nuit.",
+      done_one: "{{count}} brouillon supprimé.",
+      done_other: "{{count}} brouillons supprimés.",
+      failed: "Impossible de nettoyer les brouillons. Réessayez.",
+      title: "Nettoyer les brouillons abandonnés ?",
+    },
+    export: {
+      action: "Exporter les données (protection des données)",
+      done: "Données exportées. L'export est enregistré dans l'audit.",
+      failed: "Impossible d'exporter les données. Réessayez.",
+    },
+    gone: "La personne n'est plus disponible pour vous.",
   },
   peopleSearch: {
     actions: "Actions",

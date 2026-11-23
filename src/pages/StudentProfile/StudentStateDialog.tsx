@@ -11,6 +11,8 @@ import { getErrorCode, getErrorStatus } from "@/services/httpClient"
 import { changeStudentState } from "@/services/students"
 import { hasAnyRole } from "@/utils/access"
 
+import { useFailureMessage } from "../shared/people/useFailureMessage"
+
 export type StudentStateAction = "activate" | "discard" | "inactivate" | "reactivate"
 
 export type StudentStateDialogProps = {
@@ -35,6 +37,7 @@ export const StudentStateDialog = (props: StudentStateDialogProps) => {
 
   const { t } = useTranslation()
   const signedIn = useSignedInUser()
+  const toFailureMessage = useFailureMessage()
 
   const [exceptionReason, setExceptionReason] = useState("")
   const [reasonError, setReasonError] = useState("")
@@ -62,7 +65,7 @@ export const StudentStateDialog = (props: StudentStateDialogProps) => {
       case "BIRTH_DATE_REQUIRED":
         return t("students.blockers.BIRTH_DATE_REQUIRED")
       default:
-        return t("students.state.failed")
+        return toFailureMessage(t("students.state.failed"), error)
     }
   }
 

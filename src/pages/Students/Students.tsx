@@ -7,10 +7,11 @@ import type { SelectOption } from "@/ds-components/molecules"
 import { ActionMenu, PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
-import { useDebouncedValue } from "@/hooks"
+import { useDebouncedValue, useSignedInUser } from "@/hooks"
 import type { PersonStatus, StudentSearchParams, StudentSummary } from "@/models"
 import { paths } from "@/routes/paths"
 import { listStudents } from "@/services/students"
+import { hasAnyRole } from "@/utils/access"
 
 import { PeopleListError } from "../shared/people/PeopleListError"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
@@ -18,6 +19,7 @@ import { usePeopleList } from "../shared/people/usePeopleList"
 import { useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessLines, ListContent, PersonCell } from "../shared/userAccess/userAccess.styles"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
+import { DraftCleanupDialog } from "./DraftCleanupDialog"
 
 const pageSize = 20
 
@@ -35,11 +37,13 @@ export const Students = () => {
   const unitDirectory = useUnitDirectory()
   const { unitOptionLabel } = useAccessLabels(unitDirectory.units)
   const { personStatusLabel, personStatusTone } = usePeopleLabels()
+  const signedIn = useSignedInUser()
 
   const [search, setSearch] = useState("")
   const [unitId, setUnitId] = useState("")
   const [status, setStatus] = useState<"" | PersonStatus>("")
   const [page, setPage] = useState(1)
+  const [isCleaningDrafts, setIsCleaningDrafts] = useState(false)
 
   const debouncedSearch = useDebouncedValue(search.trim())
 
@@ -59,6 +63,7 @@ export const Students = () => {
   const { current, reload } = usePeopleList(listStudents, params)
 
   const data = current && "data" in current ? current.data : null
+  const isAdmin = hasAnyRole(signedIn, ["ADMIN"])
   const hasFilters = debouncedSearch !== "" || unitId !== "" || status !== ""
 
   const unitOptions: SelectOption[] = [
@@ -148,13 +153,20 @@ export const Students = () => {
       <ListContent>
         <FilterBar
           actions={
-            <Button
-              onClick={() => navigate(paths.studentNew)}
-              size="small"
-              startIcon={<Icon color="inherit" name="user-add-outline" size={16} />}
-            >
-              {t("students.newStudent")}
-            </Button>
+            <>
+              {isAdmin && (
+                <Button onClick={() => setIsCleaningDrafts(true)} size="small" variant="outlined">
+                  {t("peoplePrivacy.draftCleanup.action")}
+                </Button>
+              )}
+              <Button
+                onClick={() => navigate(paths.studentNew)}
+                size="small"
+                startIcon={<Icon color="inherit" name="user-add-outline" size={16} />}
+              >
+                {t("students.newStudent")}
+              </Button>
+            </>
           }
           clearLabel={t("userAccess.clearFilters")}
           collapseLabel={t("common.collapseFilters")}
@@ -255,6 +267,16 @@ export const Students = () => {
       <Card elevated style={{ padding: spacing[32] }}>
         {renderContent()}
       </Card>
+
+      {isCleaningDrafts && (
+        <DraftCleanupDialog
+          onClose={() => setIsCleaningDrafts(false)}
+          onDone={() => {
+            setIsCleaningDrafts(false)
+            reload()
+          }}
+        />
+      )}
     </>
   )
 }

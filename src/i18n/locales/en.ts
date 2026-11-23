@@ -754,6 +754,7 @@ export const en: TranslationResource = {
   },
   people: {
     allStatuses: "All statuses",
+    anonymizedLocked: "This person was anonymized and can no longer be changed.",
     duplicates: {
       back: "Back to the form",
       description:
@@ -780,6 +781,7 @@ export const en: TranslationResource = {
       title: "Possible duplicate record",
       weak: "Weak match",
     },
+    failureWithReference: "{{message}} Support reference: {{reference}}.",
     form: {
       addressNumberLabel: "Number",
       addressNumberPlaceholder: "No.",
@@ -839,6 +841,40 @@ export const en: TranslationResource = {
       DRAFT: "Draft",
       INACTIVE: "Inactive",
     },
+  },
+  peoplePrivacy: {
+    anonymize: {
+      action: "Anonymize (data protection)",
+      adminAccount: "An Admin account cannot be anonymized here.",
+      confirm: "Anonymize",
+      description:
+        'Erases the personal data for good: the name becomes "Pessoa anonimizada", and the e-mail, phone, document, address and files are erased; the access and the sessions end. Links and history stay, no longer identifying the person. There is no way back.',
+      done: "Person anonymized.",
+      failed: "Could not anonymize. Try again.",
+      mustBeInactive: "Inactivate the person before anonymizing them.",
+      requestRef: "Protocol of the data subject's request",
+      requestRefHelper: "From {{min}} to {{max}} characters. It is recorded in the audit.",
+      requestRefInvalid: "Enter the protocol with {{min}} to {{max}} characters.",
+      requestRefPlaceholder: "E.g.: LGPD-2026-0042",
+      title: "Anonymize {{name}}?",
+      understood: "I understand the anonymization cannot be undone",
+    },
+    draftCleanup: {
+      action: "Clean up drafts",
+      confirm: "Clean up drafts",
+      description:
+        "Deletes for good the student drafts idle past the retention period, without a link, an open invitation or a document. The others stay. The cleanup also runs every night.",
+      done_one: "{{count}} draft removed.",
+      done_other: "{{count}} drafts removed.",
+      failed: "Could not clean up the drafts. Try again.",
+      title: "Clean up abandoned drafts?",
+    },
+    export: {
+      action: "Export data (data protection)",
+      done: "Data exported. The export is recorded in the audit.",
+      failed: "Could not export the data. Try again.",
+    },
+    gone: "The person is no longer available to you.",
   },
   peopleSearch: {
     actions: "Actions",

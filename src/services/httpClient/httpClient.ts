@@ -65,6 +65,21 @@ export const getErrorData = (error: unknown): unknown => {
   return body.data ?? undefined
 }
 
+// The id the backend gave a failed call (the envelope's `correlationId`, or its X-Correlation-ID header),
+// which finds the call in the backend's logs: shown as a reference on an unexpected failure, for support.
+// Undefined when there was no answer, or the answer has none.
+export const getErrorCorrelationId = (error: unknown): string | undefined => {
+  if (!isAxiosError(error)) return undefined
+
+  const body: unknown = error.response?.data
+  if (typeof body === "object" && body !== null && "correlationId" in body && typeof body.correlationId === "string") {
+    return body.correlationId || undefined
+  }
+
+  const header: unknown = error.response?.headers?.["x-correlation-id"]
+  return typeof header === "string" && header ? header : undefined
+}
+
 // The seconds a refused call says to wait (its Retry-After header, as the login's 429 sends), or
 // undefined when it doesn't say - or the browser can't read it: a cross-origin response only shows the
 // headers the backend's CORS exposes.
