@@ -5,7 +5,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // The P03 controlled catalogs: data kept by the backend, never hardcoded on screen.
 
-// NOT USED YET. GET /api/catalogs/relationship-types: the relationships a link may have (Mãe, Pai...).
+// USED by the link and invitation forms. GET /api/catalogs/relationship-types: the relationships a link may have (Mãe, Pai...).
 export const listRelationshipTypes = async (config?: RequestConfig): Promise<CatalogItem[]> => {
   const response = await httpClient.get<ApiResponse<CatalogItem[]>>("/api/catalogs/relationship-types", config)
 

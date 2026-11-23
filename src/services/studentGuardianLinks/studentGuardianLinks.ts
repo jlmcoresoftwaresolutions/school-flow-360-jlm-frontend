@@ -12,7 +12,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // The P03 student-guardian links (backend docs/P03_CONTRATO.md, slice 3). Admin and Secretaria only. A
 // link is only ACTIVE or ENDED and is never deleted; editing needs the `version`.
 
-// NOT USED YET. POST /api/student-guardian-links: links a guardian (by id, or by the reuse proof for one
+// USED by the student profile. POST /api/student-guardian-links: links a guardian (by id, or by the reuse proof for one
 // of another unit) with the consent confirmed. Errors: 422 CONSENT_REQUIRED, RELATIONSHIP_INVALID,
 // STUDENT_INACTIVE, GUARDIAN_INACTIVE, LINK_SELF; 409 LINK_DUPLICATE; 403 REUSE_TOKEN_INVALID.
 export const createStudentGuardianLink = async (
@@ -28,7 +28,7 @@ export const createStudentGuardianLink = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/student-guardian-links/{id}.
+// USED by the link dialogs, to read a link again after a version conflict. GET /api/student-guardian-links/{id}.
 export const getStudentGuardianLink = async (linkId: number, config?: RequestConfig): Promise<StudentGuardianLink> => {
   const response = await httpClient.get<ApiResponse<StudentGuardianLink>>(
     `/api/student-guardian-links/${linkId}`,
@@ -38,7 +38,7 @@ export const getStudentGuardianLink = async (linkId: number, config?: RequestCon
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/student-guardian-links/{id}: changes the relationship, the three
+// USED by the student profile. PUT /api/student-guardian-links/{id}: changes the relationship, the three
 // responsibilities and the start date. 409 LINK_ENDED.
 export const updateStudentGuardianLink = async (
   linkId: number,
@@ -54,7 +54,7 @@ export const updateStudentGuardianLink = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/student-guardian-links/{id}/end: ends the link with a reason. Errors: 409
+// USED by the student profile. POST /api/student-guardian-links/{id}/end: ends the link with a reason. Errors: 409
 // LINK_ENDED; 422 REASON_REQUIRED, END_BEFORE_START, LAST_GUARDIAN (the last guardian of an active
 // student; only the Admin, with an `exceptionReason`).
 export const endStudentGuardianLink = async (

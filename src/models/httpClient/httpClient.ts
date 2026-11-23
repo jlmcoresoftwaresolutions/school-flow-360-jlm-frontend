@@ -48,6 +48,7 @@ export type ApiErrorCode =
   | "LAST_GUARDIAN"
   | "LINK_DUPLICATE"
   | "LINK_ENDED"
+  | "LINK_NOT_FOUND"
   | "LINK_SELF"
   | "MUST_BE_INACTIVE"
   | "NAME_REQUIRED"

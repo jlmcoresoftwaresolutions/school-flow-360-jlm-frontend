@@ -1,41 +1,128 @@
 import { useTranslation } from "react-i18next"
 import { generatePath, Link } from "react-router-dom"
 
-import { Badge, Text } from "@/ds-components/atoms"
+import { Badge, Button, Text } from "@/ds-components/atoms"
+import { ActionMenu } from "@/ds-components/molecules"
 import { Table } from "@/ds-components/organisms"
-import type { GuardianInvitation, Student360Guardian } from "@/models"
+import type { CatalogItem, GuardianInvitation, Student360Guardian, StudentGuardianLink } from "@/models"
 import { paths } from "@/routes/paths"
 
 import { LinkPeriod, LinkResponsibilities, LinkStatusBadge } from "../shared/people/LinkCells"
 import { PersonSections } from "../shared/people/people.styles"
 import { PersonBlock } from "../shared/people/PersonBlock"
-import { PersonCell } from "../shared/userAccess/userAccess.styles"
+import { ActionRow, PersonCell } from "../shared/userAccess/userAccess.styles"
+import type { InvitationDecision } from "./links/InvitationDecisionDialog"
 
 export type StudentGuardiansProps = {
+  // A new link or invitation can be made (the student isn't inactive).
+  canAdd: boolean
   guardians: Student360Guardian[]
   invitations: GuardianInvitation[]
+  relationshipTypes: CatalogItem[]
   showInvitations: boolean
+  onDecide: (invitation: GuardianInvitation, decision: InvitationDecision) => void
+  onEditLink: (link: StudentGuardianLink, guardianName: string) => void
+  onEndLink: (link: StudentGuardianLink, guardianName: string) => void
+  onInvite: () => void
+  onNewLink: () => void
 }
 
+// An invitation of the table, with a field for each column.
+type InvitationRow = GuardianInvitation & { actions: string; responsibilities: string }
+
 // A guardian of the table: its link's id as the row key, and a field for each column.
-type GuardianRow = Student360Guardian & { id: number; period: string; responsibilities: string; status: string }
+type GuardianRow = Student360Guardian & {
+  actions: string
+  id: number
+  period: string
+  responsibilities: string
+  status: string
+}
 
 // The student's guardians, each with its own link: the relationship, the three independent
 // responsibilities, the period and whether the link is active or ended (an ended link stays as history).
-// The guardian comes masked, its name opening its profile. Below, the guardians invited from this
-// student and where each invitation is.
+// The guardian comes masked, its name opening its profile. An active link can be changed or ended; a
+// guardian is linked (one already registered) or invited by e-mail from here. Below, the guardians
+// invited from this student and where each invitation is: one the guardian accepted waits for the
+// school to confirm or reject it.
 export const StudentGuardians = (props: StudentGuardiansProps) => {
-  const { guardians, invitations, showInvitations } = props
+  const {
+    canAdd,
+    guardians,
+    invitations,
+    onDecide,
+    onEditLink,
+    onEndLink,
+    onInvite,
+    onNewLink,
+    relationshipTypes,
+    showInvitations,
+  } = props
 
   const { t } = useTranslation()
 
   const rows: GuardianRow[] = guardians.map((item) => ({
     ...item,
+    actions: "",
     id: item.link.id,
     period: "",
     responsibilities: "",
     status: item.link.status,
   }))
+
+  const invitationRows: InvitationRow[] = invitations.map((item) => ({ ...item, actions: "", responsibilities: "" }))
+
+  const relationshipLabel = (code: string) => relationshipTypes.find((type) => type.code === code)?.label ?? code
+
+  const renderLinkActions = (row: GuardianRow) => {
+    if (row.link.status !== "ACTIVE") return null
+
+    return (
+      <ActionMenu
+        items={[
+          {
+            icon: "pen-outline",
+            key: "edit",
+            label: t("guardianLinks.edit.action"),
+            onClick: () => onEditLink(row.link, row.guardian.fullName),
+          },
+          {
+            icon: "x-circle-outline",
+            key: "end",
+            label: t("guardianLinks.end.action"),
+            onClick: () => onEndLink(row.link, row.guardian.fullName),
+            tone: "danger",
+          },
+        ]}
+        triggerLabel={t("guardianLinks.actionsFor", { name: row.guardian.fullName })}
+      />
+    )
+  }
+
+  const renderInvitationActions = (row: InvitationRow) => {
+    if (row.status !== "AWAITING_CONFIRMATION") return null
+
+    return (
+      <ActionMenu
+        items={[
+          {
+            icon: "check-circle-outline",
+            key: "confirm",
+            label: t("guardianLinks.decision.confirm.action"),
+            onClick: () => onDecide(row, "confirm"),
+          },
+          {
+            icon: "x-circle-outline",
+            key: "reject",
+            label: t("guardianLinks.decision.reject.action"),
+            onClick: () => onDecide(row, "reject"),
+            tone: "danger",
+          },
+        ]}
+        triggerLabel={t("guardianLinks.actionsFor", { name: row.guardianName ?? row.email })}
+      />
+    )
+  }
 
   const renderGuardian = (row: GuardianRow) => (
     <PersonCell>
@@ -58,7 +145,21 @@ export const StudentGuardians = (props: StudentGuardiansProps) => {
 
   return (
     <PersonSections>
-      <PersonBlock title={t("students.links.title")}>
+      <PersonBlock
+        action={
+          canAdd && (
+            <ActionRow>
+              <Button onClick={onInvite} size="small" variant="outlined">
+                {t("guardianLinks.invite.action")}
+              </Button>
+              <Button onClick={onNewLink} size="small">
+                {t("guardianLinks.create.action")}
+              </Button>
+            </ActionRow>
+          )
+        }
+        title={t("students.links.title")}
+      >
         <Table dataKey="id" emptyMessage={t("students.links.empty")} value={rows}>
           <Table.Column body={renderGuardian} field="guardian" header={t("guardians.guardian")} />
           <Table.Column
@@ -81,14 +182,21 @@ export const StudentGuardians = (props: StudentGuardiansProps) => {
             field="status"
             header={t("people.status")}
           />
+          <Table.Column
+            align="right"
+            body={renderLinkActions}
+            field="actions"
+            header={t("guardianLinks.actions")}
+            width="1%"
+          />
         </Table>
       </PersonBlock>
 
       {showInvitations && (
         <PersonBlock title={t("students.invitations.title")}>
-          <Table dataKey="id" emptyMessage={t("students.invitations.empty")} value={invitations}>
+          <Table dataKey="id" emptyMessage={t("students.invitations.empty")} value={invitationRows}>
             <Table.Column
-              body={(row: GuardianInvitation) => (
+              body={(row: InvitationRow) => (
                 <PersonCell>
                   <Text fontSize="sm" semibold>
                     {row.guardianName ?? row.email}
@@ -104,13 +212,30 @@ export const StudentGuardians = (props: StudentGuardiansProps) => {
               header={t("guardians.guardian")}
             />
             <Table.Column
-              body={(row: GuardianInvitation) => (
+              body={(row: InvitationRow) => <Text fontSize="sm">{relationshipLabel(row.relationshipCode)}</Text>}
+              field="relationshipCode"
+              header={t("students.links.relationship")}
+            />
+            <Table.Column
+              body={(row: InvitationRow) => <LinkResponsibilities link={row} />}
+              field="responsibilities"
+              header={t("students.links.responsibilities")}
+            />
+            <Table.Column
+              body={(row: InvitationRow) => (
                 <Badge tone={row.status === "AWAITING_CONFIRMATION" ? "warning" : "neutral"}>
                   {t(`students.invitations.statuses.${row.status}`)}
                 </Badge>
               )}
               field="status"
               header={t("people.status")}
+            />
+            <Table.Column
+              align="right"
+              body={renderInvitationActions}
+              field="actions"
+              header={t("guardianLinks.actions")}
+              width="1%"
             />
           </Table>
         </PersonBlock>
