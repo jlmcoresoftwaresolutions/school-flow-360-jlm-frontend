@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { formatDate } from "./dates"
+import { formatDate, fromIsoDate, toIsoDate } from "./dates"
 
 describe("formatDate", () => {
   it("formats a date-only ISO string by default (no time)", () => {
@@ -33,5 +33,24 @@ describe("formatDate", () => {
 
   it("throws for a string that isn't a valid ISO date", () => {
     expect(() => formatDate("not-a-date")).toThrow('formatDate: "not-a-date" is not a valid ISO date string')
+  })
+})
+
+describe("toIsoDate", () => {
+  it("writes the local calendar day as yyyy-MM-dd", () => {
+    expect(toIsoDate(new Date(2026, 6, 4, 23, 30))).toBe("2026-07-04")
+    expect(toIsoDate(new Date(2026, 0, 9))).toBe("2026-01-09")
+  })
+})
+
+describe("fromIsoDate", () => {
+  it("reads a yyyy-MM-dd day as local midnight", () => {
+    const date = fromIsoDate("2016-03-15")
+
+    expect([date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()]).toEqual([2016, 2, 15, 0])
+  })
+
+  it("goes back to the same day", () => {
+    expect(toIsoDate(fromIsoDate("2016-12-31"))).toBe("2016-12-31")
   })
 })

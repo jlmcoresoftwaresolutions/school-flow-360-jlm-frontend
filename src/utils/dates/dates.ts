@@ -45,3 +45,16 @@ export const formatDate = (value: string, options?: FormatDateOptions): string =
 
   return `${datePart} ${pad(hours)}:${pad(minutes)}`
 }
+
+// A calendar day as the backend takes it (yyyy-MM-dd), from a date picked on screen, by its local day:
+// toISOString would give the UTC day, a day off in negative offsets (Brazil) late in the evening.
+export const toIsoDate = (date: Date): string =>
+  `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+
+// The other way: a yyyy-MM-dd day as a local date (midnight), for a date field. `new Date("2026-07-04")`
+// would read it as UTC midnight, the day before in negative offsets.
+export const fromIsoDate = (value: string): Date => {
+  const { day, month, year } = parseIsoDate(value)
+
+  return new Date(year, month - 1, day)
+}

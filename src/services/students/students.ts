@@ -31,7 +31,7 @@ export const listStudents = async (params?: StudentSearchParams, config?: Reques
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/students/{id}: the student, with what still keeps a draft from being activated
+// USED by the student form and profile. GET /api/students/{id}: the student, with what still keeps a draft from being activated
 // (`activationBlockers`).
 export const getStudent = async (studentId: number, config?: RequestConfig): Promise<Student> => {
   const response = await httpClient.get<ApiResponse<Student>>(`/api/students/${studentId}`, config)
@@ -39,7 +39,7 @@ export const getStudent = async (studentId: number, config?: RequestConfig): Pro
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/students: creates the student as a draft, with a generated registration code.
+// USED by the student form. POST /api/students: creates the student as a draft, with a generated registration code.
 // Errors: 422 UNIT_REQUIRED, NAME_REQUIRED, BIRTH_DATE_FUTURE, EMAIL_INVALID, DOCUMENT_TYPE_INVALID,
 // DOCUMENT_INCOMPLETE; 403 for a unit out of reach; 409 DOCUMENT_IN_USE, DUPLICATE_REVIEW_REQUIRED, NICKNAME_IN_USE.
 export const createStudent = async (request: StudentCreateRequest, config?: RequestConfig): Promise<Student> => {
@@ -48,7 +48,7 @@ export const createStudent = async (request: StudentCreateRequest, config?: Requ
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/students/{id}: replaces the editable data; a blank document keeps the current one.
+// USED by the student form. PUT /api/students/{id}: replaces the editable data; a blank document keeps the current one.
 export const updateStudent = async (
   studentId: number,
   request: StudentUpdateRequest,
@@ -59,7 +59,7 @@ export const updateStudent = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/students/{id}/activate, /inactivate, /reactivate, /discard. Activating without
+// USED by the student profile. POST /api/students/{id}/activate, /inactivate, /reactivate, /discard. Activating without
 // a guardian: Admin only, with `exceptionReason` (403 ADMIN_EXCEPTION_ONLY, 422 GUARDIAN_REQUIRED,
 // EXCEPTION_REASON_INVALID, UNIT_INACTIVE). 409 STATE_INVALID. Reactivating checks everything again and
 // doesn't reopen ended links; discarding a draft cancels its open invitations.
@@ -74,7 +74,7 @@ export const changeStudentState = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/students/{id}/profile: the student 360 (the guardians with their links, the
+// USED by the student profile. GET /api/students/{id}/profile: the student 360 (the guardians with their links, the
 // invitations and the sections the operator may open).
 export const getStudentProfile = async (studentId: number, config?: RequestConfig): Promise<Student360> => {
   const response = await httpClient.get<ApiResponse<Student360>>(`/api/students/${studentId}/profile`, config)

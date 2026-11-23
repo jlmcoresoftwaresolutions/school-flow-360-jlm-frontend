@@ -38,7 +38,7 @@ export const checkPerson = async (signals: PersonSignals, config?: RequestConfig
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/duplicate-reviews: opens a review of the people found for these signals
+// USED by the duplicate review. POST /api/people/duplicate-reviews: opens a review of the people found for these signals
 // (nobody found: `reviewId` null, `status` NONE).
 export const openDuplicateReview = async (
   request: DuplicateReviewRequest,
@@ -49,7 +49,7 @@ export const openDuplicateReview = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/people/duplicate-reviews/{id}/decision: REUSE (returns a `reuseRef`) or
+// USED by the duplicate review. POST /api/people/duplicate-reviews/{id}/decision: REUSE (returns a `reuseRef`) or
 // KEEP_SEPARATE. Errors: 409 DUPLICATE_REVIEW_STALE (the people found changed), DUPLICATE_REVIEW_RESOLVED,
 // STRONG_IDENTIFIER_UNIQUE (an equal document is never kept separate); 422 JUSTIFICATION_REQUIRED,
 // DUPLICATE_REVIEW_SIGNALS_MISMATCH, CANDIDATE_NOT_IN_REVIEW; 403 REUSE_TOKEN_INVALID; 404 DUPLICATE_REVIEW_NOT_FOUND.

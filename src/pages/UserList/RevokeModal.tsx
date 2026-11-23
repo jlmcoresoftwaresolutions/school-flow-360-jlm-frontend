@@ -15,7 +15,7 @@ import { getPersonName } from "../shared/userAccess/personName"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessItem, AccessItems, FormFields } from "../shared/userAccess/userAccess.styles"
 import type { UnitDirectory } from "../shared/userAccess/useUnitDirectory"
-import { useUserActionErrors } from "./useUserActionErrors"
+import { useUserActionErrors } from "../shared/userAccess/useUserActionErrors"
 
 export type RevokeModalProps = {
   unitDirectory: UnitDirectory

@@ -41,6 +41,7 @@ const renderAppShell = (initialEntry: string, user: UserContext | null = admin) 
               { element: <div>Página Minha Unidade</div>, path: "/administration/my-unit" },
               { element: <div>Página Início</div>, path: "/home" },
               { element: <div>Página Mensalidades</div>, path: "/finance/tuition" },
+              { element: <div>Perfil do aluno</div>, path: "/administration/students/:studentId" },
               { element: <EditingPage />, path: "/editando" },
             ],
             element: <AppShell />,
@@ -272,6 +273,17 @@ describe("AppShell", () => {
 
     expect(within(breadcrumb).getByText("Administração")).toBeInTheDocument()
     expect(within(breadcrumb).getByText("Minha Unidade")).toHaveAttribute("aria-current", "page")
+  })
+
+  it("keeps the menu entry and breadcrumb of the page a record belongs to", () => {
+    renderAppShell("/administration/students/12")
+
+    const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
+
+    expect(screen.getByText("Perfil do aluno")).toBeInTheDocument()
+    expect(within(breadcrumb).getByText("Administração")).toBeInTheDocument()
+    expect(within(breadcrumb).getByText("Alunos")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Alunos" })).toHaveAttribute("aria-current", "page")
   })
 
   it("shows the icon of the page's menu entry before the first breadcrumb entry only", () => {

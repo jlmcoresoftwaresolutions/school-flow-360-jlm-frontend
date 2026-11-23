@@ -96,6 +96,10 @@ export type PersonSignals = {
 
 export type DuplicateStrength = "STRONG" | "WEAK"
 
+// Why a candidate matched: an equal document, e-mail or student code (strong), or the same name with the
+// same birth date (weak).
+export type DuplicateSignal = "DOCUMENT" | "EMAIL" | "NAME_BIRTH" | "STUDENT_CODE"
+
 // Someone the check found. Out of the operator's reach only a partial name and masked identifiers come,
 // with a `ref` (the proof of reuse, valid 15 minutes); `id` and `fullName` only when `inScope`.
 export type PersonCandidate = {
@@ -106,7 +110,7 @@ export type PersonCandidate = {
   maskedEmail: string | null
   partialName: string | null
   ref: string
-  signals: string[]
+  signals: DuplicateSignal[]
   strong: boolean
   types: PersonType[]
 }

@@ -67,6 +67,21 @@ const breadcrumbByPath: Record<string, BreadcrumbTrail> = Object.fromEntries([
   ),
 ])
 
+// Whether a path is a page's own or a record under it (/administration/students/12 under the students).
+const isUnder = (pathname: string, pagePath: string) => pathname === pagePath || pathname.startsWith(`${pagePath}/`)
+
+// The trail of a page, or of the page a record belongs to (its closest parent path with a trail).
+const findBreadcrumb = (pathname: string): BreadcrumbTrail | undefined => {
+  let path = pathname
+  while (path) {
+    const trail = breadcrumbByPath[path]
+    if (trail) return trail
+    path = path.slice(0, path.lastIndexOf("/"))
+  }
+
+  return undefined
+}
+
 // Renews the session when its access token expires, even on an idle page, so it doesn't wait for the
 // next request to be refused; one the backend won't renew ends there. An unreachable backend keeps the
 // session (it is tried again later).
@@ -97,7 +112,7 @@ export const AppShell = () => {
   const navLabel = (key: NavKey) => t(`shell.nav.${key}`)
 
   const toNavLink = (key: PageKey): SidebarNavChild => ({
-    active: location.pathname === paths[key],
+    active: isUnder(location.pathname, paths[key]),
     key,
     label: navLabel(key),
     onClick: () => navigate(paths[key]),
@@ -137,7 +152,7 @@ export const AppShell = () => {
     { icon: "logout-outline", key: "signOut", label: t("shell.signOut"), onClick: () => navigate(paths.signOut) },
   ]
 
-  const breadcrumbTrail = breadcrumbByPath[location.pathname]
+  const breadcrumbTrail = findBreadcrumb(location.pathname)
   const breadcrumbItems: BreadcrumbItem[] | undefined = breadcrumbTrail?.keys.map((key, index) => ({
     icon: index === 0 ? breadcrumbTrail.icon : undefined,
     key,

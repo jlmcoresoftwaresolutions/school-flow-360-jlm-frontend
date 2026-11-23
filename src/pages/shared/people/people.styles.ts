@@ -1,0 +1,57 @@
+import styled from "styled-components"
+
+import { colors, media, spacing } from "@/foundation"
+
+// A block of a person's form or profile: a titled group of fields or data, with a line between blocks.
+export const PersonSection = styled.section`
+  border-top: 1px solid ${colors.neutral[200]};
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing[16]};
+  padding-top: ${spacing[24]};
+
+  &:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+`
+
+export const PersonSections = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing[24]};
+`
+
+// Fields side by side on a wide screen, stacked on a narrow one.
+export const FieldRow = styled.div`
+  display: grid;
+  gap: ${spacing[16]};
+  grid-template-columns: minmax(0, 1fr);
+
+  @media ${media.md} {
+    grid-template-columns: repeat(auto-fit, minmax(${spacing[224]}, 1fr));
+  }
+`
+
+// The buttons at the end of a form page, on the right.
+export const FormActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[12]};
+  justify-content: flex-end;
+`
+
+// A candidate of a duplicate review: the name, with its tags (kind, strength) beside it.
+export const CandidateHeader = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[8]};
+  justify-content: space-between;
+`
+
+export const CandidateTags = styled.span`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${spacing[4]};
+`
