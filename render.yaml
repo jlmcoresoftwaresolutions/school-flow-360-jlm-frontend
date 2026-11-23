@@ -2,10 +2,14 @@
 # Render builds it itself from master, and only once the commit's GitHub checks have passed
 # (autoDeployTrigger: checksPass), so a merge that breaks the CI is never published. Pull requests get
 # no preview site (no `previews` field): they are reviewed locally.
+#
+# This file is the reference for the site's settings, not what applies them: the site ("School Flow 360",
+# https://school-flow-360-i2m0.onrender.com, in the Production environment of the Render project) was
+# created from it, but no Blueprint manages it, so a change here must also be made in the Render dashboard.
 services:
   - type: web
     runtime: static
-    name: school-flow-360
+    name: School Flow 360
     branch: master
     # Render's own dependency install is skipped so the build uses Bun with the lockfile, as the CI does.
     buildCommand: bun install --frozen-lockfile && bun run build
