@@ -266,6 +266,7 @@ export const StudentProfile = () => {
         label={t("students.profile.sectionsLabel")}
         onChange={setTab}
         value={tabs.some((item) => item.key === tab) ? tab : (tabs[0]?.key ?? "")}
+        attached
       />
 
       {dialog && dialog !== "access" && (
