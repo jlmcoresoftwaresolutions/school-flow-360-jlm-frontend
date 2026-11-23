@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { defaultCountry, getCountryName, getCountryOptions, isCountry, toCountry } from "./countries"
+import { defaultCountry, detectCountry, getCountryName, getCountryOptions, isCountry, toCountry } from "./countries"
 
 describe("isCountry", () => {
   it("tells an ISO 3166-1 alpha-2 code apart from anything else", () => {
@@ -54,5 +54,23 @@ describe("toCountry", () => {
 describe("defaultCountry", () => {
   it("is Brazil", () => {
     expect(defaultCountry).toBe("BR")
+  })
+})
+
+describe("detectCountry", () => {
+  it("takes the country from the region of the browser's languages", () => {
+    expect(detectCountry(["pt-BR", "en"])).toBe("BR")
+    expect(detectCountry(["pt-PT"])).toBe("PT")
+    expect(detectCountry(["en", "es-MX"])).toBe("MX")
+  })
+
+  it("gives a language without a region its most likely country", () => {
+    expect(detectCountry(["pt"])).toBe("BR")
+    expect(detectCountry(["fr"])).toBe("FR")
+  })
+
+  it("is undefined when no language points to a country", () => {
+    expect(detectCountry([])).toBeUndefined()
+    expect(detectCountry(["not a language"])).toBeUndefined()
   })
 })

@@ -1,7 +1,7 @@
 import type { Preview } from "@storybook/react-vite"
 import { createGlobalStyle } from "styled-components"
 
-import { colors } from "@/foundation"
+import { colors, spacing } from "@/foundation"
 import { i18n } from "@/i18n"
 
 import GlobalStyle from "../src/styles/GlobalStyle"
@@ -11,9 +11,20 @@ import GlobalStyle from "../src/styles/GlobalStyle"
 // whatever language the viewer's browser reports.
 void i18n.changeLanguage("pt-BR")
 
+// The "padded" layout's spacing moves from the body to the story's root. A select's open menu blocks the
+// page's scroll by writing an inline padding-right on the body (react-select's scroll lock), which wiped
+// the layout's right padding and pushed the story to the edge while the menu was open.
 const StorybookBackground = createGlobalStyle`
   body {
     background: ${colors.neutral[0]};
+  }
+
+  body.sb-show-main.sb-main-padded {
+    padding: 0;
+  }
+
+  body.sb-show-main.sb-main-padded #storybook-root {
+    padding: ${spacing[16]};
   }
 `
 

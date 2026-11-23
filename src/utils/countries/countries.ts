@@ -52,3 +52,28 @@ export const toCountry = (value: string): Country | undefined => {
     nameLanguages.some((language) => normalizeForSearch(getCountryName(code, language)) === wanted),
   )
 }
+
+// The country of whoever is using the app, from the regions of the browser's languages ("pt-BR" is
+// Brazil, "en-US" the United States); a language without a region ("pt") gives its most likely one
+// ("BR"). Nothing is asked to any service. Undefined when no language points to a known country.
+export const detectCountry = (
+  languages: readonly string[] = typeof navigator === "undefined" ? [] : navigator.languages,
+): Country | undefined => {
+  const regionOf = (tag: string, maximize: boolean) => {
+    try {
+      const locale = new Intl.Locale(tag)
+      return (maximize ? locale.maximize() : locale).region
+    } catch {
+      return undefined
+    }
+  }
+
+  for (const maximize of [false, true]) {
+    for (const tag of languages) {
+      const region = regionOf(tag, maximize)
+      if (region && isCountry(region)) return region
+    }
+  }
+
+  return undefined
+}
