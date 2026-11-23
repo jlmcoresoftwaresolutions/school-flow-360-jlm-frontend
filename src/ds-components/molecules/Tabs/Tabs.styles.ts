@@ -114,8 +114,13 @@ export const StyledTab = styled.button<StyledTabProps>`
   }
 `
 
-export const StyledTabPanel = styled.div`
-  padding-top: ${spacing[24]};
+export type StyledTabPanelProps = {
+  $attached: boolean
+}
+
+// Attached, the content starts right at the bar (no gap), so the selected tab opens into it.
+export const StyledTabPanel = styled.div<StyledTabPanelProps>`
+  padding-top: ${(props) => (props.$attached ? 0 : spacing[24])};
 
   &:focus-visible {
     outline: 2px solid ${colors.info[500]};

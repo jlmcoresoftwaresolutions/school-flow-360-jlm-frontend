@@ -184,6 +184,17 @@ describe("Tabs", () => {
     expect(screen.getByRole("tablist")).toHaveStyle({ borderBottomStyle: "none", position: "relative", zIndex: "1" })
   })
 
+  it("starts a tab's content right at the bar when attached, with a gap otherwise", () => {
+    const withContent = [{ content: <p>Conteúdo A</p>, key: "a", label: "Aba A" }]
+    const { rerender } = render(<Tabs items={withContent} onChange={vi.fn()} value="a" />)
+
+    expect(screen.getByRole("tabpanel")).toHaveStyle({ paddingTop: "24px" })
+
+    rerender(<Tabs items={withContent} onChange={vi.fn()} value="a" attached />)
+
+    expect(screen.getByRole("tabpanel")).toHaveStyle({ paddingTop: "0px" })
+  })
+
   it("forwards className and style to the root element", () => {
     const { container } = render(
       <Tabs className="custom" items={items} onChange={vi.fn()} style={{ margin: "4px" }} value="a" />,

@@ -41,7 +41,7 @@ const meta: Meta<typeof Tabs> = {
     attached: {
       control: "boolean",
       description:
-        "Joins the bar to the content right below it (typically a Card, with no gap): no baseline, and the selected tab takes the card's look over its top edge, so tab and content read as one piece.",
+        "Joins the bar to the content right below it (typically a Card, with no gap): no baseline, and the selected tab takes the card's look over its top edge, so tab and content read as one piece. A tab's own content also starts right at the bar.",
     },
     items: {
       control: "object",
@@ -96,6 +96,21 @@ export const Attached: Story = {
       </Card>
     </div>
   ),
+}
+
+// The attached prop with each tab carrying its own content (a Card), joined to the selected tab
+export const AttachedWithContent: Story = {
+  args: {
+    attached: true,
+    items: items.map((item) => ({
+      ...item,
+      content: (
+        <Card style={{ padding: spacing[24] }}>
+          <Text as="p">Conteúdo de {item.label}, emendado na aba.</Text>
+        </Card>
+      ),
+    })),
+  },
 }
 
 // Tabs without content, acting only as a selector for pages that swap the content themselves

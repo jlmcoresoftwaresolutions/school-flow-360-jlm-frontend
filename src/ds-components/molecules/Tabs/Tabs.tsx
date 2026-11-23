@@ -32,7 +32,8 @@ export type TabsProps = {
 // tabs without it are just a selector, for pages that swap the content themselves (e.g. one route per
 // tab). `attached` joins the bar to the content right below it (typically a Card, with no gap in
 // between): the baseline goes away and the selected tab takes the card's look, sitting over its top
-// edge, so the tab and its content read as one piece.
+// edge, so the tab and its content read as one piece. A tab's own `content` then starts right at the
+// bar too, without the gap it has otherwise.
 // Keyboard follows the WAI-ARIA pattern: only the selected tab is in the Tab order, and the arrows,
 // Home and End move between the enabled tabs, selecting as they go.
 export const Tabs = (props: TabsProps) => {
@@ -107,6 +108,7 @@ export const Tabs = (props: TabsProps) => {
 
       {selectedItem && selectedItem.content !== undefined && (
         <StyledTabPanel
+          $attached={attached}
           aria-labelledby={tabId(selectedItem.key)}
           id={panelId(selectedItem.key)}
           role="tabpanel"

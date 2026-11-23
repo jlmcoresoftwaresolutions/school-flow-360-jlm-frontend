@@ -180,6 +180,7 @@ export const GuardianProfile = () => {
         label={t("guardians.profile.sectionsLabel")}
         onChange={setTab}
         value={tabs.some((item) => item.key === tab) ? tab : (tabs[0]?.key ?? "")}
+        attached
       />
 
       {dialog && (
