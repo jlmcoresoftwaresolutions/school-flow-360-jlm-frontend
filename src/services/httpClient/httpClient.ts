@@ -28,7 +28,12 @@ declare module "axios" {
 // password reset link carries the tenant it was issued for). idempotencyKey goes as the
 // Idempotency-Key header, so repeating a create (a double click, a retry after a timeout) returns
 // the first result instead of creating twice - generate one per attempt the user means as one.
-export type RequestConfig = Pick<AxiosRequestConfig, "idempotencyKey" | "showLoading" | "tenantId">
+// onUploadProgress follows an upload as it goes (a file sent with a progress shown), and signal (an
+// AbortController's) cancels the call, for an upload the user gives up on.
+export type RequestConfig = Pick<
+  AxiosRequestConfig,
+  "idempotencyKey" | "onUploadProgress" | "showLoading" | "signal" | "tenantId"
+>
 
 // The HTTP status of a failed call (e.g. 401 for wrong credentials), or undefined when there was no
 // response at all (network down, CORS refusal, timeout) - so a page can tell the two apart without
