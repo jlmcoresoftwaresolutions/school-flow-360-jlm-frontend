@@ -15,7 +15,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // the academic area: 404 ACADEMIC_NOT_FOUND (missing or out of scope), 403 ACCESS_DENIED/SCOPE_DENIED,
 // 428 VERSION_REQUIRED, 409 VERSION_CONFLICT.
 
-// NOT USED YET. GET /api/academic/periods: the periods with at least one unit in the caller's scope.
+// USED by the periods page. GET /api/academic/periods: the periods with at least one unit in the caller's scope.
 export const listAcademicPeriods = async (
   params?: AcademicPeriodSearchParams,
   config?: RequestConfig,
@@ -28,7 +28,7 @@ export const listAcademicPeriods = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/periods: creates the period as CONFIGURED. Errors: 409
+// USED by the periods page. POST /api/academic/periods: creates the period as CONFIGURED. Errors: 409
 // ACADEMIC_DUPLICATE_CODE (name in the year), ACADEMIC_PERIOD_OVERLAP; 422 ACADEMIC_INVALID_RANGE; 403 a
 // unit out of scope.
 export const createAcademicPeriod = async (
@@ -40,14 +40,14 @@ export const createAcademicPeriod = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/periods/{id}.
+// USED by the periods page. GET /api/academic/periods/{id}.
 export const getAcademicPeriod = async (periodId: number, config?: RequestConfig): Promise<AcademicPeriod> => {
   const response = await httpClient.get<ApiResponse<AcademicPeriod>>(`/api/academic/periods/${periodId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/periods/{id}: the whole edition, with `version`. A closed period
+// USED by the periods page. PUT /api/academic/periods/{id}: the whole edition, with `version`. A closed period
 // doesn't change (422); with active offers, a unit that has one can't leave nor the kind change (409
 // ACADEMIC_DEPENDENCY_ACTIVE).
 export const updateAcademicPeriod = async (
@@ -64,7 +64,7 @@ export const updateAcademicPeriod = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/periods/{id}/impact: what would block closing it.
+// USED by the periods page. GET /api/academic/periods/{id}/impact: what would block closing it.
 export const getAcademicPeriodImpact = async (
   periodId: number,
   config?: RequestConfig,
@@ -77,7 +77,7 @@ export const getAcademicPeriodImpact = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/periods/{id}/activate: only from CONFIGURED, with an active unit.
+// USED by the periods page. POST /api/academic/periods/{id}/activate: only from CONFIGURED, with an active unit.
 export const activateAcademicPeriod = async (
   periodId: number,
   version: number,
@@ -92,7 +92,7 @@ export const activateAcademicPeriod = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/periods/{id}/close: only from ACTIVE, with a reason; the dependencies
+// USED by the periods page. POST /api/academic/periods/{id}/close: only from ACTIVE, with a reason; the dependencies
 // are checked again on the confirmation (409 ACADEMIC_DEPENDENCY_ACTIVE).
 export const closeAcademicPeriod = async (
   periodId: number,
