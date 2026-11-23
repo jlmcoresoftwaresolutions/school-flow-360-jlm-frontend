@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { generatePath, useNavigate } from "react-router-dom"
 
-import { Badge, Card, Text } from "@/ds-components/atoms"
+import { Badge, Button, Card, Icon, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
+import { ActionMenu, PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
 import { useDebouncedValue } from "@/hooks"
 import type { GuardianSearchParams, GuardianSummary, PersonStatus } from "@/models"
+import { paths } from "@/routes/paths"
 import { listGuardians } from "@/services/guardians"
 import { defaultCountry } from "@/utils/countries"
 import { formatPhoneForDisplay } from "@/utils/phone"
@@ -31,6 +33,7 @@ const statuses: PersonStatus[] = ["DRAFT", "ACTIVE", "INACTIVE"]
 // Changing a filter clears the rows at once. The list shares the people search limit (30 a minute).
 export const Guardians = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const unitDirectory = useUnitDirectory()
   const { unitOptionLabel } = useAccessLabels(unitDirectory.units)
   const { personStatusLabel, personStatusTone } = usePeopleLabels()
@@ -113,6 +116,7 @@ export const Guardians = () => {
     if (data && data.totalElements === 0 && !hasFilters && search.trim() === "") {
       return (
         <StateMessage
+          action={<Button onClick={() => navigate(paths.guardianNew)}>{t("guardians.newGuardian")}</Button>}
           description={t("guardians.emptyDescription")}
           icon="users-outline"
           title={t("guardians.emptyTitle")}
@@ -123,6 +127,15 @@ export const Guardians = () => {
     return (
       <ListContent>
         <FilterBar
+          actions={
+            <Button
+              onClick={() => navigate(paths.guardianNew)}
+              size="small"
+              startIcon={<Icon color="inherit" name="user-add-outline" size={16} />}
+            >
+              {t("guardians.newGuardian")}
+            </Button>
+          }
           clearLabel={t("userAccess.clearFilters")}
           collapseLabel={t("common.collapseFilters")}
           expandLabel={t("common.expandFilters")}
@@ -188,6 +201,25 @@ export const Guardians = () => {
             )}
             field="status"
             header={t("people.status")}
+          />
+          <Table.Column
+            align="right"
+            body={(row: GuardianSummary) => (
+              <ActionMenu
+                items={[
+                  {
+                    icon: "eye-outline",
+                    key: "view",
+                    label: t("guardians.viewProfile"),
+                    onClick: () => navigate(generatePath(paths.guardianProfile, { guardianId: String(row.id) })),
+                  },
+                ]}
+                triggerLabel={t("guardians.actionsFor", { name: row.fullName })}
+              />
+            )}
+            field="id"
+            header={t("guardians.actions")}
+            width="1%"
           />
         </Table>
 

@@ -11,12 +11,12 @@ import { paths } from "@/routes/paths"
 import { getErrorStatus } from "@/services/httpClient"
 import { getStudentProfile } from "@/services/students"
 
+import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
 import { TemporaryPasswordDialog } from "../shared/userAccess/TemporaryPasswordDialog"
 import { StudentData } from "./StudentData"
 import { StudentGuardians } from "./StudentGuardians"
-import { ProfileBar, ProfileBarInfo } from "./StudentProfile.styles"
 import { type StudentStateAction, StudentStateDialog } from "./StudentStateDialog"
 
 type ProfileResult = { error: "failed" | "gone" } | { profile: Student360 } | null

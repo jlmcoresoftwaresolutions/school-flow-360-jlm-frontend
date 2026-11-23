@@ -260,6 +260,27 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { GuardianForm } = await import("@/pages/GuardianForm")
+          return { Component: GuardianForm }
+        },
+        path: paths.guardianNew,
+      },
+      {
+        lazy: async () => {
+          const { GuardianProfile } = await import("@/pages/GuardianProfile")
+          return { Component: GuardianProfile }
+        },
+        path: paths.guardianProfile,
+      },
+      {
+        lazy: async () => {
+          const { GuardianForm } = await import("@/pages/GuardianForm")
+          return { Component: GuardianForm }
+        },
+        path: paths.guardianEdit,
+      },
+      {
+        lazy: async () => {
           const { Home } = await import("@/pages/Home")
           return { Component: Home }
         },

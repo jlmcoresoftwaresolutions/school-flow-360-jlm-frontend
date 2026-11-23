@@ -213,21 +213,25 @@ export const PeopleSearch = () => {
           <Table.Column body={renderMatch} field="matchedBy" header={t("peopleSearch.match")} />
           <Table.Column
             align="right"
-            body={(row: PeopleSearchItem) =>
-              row.types.includes("STUDENT") && (
-                <ActionMenu
-                  items={[
-                    {
-                      icon: "eye-outline",
-                      key: "open",
-                      label: t("peopleSearch.open"),
-                      onClick: () => navigate(generatePath(paths.studentProfile, { studentId: String(row.id) })),
-                    },
-                  ]}
-                  triggerLabel={t("peopleSearch.actionsFor", { name: row.fullName })}
-                />
-              )
-            }
+            body={(row: PeopleSearchItem) => (
+              <ActionMenu
+                items={[
+                  row.types.includes("STUDENT") && {
+                    icon: "school-outline" as const,
+                    key: "student",
+                    label: t("peopleSearch.openStudent"),
+                    onClick: () => navigate(generatePath(paths.studentProfile, { studentId: String(row.id) })),
+                  },
+                  row.types.includes("GUARDIAN") && {
+                    icon: "users-outline" as const,
+                    key: "guardian",
+                    label: t("peopleSearch.openGuardian"),
+                    onClick: () => navigate(generatePath(paths.guardianProfile, { guardianId: String(row.id) })),
+                  },
+                ].filter((item) => item !== false)}
+                triggerLabel={t("peopleSearch.actionsFor", { name: row.fullName })}
+              />
+            )}
             field="id"
             header={t("peopleSearch.actions")}
             width="1%"

@@ -14,6 +14,9 @@ type PageKey = keyof PathsType
 // denied page; neither replaces the backend's own check on every call.
 export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   audit: ["ADMIN"],
+  guardianEdit: ["ADMIN", "SECRETARIA"],
+  guardianNew: ["ADMIN", "SECRETARIA"],
+  guardianProfile: ["ADMIN", "SECRETARIA"],
   guardians: ["ADMIN", "SECRETARIA"],
   invites: ["ADMIN", "SECRETARIA"],
   myUnit: ["ADMIN", "SECRETARIA"],
