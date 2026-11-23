@@ -20,7 +20,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // and the unit's Coordenação's (403 before any read for anyone else). Common errors: 404 ACADEMIC_NOT_FOUND,
 // 403 ACCESS_DENIED/SCOPE_DENIED, 428 VERSION_REQUIRED, 409 VERSION_CONFLICT.
 
-// NOT USED YET. GET /api/academic/calendar/items: the items being prepared.
+// USED. GET /api/academic/calendar/items: the items being prepared.
 export const listAcademicCalendarItems = async (
   params?: AcademicCalendarItemParams,
   config?: RequestConfig,
@@ -33,7 +33,7 @@ export const listAcademicCalendarItems = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/calendar/items: saving never publishes. Errors: 422
+// USED. POST /api/academic/calendar/items: saving never publishes. Errors: 422
 // ACADEMIC_INVALID_RANGE (dates outside the period), a closed period; 403 a unit out of scope.
 export const createAcademicCalendarItem = async (
   request: AcademicCalendarItemWrite,
@@ -48,7 +48,7 @@ export const createAcademicCalendarItem = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/calendar/items/{id}.
+// USED. GET /api/academic/calendar/items/{id}.
 export const getAcademicCalendarItem = async (
   itemId: number,
   config?: RequestConfig,
@@ -61,7 +61,7 @@ export const getAcademicCalendarItem = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/calendar/items/{id}: changes only the preparation (the published
+// USED. PUT /api/academic/calendar/items/{id}: changes only the preparation (the published
 // version doesn't change); the caller needs every unit of the item in scope.
 export const updateAcademicCalendarItem = async (
   itemId: number,
@@ -77,7 +77,7 @@ export const updateAcademicCalendarItem = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/calendar/items/{id}/inactivate: takes it out of the preparation (nothing
+// USED. POST /api/academic/calendar/items/{id}/inactivate: takes it out of the preparation (nothing
 // is deleted; the published version keeps it).
 export const removeAcademicCalendarItem = async (
   itemId: number,
@@ -93,7 +93,7 @@ export const removeAcademicCalendarItem = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/calendar/preview: what would be published for a unit and period.
+// USED. GET /api/academic/calendar/preview: what would be published for a unit and period.
 export const previewAcademicCalendar = async (
   params: Required<AcademicCalendarContext>,
   config?: RequestConfig,
@@ -106,7 +106,7 @@ export const previewAcademicCalendar = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/calendar/publish: a closed snapshot per unit, all or nothing (409
+// USED. POST /api/academic/calendar/publish: a closed snapshot per unit, all or nothing (409
 // VERSION_CONFLICT when a revision changed; 422 nothing to publish).
 export const publishAcademicCalendar = async (
   request: AcademicCalendarPublish,
@@ -121,7 +121,7 @@ export const publishAcademicCalendar = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/calendar/versions: the versions of a unit, newest first.
+// USED. GET /api/academic/calendar/versions: the versions of a unit, newest first.
 export const listAcademicCalendarVersions = async (
   params: Required<AcademicCalendarContext>,
   config?: RequestConfig,
@@ -134,7 +134,7 @@ export const listAcademicCalendarVersions = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/calendar/versions/{id}/withdraw: only the published version, with a
+// USED. POST /api/academic/calendar/versions/{id}/withdraw: only the published version, with a
 // reason; the version is kept (WITHDRAWN).
 export const withdrawAcademicCalendarVersion = async (
   versionId: number,
@@ -150,7 +150,7 @@ export const withdrawAcademicCalendarVersion = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/calendar/published: the published calendar of the caller's own context
+// USED. GET /api/academic/calendar/published: the published calendar of the caller's own context
 // (the Aluno and the Responsável: their students' reference unit). Nothing published is NOT_PUBLISHED, an
 // answer, not a failure.
 export const getPublishedAcademicCalendar = async (

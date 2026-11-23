@@ -350,6 +350,101 @@ export const classStudents = [
   { enrollmentId: 803, name: "Carlos Eduardo Reis", status: "LOCKED", studentId: 13 },
 ]
 
+// The calendar of Unidade Aldeota in 2026: a school year, a holiday shared with Caucaia and a parents'
+// meeting added after version 1 was published (so the preparation differs from what is on air).
+export const calendarItems: Item[] = [
+  {
+    category: "DIA_LETIVO",
+    description: null,
+    endDate: "2026-02-13",
+    id: 81,
+    periodId: 10,
+    startDate: "2026-02-02",
+    status: "ACTIVE",
+    title: "Primeiras semanas",
+    unitIds: [1],
+    version: 0,
+  },
+  {
+    category: "FERIADO",
+    description: "Sem aulas",
+    endDate: "2026-02-10",
+    id: 82,
+    periodId: 10,
+    startDate: "2026-02-09",
+    status: "ACTIVE",
+    title: "Recesso",
+    unitIds: [1, 2],
+    version: 0,
+  },
+  {
+    category: "EVENTO",
+    description: null,
+    endDate: "2026-02-07",
+    id: 83,
+    periodId: 10,
+    startDate: "2026-02-07",
+    status: "ACTIVE",
+    title: "Reunião de pais",
+    unitIds: [1],
+    version: 0,
+  },
+]
+
+const dayList = (start: string, end: string) => {
+  const days: string[] = []
+  for (
+    let day = new Date(`${start}T00:00:00Z`);
+    day <= new Date(`${end}T00:00:00Z`);
+    day.setUTCDate(day.getUTCDate() + 1)
+  ) {
+    days.push(day.toISOString().slice(0, 10))
+  }
+  return days
+}
+
+// Only a school day counts; a holiday takes its days off; an event never changes the count.
+const schoolDaysOf = (items: Item[]) => {
+  const school = new Set(
+    items
+      .filter((item) => item.category === "DIA_LETIVO")
+      .flatMap((item) => dayList(String(item.startDate), String(item.endDate))),
+  )
+  items
+    .filter((item) => item.category === "FERIADO")
+    .forEach((item) => dayList(String(item.startDate), String(item.endDate)).forEach((day) => school.delete(day)))
+  return school.size
+}
+
+const snapshotOf = (items: Item[]) =>
+  items.map((item) => ({
+    category: item.category,
+    description: item.description,
+    endDate: item.endDate,
+    id: item.id,
+    startDate: item.startDate,
+    title: item.title,
+  }))
+
+const revisionOf = (items: Item[]) =>
+  items.map((item) => `${String(item.id)}.${String(item.version)}`).join("-") || "none"
+
+export const calendarVersions: Item[] = [
+  {
+    id: 91,
+    items: snapshotOf(calendarItems.slice(0, 2)),
+    periodId: 10,
+    publishedAt: "2026-01-25T12:00:00Z",
+    revision: "81.0-82.0",
+    schoolDays: schoolDaysOf(calendarItems.slice(0, 2)),
+    status: "PUBLISHED",
+    unitId: 1,
+    version: 0,
+    versionNo: 1,
+    withdrawReason: null,
+  },
+]
+
 const dependencyError = (blockers: string[]) => ({
   body: JSON.stringify({
     code: "ACADEMIC_DEPENDENCY_ACTIVE",
@@ -372,6 +467,10 @@ type AcademicOptions = {
   changedPeriodId?: number
   // Someone else changes this room before its first change (409 VERSION_CONFLICT).
   changedRoomId?: number
+  // The calendar's items change after the preview, before the first publication (409 VERSION_CONFLICT).
+  calendarChangedBeforePublish?: boolean
+  // The signed-in person prepares the calendar but doesn't publish it (a Secretaria).
+  calendarCannotPublish?: boolean
   // The academic structure hasn't started: the overview answers EMPTY.
   emptyStructure?: boolean
   // The enrollment answers (occupation, seats and students); otherwise UNAVAILABLE, as today.
@@ -1148,6 +1247,166 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
       .filter((event) => !from || String(event.occurredAt).slice(0, 10) >= from)
       .filter((event) => !to || String(event.occurredAt).slice(0, 10) <= to)
     return route.fulfill(apiAnswer(toPage(found, call.query)))
+  })
+
+  // The calendar: items prepared per period and units (saving never publishes), the preview of a unit with
+  // its revision, a publication of that revision as a closed snapshot (the previous version superseded), a
+  // withdrawal with a reason (the version kept) and the published calendar of a context.
+  const itemList = calendarItems.map((item) => ({ ...item }))
+  const versionList = calendarVersions.map((item) => ({ ...item }))
+  let nextItemId = 180
+  let nextVersionId = 190
+  let calendarChanged = false
+
+  const itemView = (item: Item): Item => ({ ...item, eligibleActions: options.readOnly ? [] : ["EDIT", "REMOVE"] })
+  const activeItems = (periodId: number, unitId: number) =>
+    itemList
+      .filter(
+        (item) => item.status === "ACTIVE" && item.periodId === periodId && (item.unitIds as number[]).includes(unitId),
+      )
+      .sort((first, second) => String(first.startDate).localeCompare(String(second.startDate)))
+  const canPublish = !options.readOnly && !options.calendarCannotPublish
+  const versionView = (version: Item): Item => ({
+    ...version,
+    eligibleActions: canPublish && version.status === "PUBLISHED" ? ["WITHDRAW"] : [],
+  })
+
+  await page.route(/\/api\/academic\/calendar\/items(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    if (call.method === "GET") {
+      const periodId = Number(call.query.periodId)
+      const unitId = Number(call.query.unitId)
+      return route.fulfill(apiAnswer(toPage(activeItems(periodId, unitId).map(itemView), { size: "200" })))
+    }
+    const body = call.body as Item
+    const itemPeriod = periodList.find((entry) => entry.id === body.periodId)
+    if (
+      itemPeriod &&
+      (String(body.startDate) < String(itemPeriod.startDate) || String(body.endDate) > String(itemPeriod.endDate))
+    ) {
+      return route.fulfill(apiError(422, "ACADEMIC_INVALID_RANGE"))
+    }
+    const created = { ...body, description: body.description ?? null, id: nextItemId++, status: "ACTIVE", version: 0 }
+    itemList.push(created)
+    return route.fulfill(apiAnswer(itemView(created)))
+  })
+
+  await page.route(/\/api\/academic\/calendar\/items\/\d+(\/inactivate)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, inactivate] = /\/calendar\/items\/(\d+)(\/inactivate)?$/.exec(call.path) ?? []
+    const index = itemList.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = itemList[index]
+    if (call.method === "GET") return route.fulfill(apiAnswer(itemView(current)))
+    const body = call.body as Item
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    itemList[index] = inactivate
+      ? { ...current, status: "INACTIVE", version: Number(current.version) + 1 }
+      : { ...current, ...body, description: body.description ?? null, version: Number(current.version) + 1 }
+    return route.fulfill(apiAnswer(itemView(itemList[index])))
+  })
+
+  await page.route(/\/api\/academic\/calendar\/preview\?.*$/, (route) => {
+    const call = record(route.request())
+    const periodId = Number(call.query.periodId)
+    const unitId = Number(call.query.unitId)
+    const active = activeItems(periodId, unitId)
+    const published = versionList.find(
+      (version) => version.periodId === periodId && version.unitId === unitId && version.status === "PUBLISHED",
+    )
+    const revision = revisionOf(active)
+    return route.fulfill(
+      apiAnswer({
+        canPublish: canPublish && active.length > 0,
+        changedSincePublished: published ? published.revision !== revision : active.length > 0,
+        items: active.map(itemView),
+        periodId,
+        publishedVersionNo: published ? published.versionNo : null,
+        revision,
+        schoolDays: schoolDaysOf(active),
+        unitId,
+      }),
+    )
+  })
+
+  await page.route(/\/api\/academic\/calendar\/publish$/, (route) => {
+    const call = record(route.request())
+    if (!canPublish) return route.fulfill(apiError(403, "SCOPE_DENIED"))
+    const body = call.body as { periodId: number; units: { revision: string; unitId: number }[] }
+    if (options.calendarChangedBeforePublish && !calendarChanged) {
+      calendarChanged = true
+      const index = itemList.findIndex((item) => item.id === 83)
+      itemList[index] = {
+        ...itemList[index],
+        title: "Reunião de pais e mestres",
+        version: Number(itemList[index].version) + 1,
+      }
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+    for (const unit of body.units) {
+      const active = activeItems(body.periodId, unit.unitId)
+      if (revisionOf(active) !== unit.revision) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+    const created = body.units.map((unit) => {
+      const active = activeItems(body.periodId, unit.unitId)
+      const previous = versionList.filter(
+        (version) => version.periodId === body.periodId && version.unitId === unit.unitId,
+      )
+      previous.forEach((version) => {
+        if (version.status === "PUBLISHED") version.status = "SUPERSEDED"
+      })
+      const version: Item = {
+        id: nextVersionId++,
+        items: snapshotOf(active),
+        periodId: body.periodId,
+        publishedAt: new Date().toISOString(),
+        revision: unit.revision,
+        schoolDays: schoolDaysOf(active),
+        status: "PUBLISHED",
+        unitId: unit.unitId,
+        version: 0,
+        versionNo: previous.length + 1,
+        withdrawReason: null,
+      }
+      versionList.push(version)
+      return versionView(version)
+    })
+    return route.fulfill(apiAnswer(created))
+  })
+
+  await page.route(/\/api\/academic\/calendar\/versions\?.*$/, (route) => {
+    const call = record(route.request())
+    const found = versionList
+      .filter(
+        (version) => String(version.periodId) === call.query.periodId && String(version.unitId) === call.query.unitId,
+      )
+      .sort((first, second) => Number(second.versionNo) - Number(first.versionNo))
+      .map(versionView)
+    return route.fulfill(apiAnswer(found))
+  })
+
+  await page.route(/\/api\/academic\/calendar\/versions\/\d+\/withdraw$/, (route) => {
+    const call = record(route.request())
+    const id = Number(/\/versions\/(\d+)\/withdraw$/.exec(call.path)?.[1])
+    const version = versionList.find((item) => item.id === id)
+    if (!version) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const body = call.body as Item
+    if (body.version !== version.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    version.status = "WITHDRAWN"
+    version.withdrawReason = body.reason
+    version.version = Number(version.version) + 1
+    return route.fulfill(apiAnswer(versionView(version)))
+  })
+
+  await page.route(/\/api\/academic\/calendar\/published(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const { periodId, unitId } = call.query
+    const found = versionList
+      .filter((version) => version.status === "PUBLISHED")
+      .filter((version) => !unitId || String(version.unitId) === unitId)
+      .filter((version) => !periodId || String(version.periodId) === periodId)
+      .map(versionView)
+    return route.fulfill(apiAnswer({ state: found.length > 0 ? "PUBLISHED" : "NOT_PUBLISHED", versions: found }))
   })
 
   return { calls }
