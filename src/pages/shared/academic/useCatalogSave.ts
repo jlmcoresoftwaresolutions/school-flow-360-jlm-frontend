@@ -12,7 +12,8 @@ export type CatalogSaveOptions<T> = {
   // The item is new (no answer then means "check the list before trying again").
   isNew: boolean
   successMessage: string
-  onSaved: () => void
+  // Saved (with what the backend answered), or the list has to be read again (without it).
+  onSaved: (saved?: unknown) => void
   // Reads the item again after a version conflict.
   readAgain?: () => Promise<T>
 }
@@ -37,9 +38,9 @@ export const useCatalogSave = <T>(options: CatalogSaveOptions<T>) => {
     setFailure("")
     setFieldError(null)
     try {
-      await run()
+      const saved = await run()
       toast.success(successMessage)
-      onSaved()
+      onSaved(saved)
     } catch (error) {
       setIsSaving(false)
       const code = getErrorCode(error)
