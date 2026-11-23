@@ -195,6 +195,46 @@ describe("Tabs", () => {
     expect(screen.getByRole("tabpanel")).toHaveStyle({ paddingTop: "0px" })
   })
 
+  it("flags each edge of the bar with tabs hidden past it, as it scrolls", () => {
+    renderTabs()
+    const list = screen.getByRole("tablist")
+    Object.defineProperty(list, "scrollWidth", { configurable: true, value: 600 })
+    Object.defineProperty(list, "clientWidth", { configurable: true, value: 200 })
+
+    list.scrollLeft = 0
+    fireEvent.scroll(list)
+    expect(list).toHaveAttribute("data-overflow-end")
+    expect(list).not.toHaveAttribute("data-overflow-start")
+
+    list.scrollLeft = 200
+    fireEvent.scroll(list)
+    expect(list).toHaveAttribute("data-overflow-end")
+    expect(list).toHaveAttribute("data-overflow-start")
+
+    list.scrollLeft = 400
+    fireEvent.scroll(list)
+    expect(list).not.toHaveAttribute("data-overflow-end")
+    expect(list).toHaveAttribute("data-overflow-start")
+  })
+
+  it("scrolls the selected tab into the bar's view, clear of the fade", () => {
+    const { rerender } = render(<Tabs items={items} onChange={vi.fn()} value="a" />)
+    const list = screen.getByRole("tablist")
+    const scrollBy = vi.fn()
+    list.scrollBy = scrollBy
+    list.getBoundingClientRect = () => ({ left: 0, right: 200 }) as DOMRect
+    screen.getByRole("tab", { name: "Aba C" }).getBoundingClientRect = () => ({ left: 250, right: 330 }) as DOMRect
+    screen.getByRole("tab", { name: "Aba B" }).getBoundingClientRect = () => ({ left: 100, right: 170 }) as DOMRect
+
+    rerender(<Tabs items={items} onChange={vi.fn()} value="c" />)
+    expect(scrollBy).toHaveBeenLastCalledWith({ behavior: "smooth", left: 154 })
+
+    // A tab already in view doesn't move the bar.
+    scrollBy.mockClear()
+    rerender(<Tabs items={items} onChange={vi.fn()} value="b" />)
+    expect(scrollBy).not.toHaveBeenCalled()
+  })
+
   it("forwards className and style to the root element", () => {
     const { container } = render(
       <Tabs className="custom" items={items} onChange={vi.fn()} style={{ margin: "4px" }} value="a" />,
