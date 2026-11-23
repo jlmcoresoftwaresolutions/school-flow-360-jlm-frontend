@@ -17,6 +17,7 @@ import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import { useAcademicUnits } from "../shared/academic/useAcademicUnits"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { ClassGeneral } from "./ClassGeneral"
+import { ClassTeachers } from "./teachers/ClassTeachers"
 
 type OverviewResult = { error: "failed" | "gone"; key: string } | { key: string; overview: AcademicClassOverview }
 
@@ -133,6 +134,18 @@ export const ClassProfile = () => {
       icon: "info-outline",
       key: "general",
       label: t("classes.profile.tabs.general"),
+    })
+  }
+  if (overview.tabs.includes("TEACHERS")) {
+    tabs.push({
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <ClassTeachers onChanged={reload} refreshKey={reloadToken} schoolClass={schoolClass} />
+        </Card>
+      ),
+      icon: "users-outline",
+      key: "teachers",
+      label: t("classes.profile.tabs.teachers"),
     })
   }
 

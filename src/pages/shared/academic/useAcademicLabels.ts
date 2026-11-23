@@ -7,6 +7,7 @@ import type {
   AcademicPeriodKind,
   AcademicPeriodStatus,
   AcademicShiftCode,
+  AcademicTeacherLinkState,
 } from "@/models"
 import { formatDate } from "@/utils/dates"
 
@@ -24,6 +25,12 @@ const classStatusTones: Record<AcademicClassStatus, Tone> = {
   ACTIVE: "success",
   INACTIVE: "neutral",
   PREPARATION: "warning",
+}
+
+const linkStateTones: Record<AcademicTeacherLinkState, Tone> = {
+  CURRENT: "success",
+  ENDED: "neutral",
+  SCHEDULED: "warning",
 }
 
 const periodStatusTones: Record<AcademicPeriodStatus, Tone> = {
@@ -46,6 +53,8 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
   const classStatusLabel = (status: AcademicClassStatus) => t(`academic.classStatuses.${status}`)
   const classStatusTone = (status: AcademicClassStatus) => classStatusTones[status]
   const shiftLabel = (shift: AcademicShiftCode) => t(`academic.shifts.${shift}`)
+  const linkStateLabel = (state: AcademicTeacherLinkState) => t(`academic.linkStates.${state}`)
+  const linkStateTone = (state: AcademicTeacherLinkState) => linkStateTones[state]
   const pendencyLabel = (pendency: AcademicClassPendency) => t(`academic.pendencies.${pendency}`)
 
   const dateRange = (start: string, end: string | null) =>
@@ -71,6 +80,8 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
     classStatusLabel,
     classStatusTone,
     dateRange,
+    linkStateLabel,
+    linkStateTone,
     pendencyLabel,
     periodKindLabel,
     periodStatusLabel,

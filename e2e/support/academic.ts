@@ -240,6 +240,46 @@ const notEligible = (message: string) => ({
   status: 422,
 })
 
+// The Professors of each unit (people of Usuários, with or without a login), and the teacher links of the
+// active class: a current one in Matemática and one ended in Língua Portuguesa.
+export const teachers = [
+  { fullName: "Carla Mendes", hasAccess: true, unitId: 1, userId: 501 },
+  { fullName: "Paulo Rocha", hasAccess: false, unitId: 1, userId: 502 },
+  { fullName: "Carla Souza", hasAccess: true, unitId: 1, userId: 503 },
+  { fullName: "Rafael Lima", hasAccess: true, unitId: 2, userId: 504 },
+]
+
+export const teacherLinks: Item[] = [
+  {
+    classId: 61,
+    endDate: null,
+    endReason: null,
+    endedByCommand: false,
+    id: 71,
+    joint: false,
+    startDate: "2026-02-02",
+    subjectId: 31,
+    teacherName: "Carla Mendes",
+    teacherUserId: 501,
+    version: 0,
+  },
+  {
+    classId: 61,
+    endDate: "2026-06-30",
+    endReason: "Troca de professor",
+    endedByCommand: true,
+    id: 72,
+    joint: false,
+    startDate: "2026-02-02",
+    subjectId: 32,
+    teacherName: "Paulo Rocha",
+    teacherUserId: 502,
+    version: 1,
+  },
+]
+
+const isoToday = () => new Date().toLocaleDateString("en-CA")
+
 const dependencyError = (blockers: string[]) => ({
   body: JSON.stringify({
     code: "ACADEMIC_DEPENDENCY_ACTIVE",
@@ -647,6 +687,9 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
       ...item,
       eligibleActions: classActions[String(item.status)],
       eligibleForEnrollment: item.status === "ACTIVE" && impediments(item).length === 0,
+      pendencies: linkList.some((link) => link.classId === item.id && linkState(link) !== "ENDED")
+        ? []
+        : ["NO_TEACHER"],
       shiftLabel: shiftLabels[String(item.shift)],
     }
     return view(computed)
@@ -768,6 +811,136 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
 
     if (current.status !== "ACTIVE") return route.fulfill(notEligible("Only an active class can be inactivated."))
     return route.fulfill(apiError(503, "ACADEMIC_SOURCE_UNAVAILABLE"))
+  })
+
+  // The teacher links: the unit's Professors searched by name (from two letters); a link only to a subject
+  // of the class, dates inclusive (the start not before the period's), a past date only with a reason; the
+  // same teacher never twice in overlapping dates, another one only as joint teaching on both links; a link
+  // not ended is edited (its dates and joint) and ended with a reason, never deleted.
+  const linkList = teacherLinks.map((item) => ({ ...item }))
+  let nextLinkId = 170
+
+  const linkState = (link: Item) => {
+    const today = isoToday()
+    if (link.endDate && String(link.endDate) < today) return "ENDED"
+    if (String(link.startDate) > today) return "SCHEDULED"
+    return "CURRENT"
+  }
+
+  const linkView = (link: Item): Item => {
+    const state = linkState(link)
+    const editable = !options.readOnly && !link.endedByCommand && state !== "ENDED"
+    const { endedByCommand, ...rest } = link
+    void endedByCommand
+    return { ...rest, eligibleActions: editable ? ["EDIT", "END"] : [], state }
+  }
+
+  const linkProblem = (
+    schoolClass: Item,
+    body: Item,
+    teacherUserId: unknown,
+    subjectId: unknown,
+    exceptId?: number,
+  ) => {
+    const itemPeriod = periodList.find((entry) => entry.id === schoolClass.periodId)
+    if (body.endDate && String(body.endDate) < String(body.startDate)) return apiError(422, "ACADEMIC_INVALID_RANGE")
+    if (itemPeriod && String(body.startDate) < String(itemPeriod.startDate)) {
+      return apiError(422, "ACADEMIC_INVALID_RANGE")
+    }
+    const today = isoToday()
+    const backdated = String(body.startDate) < today || (body.endDate && String(body.endDate) < today)
+    if (backdated && !body.reason) return apiError(400, "VALIDATION_ERROR")
+    const ends = (link: Item) => String(link.endDate ?? "9999-12-31")
+    const overlapping = linkList.filter(
+      (link) =>
+        link.id !== exceptId &&
+        link.classId === schoolClass.id &&
+        link.subjectId === subjectId &&
+        String(link.startDate) <= String(body.endDate ?? "9999-12-31") &&
+        String(body.startDate) <= ends(link),
+    )
+    if (overlapping.some((link) => link.teacherUserId === teacherUserId)) {
+      return apiError(409, "ACADEMIC_DUPLICATE_CODE")
+    }
+    if (overlapping.some((link) => !(body.joint && link.joint))) return apiError(409, "ACADEMIC_JOINT_REQUIRED")
+    return null
+  }
+
+  await page.route(/\/api\/academic\/teachers\/search\?.*$/, (route) => {
+    const call = record(route.request())
+    const found = teachers.filter(
+      (teacher) => String(teacher.unitId) === call.query.unitId && fold(teacher.fullName).includes(fold(call.query.q)),
+    )
+    return route.fulfill(apiAnswer(found))
+  })
+
+  await page.route(/\/api\/academic\/classes\/\d+\/teachers$/, (route) => {
+    const call = record(route.request())
+    const classId = Number(/\/classes\/(\d+)\/teachers$/.exec(call.path)?.[1])
+    const schoolClass = classList.find((item) => item.id === classId)
+    if (!schoolClass) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    if (call.method === "GET") {
+      return route.fulfill(apiAnswer(linkList.filter((link) => link.classId === classId).map(linkView)))
+    }
+
+    const body = call.body as Item
+    if (!(schoolClass.subjectIds as number[]).includes(Number(body.subjectId))) {
+      return route.fulfill(apiError(422, "ACADEMIC_FIELD_INCOMPATIBLE"))
+    }
+    const problem = linkProblem(schoolClass, body, body.teacherUserId, body.subjectId)
+    if (problem) return route.fulfill(problem)
+    const teacher = teachers.find((item) => item.userId === body.teacherUserId)
+    const created: Item = {
+      classId,
+      endDate: body.endDate ?? null,
+      endReason: null,
+      endedByCommand: false,
+      id: nextLinkId++,
+      joint: Boolean(body.joint),
+      startDate: body.startDate,
+      subjectId: body.subjectId,
+      teacherName: teacher?.fullName,
+      teacherUserId: body.teacherUserId,
+      version: 0,
+    }
+    linkList.push(created)
+    return route.fulfill(apiAnswer(linkView(created)))
+  })
+
+  await page.route(/\/api\/academic\/teacher-links\/\d+(\/end)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, isEnd] = /\/teacher-links\/(\d+)(\/end)?$/.exec(call.path) ?? []
+    const index = linkList.findIndex((link) => link.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = linkList[index]
+    const body = call.body as Item
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    if (current.endedByCommand) return route.fulfill(apiError(422, "ACADEMIC_NOT_ELIGIBLE"))
+    const schoolClass = classList.find((item) => item.id === current.classId) ?? {}
+
+    if (isEnd) {
+      if (String(body.endDate) < String(current.startDate))
+        return route.fulfill(apiError(422, "ACADEMIC_INVALID_RANGE"))
+      linkList[index] = {
+        ...current,
+        endDate: body.endDate,
+        endReason: body.reason,
+        endedByCommand: true,
+        version: Number(current.version) + 1,
+      }
+      return route.fulfill(apiAnswer(linkView(linkList[index])))
+    }
+
+    const problem = linkProblem(schoolClass, body, current.teacherUserId, current.subjectId, Number(id))
+    if (problem) return route.fulfill(problem)
+    linkList[index] = {
+      ...current,
+      endDate: body.endDate ?? null,
+      joint: Boolean(body.joint),
+      startDate: body.startDate,
+      version: Number(current.version) + 1,
+    }
+    return route.fulfill(apiAnswer(linkView(linkList[index])))
   })
 
   return { calls }
