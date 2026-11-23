@@ -1,6 +1,8 @@
 import { useTranslation } from "react-i18next"
 
 import type {
+  AcademicCalendarCategory,
+  AcademicCalendarVersionStatus,
   AcademicCatalogStatus,
   AcademicClassPendency,
   AcademicClassStatus,
@@ -25,6 +27,18 @@ const classStatusTones: Record<AcademicClassStatus, Tone> = {
   ACTIVE: "success",
   INACTIVE: "neutral",
   PREPARATION: "warning",
+}
+
+const calendarCategoryTones: Record<AcademicCalendarCategory, Tone> = {
+  DIA_LETIVO: "success",
+  EVENTO: "neutral",
+  FERIADO: "warning",
+}
+
+const calendarVersionTones: Record<AcademicCalendarVersionStatus, Tone> = {
+  PUBLISHED: "success",
+  SUPERSEDED: "neutral",
+  WITHDRAWN: "warning",
 }
 
 const linkStateTones: Record<AcademicTeacherLinkState, Tone> = {
@@ -53,14 +67,20 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
   const classStatusLabel = (status: AcademicClassStatus) => t(`academic.classStatuses.${status}`)
   const classStatusTone = (status: AcademicClassStatus) => classStatusTones[status]
   const shiftLabel = (shift: AcademicShiftCode) => t(`academic.shifts.${shift}`)
+  const calendarCategoryLabel = (category: AcademicCalendarCategory) => t(`academic.calendarCategories.${category}`)
+  const calendarCategoryTone = (category: AcademicCalendarCategory) => calendarCategoryTones[category]
+  const calendarVersionLabel = (status: AcademicCalendarVersionStatus) => t(`academic.calendarVersions.${status}`)
+  const calendarVersionTone = (status: AcademicCalendarVersionStatus) => calendarVersionTones[status]
   const linkStateLabel = (state: AcademicTeacherLinkState) => t(`academic.linkStates.${state}`)
   const linkStateTone = (state: AcademicTeacherLinkState) => linkStateTones[state]
   const pendencyLabel = (pendency: AcademicClassPendency) => t(`academic.pendencies.${pendency}`)
 
-  const dateRange = (start: string, end: string | null) =>
-    end
-      ? t("academic.dateRange", { end: formatDate(end), start: formatDate(start) })
-      : t("academic.dateFrom", { start: formatDate(start) })
+  // A range of days: a single day when it starts and ends on the same one, "from" when it has no end.
+  const dateRange = (start: string, end: string | null) => {
+    if (!end) return t("academic.dateFrom", { start: formatDate(start) })
+    if (end === start) return formatDate(start)
+    return t("academic.dateRange", { end: formatDate(end), start: formatDate(start) })
+  }
 
   // A moment (an event, a reading of the enrollment) in the person's language and time zone.
   const formatMoment = (value: string) =>
@@ -79,6 +99,10 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
 
   return {
     blockerText,
+    calendarCategoryLabel,
+    calendarCategoryTone,
+    calendarVersionLabel,
+    calendarVersionTone,
     catalogStatusLabel,
     catalogStatusTone,
     classStatusLabel,

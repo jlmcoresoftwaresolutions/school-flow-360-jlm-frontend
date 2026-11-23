@@ -20,7 +20,7 @@ export type CatalogSaveOptions<T> = {
 
 // How an academic catalog form saves (a stage, a grade, a subject, an offer, a room): the success
 // message, a repeated name or code on its field, a version conflict read again (the form keeps its
-// draft and shows the current version), an item gone or a create without an answer read from the list
+// draft and shows the current version), dates outside the allowed range on the dates (field "dates"), an item gone or a create without an answer read from the list
 // again (the academic area has no idempotency), and any other failure with its support reference.
 export const useCatalogSave = <T>(options: CatalogSaveOptions<T>) => {
   const { duplicate, isNew, onSaved, readAgain, successMessage } = options
@@ -46,6 +46,8 @@ export const useCatalogSave = <T>(options: CatalogSaveOptions<T>) => {
       const code = getErrorCode(error)
       if (code === "ACADEMIC_DUPLICATE_CODE") {
         setFieldError(duplicate)
+      } else if (code === "ACADEMIC_INVALID_RANGE") {
+        setFieldError({ field: "dates", message: t("academic.form.invalidRange") })
       } else if (code === "VERSION_CONFLICT" && readAgain) {
         try {
           setConflict(await readAgain())
