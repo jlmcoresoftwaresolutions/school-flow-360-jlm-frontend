@@ -82,7 +82,7 @@ export const getStudentProfile = async (studentId: number, config?: RequestConfi
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/students/{id}/history: the registration history, paged.
+// USED by the history tab. GET /api/students/{id}/history: the registration history, paged.
 export const getStudentHistory = async (
   studentId: number,
   params?: { page?: number; size?: number },

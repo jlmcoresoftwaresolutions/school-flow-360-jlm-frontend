@@ -11,6 +11,8 @@ import { paths } from "@/routes/paths"
 import { getErrorStatus } from "@/services/httpClient"
 import { getStudentProfile } from "@/services/students"
 
+import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
+import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
@@ -40,8 +42,8 @@ type LinkDialog =
 // A student's 360 profile (P03-S04): the header with the status, the registration code and the actions
 // the status allows, and the sections the backend lets the operator open (`sections`), each in its own
 // tab - the data and the guardians with their links and invitations (where a guardian is linked or
-// invited, a link changed or ended, and an accepted invitation confirmed or rejected). A section that
-// doesn't come isn't shown. The actions: edit the data, the status changes (activate, discard, inactivate, reactivate)
+// invited, a link changed or ended, and an accepted invitation confirmed or rejected), the documents and
+// the history. A section that doesn't come isn't shown. The actions: edit the data, the status changes (activate, discard, inactivate, reactivate)
 // and, for an active student, its access (a temporary password: the student signs in with the nickname,
 // without an e-mail). Everything is read again after a change.
 export const StudentProfile = () => {
@@ -218,6 +220,26 @@ export const StudentProfile = () => {
       icon: "users-outline" as const,
       key: "guardians",
       label: t("students.profile.tabs.guardians"),
+    },
+    profile.sections.includes("DOCUMENTS") && {
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <PersonDocuments documentTypes={documentTypes} personId={student.id} />
+        </Card>
+      ),
+      icon: "file-outline" as const,
+      key: "documents",
+      label: t("personDocuments.tab"),
+    },
+    profile.sections.includes("HISTORY") && {
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <PersonHistory kind="student" personId={student.id} refreshKey={reloadToken} />
+        </Card>
+      ),
+      icon: "history" as const,
+      key: "history",
+      label: t("personHistory.tab"),
     },
   ].filter((item) => item !== false)
 
