@@ -293,7 +293,7 @@ export const searchAcademicCatalog = async (q: string, config?: RequestConfig): 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/offers: the offers in the caller's scope.
+// USED. GET /api/academic/offers: the offers in the caller's scope.
 export const listAcademicOffers = async (
   params?: AcademicOfferSearchParams,
   config?: RequestConfig,
@@ -303,14 +303,14 @@ export const listAcademicOffers = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/offers/{id}.
+// USED. GET /api/academic/offers/{id}.
 export const getAcademicOffer = async (offerId: number, config?: RequestConfig): Promise<AcademicOffer> => {
   const response = await httpClient.get<ApiResponse<AcademicOffer>>(`/api/academic/offers/${offerId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/offers: the unit must be in the period, active and in scope; the period not closed; the grade and its stage active; the combination is unique.
+// USED. POST /api/academic/offers: the unit must be in the period, active and in scope; the period not closed; the grade and its stage active; the combination is unique.
 export const createAcademicOffer = async (
   request: AcademicOfferCreate,
   config?: RequestConfig,
@@ -320,7 +320,7 @@ export const createAcademicOffer = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/offers/{id}/subjects: replaces the list (only active subjects).
+// USED. PUT /api/academic/offers/{id}/subjects: replaces the list (only active subjects).
 export const setAcademicOfferSubjects = async (
   offerId: number,
   request: AcademicOfferSubjects,
@@ -335,7 +335,7 @@ export const setAcademicOfferSubjects = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/offers/{id}/inactivate: refused while a class is in preparation or active.
+// USED. POST /api/academic/offers/{id}/inactivate: refused while a class is in preparation or active.
 export const inactivateAcademicOffer = async (
   offerId: number,
   version: number,
@@ -350,7 +350,7 @@ export const inactivateAcademicOffer = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/offers/{id}/activate: the period must not be closed.
+// USED. POST /api/academic/offers/{id}/activate: the period must not be closed.
 export const activateAcademicOffer = async (
   offerId: number,
   version: number,
@@ -365,7 +365,7 @@ export const activateAcademicOffer = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/rooms: the physical rooms of a unit.
+// USED. GET /api/academic/rooms: the physical rooms of a unit.
 export const listAcademicRooms = async (
   params: { unitId: number },
   config?: RequestConfig,
@@ -375,14 +375,14 @@ export const listAcademicRooms = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/rooms: the name is unique in the unit.
+// USED. POST /api/academic/rooms: the name is unique in the unit.
 export const createAcademicRoom = async (request: AcademicRoomWrite, config?: RequestConfig): Promise<AcademicRoom> => {
   const response = await httpClient.post<ApiResponse<AcademicRoom>>("/api/academic/rooms", request, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/rooms/{id}: renames it (the room never changes unit).
+// USED. PUT /api/academic/rooms/{id}: renames it (the room never changes unit).
 export const updateAcademicRoom = async (
   roomId: number,
   request: AcademicRoomWrite,
@@ -393,7 +393,7 @@ export const updateAcademicRoom = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/rooms/{id}/inactivate: refused while a class in preparation or active uses it.
+// USED. POST /api/academic/rooms/{id}/inactivate: refused while a class in preparation or active uses it.
 export const inactivateAcademicRoom = async (
   roomId: number,
   version: number,
@@ -408,7 +408,7 @@ export const inactivateAcademicRoom = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/rooms/{id}/activate.
+// USED. POST /api/academic/rooms/{id}/activate.
 export const activateAcademicRoom = async (
   roomId: number,
   version: number,

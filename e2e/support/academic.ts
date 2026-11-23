@@ -119,6 +119,37 @@ const catalogBlockers: Record<string, string[]> = {
   "subjects/31": ["3 active offer(s) that teach this subject", "2 class(es) that teach this subject"],
 }
 
+// The offers: the 1st year in Aldeota in 2026 (with classes, so it can't be inactivated), the 2nd year
+// there without subjects yet, and an inactive offer in Caucaia.
+const offerActions = (status: unknown) => (status === "ACTIVE" ? ["EDIT_SUBJECTS", "INACTIVATE"] : ["ACTIVATE"])
+
+const offer = (fields: Item): Item => ({ version: 0, ...fields, eligibleActions: offerActions(fields.status) })
+
+export const offers = [
+  offer({ gradeId: 21, id: 41, periodId: 10, status: "ACTIVE", subjectIds: [31, 32], unitId: 1 }),
+  offer({ gradeId: 22, id: 42, periodId: 10, status: "ACTIVE", subjectIds: [], unitId: 1 }),
+  offer({ gradeId: 21, id: 43, periodId: 13, status: "INACTIVE", subjectIds: [31], unitId: 2 }),
+]
+
+const offerBlockers: Record<number, string[]> = {
+  41: ["2 class(es) of this offer"],
+}
+
+// The rooms: two in Aldeota (one inactive, one used by a class) and one in Caucaia.
+const roomActions = (status: unknown) => (status === "ACTIVE" ? ["RENAME", "INACTIVATE"] : ["RENAME", "ACTIVATE"])
+
+const room = (fields: Item): Item => ({ version: 0, ...fields, eligibleActions: roomActions(fields.status) })
+
+export const rooms = [
+  room({ id: 51, name: "Sala 101", status: "ACTIVE", unitId: 1 }),
+  room({ id: 52, name: "Laboratório", status: "INACTIVE", unitId: 1 }),
+  room({ id: 53, name: "Sala 201", status: "ACTIVE", unitId: 2 }),
+]
+
+const roomBlockers: Record<number, string[]> = {
+  51: ["1 class(es) that use this room"],
+}
+
 const dependencyError = (blockers: string[]) => ({
   body: JSON.stringify({
     code: "ACADEMIC_DEPENDENCY_ACTIVE",
@@ -133,8 +164,12 @@ const dependencyError = (blockers: string[]) => ({
 type AcademicOptions = {
   // Someone else changes this catalog item ("subjects/32") before its first save (409 VERSION_CONFLICT).
   changedCatalogItem?: string
+  // Someone else changes this offer before its first change (409 VERSION_CONFLICT).
+  changedOfferId?: number
   // Someone else changes this period before the first save of the spec (409 VERSION_CONFLICT).
   changedPeriodId?: number
+  // Someone else changes this room before its first change (409 VERSION_CONFLICT).
+  changedRoomId?: number
   // The caller only reads (a Professor): no item comes with an action.
   readOnly?: boolean
 }
@@ -166,6 +201,8 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
   const periodList = periods.map((item) => ({ ...item }))
   let nextPeriodId = 20
   let periodChanged = false
+  let offerChanged = false
+  let roomChanged = false
 
   const record = (request: Request) => {
     const url = new URL(request.url())
@@ -384,6 +421,113 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
         subjects: catalog.subjects.filter(like),
       }),
     )
+  })
+
+  // The offers: filtered by unit, period, grade and status; each combination of unit, period and grade
+  // exists once; the subjects are replaced as a whole (only active ones); inactivating is refused while a
+  // class depends on the offer, and reactivating while its period is closed.
+  const offerList = offers.map((item) => ({ ...item }))
+  let nextOfferId = 140
+
+  await page.route(/\/api\/academic\/offers(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    if (call.method === "GET") {
+      const { gradeId, periodId, status, unitId } = call.query
+      const found = offerList
+        .filter((item) => !unitId || String(item.unitId) === unitId)
+        .filter((item) => !periodId || String(item.periodId) === periodId)
+        .filter((item) => !gradeId || String(item.gradeId) === gradeId)
+        .filter((item) => !status || item.status === status)
+        .map(view)
+      return route.fulfill(apiAnswer(toPage(found, call.query)))
+    }
+
+    const body = call.body as Item
+    const repeated = offerList.some(
+      (item) => item.unitId === body.unitId && item.periodId === body.periodId && item.gradeId === body.gradeId,
+    )
+    if (repeated) return route.fulfill(apiError(409, "ACADEMIC_DUPLICATE_CODE"))
+    const created = offer({ ...body, id: nextOfferId++, status: "ACTIVE", subjectIds: [] })
+    offerList.push(created)
+    return route.fulfill(apiAnswer(created))
+  })
+
+  await page.route(/\/api\/academic\/offers\/\d+(\/(subjects|activate|inactivate))?$/, (route) => {
+    const call = record(route.request())
+    const [, id, , action] = /\/api\/academic\/offers\/(\d+)(\/(subjects|activate|inactivate))?$/.exec(call.path) ?? []
+    const index = offerList.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = offerList[index]
+    if (call.method === "GET") return route.fulfill(apiAnswer(view(current)))
+
+    if (options.changedOfferId === Number(id) && !offerChanged) {
+      offerChanged = true
+      offerList[index] = { ...current, subjectIds: [32], version: Number(current.version) + 1 }
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+
+    const body = call.body as Item
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    const blockers = offerBlockers[Number(id)] ?? []
+    if (action === "inactivate" && blockers.length > 0) return route.fulfill(dependencyError(blockers))
+
+    const changes: Item = action === "subjects" ? { subjectIds: body.subjectIds } : {}
+    if (action === "activate") changes.status = "ACTIVE"
+    if (action === "inactivate") changes.status = "INACTIVE"
+    offerList[index] = offer({ ...current, ...changes, version: Number(current.version) + 1 })
+    return route.fulfill(apiAnswer(offerList[index]))
+  })
+
+  // The rooms of a unit: the name is unique in the unit (without case or accents), a room never changes
+  // unit, and inactivating is refused while a class uses it.
+  const roomList = rooms.map((item) => ({ ...item }))
+  let nextRoomId = 150
+
+  const isRoomDuplicate = (body: Item, exceptId?: number) =>
+    roomList.some((item) => item.id !== exceptId && item.unitId === body.unitId && fold(item.name) === fold(body.name))
+
+  await page.route(/\/api\/academic\/rooms(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    if (call.method === "GET") {
+      return route.fulfill(apiAnswer(roomList.filter((item) => String(item.unitId) === call.query.unitId).map(view)))
+    }
+
+    const body = call.body as Item
+    if (isRoomDuplicate(body)) return route.fulfill(apiError(409, "ACADEMIC_DUPLICATE_CODE"))
+    const created = room({ ...body, id: nextRoomId++, status: "ACTIVE" })
+    roomList.push(created)
+    return route.fulfill(apiAnswer(created))
+  })
+
+  await page.route(/\/api\/academic\/rooms\/\d+(\/(activate|inactivate))?$/, (route) => {
+    const call = record(route.request())
+    const [, id, , action] = /\/api\/academic\/rooms\/(\d+)(\/(activate|inactivate))?$/.exec(call.path) ?? []
+    const index = roomList.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = roomList[index]
+
+    if (options.changedRoomId === Number(id) && !roomChanged) {
+      roomChanged = true
+      roomList[index] = { ...current, name: `${String(current.name)} (revisada)`, version: Number(current.version) + 1 }
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+
+    const body = call.body as Item
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+
+    if (!action) {
+      if (isRoomDuplicate({ ...body, unitId: current.unitId }, Number(id))) {
+        return route.fulfill(apiError(409, "ACADEMIC_DUPLICATE_CODE"))
+      }
+      roomList[index] = room({ ...current, name: body.name, version: Number(current.version) + 1 })
+      return route.fulfill(apiAnswer(roomList[index]))
+    }
+
+    const blockers = roomBlockers[Number(id)] ?? []
+    if (action === "inactivate" && blockers.length > 0) return route.fulfill(dependencyError(blockers))
+    const status = action === "inactivate" ? "INACTIVE" : "ACTIVE"
+    roomList[index] = room({ ...current, status, version: Number(current.version) + 1 })
+    return route.fulfill(apiAnswer(roomList[index]))
   })
 
   return { calls }
