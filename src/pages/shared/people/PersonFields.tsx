@@ -136,7 +136,6 @@ export const PersonContactFields = () => {
               name={controller.field.name}
               onBlur={controller.field.onBlur}
               onChange={controller.field.onChange}
-              placeholder={t("people.form.phonePlaceholder")}
               title={t("people.form.phoneLabel")}
               value={controller.field.value}
             />

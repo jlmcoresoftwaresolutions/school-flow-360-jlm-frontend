@@ -1,37 +1,29 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
-import { Text } from "@/ds-components/atoms"
-
 import { PhoneInput, type PhoneInputProps } from "./PhoneInput"
 
-// A controlled field, showing the value it hands out: the whole number in the international format.
+// A controlled field, as a form uses it.
 const ControlledExample = (props: Partial<PhoneInputProps>) => {
   const { value: initialValue = "", ...rest } = props
 
   const [value, setValue] = useState(initialValue)
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <PhoneInput placeholder="Digite o telefone" title="Telefone" {...rest} onChange={setValue} value={value} />
-      <Text color="secondary" fontSize="sm">
-        Valor salvo: {value || "(vazio)"}
-      </Text>
-    </div>
-  )
+  return <PhoneInput title="Telefone" {...rest} onChange={setValue} value={value} />
 }
 
 const meta: Meta<typeof PhoneInput> = {
-  args: { placeholder: "Digite o telefone", title: "Telefone", value: "" },
+  args: { title: "Telefone", value: "" },
   argTypes: {
     countryLabel: {
       control: "text",
       description:
-        'Accessible name of the country selector. Defaults to "País do telefone"; a page passes the translated one.',
+        'Accessible name of the country selector. Defaults to "Código do país (DDI)"; a page passes the translated one.',
     },
     defaultCountry: {
       control: "text",
-      description: "ISO 3166-1 alpha-2 code of the country selected while the number is empty. Defaults to BR.",
+      description:
+        "ISO 3166-1 alpha-2 code of the country selected while the number is empty. Without it, the country of whoever uses the field, from the browser's languages (BR when they point to none).",
     },
     disabled: { control: "boolean", description: "Disables the country selector and the number" },
     error: {
@@ -50,7 +42,11 @@ const meta: Meta<typeof PhoneInput> = {
     onChange: {
       description: 'Called with the whole number in the international format ("+55 85 3333 1100"), or "" when empty.',
     },
-    placeholder: { control: "text", description: "Placeholder of the number" },
+    placeholder: {
+      control: "text",
+      description:
+        "Placeholder of the number. Without it, an example number of the selected country, in that country's format.",
+    },
     required: { control: "boolean", description: "Marks the number as required and adds a red asterisk to the title" },
     size: {
       control: "select",
@@ -70,7 +66,8 @@ export default meta
 
 type Story = StoryObj<typeof PhoneInput>
 
-// An empty field with Brazil selected: the number is typed and formatted the Brazilian way
+// An empty field starting with the browser's country, its flag and calling code closed, and one of its
+// numbers as the placeholder; choosing another country clears the number
 export const Default: Story = {}
 
 // A saved number of another country, read back into its country and national part
@@ -78,7 +75,7 @@ export const WithValue: Story = {
   args: { value: "+351 912 345 678" },
 }
 
-// The defaultCountry prop selecting another country for an empty field
+// The defaultCountry prop selecting a country for an empty field, over the browser's
 export const DefaultCountry: Story = {
   args: { defaultCountry: "PT" },
 }
@@ -106,4 +103,9 @@ export const Disabled: Story = {
 // The small size, for denser forms
 export const Small: Story = {
   args: { size: "small" },
+}
+
+// The placeholder prop replacing the selected country's example number
+export const WithPlaceholder: Story = {
+  args: { placeholder: "Digite o telefone" },
 }

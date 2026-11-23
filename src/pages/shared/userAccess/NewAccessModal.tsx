@@ -268,7 +268,6 @@ export const NewAccessModal = (props: NewAccessModalProps) => {
                   name={controller.field.name}
                   onBlur={controller.field.onBlur}
                   onChange={controller.field.onChange}
-                  placeholder={t("userAccess.form.phonePlaceholder")}
                   title={t("userAccess.form.phoneLabel")}
                   value={controller.field.value}
                 />

@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  fitPhoneDigits,
   formatPhoneForDisplay,
   formatPhoneInput,
   getPhoneCallingCode,
+  getPhoneExample,
   isValidPhone,
   joinPhone,
   splitPhone,
@@ -140,5 +142,25 @@ describe("joinPhone", () => {
   it("goes back and forth with splitPhone", () => {
     const { country, national } = splitPhone("+55 85 93333 1100")
     expect(joinPhone(national, country)).toBe("+55 85 93333 1100")
+  })
+})
+
+describe("getPhoneExample", () => {
+  it("gives an example number the way each country writes it", () => {
+    expect(getPhoneExample("BR")).toBe("(11) 96123-4567")
+    expect(getPhoneExample("PT")).toBe("912 345 678")
+    expect(getPhoneExample("US")).toBe("(201) 555-0123")
+  })
+})
+
+describe("fitPhoneDigits", () => {
+  it("keeps a number within its country's digits", () => {
+    expect(fitPhoneDigits("(85) 99999-0000", "BR")).toBe("(85) 99999-0000")
+    expect(fitPhoneDigits("(85) 99999-00001", "BR")).toBe("(85) 99999-0000")
+    expect(fitPhoneDigits("9123456789", "PT")).toBe("912 345 678")
+  })
+
+  it("doesn't count the national trunk prefix", () => {
+    expect(fitPhoneDigits("07911 123456", "GB")).toBe("07911 123456")
   })
 })

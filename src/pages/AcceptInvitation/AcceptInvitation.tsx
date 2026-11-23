@@ -306,7 +306,6 @@ export const AcceptInvitation = () => {
                   name={controller.field.name}
                   onBlur={controller.field.onBlur}
                   onChange={controller.field.onChange}
-                  placeholder={t("acceptInvitation.phonePlaceholder")}
                   title={t("acceptInvitation.phoneLabel")}
                   value={controller.field.value}
                 />

@@ -636,7 +636,7 @@ test.describe("overview", () => {
 
     // Another country's, pasted with + and its code: the country is picked and the number saved as it is.
     await phone.fill("+16502530000")
-    await expect(form.getByText("US +1")).toBeVisible()
+    await expect(form.getByTitle("Estados Unidos")).toHaveText("+1")
     await expect(phone).toHaveValue("(650) 253-0000")
     await form.getByRole("button", { name: "Salvar" }).click()
 

@@ -72,7 +72,6 @@ export const ContactSection = (props: ContactSectionProps) => {
                 name={controller.field.name}
                 onBlur={controller.field.onBlur}
                 onChange={controller.field.onChange}
-                placeholder={t("myUnit.overview.contactPhonePlaceholder")}
                 title={t("myUnit.overview.contactPhone")}
                 value={controller.field.value}
                 required

@@ -161,7 +161,6 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                       name={controller.field.name}
                       onBlur={controller.field.onBlur}
                       onChange={controller.field.onChange}
-                      placeholder={t("myUnit.units.contactPhonePlaceholder")}
                       title={t("myUnit.units.contactPhone")}
                       value={controller.field.value}
                       required
