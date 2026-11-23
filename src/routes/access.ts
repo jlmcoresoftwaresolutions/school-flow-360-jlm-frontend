@@ -19,6 +19,9 @@ export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   myUnit: ["ADMIN", "SECRETARIA"],
   peopleSearch: ["ADMIN", "SECRETARIA"],
   profilesAndPermissions: ["ADMIN", "SECRETARIA"],
+  studentEdit: ["ADMIN", "SECRETARIA"],
+  studentNew: ["ADMIN", "SECRETARIA"],
+  studentProfile: ["ADMIN", "SECRETARIA"],
   students: ["ADMIN", "SECRETARIA"],
   userList: ["ADMIN", "SECRETARIA"],
 }

@@ -5,3 +5,7 @@ import { createContext } from "react"
 export type ReportUnsavedChanges = (formId: string, hasUnsavedChanges: boolean) => void
 
 export const UnsavedChangesContext = createContext<ReportUnsavedChanges | null>(null)
+
+// The navigation state of a page that leaves right after saving (e.g. a form page opening the record it
+// saved): the guard lets it through, since the form may still count as changed until it re-renders.
+export const leavingAfterSave = { leavingAfterSave: true }

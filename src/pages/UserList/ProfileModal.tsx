@@ -14,7 +14,7 @@ import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalP
 import { newAccessLimits } from "../shared/userAccess/newAccess"
 import { getPersonName } from "../shared/userAccess/personName"
 import { FormFields } from "../shared/userAccess/userAccess.styles"
-import { useUserActionErrors } from "./useUserActionErrors"
+import { useUserActionErrors } from "../shared/userAccess/useUserActionErrors"
 
 export type ProfileModalProps = {
   user: UserView

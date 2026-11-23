@@ -1,12 +1,14 @@
 import { type FormEvent, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { generatePath, useNavigate } from "react-router-dom"
 
 import { Badge, Button, Card, Icon, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
+import { ActionMenu, PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
 import type { PeopleSearchItem, PeopleSearchParams, PersonStatus, PersonType } from "@/models"
+import { paths } from "@/routes/paths"
 import { searchPeople } from "@/services/people"
 
 import { PeopleListError } from "../shared/people/PeopleListError"
@@ -30,6 +32,7 @@ const types: PersonType[] = ["STUDENT", "GUARDIAN"]
 // shows what matched. The search is limited to 30 a minute per person (shared with the people lists).
 export const PeopleSearch = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const unitDirectory = useUnitDirectory()
   const { unitOptionLabel } = useAccessLabels(unitDirectory.units)
   const { personStatusLabel, personStatusTone } = usePeopleLabels()
@@ -208,6 +211,27 @@ export const PeopleSearch = () => {
           <Table.Column body={renderIdentifiers} field="maskedDocument" header={t("peopleSearch.identifiers")} />
           <Table.Column body={renderUnits} field="units" header={t("peopleSearch.units")} />
           <Table.Column body={renderMatch} field="matchedBy" header={t("peopleSearch.match")} />
+          <Table.Column
+            align="right"
+            body={(row: PeopleSearchItem) =>
+              row.types.includes("STUDENT") && (
+                <ActionMenu
+                  items={[
+                    {
+                      icon: "eye-outline",
+                      key: "open",
+                      label: t("peopleSearch.open"),
+                      onClick: () => navigate(generatePath(paths.studentProfile, { studentId: String(row.id) })),
+                    },
+                  ]}
+                  triggerLabel={t("peopleSearch.actionsFor", { name: row.fullName })}
+                />
+              )
+            }
+            field="id"
+            header={t("peopleSearch.actions")}
+            width="1%"
+          />
         </Table>
 
         {data && data.totalPages > 1 && (

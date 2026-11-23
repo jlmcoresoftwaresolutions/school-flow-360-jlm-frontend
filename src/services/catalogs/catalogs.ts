@@ -12,7 +12,7 @@ export const listRelationshipTypes = async (config?: RequestConfig): Promise<Cat
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/catalogs/document-types: the personal document types (CPF, RG...), none
+// USED by the person forms. GET /api/catalogs/document-types: the personal document types (CPF, RG...), none
 // mandatory; `hasExpiry` says which have an expiry date.
 export const listDocumentTypes = async (config?: RequestConfig): Promise<CatalogItem[]> => {
   const response = await httpClient.get<ApiResponse<CatalogItem[]>>("/api/catalogs/document-types", config)

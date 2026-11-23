@@ -8,7 +8,7 @@ import type { UserView } from "@/models"
 import { inactivateUser, reactivateUser } from "@/services/users"
 
 import { getPersonName } from "../shared/userAccess/personName"
-import { useUserActionErrors } from "./useUserActionErrors"
+import { useUserActionErrors } from "../shared/userAccess/useUserActionErrors"
 
 export type AccountStatusDialogProps = {
   action: "inactivate" | "reactivate"

@@ -5,7 +5,7 @@ import { useBlocker } from "react-router-dom"
 
 import { ConfirmDialog } from "@/ds-components/organisms"
 
-import { UnsavedChangesContext } from "./unsavedChangesContext"
+import { leavingAfterSave, UnsavedChangesContext } from "./unsavedChangesContext"
 
 export type UnsavedChangesGuardProps = {
   children: ReactNode
@@ -37,12 +37,15 @@ export const UnsavedChangesGuard = (props: UnsavedChangesGuardProps) => {
     })
   }, [])
 
-  // Only a change of page counts: a navigation that stays on the same path and query doesn't leave.
+  // Only a change of page counts: a navigation that stays on the same path and query doesn't leave. A
+  // page leaving right after saving (navigation state `leavingAfterSave`) has nothing to lose.
   const blocker = useBlocker((transition) => {
     const { currentLocation, nextLocation } = transition
+    const afterSave = (nextLocation.state as typeof leavingAfterSave | null)?.leavingAfterSave === true
 
     return (
       hasUnsavedChanges &&
+      !afterSave &&
       (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search)
     )
   })

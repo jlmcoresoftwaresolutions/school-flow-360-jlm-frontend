@@ -8,12 +8,16 @@ import { ConfirmDialog, Modal } from "@/ds-components/organisms"
 import type { TemporaryPassword, UserView } from "@/models"
 import { issueTemporaryPassword } from "@/services/users"
 
-import { getPersonName } from "../shared/userAccess/personName"
-import { FormFields } from "../shared/userAccess/userAccess.styles"
+import { getPersonName } from "./personName"
+import { FormFields } from "./userAccess.styles"
 import { useUserActionErrors } from "./useUserActionErrors"
 
+// Who gets the password: a user of the users list, or a student given access from its profile (a person
+// is a user, so the same route serves both).
+export type TemporaryPasswordTarget = Pick<UserView, "email" | "fullName" | "id" | "nickname">
+
 export type TemporaryPasswordDialogProps = {
-  user: UserView
+  user: TemporaryPasswordTarget
   onClose: () => void
   onGone: () => void
 }

@@ -3,6 +3,7 @@ import { useState } from "react"
 import { createMemoryRouter, Link, Outlet, RouterProvider } from "react-router-dom"
 import { describe, expect, it } from "vitest"
 
+import { leavingAfterSave } from "./unsavedChangesContext"
 import { UnsavedChangesGuard } from "./UnsavedChangesGuard"
 import { useUnsavedChanges } from "./useUnsavedChanges"
 
@@ -127,6 +128,16 @@ describe("UnsavedChangesGuard", () => {
     fireEvent.click(screen.getByRole("link", { name: "Ir para outra página" }))
 
     expect(await screen.findByText("Outra página")).toBeInTheDocument()
+  })
+
+  it("lets a page leave right after saving, before the form stops counting as changed", async () => {
+    const router = renderGuardedForm()
+    typeName()
+
+    await act(() => router.navigate("/outra", { state: leavingAfterSave }))
+
+    expect(warningDialog()).not.toBeInTheDocument()
+    expect(screen.getByText("Outra página")).toBeInTheDocument()
   })
 
   it("asks the browser to confirm a reload or closing the tab only while there are unsaved changes", () => {

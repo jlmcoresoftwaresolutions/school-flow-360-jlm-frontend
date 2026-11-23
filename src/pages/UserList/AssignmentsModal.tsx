@@ -19,7 +19,7 @@ import { getPersonName } from "../shared/userAccess/personName"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessItems, ActionableAccessItem, DetailsSection, FormFields } from "../shared/userAccess/userAccess.styles"
 import type { UnitDirectory } from "../shared/userAccess/useUnitDirectory"
-import { useUserActionErrors } from "./useUserActionErrors"
+import { useUserActionErrors } from "../shared/userAccess/useUserActionErrors"
 
 export type AssignmentsModalProps = {
   unitDirectory: UnitDirectory

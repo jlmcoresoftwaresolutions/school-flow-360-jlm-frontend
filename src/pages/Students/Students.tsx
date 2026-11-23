@@ -1,13 +1,15 @@
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { generatePath, useNavigate } from "react-router-dom"
 
-import { Badge, Card, Text } from "@/ds-components/atoms"
+import { Badge, Button, Card, Icon, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
+import { ActionMenu, PageHeader, Pagination, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
 import { useDebouncedValue } from "@/hooks"
 import type { PersonStatus, StudentSearchParams, StudentSummary } from "@/models"
+import { paths } from "@/routes/paths"
 import { listStudents } from "@/services/students"
 
 import { PeopleListError } from "../shared/people/PeopleListError"
@@ -29,6 +31,7 @@ const statuses: PersonStatus[] = ["DRAFT", "ACTIVE", "INACTIVE"]
 // limit (30 a minute), and says so when it is reached.
 export const Students = () => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const unitDirectory = useUnitDirectory()
   const { unitOptionLabel } = useAccessLabels(unitDirectory.units)
   const { personStatusLabel, personStatusTone } = usePeopleLabels()
@@ -133,6 +136,7 @@ export const Students = () => {
     if (data && data.totalElements === 0 && !hasFilters && search.trim() === "") {
       return (
         <StateMessage
+          action={<Button onClick={() => navigate(paths.studentNew)}>{t("students.newStudent")}</Button>}
           description={t("students.emptyDescription")}
           icon="school-outline"
           title={t("students.emptyTitle")}
@@ -143,6 +147,15 @@ export const Students = () => {
     return (
       <ListContent>
         <FilterBar
+          actions={
+            <Button
+              onClick={() => navigate(paths.studentNew)}
+              size="small"
+              startIcon={<Icon color="inherit" name="user-add-outline" size={16} />}
+            >
+              {t("students.newStudent")}
+            </Button>
+          }
           clearLabel={t("userAccess.clearFilters")}
           collapseLabel={t("common.collapseFilters")}
           expandLabel={t("common.expandFilters")}
@@ -197,6 +210,25 @@ export const Students = () => {
             )}
             field="status"
             header={t("people.status")}
+          />
+          <Table.Column
+            align="right"
+            body={(row: StudentSummary) => (
+              <ActionMenu
+                items={[
+                  {
+                    icon: "eye-outline",
+                    key: "view",
+                    label: t("students.viewProfile"),
+                    onClick: () => navigate(generatePath(paths.studentProfile, { studentId: String(row.id) })),
+                  },
+                ]}
+                triggerLabel={t("students.actionsFor", { name: row.fullName })}
+              />
+            )}
+            field="id"
+            header={t("students.actions")}
+            width="1%"
           />
         </Table>
 
