@@ -1,10 +1,12 @@
 # One pipeline for every change:
 # - checks: on every pull request and every push to master - lint, formatting, types, unit tests, the
-#   production build, the Storybook build and the Playwright E2E suite. The builds are kept as artifacts
-#   for the jobs below, so what gets deployed is exactly what was tested.
-# - preview: on pull requests only, publishes the app and the Storybook to temporary Firebase preview
-#   channels (7 days) and comments their links on the PR.
-# - deploy: on pushes to master only, once checks pass, publishes the app and the Storybook live.
+#   production build, the Storybook build and the Playwright E2E suite. The Storybook build is kept as
+#   an artifact for the jobs below, so the Storybook that gets deployed is exactly the one tested.
+# - preview: on pull requests only, publishes the Storybook to a temporary Firebase preview channel
+#   (7 days) and comments its link on the PR.
+# - deploy: on pushes to master only, once checks pass, publishes the Storybook live.
+# The app is not deployed from here: Render builds and publishes it (see render.yaml), from master once
+# this pipeline's checks pass on the commit. Pull requests get no preview of the app.
 # It can also be started by hand on master (gh workflow run ci.yml), for when GitHub loses a push event
 # and a merge never gets deployed: checks then deploy, as on a push.
 name: CI
@@ -73,13 +75,6 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      - name: Keep the app build
-        uses: actions/upload-artifact@v4
-        with:
-          name: app
-          path: dist/
-          retention-days: 7
-
       - name: Keep the Storybook build
         uses: actions/upload-artifact@v4
         with:
@@ -102,22 +97,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: app
-          path: dist/
-
-      - uses: actions/download-artifact@v4
-        with:
           name: storybook
           path: storybook-static/
-
-      - name: Preview the app
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SCHOOL_FLOW_360 }}
-          projectId: school-flow-360
-          target: app
-          expires: 7d
 
       - name: Preview the Storybook
         uses: FirebaseExtended/action-hosting-deploy@v0
@@ -139,28 +120,14 @@ jobs:
       cancel-in-progress: false
     environment:
       name: production
-      url: https://school-flow-360.web.app
+      url: https://school-flow-360-storybook.web.app
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
-          name: app
-          path: dist/
-
-      - uses: actions/download-artifact@v4
-        with:
           name: storybook
           path: storybook-static/
-
-      - name: Deploy the app
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SCHOOL_FLOW_360 }}
-          projectId: school-flow-360
-          target: app
-          channelId: live
 
       - name: Deploy the Storybook
         uses: FirebaseExtended/action-hosting-deploy@v0

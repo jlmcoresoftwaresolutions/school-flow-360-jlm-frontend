@@ -1,0 +1,32 @@
+# The app on Render, as a Static Site built from this repo (the Storybook stays on Firebase Hosting).
+# Render builds it itself from master, and only once the commit's GitHub checks have passed
+# (autoDeployTrigger: checksPass), so a merge that breaks the CI is never published. Pull requests get
+# no preview site (no `previews` field): they are reviewed locally.
+#
+# This file is the reference for the site's settings, not what applies them: the site ("School Flow 360",
+# https://school-flow-360-i2m0.onrender.com, in the Production environment of the Render project) was
+# created from it, but no Blueprint manages it, so a change here must also be made in the Render dashboard.
+services:
+  - type: web
+    runtime: static
+    name: School Flow 360
+    branch: master
+    # Render's own dependency install is skipped so the build uses Bun with the lockfile, as the CI does.
+    buildCommand: bun install --frozen-lockfile && bun run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: checksPass
+    # A single-page app: every path that isn't a file in dist/ is answered by index.html, and React Router
+    # takes it from there (Render never rewrites a path that matches an existing file, like /assets/...).
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # The same Bun version the CI pins (BUN_VERSION in .github/workflows/ci.yml).
+      - key: BUN_VERSION
+        value: 1.3.14
+      # The "prepare" script would try to install the Git hooks, which a build has no use for.
+      - key: HUSKY
+        value: "0"
+      - key: SKIP_INSTALL_DEPS
+        value: "true"

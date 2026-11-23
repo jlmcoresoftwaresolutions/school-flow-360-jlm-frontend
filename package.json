@@ -9,7 +9,6 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "build-storybook": "storybook build",
-    "deploy": "tsc -b && vite build && firebase deploy --only hosting:app --project app",
     "deploy-storybook": "storybook build && firebase deploy --only hosting:storybook --project storybook",
     "dev": "vite",
     "e2e": "playwright test",
