@@ -1,7 +1,7 @@
 # The app on Render, as a Static Site built from this repo (the Storybook stays on Firebase Hosting).
 # Render builds it itself from master, and only once the commit's GitHub checks have passed
-# (autoDeployTrigger: checksPass), so a merge that breaks the CI is never published. Every pull request
-# gets a preview site of its own (previews.generation: automatic).
+# (autoDeployTrigger: checksPass), so a merge that breaks the CI is never published. Pull requests get
+# no preview site (no `previews` field): they are reviewed locally.
 services:
   - type: web
     runtime: static
@@ -11,8 +11,6 @@ services:
     buildCommand: bun install --frozen-lockfile && bun run build
     staticPublishPath: ./dist
     autoDeployTrigger: checksPass
-    previews:
-      generation: automatic
     # A single-page app: every path that isn't a file in dist/ is answered by index.html, and React Router
     # takes it from there (Render never rewrites a path that matches an existing file, like /assets/...).
     routes:

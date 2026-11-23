@@ -6,7 +6,7 @@
 #   (7 days) and comments its link on the PR.
 # - deploy: on pushes to master only, once checks pass, publishes the Storybook live.
 # The app is not deployed from here: Render builds and publishes it (see render.yaml), from master once
-# this pipeline's checks pass on the commit, and gives every pull request a preview site of its own.
+# this pipeline's checks pass on the commit. Pull requests get no preview of the app.
 # It can also be started by hand on master (gh workflow run ci.yml), for when GitHub loses a push event
 # and a merge never gets deployed: checks then deploy, as on a push.
 name: CI
