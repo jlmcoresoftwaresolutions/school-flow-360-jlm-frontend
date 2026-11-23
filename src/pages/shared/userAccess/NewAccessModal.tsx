@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { toast, useUnsavedChanges } from "@/components"
 import { Button, Text } from "@/ds-components/atoms"
 import { DescriptionList, Input } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import { useSignedInUser } from "@/hooks"
 import type { InvitationView } from "@/models"
@@ -14,8 +15,9 @@ import { createUser } from "@/services/users"
 import { getGrantableRoles } from "@/utils/access"
 import { defaultCountry } from "@/utils/countries"
 import { isValidEmail } from "@/utils/email"
-import { formatPhoneInput, isValidPhone } from "@/utils/phone"
+import { isValidPhone } from "@/utils/phone"
 
+import { usePhoneInputTexts } from "../phone/usePhoneInputTexts"
 import { AssignmentFields } from "./AssignmentFields"
 import {
   emptyNewAccess,
@@ -51,6 +53,7 @@ export const NewAccessModal = (props: NewAccessModalProps) => {
   const { mode, onClose, onCreated, unitDirectory } = props
 
   const { t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const user = useSignedInUser()
   const { accessLabel } = useAccessLabels(unitDirectory.units)
   const form = useForm<NewAccessValues>({ defaultValues: emptyNewAccess })
@@ -258,22 +261,15 @@ export const NewAccessModal = (props: NewAccessModalProps) => {
               control={form.control}
               name="phone"
               render={(controller) => (
-                <Input
-                  autoComplete="off"
+                <PhoneInput
+                  {...phoneTexts}
                   error={controller.fieldState.error?.message}
                   helperText={t("userAccess.form.phoneHelper")}
-                  maxLength={newAccessLimits.phone}
                   name={controller.field.name}
                   onBlur={controller.field.onBlur}
-                  onChange={(event) =>
-                    controller.field.onChange(
-                      formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
-                    )
-                  }
+                  onChange={controller.field.onChange}
                   placeholder={t("userAccess.form.phonePlaceholder")}
-                  ref={controller.field.ref}
                   title={t("userAccess.form.phoneLabel")}
-                  type="tel"
                   value={controller.field.value}
                 />
               )}

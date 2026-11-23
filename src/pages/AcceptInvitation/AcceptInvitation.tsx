@@ -6,13 +6,15 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom"
 import { toast } from "@/components"
 import { Button, Card, Grid, Text } from "@/ds-components/atoms"
 import { Checkbox, DescriptionList, Input, StateMessage } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import type { AcceptInvitationRequest, InvitationValidation, InvitationValidationAssignment } from "@/models"
 import { paths } from "@/routes/paths"
 import { acceptInvitation, getErrorCode, getErrorStatus, validateInvitation } from "@/services"
 import { defaultCountry } from "@/utils/countries"
-import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalPhone } from "@/utils/phone"
+import { isValidPhone, toInternationalPhone } from "@/utils/phone"
 
+import { usePhoneInputTexts } from "../shared/phone/usePhoneInputTexts"
 import { AcceptInvitationWrapper } from "./AcceptInvitation.styles"
 
 // The backend's password policy: 12 to 128 characters, nothing else required.
@@ -20,7 +22,6 @@ const passwordLength = { max: 128, min: 12 }
 
 // The backend's limits for what the screen collects (longer is a 400 INVALID_REQUEST).
 const nameMaxLength = 150
-const phoneMaxLength = 30
 
 type AcceptInvitationValues = {
   confirmPassword: string
@@ -56,6 +57,7 @@ const deadEnds: Partial<Record<LinkStatus, "forgotPassword" | "login">> = {
 // the router).
 export const AcceptInvitation = () => {
   const { i18n, t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { control, formState, getValues, handleSubmit, register, reset, setError, setValue } =
@@ -75,7 +77,7 @@ export const AcceptInvitation = () => {
   const status: LinkStatus = hasLinkParams ? linkStatus : "invalid"
   const expiresAt = invitation ? new Date(invitation.expiresAt) : null
   const institution = invitation?.organizationName?.trim() || invitation?.institutionName?.trim() || ""
-  const prefilledPhone = invitation?.phone ? formatPhoneForDisplay(invitation.phone, defaultCountry) : ""
+  const prefilledPhone = invitation?.phone ? toInternationalPhone(invitation.phone, defaultCountry) : ""
 
   useEffect(() => {
     if (!hasLinkParams) return
@@ -95,7 +97,7 @@ export const AcceptInvitation = () => {
           confirmPassword: "",
           fullName: validation.fullName ?? "",
           password: "",
-          phone: validation.phone ? formatPhoneForDisplay(validation.phone, defaultCountry) : "",
+          phone: validation.phone ? toInternationalPhone(validation.phone, defaultCountry) : "",
           termsAccepted: false,
         })
       } catch (error) {
@@ -297,22 +299,15 @@ export const AcceptInvitation = () => {
               control={control}
               name="phone"
               render={(controller) => (
-                <Input
-                  autoComplete="tel"
+                <PhoneInput
+                  {...phoneTexts}
                   error={controller.fieldState.error?.message}
                   helperText={t("acceptInvitation.phoneHelper")}
-                  maxLength={phoneMaxLength}
                   name={controller.field.name}
                   onBlur={controller.field.onBlur}
-                  onChange={(event) =>
-                    controller.field.onChange(
-                      formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
-                    )
-                  }
+                  onChange={controller.field.onChange}
                   placeholder={t("acceptInvitation.phonePlaceholder")}
-                  ref={controller.field.ref}
                   title={t("acceptInvitation.phoneLabel")}
-                  type="tel"
                   value={controller.field.value}
                 />
               )}

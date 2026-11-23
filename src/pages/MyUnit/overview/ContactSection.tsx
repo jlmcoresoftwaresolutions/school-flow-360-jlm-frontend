@@ -2,10 +2,12 @@ import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { DescriptionList, Input } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import type { Organization, OrganizationUpdate } from "@/models"
 import { isValidEmail } from "@/utils/email"
-import { formatPhoneInput, isValidPhone } from "@/utils/phone"
+import { isValidPhone, toInternationalPhone } from "@/utils/phone"
 
+import { usePhoneInputTexts } from "../../shared/phone/usePhoneInputTexts"
 import { contactEmailMaxLength } from "../MyUnit.constants"
 import { EditableSectionCard } from "../shared/EditableSectionCard"
 import { useOrganizationCountry } from "../shared/organizationCountry"
@@ -26,10 +28,11 @@ export const ContactSection = (props: ContactSectionProps) => {
   const { onSave, organization } = props
 
   const { t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const country = useOrganizationCountry()
   const formatPhone = usePhoneFormatter()
   const section = useSectionForm<ContactValues>(
-    { contactEmail: organization.contactEmail, contactPhone: formatPhone(organization.contactPhone) },
+    { contactEmail: organization.contactEmail, contactPhone: toInternationalPhone(organization.contactPhone, country) },
     onSave,
   )
 
@@ -61,18 +64,16 @@ export const ContactSection = (props: ContactSectionProps) => {
             control={section.form.control}
             name="contactPhone"
             render={(controller) => (
-              <Input
+              <PhoneInput
+                {...phoneTexts}
+                defaultCountry={country}
                 error={controller.fieldState.error?.message}
                 helperText={t("myUnit.phoneHelper")}
                 name={controller.field.name}
                 onBlur={controller.field.onBlur}
-                onChange={(event) =>
-                  controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, country))
-                }
+                onChange={controller.field.onChange}
                 placeholder={t("myUnit.overview.contactPhonePlaceholder")}
-                ref={controller.field.ref}
                 title={t("myUnit.overview.contactPhone")}
-                type="tel"
                 value={controller.field.value}
                 required
               />

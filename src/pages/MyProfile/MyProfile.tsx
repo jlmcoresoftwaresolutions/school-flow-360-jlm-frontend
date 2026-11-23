@@ -6,6 +6,7 @@ import { Link, useRevalidator } from "react-router-dom"
 import { toast, useUnsavedChanges } from "@/components"
 import { Button, Card, Icon, Text } from "@/ds-components/atoms"
 import { DescriptionList, Input, PageHeader, StateMessage } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import type { UserContext } from "@/models"
 import { paths } from "@/routes/paths"
@@ -13,9 +14,10 @@ import { getErrorCode } from "@/services/httpClient"
 import { getMe, updateMyProfile } from "@/services/me"
 import { roleOrder } from "@/utils/access"
 import { defaultCountry } from "@/utils/countries"
-import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalPhone } from "@/utils/phone"
+import { formatPhoneForDisplay, isValidPhone, toInternationalPhone } from "@/utils/phone"
 import { updateSessionContext } from "@/utils/session"
 
+import { usePhoneInputTexts } from "../shared/phone/usePhoneInputTexts"
 import { newAccessLimits } from "../shared/userAccess/newAccess"
 import { sortAccess, useAccessLabels } from "../shared/userAccess/useAccessLabels"
 import { AccessItem, AccessItems, ActionRow, DetailsSection, FormFields } from "../shared/userAccess/userAccess.styles"
@@ -30,7 +32,7 @@ type LoadState = { kind: "failed" } | { kind: "loaded"; me: UserContext } | { ki
 
 const toValues = (me: UserContext): ProfileValues => ({
   fullName: me.fullName ?? "",
-  phone: me.phone ? formatPhoneForDisplay(me.phone, defaultCountry) : "",
+  phone: me.phone ? toInternationalPhone(me.phone, defaultCountry) : "",
 })
 
 // The signed-in user's own profile (matrix ACC-M09 "Meu Acesso / Meu Perfil", for every role), opened
@@ -41,6 +43,7 @@ const toValues = (me: UserContext): ProfileValues => ({
 // changed in a dialog (the current one, then the new one).
 export const MyProfile = () => {
   const { t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const revalidator = useRevalidator()
   const { accessLabel, roleLabel } = useAccessLabels()
   const form = useForm<ProfileValues>({ defaultValues: { fullName: "", phone: "" } })
@@ -160,21 +163,15 @@ export const MyProfile = () => {
             control={form.control}
             name="phone"
             render={(controller) => (
-              <Input
+              <PhoneInput
+                {...phoneTexts}
                 error={controller.fieldState.error?.message}
                 helperText={t("users.profile.phoneHelper")}
-                maxLength={newAccessLimits.phone}
                 name={controller.field.name}
                 onBlur={controller.field.onBlur}
-                onChange={(event) =>
-                  controller.field.onChange(
-                    formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
-                  )
-                }
+                onChange={controller.field.onChange}
                 placeholder={t("myProfile.phonePlaceholder")}
-                ref={controller.field.ref}
                 title={t("userAccess.form.phoneLabel")}
-                type="tel"
                 value={controller.field.value}
               />
             )}

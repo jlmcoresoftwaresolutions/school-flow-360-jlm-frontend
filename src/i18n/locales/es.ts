@@ -295,7 +295,7 @@ export const es: TranslationResource = {
     passwordRequired: "Crea una contraseña.",
     passwordTooLong: "Usa como máximo {{max}} caracteres.",
     passwordTooShort: "Usa al menos {{min}} caracteres.",
-    phoneHelper: "Opcional. Para un número de otro país, empieza con + y el código del país.",
+    phoneHelper: "Opcional. Elige el país y escribe el número con el código de área.",
     phoneInvalid: "Escribe un teléfono válido, con código de área.",
     phoneLabel: "Teléfono",
     phonePlaceholder: "Escribe tu teléfono",
@@ -771,6 +771,8 @@ export const es: TranslationResource = {
     teacher: "Docente",
   },
   common: {
+    noCountries: "Ningún país encontrado",
+    phoneCountry: "País del teléfono",
     cancel: "Cancelar",
     close: "Cerrar",
     collapseFilters: "Ocultar filtros",
@@ -1331,7 +1333,7 @@ export const es: TranslationResource = {
       unitsTitle: "Sedes",
       unitsTotal: "Total",
     },
-    phoneHelper: "Para un número de otro país, empieza con + y el código del país.",
+    phoneHelper: "Elige el país y escribe el número con el código de área.",
     readOnlyNotice:
       "Solo consulta: los datos de la institución, las unidades y la identidad visual los cambia la Administración.",
     saveError: "No pudimos guardar ahora. Inténtalo de nuevo en unos instantes.",
@@ -1644,7 +1646,7 @@ export const es: TranslationResource = {
       identityTitle: "Identificación",
       neighborhoodLabel: "Barrio",
       neighborhoodPlaceholder: "Escribe el barrio",
-      phoneHelper: "Para un número de otro país, empieza con + y el código del país.",
+      phoneHelper: "Elige el país y escribe el número con el código de área.",
       phoneInvalid: "Indica un teléfono válido, con el código de área.",
       phoneLabel: "Teléfono",
       phonePlaceholder: "Escribe el teléfono",
@@ -2253,7 +2255,7 @@ export const es: TranslationResource = {
       nameToBeInformed: "Lo escribe la persona al activar la cuenta",
       noAnswer: "No hubo respuesta. Inténtalo de nuevo: el mismo envío no crea una invitación duplicada.",
       noUnits: "No hay ninguna unidad activa para dar acceso.",
-      phoneHelper: "Opcional. Para un número de otro país, empieza con + y el código del país.",
+      phoneHelper: "Opcional. Elige el país y escribe el número con el código de área.",
       phoneInvalid: "Escribe un teléfono válido, con código de área.",
       phoneLabel: "Teléfono",
       phonePlaceholder: "Teléfono de la persona",
@@ -2409,8 +2411,7 @@ export const es: TranslationResource = {
     profile: {
       description:
         "Aquí solo se cambian el nombre y el teléfono. Correo, contraseña, roles, unidades y situación tienen flujos propios.",
-      phoneHelper:
-        "Opcional: déjalo en blanco para quitarlo. Para un número de otro país, empieza con + y el código del país.",
+      phoneHelper: "Elige el país y escribe el número con el código de área.",
       saved: "Datos de {{name}} actualizados.",
       title: "Editar datos de {{name}}",
     },

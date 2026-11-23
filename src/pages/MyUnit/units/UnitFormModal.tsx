@@ -5,12 +5,15 @@ import { useTranslation } from "react-i18next"
 import { useUnsavedChanges } from "@/components"
 import { Button, Grid, Text } from "@/ds-components/atoms"
 import { DescriptionList, Input, Textarea } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { SchoolUnit, SchoolUnitInput } from "@/models"
 import { emptyAddress } from "@/utils/address"
+import type { Country } from "@/utils/countries"
 import { isValidEmail } from "@/utils/email"
-import { formatPhoneInput, isValidPhone } from "@/utils/phone"
+import { isValidPhone, toInternationalPhone } from "@/utils/phone"
 
+import { usePhoneInputTexts } from "../../shared/phone/usePhoneInputTexts"
 import { notesMaxLength, unitEmailMaxLength, unitNameMaxLength } from "../MyUnit.constants"
 import { FieldGroup } from "../MyUnit.styles"
 import { AddressFields } from "../shared/AddressFields"
@@ -28,10 +31,10 @@ export type UnitFormModalProps = {
   unit?: SchoolUnit
 }
 
-const toInput = (formatPhone: (phone: string) => string, unit?: SchoolUnit): SchoolUnitInput => ({
+const toInput = (country: Country, unit?: SchoolUnit): SchoolUnitInput => ({
   address: unit?.address ?? emptyAddress,
   contactEmail: unit?.contactEmail ?? "",
-  contactPhone: formatPhone(unit?.contactPhone ?? ""),
+  contactPhone: toInternationalPhone(unit?.contactPhone ?? "", country),
   name: unit?.name ?? "",
   notes: unit?.notes ?? "",
 })
@@ -49,10 +52,11 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
   const { onClose, onSave, unit } = props
 
   const { t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const country = useOrganizationCountry()
   const formatPhone = usePhoneFormatter()
   const formatAddress = useAddressFormatter()
-  const form = useForm<SchoolUnitInput>({ defaultValues: toInput(formatPhone, unit) })
+  const form = useForm<SchoolUnitInput>({ defaultValues: toInput(country, unit) })
 
   const formId = useId()
 
@@ -149,18 +153,16 @@ export const UnitFormModal = (props: UnitFormModalProps) => {
                   control={form.control}
                   name="contactPhone"
                   render={(controller) => (
-                    <Input
+                    <PhoneInput
+                      {...phoneTexts}
+                      defaultCountry={country}
                       error={controller.fieldState.error?.message}
                       helperText={t("myUnit.phoneHelper")}
                       name={controller.field.name}
                       onBlur={controller.field.onBlur}
-                      onChange={(event) =>
-                        controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, country))
-                      }
+                      onChange={controller.field.onChange}
                       placeholder={t("myUnit.units.contactPhonePlaceholder")}
-                      ref={controller.field.ref}
                       title={t("myUnit.units.contactPhone")}
-                      type="tel"
                       value={controller.field.value}
                       required
                     />

@@ -5,12 +5,14 @@ import { useTranslation } from "react-i18next"
 import { toast, useUnsavedChanges } from "@/components"
 import { Button, Text } from "@/ds-components/atoms"
 import { Input } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { UserView } from "@/models"
 import { getUser, updateUserProfile } from "@/services/users"
 import { defaultCountry } from "@/utils/countries"
-import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalPhone } from "@/utils/phone"
+import { isValidPhone, toInternationalPhone } from "@/utils/phone"
 
+import { usePhoneInputTexts } from "../shared/phone/usePhoneInputTexts"
 import { newAccessLimits } from "../shared/userAccess/newAccess"
 import { getPersonName } from "../shared/userAccess/personName"
 import { FormFields } from "../shared/userAccess/userAccess.styles"
@@ -31,7 +33,7 @@ type ProfileValues = {
 
 const toValues = (user: UserView): ProfileValues => ({
   fullName: user.fullName ?? "",
-  phone: user.phone ? formatPhoneForDisplay(user.phone, defaultCountry) : "",
+  phone: user.phone ? toInternationalPhone(user.phone, defaultCountry) : "",
 })
 
 // A user's name and phone - the only personal data an operator edits (JLM-152): the e-mail, the
@@ -42,6 +44,7 @@ export const ProfileModal = (props: ProfileModalProps) => {
   const { onClose, onGone, onSaved, user } = props
 
   const { t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const toFailure = useUserActionErrors()
   const form = useForm<ProfileValues>({ defaultValues: toValues(user) })
 
@@ -133,21 +136,15 @@ export const ProfileModal = (props: ProfileModalProps) => {
             control={form.control}
             name="phone"
             render={(controller) => (
-              <Input
+              <PhoneInput
+                {...phoneTexts}
                 error={controller.fieldState.error?.message}
                 helperText={t("users.profile.phoneHelper")}
-                maxLength={newAccessLimits.phone}
                 name={controller.field.name}
                 onBlur={controller.field.onBlur}
-                onChange={(event) =>
-                  controller.field.onChange(
-                    formatPhoneInput(event.target.value, controller.field.value, defaultCountry),
-                  )
-                }
+                onChange={controller.field.onChange}
                 placeholder={t("userAccess.form.phonePlaceholder")}
-                ref={controller.field.ref}
                 title={t("userAccess.form.phoneLabel")}
-                type="tel"
                 value={controller.field.value}
               />
             )}

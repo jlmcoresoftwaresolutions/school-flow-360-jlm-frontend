@@ -634,9 +634,10 @@ test.describe("overview", () => {
     await form.getByRole("button", { name: "Salvar" }).click()
     await expect(form.getByText("Informe um telefone válido, com DDD.")).toBeVisible()
 
-    // Another country's, with + and its code: formatted as typed and saved as it is.
+    // Another country's, pasted with + and its code: the country is picked and the number saved as it is.
     await phone.fill("+16502530000")
-    await expect(phone).toHaveValue("+1 650 253 0000")
+    await expect(form.getByText("US +1")).toBeVisible()
+    await expect(phone).toHaveValue("(650) 253-0000")
     await form.getByRole("button", { name: "Salvar" }).click()
 
     await expect(page.getByText("Dados da organização atualizados.")).toBeVisible()

@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest"
 
-import { formatPhoneForDisplay, formatPhoneInput, isValidPhone, toInternationalPhone } from "./phone"
+import {
+  formatPhoneForDisplay,
+  formatPhoneInput,
+  getPhoneCallingCode,
+  isValidPhone,
+  joinPhone,
+  splitPhone,
+  toInternationalPhone,
+} from "./phone"
 
 describe("formatPhoneInput", () => {
   it("formats a Brazilian number as it is typed", () => {
@@ -78,5 +86,59 @@ describe("toInternationalPhone", () => {
   it("keeps an empty value empty, and an unreadable one as it is", () => {
     expect(toInternationalPhone("")).toBe("")
     expect(toInternationalPhone("ramal 12")).toBe("ramal 12")
+  })
+})
+
+describe("getPhoneCallingCode", () => {
+  it("gives a country's calling code, without the plus sign", () => {
+    expect(getPhoneCallingCode("BR")).toBe("55")
+    expect(getPhoneCallingCode("PT")).toBe("351")
+    expect(getPhoneCallingCode("US")).toBe("1")
+  })
+})
+
+describe("splitPhone", () => {
+  it("splits an international number into its country and national part", () => {
+    expect(splitPhone("+55 85 3333 1100")).toEqual({ country: "BR", national: "(85) 3333-1100" })
+    expect(splitPhone("+351 912 345 678")).toEqual({ country: "PT", national: "912 345 678" })
+  })
+
+  it("gives the fallback country and nothing typed for an empty value", () => {
+    expect(splitPhone("")).toEqual({ country: "BR", national: "" })
+    expect(splitPhone("", "PT")).toEqual({ country: "PT", national: "" })
+  })
+
+  it("reads a partial number by its calling code, preferring the fallback when it shares it", () => {
+    expect(splitPhone("+55 85")).toEqual({ country: "BR", national: "85" })
+    expect(splitPhone("+1 650", "CA").country).toBe("CA")
+  })
+
+  it("keeps a value it can't read as it is", () => {
+    expect(splitPhone("ramal 12")).toEqual({ country: "BR", national: "ramal 12" })
+  })
+})
+
+describe("joinPhone", () => {
+  it("joins a country and a national part in the international format", () => {
+    expect(joinPhone("(85) 3333-1100", "BR")).toBe("+55 85 3333 1100")
+    expect(joinPhone("912 345 678", "PT")).toBe("+351 912 345 678")
+  })
+
+  it("drops the national trunk prefix", () => {
+    expect(joinPhone("07911 123456", "GB")).toBe("+44 7911 123456")
+  })
+
+  it("keeps a partial number while it is being typed", () => {
+    expect(joinPhone("(85", "BR")).toBe("+55 85")
+  })
+
+  it("is empty when there is no digit", () => {
+    expect(joinPhone("", "BR")).toBe("")
+    expect(joinPhone("()", "BR")).toBe("")
+  })
+
+  it("goes back and forth with splitPhone", () => {
+    const { country, national } = splitPhone("+55 85 93333 1100")
+    expect(joinPhone(national, country)).toBe("+55 85 93333 1100")
   })
 })

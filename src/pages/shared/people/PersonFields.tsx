@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import { DateInput, Input, Select } from "@/ds-components/molecules"
+import { PhoneInput } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import type { CatalogItem } from "@/models"
 import { getAddressByCep } from "@/services/viaCep"
@@ -12,8 +13,9 @@ import { brazilianStates } from "@/utils/address"
 import { defaultCountry } from "@/utils/countries"
 import { isValidEmail } from "@/utils/email"
 import { stripNonDigits } from "@/utils/formats"
-import { formatPhoneInput, isValidPhone } from "@/utils/phone"
+import { isValidPhone } from "@/utils/phone"
 
+import { usePhoneInputTexts } from "../phone/usePhoneInputTexts"
 import { FieldRow, PersonSection } from "./people.styles"
 import { type PersonFormValues, personLimits } from "./personForm"
 
@@ -104,6 +106,7 @@ export const PersonIdentityFields = (props: PersonIdentityFieldsProps) => {
 // The person's contact: an e-mail (checked like the backend does) and a phone of any country.
 export const PersonContactFields = () => {
   const { t } = useTranslation()
+  const phoneTexts = usePhoneInputTexts()
   const { control, formState, register } = useFormContext<PersonFormValues>()
 
   const { errors } = formState
@@ -126,20 +129,15 @@ export const PersonContactFields = () => {
           control={control}
           name="phone"
           render={(controller) => (
-            <Input
-              autoComplete="off"
+            <PhoneInput
+              {...phoneTexts}
               error={controller.fieldState.error?.message}
               helperText={t("people.form.phoneHelper")}
-              maxLength={personLimits.phone}
               name={controller.field.name}
               onBlur={controller.field.onBlur}
-              onChange={(event) =>
-                controller.field.onChange(formatPhoneInput(event.target.value, controller.field.value, defaultCountry))
-              }
+              onChange={controller.field.onChange}
               placeholder={t("people.form.phonePlaceholder")}
-              ref={controller.field.ref}
               title={t("people.form.phoneLabel")}
-              type="tel"
               value={controller.field.value}
             />
           )}

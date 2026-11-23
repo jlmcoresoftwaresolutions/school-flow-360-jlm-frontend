@@ -291,7 +291,7 @@ export const ptBR = {
     passwordRequired: "Crie uma senha.",
     passwordTooLong: "Use no máximo {{max}} caracteres.",
     passwordTooShort: "Use pelo menos {{min}} caracteres.",
-    phoneHelper: "Opcional. Para um número de outro país, comece com + e o código do país.",
+    phoneHelper: "Opcional. Escolha o país e digite o número com o DDD.",
     phoneInvalid: "Informe um telefone válido, com DDD.",
     phoneLabel: "Telefone",
     phonePlaceholder: "Digite seu telefone",
@@ -765,6 +765,8 @@ export const ptBR = {
     teacher: "Professor",
   },
   common: {
+    noCountries: "Nenhum país encontrado",
+    phoneCountry: "País do telefone",
     cancel: "Cancelar",
     close: "Fechar",
     collapseFilters: "Ocultar filtros",
@@ -1322,7 +1324,7 @@ export const ptBR = {
       unitsTitle: "Unidades",
       unitsTotal: "Total",
     },
-    phoneHelper: "Para um número de outro país, comece com + e o código do país.",
+    phoneHelper: "Escolha o país e digite o número com o DDD.",
     readOnlyNotice:
       "Somente consulta: os dados da instituição, as unidades e a identidade visual são alterados pela Administração.",
     saveError: "Não foi possível salvar agora. Tente novamente em instantes.",
@@ -1636,7 +1638,7 @@ export const ptBR = {
       identityTitle: "Identificação",
       neighborhoodLabel: "Bairro",
       neighborhoodPlaceholder: "Digite o bairro",
-      phoneHelper: "Para um número de outro país, comece com + e o código do país.",
+      phoneHelper: "Escolha o país e digite o número com o DDD.",
       phoneInvalid: "Informe um telefone válido, com DDD.",
       phoneLabel: "Telefone",
       phonePlaceholder: "Digite o telefone",
@@ -2242,7 +2244,7 @@ export const ptBR = {
       nameToBeInformed: "Informado pela pessoa ao ativar a conta",
       noAnswer: "Não houve resposta. Tente de novo: o mesmo envio não cria um convite duplicado.",
       noUnits: "Não há unidade ativa para conceder acesso.",
-      phoneHelper: "Opcional. Para um número de outro país, comece com + e o código do país.",
+      phoneHelper: "Opcional. Escolha o país e digite o número com o DDD.",
       phoneInvalid: "Informe um telefone válido, com DDD.",
       phoneLabel: "Telefone",
       phonePlaceholder: "Telefone da pessoa",
@@ -2396,8 +2398,7 @@ export const ptBR = {
     profile: {
       description:
         "Só o nome e o telefone se alteram aqui. E-mail, senha, papéis, unidades e situação têm fluxos próprios.",
-      phoneHelper:
-        "Opcional: deixe em branco para remover. Para um número de outro país, comece com + e o código do país.",
+      phoneHelper: "Escolha o país e digite o número com o DDD.",
       saved: "Dados de {{name}} atualizados.",
       title: "Editar dados de {{name}}",
     },

@@ -301,7 +301,7 @@ export const fr: TranslationResource = {
     passwordRequired: "Créez un mot de passe.",
     passwordTooLong: "Utilisez au maximum {{max}} caractères.",
     passwordTooShort: "Utilisez au moins {{min}} caractères.",
-    phoneHelper: "Facultatif. Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
+    phoneHelper: "Facultatif. Choisissez le pays, puis saisissez le numéro.",
     phoneInvalid: "Saisissez un téléphone valide, avec l'indicatif.",
     phoneLabel: "Téléphone",
     phonePlaceholder: "Saisissez votre téléphone",
@@ -780,6 +780,8 @@ export const fr: TranslationResource = {
     teacher: "Enseignant",
   },
   common: {
+    noCountries: "Aucun pays trouvé",
+    phoneCountry: "Pays du téléphone",
     cancel: "Annuler",
     close: "Fermer",
     collapseFilters: "Masquer les filtres",
@@ -1348,7 +1350,7 @@ export const fr: TranslationResource = {
       unitsTitle: "Établissements",
       unitsTotal: "Total",
     },
-    phoneHelper: "Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
+    phoneHelper: "Choisissez le pays, puis saisissez le numéro.",
     readOnlyNotice:
       "Consultation seule : les données de l'établissement, les unités et l'identité visuelle sont modifiées par l'Administration.",
     saveError: "Impossible d'enregistrer pour le moment. Réessayez dans quelques instants.",
@@ -1670,7 +1672,7 @@ export const fr: TranslationResource = {
       identityTitle: "Identité",
       neighborhoodLabel: "Quartier",
       neighborhoodPlaceholder: "Saisissez le quartier",
-      phoneHelper: "Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
+      phoneHelper: "Choisissez le pays, puis saisissez le numéro.",
       phoneInvalid: "Indiquez un téléphone valide.",
       phoneLabel: "Téléphone",
       phonePlaceholder: "Saisissez le téléphone",
@@ -2285,7 +2287,7 @@ export const fr: TranslationResource = {
       nameToBeInformed: "Saisi par la personne en activant le compte",
       noAnswer: "Aucune réponse. Réessayez : le même envoi ne crée pas d'invitation en double.",
       noUnits: "Aucune unité active à laquelle donner accès.",
-      phoneHelper: "Facultatif. Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
+      phoneHelper: "Facultatif. Choisissez le pays, puis saisissez le numéro.",
       phoneInvalid: "Saisissez un téléphone valide, avec l'indicatif.",
       phoneLabel: "Téléphone",
       phonePlaceholder: "Téléphone de la personne",
@@ -2441,8 +2443,7 @@ export const fr: TranslationResource = {
     profile: {
       description:
         "Seuls le nom et le téléphone se modifient ici. E-mail, mot de passe, rôles, unités et situation ont leurs propres parcours.",
-      phoneHelper:
-        "Facultatif : laissez vide pour le retirer. Pour un numéro d'un autre pays, commencez par + et l'indicatif du pays.",
+      phoneHelper: "Choisissez le pays, puis saisissez le numéro.",
       saved: "Informations de {{name}} mises à jour.",
       title: "Modifier les informations de {{name}}",
     },

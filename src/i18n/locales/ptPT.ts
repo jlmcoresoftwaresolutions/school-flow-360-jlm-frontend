@@ -294,7 +294,7 @@ export const ptPT: TranslationResource = {
     passwordRequired: "Crie uma palavra-passe.",
     passwordTooLong: "Use no máximo {{max}} caracteres.",
     passwordTooShort: "Use pelo menos {{min}} caracteres.",
-    phoneHelper: "Opcional. Para um número de outro país, comece com + e o indicativo do país.",
+    phoneHelper: "Opcional. Escolha o país e introduza o número.",
     phoneInvalid: "Introduza um telefone válido, com indicativo.",
     phoneLabel: "Telefone",
     phonePlaceholder: "Introduza o seu telefone",
@@ -769,6 +769,8 @@ export const ptPT: TranslationResource = {
     teacher: "Professor",
   },
   common: {
+    noCountries: "Nenhum país encontrado",
+    phoneCountry: "País do telefone",
     cancel: "Cancelar",
     close: "Fechar",
     collapseFilters: "Ocultar filtros",
@@ -1327,7 +1329,7 @@ export const ptPT: TranslationResource = {
       unitsTitle: "Unidades",
       unitsTotal: "Total",
     },
-    phoneHelper: "Para um número de outro país, comece com + e o indicativo do país.",
+    phoneHelper: "Escolha o país e introduza o número.",
     readOnlyNotice:
       "Apenas consulta: os dados da instituição, as unidades e a identidade visual são alterados pela Administração.",
     saveError: "Não foi possível guardar agora. Tente novamente dentro de instantes.",
@@ -1641,7 +1643,7 @@ export const ptPT: TranslationResource = {
       identityTitle: "Identificação",
       neighborhoodLabel: "Bairro",
       neighborhoodPlaceholder: "Introduza o bairro",
-      phoneHelper: "Para um número de outro país, comece com + e o indicativo do país.",
+      phoneHelper: "Escolha o país e introduza o número.",
       phoneInvalid: "Indique um telefone válido.",
       phoneLabel: "Telefone",
       phonePlaceholder: "Introduza o telefone",
@@ -2247,7 +2249,7 @@ export const ptPT: TranslationResource = {
       nameToBeInformed: "Indicado pela pessoa ao ativar a conta",
       noAnswer: "Não houve resposta. Tente novamente: o mesmo envio não cria um convite duplicado.",
       noUnits: "Não há nenhuma unidade ativa para conceder acesso.",
-      phoneHelper: "Opcional. Para um número de outro país, comece com + e o indicativo do país.",
+      phoneHelper: "Opcional. Escolha o país e introduza o número.",
       phoneInvalid: "Introduza um telefone válido, com indicativo.",
       phoneLabel: "Telefone",
       phonePlaceholder: "Telefone da pessoa",
@@ -2402,8 +2404,7 @@ export const ptPT: TranslationResource = {
     profile: {
       description:
         "Aqui só se alteram o nome e o telefone. E-mail, palavra-passe, papéis, unidades e situação têm fluxos próprios.",
-      phoneHelper:
-        "Opcional: deixe em branco para remover. Para um número de outro país, comece com + e o indicativo do país.",
+      phoneHelper: "Escolha o país e introduza o número.",
       saved: "Dados de {{name}} atualizados.",
       title: "Editar dados de {{name}}",
     },
