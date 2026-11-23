@@ -4,15 +4,11 @@ Aplicação de gestão escolar SaaS white-label multi-tenant, construída com Re
 
 ## Aplicação
 
-A aplicação está publicada no Firebase Hosting:
+A aplicação está publicada no Render:
 
-**https://school-flow-360.web.app**
+**https://school-flow-360-i2m0.onrender.com**
 
-Para publicar uma nova versão depois de alterar código:
-
-```
-bun run deploy
-```
+Para publicar uma nova versão, faça o merge do PR no `master`: o Render faz o build e publica assim que os checks do GitHub passam no commit (ver `render.yaml`).
 
 ## Storybook
 
@@ -34,7 +30,6 @@ bun run deploy-storybook
 - `bun run test` — executa a suíte de testes (Vitest)
 - `bun run storybook` — executa o Storybook localmente na porta 6006
 - `bun run lint` / `bun run format` — ESLint / Prettier
-- `bun run deploy` — build de produção + deploy da aplicação no Firebase Hosting
 - `bun run deploy-storybook` — build do Storybook + deploy no Firebase Hosting
 
 Veja [CLAUDE.md](./CLAUDE.md) para a documentação completa de arquitetura e convenções do projeto.
