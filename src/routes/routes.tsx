@@ -302,6 +302,48 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { AcademicOverview } = await import("@/pages/AcademicOverview")
+          return { Component: AcademicOverview }
+        },
+        path: paths.academicOverview,
+      },
+      {
+        lazy: async () => {
+          const { Periods } = await import("@/pages/Periods")
+          return { Component: Periods }
+        },
+        path: paths.periods,
+      },
+      {
+        lazy: async () => {
+          const { GradeLevels } = await import("@/pages/GradeLevels")
+          return { Component: GradeLevels }
+        },
+        path: paths.gradeLevels,
+      },
+      {
+        lazy: async () => {
+          const { Offers } = await import("@/pages/Offers")
+          return { Component: Offers }
+        },
+        path: paths.offers,
+      },
+      {
+        lazy: async () => {
+          const { Rooms } = await import("@/pages/Rooms")
+          return { Component: Rooms }
+        },
+        path: paths.rooms,
+      },
+      {
+        lazy: async () => {
+          const { AcademicCalendar } = await import("@/pages/AcademicCalendar")
+          return { Component: AcademicCalendar }
+        },
+        path: paths.academicCalendar,
+      },
+      {
+        lazy: async () => {
           const { ClassDiary } = await import("@/pages/ClassDiary")
           return { Component: ClassDiary }
         },

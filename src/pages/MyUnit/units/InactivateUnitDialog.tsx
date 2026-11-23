@@ -106,7 +106,9 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
       )
     }
 
-    if (impact.assignedUsers === 0) {
+    const hasAcademicImpact = impact.liveClasses + impact.openTeacherLinks + impact.openPeriods > 0
+
+    if (impact.assignedUsers === 0 && !hasAcademicImpact) {
       return (
         <Text color="secondary" fontSize="sm">
           {t("myUnit.units.inactivateImpactNone")}
@@ -115,12 +117,25 @@ export const InactivateUnitDialog = (props: InactivateUnitDialogProps) => {
     }
 
     return (
-      <Text color="warning" fontSize="sm" role="status">
-        {t("myUnit.units.inactivateImpactUsers", {
-          assigned: impact.assignedUsers,
-          enabled: impact.enabledAssignedUsers,
-        })}
-      </Text>
+      <>
+        {impact.assignedUsers > 0 && (
+          <Text color="warning" fontSize="sm" role="status">
+            {t("myUnit.units.inactivateImpactUsers", {
+              assigned: impact.assignedUsers,
+              enabled: impact.enabledAssignedUsers,
+            })}
+          </Text>
+        )}
+        {hasAcademicImpact && (
+          <Text color="warning" fontSize="sm" role="status">
+            {t("myUnit.units.inactivateImpactAcademic", {
+              classes: impact.liveClasses,
+              links: impact.openTeacherLinks,
+              periods: impact.openPeriods,
+            })}
+          </Text>
+        )}
+      </>
     )
   }
 

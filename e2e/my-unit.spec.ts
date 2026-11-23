@@ -359,6 +359,12 @@ type UnitsScenario = "create-lost" | "create-saved" | "unit-conflict"
 // The users tied to each unit, which inactivating it would affect: only Caucaia has some.
 const assignedUsersByUnit: Record<number, { assigned: number; enabled: number }> = { 3: { assigned: 3, enabled: 2 } }
 
+// The academic structure of a unit (P04): classes in preparation or active, teacher links that have not
+// ended and open periods. Unidade Caucaia has some.
+const academicImpactByUnit: Record<number, { liveClasses: number; openPeriods: number; openTeacherLinks: number }> = {
+  3: { liveClasses: 2, openPeriods: 1, openTeacherLinks: 4 },
+}
+
 const apiError = (status: number, code: string) => ({
   body: JSON.stringify({ code, data: null, message: code, status: "Error", tenantId: "schoolflow_demo" }),
   contentType: "application/json",
@@ -449,14 +455,21 @@ const mockUnitsApi = async (page: Page, mock: OrganizationMock, initial: ApiUnit
   await page.route(/\/api\/school-units\/\d+\/deactivation-check$/, (route) => {
     const current = units.find((unit) => unit.schoolUnitId === idOf(route.request().url()))!
     const users = assignedUsersByUnit[current.schoolUnitId] ?? { assigned: 0, enabled: 0 }
+    const academic = academicImpactByUnit[current.schoolUnitId] ?? {
+      liveClasses: 0,
+      openPeriods: 0,
+      openTeacherLinks: 0,
+    }
 
     return route.fulfill(
       apiAnswer({
         assignedUsers: users.assigned,
         canDeactivate: true,
         enabledAssignedUsers: users.enabled,
+        ...academic,
         operationalStatus: current.operationalStatus,
-        requiresConfirmation: users.assigned > 0,
+        requiresConfirmation:
+          users.assigned > 0 || academic.liveClasses + academic.openPeriods + academic.openTeacherLinks > 0,
         schoolUnitId: current.schoolUnitId,
         version: current.version,
       }),
@@ -1372,6 +1385,9 @@ test.describe("units", () => {
     await expect(confirm).toContainText(
       "Usuários vinculados a esta unidade: 3 (2 com acesso ativo). Eles não são alterados nem bloqueados.",
     )
+    await expect(confirm).toContainText(
+      "Na estrutura acadêmica: 2 turma(s) em preparação ou ativa(s), 4 vínculo(s) de professor em andamento e 1 período(s) aberto(s).",
+    )
     await confirm.getByRole("textbox", { name: "Motivo da inativação" }).fill("Unidade incorporada à Aldeota.")
     await confirm.getByRole("button", { name: "Inativar" }).click()
 
@@ -1406,7 +1422,7 @@ test.describe("units", () => {
     await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
     await page.getByRole("menuitem", { name: "Inativar" }).click()
     const confirm = page.getByRole("dialog", { name: "Inativar unidade?" })
-    await expect(confirm).toContainText("Nenhum usuário está vinculado a esta unidade.")
+    await expect(confirm).toContainText("Nenhum usuário nem estrutura acadêmica está vinculado a esta unidade.")
     await expect(confirm.getByRole("button", { name: "Inativar" })).toBeEnabled()
     await confirm.getByRole("button", { name: "Cancelar" }).click()
 

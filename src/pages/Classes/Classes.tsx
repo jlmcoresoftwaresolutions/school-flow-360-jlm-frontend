@@ -7,6 +7,6 @@ export const Classes = () => {
   const { t } = useTranslation()
 
   return (
-    <PageHeader description={t("common.placeholderDescription")} icon="class-outline" title={t("shell.nav.classes")} />
+    <PageHeader description={t("academic.descriptions.classes")} icon="class-outline" title={t("shell.nav.classes")} />
   )
 }

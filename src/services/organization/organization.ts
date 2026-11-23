@@ -322,6 +322,9 @@ export const getSchoolUnitInactivationImpact = async (
     assignedUsers: check.assignedUsers,
     canInactivate: check.canDeactivate,
     enabledAssignedUsers: check.enabledAssignedUsers,
+    liveClasses: check.liveClasses ?? 0,
+    openPeriods: check.openPeriods ?? 0,
+    openTeacherLinks: check.openTeacherLinks ?? 0,
     requiresConfirmation: check.requiresConfirmation,
     version: check.version,
   }

@@ -3,6 +3,18 @@ import type { TranslationResource } from "./ptBR"
 // Neutral Spanish, used for every Spanish-speaking browser (es-ES, es-MX, es-AR...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const es: TranslationResource = {
+  academic: {
+    descriptions: {
+      academicCalendar: "Días lectivos, feriados y eventos de cada sede y período, preparados y publicados.",
+      academicOverview: "Grupos, capacidad y pendientes de la estructura académica en sus sedes.",
+      classes: "Los grupos de cada sede y período, con grado, turno, aula, capacidad y profesores.",
+      gradeLevels: "Las etapas educativas de la institución y los grados de cada una.",
+      offers: "Los grados ofrecidos en cada sede y período, con las asignaturas que enseñan.",
+      periods: "Los períodos lectivos de la institución y las sedes donde rigen.",
+      rooms: "Las aulas físicas de cada sede, para los grupos.",
+      subjects: "Las asignaturas de la institución, usadas por las ofertas de cada sede.",
+    },
+  },
   acceptInvitation: {
     accessLabel: "Tu acceso",
     activated: "Cuenta activada. Inicia sesión con tu correo y la contraseña que creaste.",
@@ -697,9 +709,11 @@ export const es: TranslationResource = {
         "Esta sede cambió desde que se comprobó el impacto. Revisa el impacto actualizado y confirma de nuevo.",
       inactivateDescription:
         "{{name}} dejará de aparecer en las nuevas operaciones, pero seguirá en el historial de la organización.",
+      inactivateImpactAcademic:
+        "En la estructura académica: {{classes}} grupo(s) en preparación o activo(s), {{links}} vínculo(s) de profesor en curso y {{periods}} período(s) abierto(s).",
       inactivateImpactError: "No pudimos comprobar el impacto de la inactivación. Cierra e inténtalo de nuevo.",
       inactivateImpactLoading: "Comprobando el impacto de la inactivación...",
-      inactivateImpactNone: "Ningún usuario está vinculado a esta sede.",
+      inactivateImpactNone: "Ningún usuario ni estructura académica está vinculado a esta sede.",
       inactivateImpactUsers:
         "Usuarios vinculados a esta sede: {{assigned}} ({{enabled}} con acceso activo). No se modifican ni se bloquean.",
       inactivateTitle: "¿Inactivar la sede?",
@@ -1099,6 +1113,8 @@ export const es: TranslationResource = {
     myProfile: "Mi perfil",
     nav: {
       academic: "Académico",
+      academicCalendar: "Calendario",
+      academicOverview: "Visión general",
       academicReports: "Informes académicos",
       accessLogs: "Registros de acceso",
       activeSessions: "Sesiones activas",
@@ -1113,6 +1129,7 @@ export const es: TranslationResource = {
       exports: "Exportaciones",
       finance: "Finanzas",
       financialReports: "Informes financieros",
+      gradeLevels: "Etapas y grados",
       guardians: "Responsables",
       help: "Ayuda",
       helpCenter: "Centro de ayuda",
@@ -1123,13 +1140,16 @@ export const es: TranslationResource = {
       myUnit: "Mi Sede",
       notices: "Avisos",
       notifications: "Notificaciones",
+      offers: "Ofertas",
       peopleSearch: "Buscar personas",
+      periods: "Períodos lectivos",
       preferences: "Preferencias",
       profilesAndPermissions: "Perfiles y permisos",
       recentAccess: "Accesos recientes",
       reconciliation: "Conciliación",
       reportCards: "Boletines de notas",
       reports: "Informes",
+      rooms: "Aulas",
       security: "Seguridad",
       settings: "Configuración",
       students: "Estudiantes",

@@ -10,22 +10,33 @@ type PageKey = keyof PathsType
 // What is here follows the backend and the matrix v2.0: the access audit is Admin-only; Minha Unidade
 // is managed by the Admin and read by the Secretaria; users and invitations are for both; the people
 // (students and guardians, P03) are for both too (PE-14: the other roles wait for their own modules).
+// The academic structure (P04, CT09) adds the Coordenação, which manages it like the Secretaria (but
+// never Usuários, Convites nor Pessoas), and the Professor, who only reads it; the calendar is also the
+// Aluno's and the Responsável's, who only see the published one. The Financeiro sees none of it.
 // The menu hides what a user can't open, and the AppShell's loader sends a direct visit to the access
 // denied page; neither replaces the backend's own check on every call.
 export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
+  academicCalendar: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR", "ALUNO", "RESPONSAVEL"],
+  academicOverview: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   audit: ["ADMIN"],
+  classes: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
+  gradeLevels: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   guardianEdit: ["ADMIN", "SECRETARIA"],
   guardianNew: ["ADMIN", "SECRETARIA"],
   guardianProfile: ["ADMIN", "SECRETARIA"],
   guardians: ["ADMIN", "SECRETARIA"],
   invites: ["ADMIN", "SECRETARIA"],
   myUnit: ["ADMIN", "SECRETARIA"],
+  offers: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   peopleSearch: ["ADMIN", "SECRETARIA"],
+  periods: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   profilesAndPermissions: ["ADMIN", "SECRETARIA"],
+  rooms: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   studentEdit: ["ADMIN", "SECRETARIA"],
   studentNew: ["ADMIN", "SECRETARIA"],
   studentProfile: ["ADMIN", "SECRETARIA"],
   students: ["ADMIN", "SECRETARIA"],
+  subjects: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   userList: ["ADMIN", "SECRETARIA"],
 }
 

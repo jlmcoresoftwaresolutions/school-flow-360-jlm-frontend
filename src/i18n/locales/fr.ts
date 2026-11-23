@@ -3,6 +3,19 @@ import type { TranslationResource } from "./ptBR"
 // French, used for every French-speaking browser (fr-FR, fr-CA, fr-BE...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const fr: TranslationResource = {
+  academic: {
+    descriptions: {
+      academicCalendar:
+        "Jours de classe, jours fériés et événements de chaque établissement et période, préparés et publiés.",
+      academicOverview: "Classes, capacité et points en attente de la structure pédagogique dans vos établissements.",
+      classes: "Les classes de chaque établissement et période, avec niveau, horaire, salle, capacité et enseignants.",
+      gradeLevels: "Les cycles d'enseignement de l'institution et les niveaux de chacun.",
+      offers: "Les niveaux offerts dans chaque établissement et période, avec les matières enseignées.",
+      periods: "Les périodes scolaires de l'institution et les établissements où elles s'appliquent.",
+      rooms: "Les salles physiques de chaque établissement, pour les classes.",
+      subjects: "Les matières de l'institution, utilisées par les offres de chaque établissement.",
+    },
+  },
   acceptInvitation: {
     accessLabel: "Votre accès",
     activated: "Compte activé. Connectez-vous avec votre e-mail et le mot de passe que vous avez créé.",
@@ -710,9 +723,11 @@ export const fr: TranslationResource = {
         "Cet établissement a changé depuis la vérification de l'impact. Consultez l'impact mis à jour et confirmez à nouveau.",
       inactivateDescription:
         "{{name}} n'apparaîtra plus dans les nouvelles opérations, mais reste dans l'historique de l'organisation.",
+      inactivateImpactAcademic:
+        "Dans la structure pédagogique : {{classes}} classe(s) en préparation ou active(s), {{links}} affectation(s) d'enseignant en cours et {{periods}} période(s) ouverte(s).",
       inactivateImpactError: "Impossible de vérifier l'impact de la désactivation. Fermez et réessayez.",
       inactivateImpactLoading: "Vérification de l'impact de la désactivation...",
-      inactivateImpactNone: "Aucun utilisateur n'est lié à cet établissement.",
+      inactivateImpactNone: "Aucun utilisateur ni structure pédagogique n'est lié à cet établissement.",
       inactivateImpactUsers:
         "Utilisateurs liés à cet établissement : {{assigned}} ({{enabled}} avec un accès actif). Ils ne sont ni modifiés ni bloqués.",
       inactivateTitle: "Désactiver l'établissement ?",
@@ -1116,6 +1131,8 @@ export const fr: TranslationResource = {
     myProfile: "Mon profil",
     nav: {
       academic: "Scolarité",
+      academicCalendar: "Calendrier",
+      academicOverview: "Vue d'ensemble",
       academicReports: "Rapports pédagogiques",
       accessLogs: "Journaux d'accès",
       activeSessions: "Sessions actives",
@@ -1130,6 +1147,7 @@ export const fr: TranslationResource = {
       exports: "Exportations",
       finance: "Finances",
       financialReports: "Rapports financiers",
+      gradeLevels: "Cycles et niveaux",
       guardians: "Responsables légaux",
       help: "Aide",
       helpCenter: "Centre d'aide",
@@ -1140,13 +1158,16 @@ export const fr: TranslationResource = {
       myUnit: "Mon Établissement",
       notices: "Annonces",
       notifications: "Notifications",
+      offers: "Offres",
       peopleSearch: "Rechercher des personnes",
+      periods: "Périodes scolaires",
       preferences: "Préférences",
       profilesAndPermissions: "Profils et autorisations",
       recentAccess: "Accès récents",
       reconciliation: "Rapprochement",
       reportCards: "Bulletins",
       reports: "Rapports",
+      rooms: "Salles",
       security: "Sécurité",
       settings: "Paramètres",
       students: "Élèves",

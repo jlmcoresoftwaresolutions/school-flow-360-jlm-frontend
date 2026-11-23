@@ -4,6 +4,18 @@ import type { TranslationResource } from "./ptBR"
 // "utilizador", "contacto"...) and no "você". Typed against TranslationResource like en.ts, so a
 // missing key is a compile error.
 export const ptPT: TranslationResource = {
+  academic: {
+    descriptions: {
+      academicCalendar: "Dias letivos, feriados e eventos de cada unidade e período, preparados e publicados.",
+      academicOverview: "Turmas, capacidade e pendências da estrutura académica nas suas unidades.",
+      classes: "As turmas de cada unidade e período, com ano, turno, sala, capacidade e professores.",
+      gradeLevels: "Os ciclos de ensino da instituição e os anos de cada um.",
+      offers: "Os anos oferecidos em cada unidade e período, com as disciplinas que ensinam.",
+      periods: "Os períodos letivos da instituição e as unidades onde valem.",
+      rooms: "As salas físicas de cada unidade, para as turmas.",
+      subjects: "As disciplinas da instituição, usadas pelas ofertas de cada unidade.",
+    },
+  },
   acceptInvitation: {
     accessLabel: "O seu acesso",
     activated: "Conta ativada. Entre com o seu e-mail e a palavra-passe que criou.",
@@ -694,9 +706,11 @@ export const ptPT: TranslationResource = {
         "Esta unidade foi alterada desde que o impacto foi verificado. Verifique o impacto atualizado e confirme de novo.",
       inactivateDescription:
         "{{name}} deixa de aparecer nas novas operações, mas continua no histórico da organização.",
+      inactivateImpactAcademic:
+        "Na estrutura académica: {{classes}} turma(s) em preparação ou ativa(s), {{links}} vínculo(s) de professor em curso e {{periods}} período(s) aberto(s).",
       inactivateImpactError: "Não foi possível verificar o impacto da inativação. Feche e tente novamente.",
       inactivateImpactLoading: "A verificar o impacto da inativação...",
-      inactivateImpactNone: "Nenhum utilizador está associado a esta unidade.",
+      inactivateImpactNone: "Nenhum utilizador nem estrutura académica está associado a esta unidade.",
       inactivateImpactUsers:
         "Utilizadores associados a esta unidade: {{assigned}} ({{enabled}} com acesso ativo). Não são alterados nem bloqueados.",
       inactivateTitle: "Inativar unidade?",
@@ -1095,6 +1109,8 @@ export const ptPT: TranslationResource = {
     myProfile: "O meu perfil",
     nav: {
       academic: "Académico",
+      academicCalendar: "Calendário",
+      academicOverview: "Visão geral",
       academicReports: "Relatórios académicos",
       accessLogs: "Registos de acesso",
       activeSessions: "Sessões ativas",
@@ -1109,6 +1125,7 @@ export const ptPT: TranslationResource = {
       exports: "Exportações",
       finance: "Financeiro",
       financialReports: "Relatórios financeiros",
+      gradeLevels: "Ciclos e anos",
       guardians: "Encarregados de educação",
       help: "Ajuda",
       helpCenter: "Centro de ajuda",
@@ -1119,13 +1136,16 @@ export const ptPT: TranslationResource = {
       myUnit: "A Minha Unidade",
       notices: "Comunicados",
       notifications: "Notificações",
+      offers: "Ofertas",
       peopleSearch: "Pesquisar pessoas",
+      periods: "Períodos letivos",
       preferences: "Preferências",
       profilesAndPermissions: "Perfis e permissões",
       recentAccess: "Acessos recentes",
       reconciliation: "Reconciliação",
       reportCards: "Pautas",
       reports: "Relatórios",
+      rooms: "Salas",
       security: "Segurança",
       settings: "Definições",
       students: "Alunos",
