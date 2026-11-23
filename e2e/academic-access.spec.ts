@@ -1,9 +1,10 @@
+import { mockAcademicApi } from "./support/academic.ts"
 import { expect, type Page, test } from "./support/test.ts"
 import { secretariaContext, signInAndOpen } from "./support/userAccess.ts"
 
 // Who opens the academic structure pages (P04, CT09): the Admin, the Secretaria and the Coordenação
 // manage them, the Professor reads them, the Aluno and the Responsável only see the calendar, and the
-// Financeiro none. The pages read nothing yet: this covers the menu and the access rules.
+// Financeiro none. The backend is mocked (e2e/support/academic.ts): this covers the menu and the access rules.
 
 const academicPages = [
   { heading: "Visão geral", menu: "Visão geral", path: "/academic/overview" },
@@ -31,6 +32,7 @@ const openAcademicGroup = async (page: Page) => {
 
 test.describe("academic access", () => {
   test("gives the Admin every academic page, from the menu", async ({ page }) => {
+    await mockAcademicApi(page)
     await signInAndOpen(page, "/home")
     await openAcademicGroup(page)
 
@@ -42,6 +44,7 @@ test.describe("academic access", () => {
   })
 
   test("opens the academic pages for the Coordenação, but not the people", async ({ page }) => {
+    await mockAcademicApi(page)
     await signInAndOpen(page, "/academic/periods", withRole("COORDENACAO"))
     await expect(page.getByRole("heading", { level: 1, name: "Períodos letivos" })).toBeVisible()
 
@@ -53,6 +56,7 @@ test.describe("academic access", () => {
   })
 
   test("lets the Professor read the academic pages", async ({ page }) => {
+    await mockAcademicApi(page)
     await signInAndOpen(page, "/academic/classes", withRole("PROFESSOR"))
     await expect(page.getByRole("heading", { level: 1, name: "Turmas" })).toBeVisible()
 
@@ -61,6 +65,7 @@ test.describe("academic access", () => {
   })
 
   test("gives the Aluno and the Responsável only the calendar", async ({ page }) => {
+    await mockAcademicApi(page)
     await signInAndOpen(page, "/academic/calendar", withRole("ALUNO"))
     await expect(page.getByRole("heading", { level: 1, name: "Calendário" })).toBeVisible()
 
@@ -73,6 +78,7 @@ test.describe("academic access", () => {
   })
 
   test("keeps the academic structure closed to the Financeiro", async ({ page }) => {
+    await mockAcademicApi(page)
     await signInAndOpen(page, "/academic/calendar", withRole("FINANCEIRO"))
     await expect(page).toHaveURL(/\/access-denied$/)
 

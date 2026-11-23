@@ -33,7 +33,7 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 // code repeated in its scope is 409 ACADEMIC_DUPLICATE_CODE, and an inactivation with something
 // depending on it 409 ACADEMIC_DEPENDENCY_ACTIVE.
 
-// NOT USED YET. GET /api/academic/stages: the stages of the institution.
+// USED by the stages and grades page. GET /api/academic/stages: the stages of the institution.
 export const listAcademicStages = async (
   params?: AcademicCatalogSearchParams,
   config?: RequestConfig,
@@ -43,7 +43,7 @@ export const listAcademicStages = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/stages: a level of the institution (`name`, `sortOrder` ≥ 0); the name is unique.
+// USED by the stages and grades page. POST /api/academic/stages: a level of the institution (`name`, `sortOrder` ≥ 0); the name is unique.
 export const createAcademicStage = async (
   request: AcademicStageWrite,
   config?: RequestConfig,
@@ -53,14 +53,14 @@ export const createAcademicStage = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/stages/{id}.
+// USED by the stages and grades page. GET /api/academic/stages/{id}.
 export const getAcademicStage = async (stageId: number, config?: RequestConfig): Promise<AcademicStage> => {
   const response = await httpClient.get<ApiResponse<AcademicStage>>(`/api/academic/stages/${stageId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/stages/{id}: the edition, with `version`.
+// USED by the stages and grades page. PUT /api/academic/stages/{id}: the edition, with `version`.
 export const updateAcademicStage = async (
   stageId: number,
   request: AcademicStageWrite,
@@ -71,7 +71,7 @@ export const updateAcademicStage = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/stages/{id}/impact: what would block inactivating it.
+// USED by the stages and grades page. GET /api/academic/stages/{id}/impact: what would block inactivating it.
 export const getAcademicStageImpact = async (
   stageId: number,
   config?: RequestConfig,
@@ -84,7 +84,7 @@ export const getAcademicStageImpact = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/stages/{id}/inactivate: refused while something depends on it.
+// USED by the stages and grades page. POST /api/academic/stages/{id}/inactivate: refused while something depends on it.
 export const inactivateAcademicStage = async (
   stageId: number,
   version: number,
@@ -99,7 +99,7 @@ export const inactivateAcademicStage = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/stages/{id}/activate.
+// USED by the stages and grades page. POST /api/academic/stages/{id}/activate.
 export const activateAcademicStage = async (
   stageId: number,
   version: number,
@@ -114,7 +114,7 @@ export const activateAcademicStage = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/grades: the grades of the institution.
+// USED by the stages and grades page. GET /api/academic/grades: the grades of the institution.
 export const listAcademicGrades = async (
   params?: AcademicGradeSearchParams,
   config?: RequestConfig,
@@ -124,7 +124,7 @@ export const listAcademicGrades = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/grades: a grade of one stage, fixed when created (another stage is 422 ACADEMIC_FIELD_INCOMPATIBLE); the name is unique in the stage.
+// USED by the stages and grades page. POST /api/academic/grades: a grade of one stage, fixed when created (another stage is 422 ACADEMIC_FIELD_INCOMPATIBLE); the name is unique in the stage.
 export const createAcademicGrade = async (
   request: AcademicGradeWrite,
   config?: RequestConfig,
@@ -134,14 +134,14 @@ export const createAcademicGrade = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/grades/{id}.
+// USED by the stages and grades page. GET /api/academic/grades/{id}.
 export const getAcademicGrade = async (gradeId: number, config?: RequestConfig): Promise<AcademicGrade> => {
   const response = await httpClient.get<ApiResponse<AcademicGrade>>(`/api/academic/grades/${gradeId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/grades/{id}: the edition, with `version`.
+// USED by the stages and grades page. PUT /api/academic/grades/{id}: the edition, with `version`.
 export const updateAcademicGrade = async (
   gradeId: number,
   request: AcademicGradeWrite,
@@ -152,7 +152,7 @@ export const updateAcademicGrade = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/grades/{id}/impact: what would block inactivating it.
+// USED by the stages and grades page. GET /api/academic/grades/{id}/impact: what would block inactivating it.
 export const getAcademicGradeImpact = async (
   gradeId: number,
   config?: RequestConfig,
@@ -165,7 +165,7 @@ export const getAcademicGradeImpact = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/grades/{id}/inactivate: refused while something depends on it.
+// USED by the stages and grades page. POST /api/academic/grades/{id}/inactivate: refused while something depends on it.
 export const inactivateAcademicGrade = async (
   gradeId: number,
   version: number,
@@ -180,7 +180,7 @@ export const inactivateAcademicGrade = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/grades/{id}/activate.
+// USED by the stages and grades page. POST /api/academic/grades/{id}/activate.
 export const activateAcademicGrade = async (
   gradeId: number,
   version: number,
@@ -195,7 +195,7 @@ export const activateAcademicGrade = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/subjects: the subjects of the institution.
+// USED by the subjects page. GET /api/academic/subjects: the subjects of the institution.
 export const listAcademicSubjects = async (
   params?: AcademicCatalogSearchParams,
   config?: RequestConfig,
@@ -208,7 +208,7 @@ export const listAcademicSubjects = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/subjects: a subject of the institution; the code is unique without case, accents or repeated spaces.
+// USED by the subjects page. POST /api/academic/subjects: a subject of the institution; the code is unique without case, accents or repeated spaces.
 export const createAcademicSubject = async (
   request: AcademicSubjectWrite,
   config?: RequestConfig,
@@ -218,14 +218,14 @@ export const createAcademicSubject = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/subjects/{id}.
+// USED by the subjects page. GET /api/academic/subjects/{id}.
 export const getAcademicSubject = async (subjectId: number, config?: RequestConfig): Promise<AcademicSubject> => {
   const response = await httpClient.get<ApiResponse<AcademicSubject>>(`/api/academic/subjects/${subjectId}`, config)
 
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/academic/subjects/{id}: the edition, with `version`.
+// USED by the subjects page. PUT /api/academic/subjects/{id}: the edition, with `version`.
 export const updateAcademicSubject = async (
   subjectId: number,
   request: AcademicSubjectWrite,
@@ -240,7 +240,7 @@ export const updateAcademicSubject = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/subjects/{id}/impact: what would block inactivating it.
+// USED by the subjects page. GET /api/academic/subjects/{id}/impact: what would block inactivating it.
 export const getAcademicSubjectImpact = async (
   subjectId: number,
   config?: RequestConfig,
@@ -253,7 +253,7 @@ export const getAcademicSubjectImpact = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/subjects/{id}/inactivate: refused while something depends on it.
+// USED by the subjects page. POST /api/academic/subjects/{id}/inactivate: refused while something depends on it.
 export const inactivateAcademicSubject = async (
   subjectId: number,
   version: number,
@@ -268,7 +268,7 @@ export const inactivateAcademicSubject = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/academic/subjects/{id}/activate.
+// USED by the subjects page. POST /api/academic/subjects/{id}/activate.
 export const activateAcademicSubject = async (
   subjectId: number,
   version: number,
@@ -283,7 +283,7 @@ export const activateAcademicSubject = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/academic/catalog/search: the similar stages, grades and subjects before creating one (at least 2 characters).
+// USED by the catalog forms. GET /api/academic/catalog/search: the similar stages, grades and subjects before creating one (at least 2 characters).
 export const searchAcademicCatalog = async (q: string, config?: RequestConfig): Promise<AcademicCatalogMatches> => {
   const response = await httpClient.get<ApiResponse<AcademicCatalogMatches>>("/api/academic/catalog/search", {
     ...config,

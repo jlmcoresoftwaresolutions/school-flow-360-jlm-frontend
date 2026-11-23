@@ -1,12 +1,17 @@
 import { useTranslation } from "react-i18next"
 
-import type { AcademicPeriodKind, AcademicPeriodStatus } from "@/models"
+import type { AcademicCatalogStatus, AcademicPeriodKind, AcademicPeriodStatus } from "@/models"
 import { formatDate } from "@/utils/dates"
 
 import { readAcademicBlocker } from "./academicBlockers"
 import type { AcademicUnits } from "./useAcademicUnits"
 
 type Tone = "neutral" | "success" | "warning"
+
+const catalogStatusTones: Record<AcademicCatalogStatus, Tone> = {
+  ACTIVE: "success",
+  INACTIVE: "neutral",
+}
 
 const periodStatusTones: Record<AcademicPeriodStatus, Tone> = {
   ACTIVE: "success",
@@ -23,6 +28,8 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
   const periodStatusLabel = (status: AcademicPeriodStatus) => t(`academic.periodStatuses.${status}`)
   const periodStatusTone = (status: AcademicPeriodStatus) => periodStatusTones[status]
   const periodKindLabel = (kind: AcademicPeriodKind) => t(`academic.periodKinds.${kind}`)
+  const catalogStatusLabel = (status: AcademicCatalogStatus) => t(`academic.catalogStatuses.${status}`)
+  const catalogStatusTone = (status: AcademicCatalogStatus) => catalogStatusTones[status]
 
   const dateRange = (start: string, end: string | null) =>
     end
@@ -40,5 +47,13 @@ export const useAcademicLabels = (units?: Pick<AcademicUnits, "nameOf">) => {
     return t(`academic.blockers.${blocker.key}`, { count: blocker.count ?? 0 })
   }
 
-  return { blockerText, dateRange, periodKindLabel, periodStatusLabel, periodStatusTone }
+  return {
+    blockerText,
+    catalogStatusLabel,
+    catalogStatusTone,
+    dateRange,
+    periodKindLabel,
+    periodStatusLabel,
+    periodStatusTone,
+  }
 }
