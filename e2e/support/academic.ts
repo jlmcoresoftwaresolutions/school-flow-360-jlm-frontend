@@ -75,7 +75,64 @@ const periodImpacts: Record<number, { activeOffers: number; blockers: string[] }
   13: { activeOffers: 3, blockers: [] },
 }
 
+// The catalog of the institution: three stages (the middle one with active grades), grades of two
+// stages (the first with active offers), and three subjects (the first taught by offers and classes).
+const catalogActions = (kind: string, status: unknown) => {
+  if (status !== "ACTIVE") return ["EDIT", "ACTIVATE"]
+  return kind === "stages" ? ["EDIT", "ADD_GRADE", "INACTIVATE"] : ["EDIT", "INACTIVATE"]
+}
+
+const catalogItem = (kind: string, fields: Item): Item => ({
+  version: 0,
+  ...fields,
+  eligibleActions: catalogActions(kind, fields.status),
+})
+
+export const stages = [
+  catalogItem("stages", { id: 1, name: "Educação Infantil", sortOrder: 1, status: "ACTIVE" }),
+  catalogItem("stages", { id: 2, name: "Ensino Fundamental", sortOrder: 2, status: "ACTIVE" }),
+  catalogItem("stages", { id: 3, name: "Ensino Médio", sortOrder: 3, status: "INACTIVE" }),
+]
+
+export const grades = [
+  catalogItem("grades", { id: 21, name: "1º ano", sortOrder: 1, stageId: 2, status: "ACTIVE" }),
+  catalogItem("grades", { id: 22, name: "2º ano", sortOrder: 2, stageId: 2, status: "ACTIVE" }),
+  catalogItem("grades", { id: 23, name: "Infantil 5", sortOrder: 5, stageId: 1, status: "ACTIVE" }),
+]
+
+export const subjects = [
+  catalogItem("subjects", {
+    code: "MAT",
+    description: "Matemática do Fundamental",
+    id: 31,
+    name: "Matemática",
+    status: "ACTIVE",
+  }),
+  catalogItem("subjects", { code: "POR", description: null, id: 32, name: "Língua Portuguesa", status: "ACTIVE" }),
+  catalogItem("subjects", { code: "ART", description: null, id: 33, name: "Artes", status: "INACTIVE" }),
+]
+
+// What blocks inactivating each catalog item, as the backend words it.
+const catalogBlockers: Record<string, string[]> = {
+  "grades/21": ["2 active offer(s) of this grade"],
+  "stages/2": ["2 active grade(s) of this stage"],
+  "subjects/31": ["3 active offer(s) that teach this subject", "2 class(es) that teach this subject"],
+}
+
+const dependencyError = (blockers: string[]) => ({
+  body: JSON.stringify({
+    code: "ACADEMIC_DEPENDENCY_ACTIVE",
+    data: null,
+    message: `This change depends on regularizing: ${blockers.join(", ")}.`,
+    status: "Error",
+  }),
+  contentType: "application/json",
+  status: 409,
+})
+
 type AcademicOptions = {
+  // Someone else changes this catalog item ("subjects/32") before its first save (409 VERSION_CONFLICT).
+  changedCatalogItem?: string
   // Someone else changes this period before the first save of the spec (409 VERSION_CONFLICT).
   changedPeriodId?: number
   // The caller only reads (a Professor): no item comes with an action.
@@ -237,6 +294,96 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
       version: Number(current.version) + 1,
     })
     return route.fulfill(apiAnswer(periodList[index]))
+  })
+
+  // The catalog: lists (search without accents, status and stage filters), creates with the uniqueness
+  // rules, editions with the version, impacts, inactivations (refused while something depends on the
+  // item) and reactivations.
+  const catalog: Record<string, Item[]> = {
+    grades: grades.map((item) => ({ ...item })),
+    stages: stages.map((item) => ({ ...item })),
+    subjects: subjects.map((item) => ({ ...item })),
+  }
+  let nextCatalogId = 100
+  let catalogChanged = false
+
+  const isDuplicate = (kind: string, body: Item, exceptId?: number) =>
+    catalog[kind].some((item) => {
+      if (item.id === exceptId) return false
+      if (kind === "subjects") return fold(item.code) === fold(body.code)
+      if (kind === "grades") return item.stageId === body.stageId && fold(item.name) === fold(body.name)
+      return fold(item.name) === fold(body.name)
+    })
+
+  await page.route(/\/api\/academic\/(stages|grades|subjects)(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const kind = /\/api\/academic\/(stages|grades|subjects)$/.exec(call.path)?.[1] ?? ""
+    if (call.method === "GET") {
+      const { q, stageId, status } = call.query
+      const found = catalog[kind]
+        .filter((item) => !q || fold(item.name).includes(fold(q)) || fold(item.code) === fold(q))
+        .filter((item) => !status || item.status === status)
+        .filter((item) => !stageId || String(item.stageId) === stageId)
+        .map(view)
+      return route.fulfill(apiAnswer(toPage(found, call.query)))
+    }
+
+    const body = call.body as Item
+    if (isDuplicate(kind, body)) return route.fulfill(apiError(409, "ACADEMIC_DUPLICATE_CODE"))
+    const created = catalogItem(kind, { ...body, id: nextCatalogId++, status: "ACTIVE", version: 0 })
+    catalog[kind].push(created)
+    return route.fulfill(apiAnswer(created))
+  })
+
+  await page.route(/\/api\/academic\/(stages|grades|subjects)\/\d+(\/(impact|activate|inactivate))?$/, (route) => {
+    const call = record(route.request())
+    const [, kind, id, , action] =
+      /\/api\/academic\/(stages|grades|subjects)\/(\d+)(\/(impact|activate|inactivate))?$/.exec(call.path) ?? []
+    const list = catalog[kind]
+    const index = list.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ACADEMIC_NOT_FOUND"))
+    const current = list[index]
+    const blockers = catalogBlockers[`${kind}/${id}`] ?? []
+
+    if (action === "impact") {
+      return route.fulfill(apiAnswer({ blockers, canInactivate: blockers.length === 0, id: Number(id) }))
+    }
+    if (call.method === "GET") return route.fulfill(apiAnswer(view(current)))
+
+    if (options.changedCatalogItem === `${kind}/${id}` && !catalogChanged) {
+      catalogChanged = true
+      list[index] = { ...current, name: `${String(current.name)} (revisada)`, version: Number(current.version) + 1 }
+      return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    }
+
+    const body = call.body as Item
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+
+    if (!action) {
+      if (isDuplicate(kind, { ...current, ...body }, Number(id))) {
+        return route.fulfill(apiError(409, "ACADEMIC_DUPLICATE_CODE"))
+      }
+      list[index] = catalogItem(kind, { ...current, ...body, version: Number(current.version) + 1 })
+      return route.fulfill(apiAnswer(list[index]))
+    }
+
+    if (action === "inactivate" && blockers.length > 0) return route.fulfill(dependencyError(blockers))
+    const status = action === "inactivate" ? "INACTIVE" : "ACTIVE"
+    list[index] = catalogItem(kind, { ...current, status, version: Number(current.version) + 1 })
+    return route.fulfill(apiAnswer(list[index]))
+  })
+
+  await page.route(/\/api\/academic\/catalog\/search\?.*$/, (route) => {
+    const call = record(route.request())
+    const q = fold(call.query.q)
+    const like = (item: Item) => fold(item.name).includes(q)
+    return route.fulfill(
+      apiAnswer({
+        grades: catalog.grades.filter(like),
+        stages: catalog.stages.filter(like),
+        subjects: catalog.subjects.filter(like),
+      }),
+    )
   })
 
   return { calls }
