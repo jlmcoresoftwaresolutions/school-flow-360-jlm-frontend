@@ -20,13 +20,6 @@ export type RefreshTokenRequest = {
   refreshToken: string
 }
 
-// What POST /api/auth/register creates: an account tied to a school unit.
-export type RegisterUserRequest = {
-  email: string
-  password: string
-  schoolUnitId: number
-}
-
 // Body of POST /api/auth/login. `login` is the nickname or the e-mail of the account, with the same
 // password (the backend still reads the old `email` field too).
 export type LoginRequest = {
