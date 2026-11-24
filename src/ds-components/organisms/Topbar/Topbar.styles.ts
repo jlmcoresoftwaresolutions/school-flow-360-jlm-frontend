@@ -1,6 +1,6 @@
 import styled from "styled-components"
 
-import { ActionMenu } from "@/ds-components/molecules"
+import { ActionMenu } from "@/ds-components/molecules/ActionMenu"
 import { colors, media, motion, spacing } from "@/foundation"
 
 export const StyledTopbar = styled.header`

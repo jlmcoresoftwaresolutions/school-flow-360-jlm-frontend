@@ -3,7 +3,7 @@ import { useState } from "react"
 import { createMemoryRouter, Link, Outlet, RouterProvider } from "react-router-dom"
 
 import { Button, Text } from "@/ds-components/atoms"
-import { Input } from "@/ds-components/molecules"
+import { Input } from "@/ds-components/molecules/Input"
 import { spacing } from "@/foundation"
 
 import { UnsavedChangesGuard } from "./UnsavedChangesGuard"

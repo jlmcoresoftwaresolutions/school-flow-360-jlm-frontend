@@ -2,8 +2,8 @@ import type { CSSProperties, ReactNode } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
 import { Icon, IconButton } from "@/ds-components/atoms"
-import type { ActionMenuItem } from "@/ds-components/molecules"
-import { UserIdentity } from "@/ds-components/molecules"
+import type { ActionMenuItem } from "@/ds-components/molecules/ActionMenu"
+import { UserIdentity } from "@/ds-components/molecules/UserIdentity"
 
 import {
   StyledTopbar,
