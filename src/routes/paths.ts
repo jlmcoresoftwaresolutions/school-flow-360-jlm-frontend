@@ -21,6 +21,10 @@ export const paths = {
   classes: "/academic/classes",
   contactSupport: "/help/contact-support",
   contracts: "/finance/contracts",
+  // An enrollment (a preparation or a confirmed one; not in the menu; under the enrollments page, whose
+  // access rule it follows). Built with generatePath (react-router-dom).
+  enrollmentProfile: "/administration/enrollments/:enrollmentId",
+  enrollments: "/administration/enrollments",
   exports: "/reports/exports",
   financialReports: "/reports/financial",
   forgotPassword: "/forgot-password",

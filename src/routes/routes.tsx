@@ -250,6 +250,20 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { Enrollments } = await import("@/pages/Enrollments")
+          return { Component: Enrollments }
+        },
+        path: paths.enrollments,
+      },
+      {
+        lazy: async () => {
+          const { EnrollmentProfile } = await import("@/pages/EnrollmentProfile")
+          return { Component: EnrollmentProfile }
+        },
+        path: paths.enrollmentProfile,
+      },
+      {
+        lazy: async () => {
           const { StudentForm } = await import("@/pages/StudentForm")
           return { Component: StudentForm }
         },
