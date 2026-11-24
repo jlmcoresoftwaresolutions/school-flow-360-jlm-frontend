@@ -1,5 +1,9 @@
-// Expands 3-digit shorthand hex (e.g. "#0f0") to 6 digits before parsing, so both notations work.
+// Expands 3-digit shorthand hex (e.g. "#0f0") to 6 digits before parsing, so both notations work. A
+// color that is a CSS variable (the primary scale, which follows the school's color) can't be read
+// here, so the browser mixes it instead: the same color at that opacity.
 export const hexToRgba = (hex: string, alpha: number): string => {
+  if (hex.startsWith("var(")) return `color-mix(in srgb, ${hex} ${Math.round(alpha * 100)}%, transparent)`
+
   const digits = hex.replace("#", "")
   const fullDigits = digits.length === 3 ? digits.replace(/./g, (char) => char + char) : digits
 

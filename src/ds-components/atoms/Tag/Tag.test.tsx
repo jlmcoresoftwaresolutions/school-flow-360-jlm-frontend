@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { colors, shadows, spacing, translucency, typography } from "@/foundation"
+import { brandPalette, colors, shadows, spacing, translucency, typography } from "@/foundation"
 import { hexToRgba } from "@/utils/colors"
 
 import { Tag } from "./Tag"
@@ -24,7 +24,7 @@ describe("Tag", () => {
   it("applies the brand color styles", () => {
     render(<Tag color="brand">Novo</Tag>)
 
-    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.primary[600] })
+    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: brandPalette[600] })
   })
 
   it("applies the danger color styles", () => {
@@ -52,7 +52,7 @@ describe("Tag", () => {
   it("defaults to the solid variant", () => {
     render(<Tag color="brand">Novo</Tag>)
 
-    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: colors.primary[600] })
+    expect(screen.getByText("Novo")).toHaveStyle({ backgroundColor: brandPalette[600] })
   })
 
   it("applies a transparent background and colored border/text for the outlined variant", () => {
@@ -64,10 +64,10 @@ describe("Tag", () => {
 
     expect(screen.getByText("Novo")).toHaveStyle({
       backgroundColor: "transparent",
-      borderColor: colors.primary[600],
+      borderColor: brandPalette[600],
       borderStyle: "solid",
       borderWidth: "1px",
-      color: colors.primary[600],
+      color: brandPalette[600],
     })
   })
 
@@ -139,14 +139,14 @@ describe("Tag", () => {
 
   it("applies a translucent background tinted with the color, defaulting to the medium level", () => {
     render(
-      <Tag color="brand" translucent>
+      <Tag color="info" translucent>
         Novo
       </Tag>,
     )
 
     expect(screen.getByText("Novo")).toHaveStyle({
       backdropFilter: translucency.medium.backdropFilter,
-      backgroundColor: hexToRgba(colors.primary[600], 0.4),
+      backgroundColor: hexToRgba(colors.info[700], 0.4),
     })
   })
 

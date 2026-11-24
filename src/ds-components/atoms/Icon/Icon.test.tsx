@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { colors, opacity } from "@/foundation"
+import { brandPalette, colors, opacity } from "@/foundation"
 
 import { Icon } from "./Icon"
 
@@ -20,14 +20,14 @@ describe("Icon", () => {
 
   it("follows the color of the surrounding text with color inherit", () => {
     const { container } = render(
-      <span style={{ color: colors.primary[600] }}>
+      <span style={{ color: brandPalette[600] }}>
         <Icon color="inherit" name="home" />
       </span>,
     )
 
     const wrapper = container.querySelector("span span")
 
-    expect(wrapper).toHaveStyle({ color: colors.primary[600] })
+    expect(wrapper).toHaveStyle({ color: brandPalette[600] })
   })
 
   it("applies the className passed as a prop", () => {

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
-import { colors } from "@/foundation"
+import { brandPalette, colors } from "@/foundation"
 
 import { ConfirmDialog, type ConfirmDialogProps } from "./ConfirmDialog"
 
@@ -77,7 +77,7 @@ describe("ConfirmDialog", () => {
   it("paints the confirm button with the brand color by default", () => {
     renderDialog()
 
-    expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: colors.primary[600] })
+    expect(screen.getByRole("button", { name: "Inativar" })).toHaveStyle({ backgroundColor: brandPalette[600] })
   })
 
   it("paints the confirm button red in the danger tone", () => {

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { borderRadiusLevels, colors, semanticColors, spacing } from "@/foundation"
+import { borderRadiusLevels, brandPalette, colors, semanticColors, spacing } from "@/foundation"
 
 import { Card } from "./Card"
 
@@ -41,7 +41,7 @@ describe("Card", () => {
   it("applies the color prop", () => {
     render(<Card color="brand">Content</Card>)
 
-    expect(screen.getByText("Content")).toHaveStyle({ backgroundColor: semanticColors.brand })
+    expect(screen.getByText("Content")).toHaveStyle({ backgroundColor: brandPalette[600] })
   })
 
   it("applies the className passed as a prop", () => {

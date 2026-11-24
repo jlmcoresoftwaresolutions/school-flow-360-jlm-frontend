@@ -32,7 +32,7 @@ const sizeStyles: Record<ButtonSize, ReturnType<typeof css>> = {
 // link's label - each variant only takes what makes sense for its own look.
 const variantStyles = (color: string): Record<ButtonVariant, ReturnType<typeof css>> => ({
   filled: css`
-    background: ${color};
+    background-color: ${color};
     border: 1px solid transparent;
     color: ${colors.neutral[0]};
 

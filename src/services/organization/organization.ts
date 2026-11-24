@@ -1,4 +1,4 @@
-import { colors } from "@/foundation"
+import { brandPalette } from "@/foundation"
 import type {
   BrandingResponse,
   Organization,
@@ -148,8 +148,8 @@ export const updateOrganization = async (update: OrganizationUpdate, config?: Re
 }
 
 // The app's own colors, shown (and saved, if the admin keeps them) while nothing was saved yet.
-const defaultPrimaryColor = colors.primary[900]
-const defaultSecondaryColor = colors.primary[500]
+const defaultPrimaryColor = brandPalette[900]
+const defaultSecondaryColor = brandPalette[500]
 
 const toBranding = (branding: BrandingResponse): OrganizationBranding => ({
   faviconUrl: branding.favicon?.url ?? undefined,

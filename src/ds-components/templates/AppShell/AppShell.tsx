@@ -22,6 +22,7 @@ import { renewSession } from "@/services/httpClient"
 import { canOpenPage, getDisplayRoles } from "@/utils/access"
 import { endExpiredSession } from "@/utils/authRedirect"
 import { setDocumentIdentity } from "@/utils/documentIdentity"
+import { applySchoolColor } from "@/utils/theme"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
@@ -194,6 +195,10 @@ export const AppShell = () => {
   useEffect(() => {
     setDocumentIdentity({ faviconUrl: branding?.faviconUrl ?? null, title: tabTitle })
   }, [branding?.faviconUrl, tabTitle])
+
+  useEffect(() => {
+    applySchoolColor(branding?.primaryColor ?? null)
+  }, [branding?.primaryColor])
 
   return (
     <AppShellWrapper>

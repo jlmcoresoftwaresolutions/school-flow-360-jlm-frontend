@@ -1,15 +1,22 @@
+import { brandPalette, type BrandPaletteType } from "./brandPalette"
+
+// A step of the primary scale: the school's color when it published one (the CSS variable that
+// src/utils/theme sets on the page), the product's own otherwise. The variable's name must match the
+// theme's (--sf-primary-<step>).
+const primaryStep = (step: keyof BrandPaletteType) => `var(--sf-primary-${step}, ${brandPalette[step]})`
+
 export const colors = {
   primary: {
-    50: "#F6F9FD",
-    100: "#E4EDF9",
-    200: "#C0D5F1",
-    300: "#9CBDE8",
-    400: "#6F9FDE",
-    500: "#4B87D6",
-    600: "#4574B0",
-    700: "#3D5778",
-    800: "#1F406A",
-    900: "#00285B",
+    50: primaryStep(50),
+    100: primaryStep(100),
+    200: primaryStep(200),
+    300: primaryStep(300),
+    400: primaryStep(400),
+    500: primaryStep(500),
+    600: primaryStep(600),
+    700: primaryStep(700),
+    800: primaryStep(800),
+    900: primaryStep(900),
   },
   neutral: {
     0: "#FFFFFF",

@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { Link, MemoryRouter } from "react-router-dom"
 import { describe, expect, it, vi } from "vitest"
 
-import { borderRadiusLevels, colors, semanticColors, typography } from "@/foundation"
+import { borderRadiusLevels, brandPalette, colors, semanticColors, typography } from "@/foundation"
 
 import { Button } from "./Button"
 
@@ -30,13 +30,13 @@ describe("Button", () => {
   it("defaults to the filled variant", () => {
     render(<Button>Click me</Button>)
 
-    expect(screen.getByRole("button")).toHaveStyle({ backgroundColor: colors.primary[600] })
+    expect(screen.getByRole("button")).toHaveStyle({ backgroundColor: brandPalette[600] })
   })
 
   it("defaults to the brand color", () => {
     render(<Button>Click me</Button>)
 
-    expect(screen.getByRole("button")).toHaveStyle({ backgroundColor: semanticColors.brand })
+    expect(screen.getByRole("button")).toHaveStyle({ backgroundColor: brandPalette[600] })
   })
 
   it("defaults to the low border radius", () => {
@@ -84,7 +84,7 @@ describe("Button", () => {
   it("applies the outlined variant styles", () => {
     render(<Button variant="outlined">Click me</Button>)
 
-    expect(screen.getByRole("button")).toHaveStyle({ color: colors.primary[600] })
+    expect(screen.getByRole("button")).toHaveStyle({ color: brandPalette[600] })
   })
 
   it("applies the link variant styles", () => {

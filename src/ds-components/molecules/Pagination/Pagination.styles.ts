@@ -3,7 +3,7 @@ import styled, { css } from "styled-components"
 import { colors, motion, opacity, radius, spacing, typography } from "@/foundation"
 import { hexToRgba } from "@/utils/colors"
 
-const currentBackground = hexToRgba(colors.info[500], 0.12)
+const currentBackground = hexToRgba(colors.primary[500], 0.12)
 
 export const StyledPaginationList = styled.ul`
   align-items: center;
@@ -32,7 +32,7 @@ export const StyledPaginationButton = styled.button<StyledPaginationButtonProps>
   background: ${(props) => (props.$current ? currentBackground : "transparent")};
   border: none;
   border-radius: ${radius.md};
-  color: ${(props) => (props.$current ? colors.info[700] : colors.neutral[700])};
+  color: ${(props) => (props.$current ? colors.primary[700] : colors.neutral[700])};
   cursor: pointer;
   font-family: ${typography.fontFamily.sans};
   font-size: ${typography.fontSize.sm}px;
