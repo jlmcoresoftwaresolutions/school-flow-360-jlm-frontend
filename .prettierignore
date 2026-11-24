@@ -1,6 +1,7 @@
 build
 coverage
 dist
+dist-e2e
 node_modules
 .vscode
 .env

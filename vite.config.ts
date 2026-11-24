@@ -33,11 +33,11 @@ export default defineConfig((configEnv) => {
       },
     },
     server: {
-      open: !process.env.PLAYWRIGHT,
+      open: true,
       proxy: apiProxy,
       // The pages are lazy routes, so the dev server would otherwise only compile each one the first
-      // time it is opened - a pause on first navigation, long enough to time out an E2E assertion when
-      // several tests hit cold pages at once. Warming them up compiles them as soon as the server starts.
+      // time it is opened - a pause on first navigation. Warming them up compiles them as soon as the
+      // server starts. (The E2E suite runs against a build instead, see playwright.config.ts.)
       warmup: {
         clientFiles: ["./src/main.tsx", "./src/pages/*/index.ts", "./src/ds-components/templates/*/index.ts"],
       },
@@ -45,6 +45,8 @@ export default defineConfig((configEnv) => {
     test: {
       environment: "jsdom",
       exclude: [...configDefaults.exclude, "e2e/**"],
+      // Worker threads start faster than the default child processes; each test file is still isolated.
+      pool: "threads",
       setupFiles: ["./src/test/setup.ts"],
     },
   }

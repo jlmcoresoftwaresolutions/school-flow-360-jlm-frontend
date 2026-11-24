@@ -28,7 +28,8 @@ storybook-static
 # Firebase
 .firebase
 
-# Playwright
+# Playwright (dist-e2e is the build the E2E suite runs against)
+/dist-e2e
 /playwright-report
 /test-results
 /blob-report

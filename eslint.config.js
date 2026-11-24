@@ -11,7 +11,7 @@ import globals from "globals"
 import tseslint from "typescript-eslint"
 
 export default defineConfig([
-  globalIgnores(["dist", "storybook-static"]),
+  globalIgnores(["dist", "dist-e2e", "storybook-static"]),
   {
     files: ["**/*.{js,mjs,cjs,ts,tsx}"],
     extends: [
