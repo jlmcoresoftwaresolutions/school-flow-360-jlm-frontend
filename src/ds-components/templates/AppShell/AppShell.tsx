@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Outlet, useLoaderData, useLocation, useNavigate } from "react-router-dom"
 
@@ -11,7 +12,7 @@ import type { SidebarNavChild, SidebarNavItem } from "@/ds-components/organisms/
 import { Sidebar } from "@/ds-components/organisms/Sidebar"
 import type { TopbarAction } from "@/ds-components/organisms/Topbar"
 import { Topbar } from "@/ds-components/organisms/Topbar"
-import { useSessionExpiry } from "@/hooks"
+import { useSchoolBranding, useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
 import type { UserContext } from "@/models"
 import { pageRoles } from "@/routes/access"
@@ -20,6 +21,7 @@ import { paths } from "@/routes/paths"
 import { renewSession } from "@/services/httpClient"
 import { canOpenPage, getDisplayRoles } from "@/utils/access"
 import { endExpiredSession } from "@/utils/authRedirect"
+import { setDocumentIdentity } from "@/utils/documentIdentity"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
@@ -130,6 +132,7 @@ export const AppShell = () => {
 
   const { t } = useTranslation()
   useSessionExpiry(renewOrEndSession)
+  const branding = useSchoolBranding()
 
   const navLabel = (key: NavKey) => t(`shell.nav.${key}`)
 
@@ -181,6 +184,17 @@ export const AppShell = () => {
     label: navLabel(key),
   }))
 
+  // The school's published identity, when there is one: its favicon (square, so it fills the menu's
+  // icon slot, the rail included) or else its logo, its name, and the product's discreet "Powered by";
+  // the tab shows the page and the school. Without one, the product's own look stays.
+  const pageLabel = breadcrumbItems?.at(-1)?.label
+  const tabTitle = branding ? [pageLabel, branding.displayName].filter(Boolean).join(" · ") : null
+  const brandIcon = branding?.faviconUrl ?? branding?.logoUrl ?? schoolFlowIcon
+
+  useEffect(() => {
+    setDocumentIdentity({ faviconUrl: branding?.faviconUrl ?? null, title: tabTitle })
+  }, [branding?.faviconUrl, tabTitle])
+
   return (
     <AppShellWrapper>
       <Sidebar
@@ -188,10 +202,12 @@ export const AppShell = () => {
         collapseLabel={t("shell.collapseMenu")}
         expandLabel={t("shell.expandMenu")}
         items={items}
-        logoAlt={t("shell.logoAlt")}
-        logoSrc={schoolFlowIcon}
+        logoAlt={branding ? t("shell.schoolLogoAlt", { name: branding.displayName }) : t("shell.logoAlt")}
+        logoSrc={brandIcon}
         navLabel={t("shell.mainNavigation")}
-        title="SchoolFlow360º"
+        // The product's name and its "Powered by" are brand terms, not translated copy.
+        subtitle={branding ? "Powered by SchoolFlow360º" : undefined}
+        title={branding?.displayName ?? "SchoolFlow360º"}
       />
 
       {/* Covers every way out of a page with unsaved changes: the menu, the topbar (signing out) and

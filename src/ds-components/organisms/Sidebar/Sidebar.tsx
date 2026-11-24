@@ -11,6 +11,8 @@ import {
   SidebarBottom,
   SidebarBrand,
   SidebarBrandInfo,
+  SidebarBrandSubtitle,
+  SidebarBrandText,
   SidebarBrandTitle,
   SidebarItemList,
   SidebarNav,
@@ -49,6 +51,8 @@ export type SidebarProps = {
   expandLabel?: string
   navLabel?: string
   style?: CSSProperties
+  // A discreet line under the title (e.g. "Powered by SchoolFlow360º" when the title is a school's name).
+  subtitle?: string
 }
 
 // "Compact" is every screen narrower than the md breakpoint: `not all and (min-width: 768px)`
@@ -68,6 +72,7 @@ export const Sidebar = (props: SidebarProps) => {
     logoSrc,
     navLabel = "Navegação principal",
     style,
+    subtitle,
     title,
   } = props
 
@@ -129,10 +134,13 @@ export const Sidebar = (props: SidebarProps) => {
               boxShadow="none"
               size={32}
               src={logoSrc}
-              style={{ alignSelf: "center", flexShrink: 0 }}
+              style={{ alignSelf: "center", flexShrink: 0, objectFit: "contain" }}
             />
 
-            <SidebarBrandTitle>{title}</SidebarBrandTitle>
+            <SidebarBrandText>
+              <SidebarBrandTitle title={title}>{title}</SidebarBrandTitle>
+              {subtitle && <SidebarBrandSubtitle>{subtitle}</SidebarBrandSubtitle>}
+            </SidebarBrandText>
           </SidebarBrandInfo>
 
           {isCompact && (

@@ -1,12 +1,15 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { createMemoryRouter, RouterProvider } from "react-router-dom"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { useUnsavedChanges } from "@/components/UnsavedChangesGuard"
 import { i18n } from "@/i18n"
 import type { UserContext } from "@/models"
 
 import { AppShell } from "./AppShell"
+
+// The shell reads the school's published identity; here nothing was published, and no request leaves.
+vi.mock("@/services/branding", () => ({ getPublishedBranding: vi.fn().mockRejectedValue(new Error("Not published")) }))
 
 // A page with a form that has unsaved changes.
 const EditingPage = () => {

@@ -2265,6 +2265,7 @@ export const ptBR = {
       RESPONSAVEL: "Responsável",
       SECRETARIA: "Secretaria",
     },
+    schoolLogoAlt: "Ícone de {{name}}",
     signOut: "Sair",
     userMenu: "Menu do usuário",
   },

@@ -14,6 +14,7 @@ import { requestPasswordRecovery } from "@/services"
 
 import { SchoolIdentity } from "../shared/school/SchoolIdentity"
 import { usePublicBranding } from "../shared/school/usePublicBranding"
+import { useSchoolDocument } from "../shared/school/useSchoolDocument"
 import { ForgotPasswordWrapper } from "./ForgotPassword.styles"
 
 // Same loose check as the login: catches typos before a request is spent; the backend decides the rest.
@@ -30,6 +31,7 @@ export const ForgotPassword = () => {
   const { formState, handleSubmit, register } = useForm<PasswordRecoveryRequest>({ defaultValues: { email: "" } })
   const resendCooldown = useCountdown()
   const branding = usePublicBranding()
+  useSchoolDocument(branding, t("forgotPassword.title"))
 
   const [hasFailed, setHasFailed] = useState(false)
 

@@ -29,6 +29,23 @@ describe("Sidebar", () => {
     expect(screen.getByRole("img", { name: "Ícone" })).toHaveAttribute("src", "/logo.svg")
   })
 
+  it("renders the subtitle under the title only when given", () => {
+    renderSidebar()
+    expect(screen.queryByText("Powered by SchoolFlow360º")).not.toBeInTheDocument()
+
+    renderSidebar({ subtitle: "Powered by SchoolFlow360º", title: "Colégio Horizonte" })
+    expect(screen.getByText("Powered by SchoolFlow360º")).toBeInTheDocument()
+  })
+
+  it("keeps the whole title available on hover when a long one is cut", () => {
+    renderSidebar({ title: "Colégio Horizonte de Educação Integral" })
+
+    expect(screen.getByText("Colégio Horizonte de Educação Integral")).toHaveAttribute(
+      "title",
+      "Colégio Horizonte de Educação Integral",
+    )
+  })
+
   it("renders a button for every top-level item", () => {
     renderSidebar()
 

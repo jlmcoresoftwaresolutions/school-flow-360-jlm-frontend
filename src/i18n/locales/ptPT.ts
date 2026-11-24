@@ -2271,6 +2271,7 @@ export const ptPT: TranslationResource = {
       RESPONSAVEL: "Encarregado de educação",
       SECRETARIA: "Secretaria",
     },
+    schoolLogoAlt: "Ícone de {{name}}",
     signOut: "Terminar sessão",
     userMenu: "Menu do utilizador",
   },
