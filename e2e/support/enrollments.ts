@@ -1,5 +1,6 @@
 import type { Request } from "@playwright/test"
 
+import { relationshipTypes } from "./people.ts"
 import { apiAnswer, type Page } from "./test.ts"
 import { apiError, type RecordedCall, units } from "./userAccess.ts"
 
@@ -10,8 +11,36 @@ import { apiError, type RecordedCall, units } from "./userAccess.ts"
 type Item = Record<string, unknown>
 
 export type EnrollmentOptions = {
+  // Someone else changes the enrollment before the first save of the guardians: it gets 409 VERSION_CONFLICT.
+  conflictOnFirstSave?: boolean
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
   readOnly?: boolean
+}
+
+// The guardians linked to each student in Pessoas: Ana's mother (current link) and father (ended link).
+const linksByStudent: Record<number, Item[]> = {
+  201: [
+    {
+      contactAuthorized: true,
+      financialResponsible: true,
+      guardianId: 301,
+      guardianName: "Fernanda Souza",
+      linkId: 2010,
+      linkStatus: "ACTIVE",
+      pedagogicalResponsible: true,
+      relationshipCode: "MOTHER",
+    },
+    {
+      contactAuthorized: false,
+      financialResponsible: false,
+      guardianId: 302,
+      guardianName: "Gustavo Lima",
+      linkId: 2011,
+      linkStatus: "ENDED",
+      pedagogicalResponsible: true,
+      relationshipCode: "FATHER",
+    },
+  ],
 }
 
 const unitName = (unitId: number) => units.find((unit) => unit.schoolUnitId === unitId)?.unitName ?? null
@@ -111,6 +140,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
   const events = new Map<number, Item[]>()
   let nextId = 600
   let nextEventId = 1
+  let conflictPending = Boolean(options.conflictOnFirstSave)
 
   const record = (request: Request) => {
     const url = new URL(request.url())
@@ -155,6 +185,11 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         ? ["CHOOSE_PARTIES", "CHOOSE_CONTEXT", "ABANDON"]
         : [],
     pendencies: pendenciesOf(item),
+  })
+
+  await page.route("**/api/catalogs/relationship-types", (route) => {
+    record(route.request())
+    return route.fulfill(apiAnswer(relationshipTypes))
   })
 
   await page.route("**/api/school-units?*", (route) =>
@@ -236,6 +271,63 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     if (!action && call.method === "GET") return route.fulfill(apiAnswer(view(current)))
     if (action === "history") {
       return route.fulfill(apiAnswer(toPage(events.get(Number(id)) ?? [], call.query)))
+    }
+
+    const links = linksByStudent[Number((current.student as Item).id)] ?? []
+    const parties = current.parties as Item[]
+
+    if (action === "guardians") {
+      return route.fulfill(
+        apiAnswer(
+          links.map((link) => {
+            const party = parties.find((item) => item.guardianId === link.guardianId)
+            return {
+              ...link,
+              chosen: Boolean(party),
+              financial: Boolean(party?.financial),
+              signatory: Boolean(party?.signatory),
+            }
+          }),
+        ),
+      )
+    }
+
+    if (action === "parties") {
+      const body = call.body as { parties: Item[]; version: number }
+      if (conflictPending) {
+        conflictPending = false
+        records.set(Number(id), { ...current, version: Number(current.version) + 1 })
+        return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      }
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      const chosen = body.parties.map((party) => ({
+        link: links.find((item) => item.guardianId === party.guardianId),
+        party,
+      }))
+      if (chosen.some(({ link }) => !link || link.linkStatus !== "ACTIVE")) {
+        return route.fulfill(apiError(422, "ENROLLMENT_PARTY_INVALID"))
+      }
+      const changed = {
+        ...current,
+        parties: chosen.map(({ link, party }) => ({
+          financial: party.financial,
+          guardianId: party.guardianId,
+          guardianName: (link as Item).guardianName,
+          linkActive: true,
+          linkId: (link as Item).linkId,
+          relationshipCode: (link as Item).relationshipCode,
+          signatory: party.signatory,
+        })),
+        updatedAt: new Date().toISOString(),
+        version: Number(current.version) + 1,
+      }
+      records.set(Number(id), changed)
+      addEvent(Number(id), {
+        action: "PARTIES_CHANGED",
+        category: "PARTY",
+        changedFields: "guardians,financial,signatory",
+      })
+      return route.fulfill(apiAnswer(view(changed)))
     }
 
     if (action === "abandon") {

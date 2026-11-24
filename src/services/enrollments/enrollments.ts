@@ -68,7 +68,7 @@ export const searchEnrollmentStudents = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET (the enrollment's guardians tab). GET /api/enrollments/{id}/guardians: every guardian linked to
+// USED by the enrollment's guardians tab. GET /api/enrollments/{id}/guardians: every guardian linked to
 // the student in People (active or ended link), with what was chosen for this enrollment.
 export const listEnrollmentGuardians = async (
   enrollmentId: number,
@@ -82,7 +82,7 @@ export const listEnrollmentGuardians = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET (the enrollment's guardians tab). PUT /api/enrollments/{id}/parties: the whole set of guardians
+// USED by the enrollment's guardians tab. PUT /api/enrollments/{id}/parties: the whole set of guardians
 // chosen, each financial and/or signatory explicitly. 422 ENROLLMENT_PARTY_INVALID: a guardian without an
 // active link to the student, or not active. The same choice again changes nothing.
 export const saveEnrollmentParties = async (

@@ -96,7 +96,7 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `1f7b763`), com 
 - "Nova matrícula" (`NewEnrollmentModal`) escolhe uma unidade ativa onde a pessoa opera e um aluno já cadastrado nela (`searchEnrollmentStudents`, que divide o limite de buscas de Pessoas). Ninguém é cadastrado ali. Um aluno não ativo pode ser preparado, mas a tela avisa que só um ativo é confirmado.
 - Um aluno que já tem matrícula viva na unidade (409 `ENROLLMENT_CONFLICT`) não ganha outra. A tela acha a existente pela lista (nunca pelo texto da mensagem) e oferece abri-la.
 
-**A matrícula** (`/administration/enrollments/:enrollmentId`, `paths.enrollmentProfile`, página `EnrollmentProfile`) tem as abas emendadas Preparação e Histórico:
+**A matrícula** (`/administration/enrollments/:enrollmentId`, `paths.enrollmentProfile`, página `EnrollmentProfile`) tem as abas emendadas Preparação, Responsáveis e Histórico:
 
 - A **Preparação** (`EnrollmentPreparation`) mostra:
   - o aluno como Pessoas o tem agora, com o link para o cadastro só para quem abre Pessoas (é lá que ele é corrigido);
@@ -104,6 +104,12 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `1f7b763`), com 
   - o que falta, pelo código da pendência (`useEnrollmentLabels`; a `message` do backend é em inglês e nunca aparece);
   - as etapas ainda não avaliadas (`notEvaluated`), que nunca contam como cumpridas.
 - "Abandonar preparação" (`AbandonEnrollmentDialog`) pede o motivo, de 1 a 500 caracteres, e o `version`.
+- A aba **Responsáveis** (`EnrollmentGuardians`) lista todos os responsáveis vinculados ao aluno em Pessoas, com vínculo vigente ou encerrado, o parentesco e as três responsabilidades do vínculo lá.
+  - O parentesco vem do catálogo, que só Admin e Secretaria leem; para os outros a tela não o pede (`useRelationshipTypes(enabled)`).
+  - Quem participa, quem é financeiro e quem assina são escolhas explícitas desta matrícula, nunca deduzidas do parentesco. São editadas no lugar ("Alterar escolhas") e salvas como o conjunto inteiro, com o `version`.
+  - Um vínculo encerrado não pode ser escolhido, e um escolhido antes de encerrar aparece assim.
+  - O vínculo é criado ou corrigido no cadastro do aluno, nunca aqui.
+  - Num conflito de versão a página relê a matrícula, mantendo na tela a resposta anterior enquanto relê, para o rascunho não se perder.
 - O **Histórico** (`EnrollmentHistory`) mostra o evento, o autor (sem autor, "Sistema") e os nomes do que mudou. Numa mudança de situação, mostra o antes e o depois. Não é a auditoria.
 - Salvar uma preparação nunca cria acesso, cobrança nem matrícula ativa.
 

@@ -856,6 +856,34 @@ export const ptBR = {
     forbiddenDescription:
       "Só a Administração, a Secretaria, o Financeiro e a Coordenação consultam as matrículas das suas unidades.",
     forbiddenTitle: "Você não tem acesso às matrículas",
+    guardians: {
+      choose: "Participa desta matrícula",
+      conflict:
+        "Outra pessoa alterou esta matrícula. Os dados foram relidos e as suas escolhas foram mantidas: confira e salve de novo.",
+      contact: "contato",
+      description:
+        "Os responsáveis vêm do cadastro do aluno. Quem participa, quem é financeiro e quem assina são escolhas desta matrícula, nunca deduzidas do parentesco.",
+      edit: "Alterar escolhas",
+      empty: "O aluno ainda não tem responsáveis vinculados. O vínculo é feito no cadastro do aluno.",
+      errorDescription: "Não foi possível carregar os responsáveis. Tente novamente em instantes.",
+      errorTitle: "Responsáveis indisponíveis",
+      failed: "Não foi possível salvar as escolhas agora. Tente novamente em instantes.",
+      financialInPeople: "financeira",
+      fixInPeople: "Corrigir vínculos no cadastro do aluno",
+      inPeople: "No cadastro: {{detail}}",
+      inThisEnrollment: "Nesta matrícula: {{roles}}",
+      linkActive: "Vínculo vigente",
+      listLabel: "Responsáveis do aluno",
+      loading: "Carregando os responsáveis...",
+      notChosen: "Não participa desta matrícula",
+      partyInvalid:
+        "Um dos responsáveis escolhidos não tem mais vínculo ativo com o aluno ou não está ativo. A lista foi relida.",
+      pedagogical: "pedagógica",
+      pendenciesLabel: "O que falta nos responsáveis",
+      saved: "Escolhas dos responsáveis salvas.",
+      signs: "Assina",
+      title: "Responsáveis e papéis",
+    },
     history: {
       actor: "Quem",
       changes: "Detalhes",
@@ -885,6 +913,7 @@ export const ptBR = {
     newEnrollment: "Nova matrícula",
     noPendencies: "Sem pendências avaliadas",
     noResults: "Nenhuma matrícula encontrada com esses filtros.",
+    notInPreparation: "Esta matrícula não está mais em preparação. Os dados foram relidos.",
     open: "Abrir",
     openStudent: "Abrir o cadastro do aluno",
     pendencies: "Pendências",
@@ -932,6 +961,7 @@ export const ptBR = {
       savedAt: "Última gravação: {{moment}}",
       sectionsLabel: "Seções da matrícula",
       tabs: {
+        guardians: "Responsáveis",
         history: "Histórico",
         preparation: "Preparação",
       },

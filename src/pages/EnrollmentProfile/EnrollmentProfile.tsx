@@ -14,6 +14,7 @@ import { getErrorStatus } from "@/services/httpClient"
 import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
+import { EnrollmentGuardians } from "./EnrollmentGuardians"
 import { EnrollmentHistory } from "./EnrollmentHistory"
 import { EnrollmentPreparation } from "./EnrollmentPreparation"
 
@@ -21,7 +22,7 @@ type LoadResult = { error: "failed" | "gone"; key: string } | { enrollment: Enro
 
 // An enrollment (JLM-339, 375 and 381 in part): the student, the unit and the status in the header, and
 // the sections in tabs - the preparation (what was chosen, what is still missing and the stages not
-// evaluated yet) and the history. Every read comes from the backend, so resuming a preparation shows
+// evaluated yet), the guardians and their roles, and the history. Every read comes from the backend, so resuming a preparation shows
 // only what was saved; the actions are the ones the server allows (`eligibleActions`). An enrollment out
 // of reach answers like one that doesn't exist. Another enrollment's answer is never shown while this
 // one is read.
@@ -38,7 +39,9 @@ export const EnrollmentProfile = () => {
   const [isAbandoning, setIsAbandoning] = useState(false)
 
   const requestKey = `${enrollmentId}#${reloadToken}`
-  const current = result?.key === requestKey ? result : null
+  // While the same enrollment is read again its last answer stays on screen, so a choice being made in a
+  // tab isn't lost; another enrollment's answer is never shown.
+  const current = result?.key.startsWith(`${enrollmentId}#`) ? result : null
 
   useEffect(() => {
     let isStale = false
@@ -116,6 +119,16 @@ export const EnrollmentProfile = () => {
       icon: "check-circle-outline",
       key: "preparation",
       label: t("enrollments.profile.tabs.preparation"),
+    },
+    {
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <EnrollmentGuardians enrollment={enrollment} onChanged={reload} onGone={reload} />
+        </Card>
+      ),
+      icon: "users-outline",
+      key: "guardians",
+      label: t("enrollments.profile.tabs.guardians"),
     },
     {
       content: (
