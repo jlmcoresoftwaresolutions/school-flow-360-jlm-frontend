@@ -7,7 +7,7 @@ import { SchoolIdentityLogo, SchoolIdentityWrapper } from "./SchoolIdentity.styl
 
 export type SchoolIdentityProps = {
   // What the school published (usePublicBranding); nothing is shown without it.
-  branding: PublicBrandingResponse | null
+  branding: PublicBrandingResponse | null | undefined
 }
 
 // The school's logo and name at the top of a screen before signing in, so the person sees whose

@@ -326,7 +326,7 @@ export const SidebarItemLabel = styled.span<StyledSidebarItemLabelProps>`
 `
 
 export const SidebarDot = styled.span<StyledSidebarButtonProps>`
-  background: ${(props) => (props.$active ? colors.primary[500] : colors.neutral[400])};
+  background: ${(props) => (props.$active ? colors.accent[500] : colors.neutral[400])};
   border-radius: ${radius.full};
   flex-shrink: 0;
   height: ${spacing[8]};

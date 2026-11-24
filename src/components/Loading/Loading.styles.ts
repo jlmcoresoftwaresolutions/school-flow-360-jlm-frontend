@@ -85,9 +85,9 @@ export const LoadingRingOuter = styled.div`
 export const LoadingRingInner = styled.div`
   animation: ${spinReverse} 0.8s linear infinite;
   border: ${spacing[4]} solid transparent;
-  border-bottom-color: ${colors.primary[300]};
+  border-bottom-color: ${colors.accent[500]};
   border-radius: 50%;
-  border-right-color: ${colors.primary[300]};
+  border-right-color: ${colors.accent[500]};
   height: 60%;
   inset: 20%;
   position: absolute;

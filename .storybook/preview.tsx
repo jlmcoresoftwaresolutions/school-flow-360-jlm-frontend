@@ -5,6 +5,7 @@ import { colors, spacing } from "@/foundation"
 import { i18n } from "@/i18n"
 
 import GlobalStyle from "../src/styles/GlobalStyle"
+import { SchoolColorTheme } from "./SchoolColorTheme"
 
 // Components that translate their copy (AppShell) read the app's i18next instance, so it is set up
 // here too and pinned to pt-BR: Storybook documents the design system in the product's language,
@@ -30,14 +31,33 @@ const StorybookBackground = createGlobalStyle`
 
 const preview: Preview = {
   decorators: [
-    (Story) => (
-      <>
+    (Story, context) => (
+      <SchoolColorTheme sample={String(context.globals.schoolColor ?? "product")}>
         <GlobalStyle />
         <StorybookBackground />
         <Story />
-      </>
+      </SchoolColorTheme>
     ),
   ],
+  globalTypes: {
+    schoolColor: {
+      description: "The school's colors the components are painted with",
+      toolbar: {
+        dynamicTitle: true,
+        icon: "paintbrush",
+        items: [
+          { title: "Produto (SchoolFlow360º)", value: "product" },
+          { title: "Vermelho, secundária amarela", value: "red" },
+          { title: "Verde, sem secundária", value: "green" },
+          { title: "Amarelo (escurecido pelo contraste)", value: "yellow" },
+        ],
+        title: "Cor da escola",
+      },
+    },
+  },
+  initialGlobals: {
+    schoolColor: "product",
+  },
   parameters: {
     controls: {
       matchers: {

@@ -1,0 +1,76 @@
+import { Meta } from "@storybook/addon-docs/blocks"
+
+import { brandPalette } from "./brandPalette"
+import { colors } from "./colors"
+import { radius } from "./radius"
+import { spacing } from "./spacing"
+import { typography } from "./typography"
+import { buildAccent, buildPrimaryScale } from "@/utils/theme"
+
+<Meta title="Foundation/Cor da escola" />
+
+export const Swatch = (props) => (
+  <div style={{ display: "flex", flexDirection: "column", gap: spacing[4], minWidth: spacing[80] }}>
+    <div
+      style={{
+        background: props.color,
+        border: `1px solid ${colors.neutral[200]}`,
+        borderRadius: radius.md,
+        height: spacing[40],
+      }}
+    />
+    <code style={{ fontSize: typography.fontSize.xs }}>{props.label}</code>
+    <code style={{ fontSize: typography.fontSize.xs }}>{props.color}</code>
+  </div>
+)
+
+export const Scale = (props) => {
+  const scale = props.color ? buildPrimaryScale(props.color) : brandPalette
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: spacing[8], margin: `${spacing[8]} 0 ${spacing[24]}` }}>
+      {Object.entries(scale).map(([step, color]) => (
+        <Swatch color={color} key={step} label={step} />
+      ))}
+    </div>
+  )
+}
+
+# Cor da escola
+
+Cada escola publica a sua identidade visual na Minha Unidade, e a **cor primária** dela pinta a interface: botões, links, foco dos campos, aba e item do menu ativos, página atual da paginação e checkboxes. A **cor secundária** fica só em detalhes (o ponto do subitem ativo do menu e o anel interno do carregamento), nunca em texto. As cores semânticas (sucesso, erro, aviso, informação) nunca mudam.
+
+Use a ferramenta **Cor da escola** na barra do Storybook para ver qualquer componente com as cores de exemplo.
+
+## Como funciona
+
+- `colors.primary[passo]` é `var(--sf-primary-<passo>, <hex do produto>)`, e `colors.accent[500]` é `var(--sf-accent-500, <primary 500>)`. Um componente que usa esses tokens segue a escola sem mudar nada.
+- `applySchoolColors` (`src/utils/theme/`) monta os dez passos a partir da cor da escola (`buildPrimaryScale`) e os grava no `<html>`. O app chama quando lê a identidade publicada (o `AppShell`) ou a pública (login e recuperação de senha).
+- As cores aplicadas ficam guardadas no navegador, e a próxima visita já começa com elas (`restoreSchoolColors`, no `main.tsx`), sem mostrar a cor do produto antes.
+- Quem precisa do hex real (um teste, uma conta de contraste) usa `brandPalette`, nunca `colors.primary`, que é uma `var()`.
+
+## A escala
+
+A cor da escola fica no passo cuja luminosidade é a mais próxima na paleta do produto, e os outros passos se espalham dela. Os passos de texto mantêm o contraste WCAG AA: o 600 (botões, sob texto branco, e links) contra o branco, e o 700 (item ativo do menu e página atual) contra o fundo do item ativo. Uma cor que não chega lá é escurecida, mantendo o tom. A cor secundária é escurecida até 3:1 contra o branco, o mínimo de um elemento gráfico.
+
+### Produto (`#00285B`, a cor padrão, que não liga nada)
+
+<Scale />
+
+### Azul `#1E40AF`
+
+<Scale color="#1E40AF" />
+
+### Vermelho `#B71C1C`
+
+<Scale color="#B71C1C" />
+
+### Amarelo `#FFD600` (o 600 escurecido pelo contraste)
+
+<Scale color="#FFD600" />
+
+### Secundária clara `#FFEB3B`, escurecida para o detalhe
+
+<div style={{ display: "flex", gap: spacing[8], margin: `${spacing[8]} 0 ${spacing[24]}` }}>
+  <Swatch color="#FFEB3B" label="publicada" />
+  <Swatch color={buildAccent("#FFEB3B")} label="acento" />
+</div>

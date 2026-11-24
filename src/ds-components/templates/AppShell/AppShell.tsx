@@ -22,7 +22,7 @@ import { renewSession } from "@/services/httpClient"
 import { canOpenPage, getDisplayRoles } from "@/utils/access"
 import { endExpiredSession } from "@/utils/authRedirect"
 import { setDocumentIdentity } from "@/utils/documentIdentity"
-import { applySchoolColor } from "@/utils/theme"
+import { applySchoolColors } from "@/utils/theme"
 
 import { AppShellBody, AppShellContent, AppShellWrapper } from "./AppShell.styles"
 
@@ -190,15 +190,20 @@ export const AppShell = () => {
   // the tab shows the page and the school. Without one, the product's own look stays.
   const pageLabel = breadcrumbItems?.at(-1)?.label
   const tabTitle = branding ? [pageLabel, branding.displayName].filter(Boolean).join(" · ") : null
+  const isBrandingKnown = branding !== undefined
+  const primaryColor = branding?.primaryColor
+  const secondaryColor = branding?.secondaryColor ?? null
   const brandIcon = branding?.faviconUrl ?? branding?.logoUrl ?? schoolFlowIcon
 
   useEffect(() => {
     setDocumentIdentity({ faviconUrl: branding?.faviconUrl ?? null, title: tabTitle })
   }, [branding?.faviconUrl, tabTitle])
 
+  // Until the identity is first read, the colors kept from the last visit stay.
   useEffect(() => {
-    applySchoolColor(branding?.primaryColor ?? null)
-  }, [branding?.primaryColor])
+    if (!isBrandingKnown) return
+    applySchoolColors(primaryColor ? { primaryColor, secondaryColor } : null)
+  }, [isBrandingKnown, primaryColor, secondaryColor])
 
   return (
     <AppShellWrapper>

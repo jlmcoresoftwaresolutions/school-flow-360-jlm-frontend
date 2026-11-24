@@ -6,6 +6,11 @@ import { brandPalette, type BrandPaletteType } from "./brandPalette"
 const primaryStep = (step: keyof BrandPaletteType) => `var(--sf-primary-${step}, ${brandPalette[step]})`
 
 export const colors = {
+  // The school's secondary color, for details only (the active submenu item's dot, the loading
+  // spinner): never text nor a fill under text. Without one it follows the primary scale's 500.
+  accent: {
+    500: `var(--sf-accent-500, ${primaryStep(500)})`,
+  },
   primary: {
     50: primaryStep(50),
     100: primaryStep(100),

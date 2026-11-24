@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { brandPalette, colors } from "@/foundation"
 import { getContrastRatio, hexToRgb } from "@/utils/colors"
 
-import { applySchoolColor, buildPrimaryScale, type PrimaryStep } from "./theme"
+import { applySchoolColors, buildAccent, buildPrimaryScale, type PrimaryStep, restoreSchoolColors } from "./theme"
 
 const steps = Object.keys(brandPalette).map(Number) as PrimaryStep[]
 
@@ -22,6 +22,12 @@ const tint = (hex: string, alpha: number) => {
 }
 
 const rootVariable = (step: PrimaryStep) => document.documentElement.style.getPropertyValue(`--sf-primary-${step}`)
+
+const accentVariable = () => document.documentElement.style.getPropertyValue("--sf-accent-500")
+
+const storageKey = "sf360.schoolColors"
+
+const school = (primaryColor: string, secondaryColor: string | null = null) => ({ primaryColor, secondaryColor })
 
 describe("buildPrimaryScale", () => {
   it("is null for something that isn't a hex color", () => {
@@ -62,32 +68,108 @@ describe("buildPrimaryScale", () => {
   })
 })
 
-describe("applySchoolColor", () => {
-  afterEach(() => applySchoolColor(null))
+describe("buildAccent", () => {
+  it("keeps a secondary color that shows against white", () => {
+    expect(buildAccent("#4B87D6")).toBe("#4B87D6")
+  })
+
+  it("darkens a light one until it shows against white", () => {
+    const accent = buildAccent("#FFEB3B")
+
+    expect(accent).not.toBe("#FFEB3B")
+    expect(getContrastRatio(accent ?? "", "#FFFFFF")).toBeGreaterThanOrEqual(3)
+  })
+
+  it("is null for something that isn't a hex color", () => {
+    expect(buildAccent("yellow")).toBeNull()
+  })
+})
+
+describe("applySchoolColors", () => {
+  afterEach(() => {
+    applySchoolColors(null)
+    localStorage.clear()
+  })
 
   it("sets the variables colors.primary reads", () => {
-    applySchoolColor("#B71C1C")
+    applySchoolColors(school("#B71C1C"))
 
     expect(colors.primary[600]).toContain("--sf-primary-600")
     steps.forEach((step) => expect(rootVariable(step)).toBe(buildPrimaryScale("#B71C1C")?.[step]))
   })
 
-  it("goes back to the product's palette when null", () => {
-    applySchoolColor("#B71C1C")
-    applySchoolColor(null)
+  it("sets the accent from the secondary color, and leaves it to the primary without one", () => {
+    applySchoolColors(school("#B71C1C", "#2E7D32"))
 
-    steps.forEach((step) => expect(rootVariable(step)).toBe(""))
+    expect(colors.accent[500]).toContain("--sf-accent-500")
+    expect(accentVariable()).toBe("#2E7D32")
+
+    applySchoolColors(school("#B71C1C"))
+
+    expect(accentVariable()).toBe("")
   })
 
-  it("sets nothing for the product's own color, in any case", () => {
-    applySchoolColor(brandPalette[900].toLowerCase())
+  it("goes back to the product's palette when null", () => {
+    applySchoolColors(school("#B71C1C", "#2E7D32"))
+    applySchoolColors(null)
+
+    steps.forEach((step) => expect(rootVariable(step)).toBe(""))
+    expect(accentVariable()).toBe("")
+  })
+
+  it("sets no primary step for the product's own color, in any case", () => {
+    applySchoolColors(school(brandPalette[900].toLowerCase()))
 
     steps.forEach((step) => expect(rootVariable(step)).toBe(""))
   })
 
   it("sets nothing for an invalid color", () => {
-    applySchoolColor("not a color")
+    applySchoolColors(school("not a color", "nor this"))
 
     steps.forEach((step) => expect(rootVariable(step)).toBe(""))
+    expect(accentVariable()).toBe("")
   })
+
+  it("keeps the colors for the next visit, and forgets them when null", () => {
+    applySchoolColors(school("#B71C1C", "#2E7D32"))
+
+    expect(JSON.parse(localStorage.getItem(storageKey) ?? "null")).toEqual(school("#B71C1C", "#2E7D32"))
+
+    applySchoolColors(null)
+
+    expect(localStorage.getItem(storageKey)).toBeNull()
+  })
+})
+
+describe("restoreSchoolColors", () => {
+  afterEach(() => {
+    applySchoolColors(null)
+    localStorage.clear()
+  })
+
+  it("paints the colors kept from the last visit", () => {
+    localStorage.setItem(storageKey, JSON.stringify(school("#B71C1C", "#2E7D32")))
+
+    restoreSchoolColors()
+
+    expect(rootVariable(600)).toBe(buildPrimaryScale("#B71C1C")?.[600])
+    expect(accentVariable()).toBe("#2E7D32")
+  })
+
+  it("keeps the product's colors without anything kept", () => {
+    restoreSchoolColors()
+
+    expect(rootVariable(600)).toBe("")
+  })
+
+  it.each(["not json", JSON.stringify({ primaryColor: 1 }), JSON.stringify(null)])(
+    "ignores an unreadable entry (%s)",
+    (stored) => {
+      localStorage.setItem(storageKey, stored)
+
+      restoreSchoolColors()
+
+      expect(rootVariable(600)).toBe("")
+    },
+  )
 })
