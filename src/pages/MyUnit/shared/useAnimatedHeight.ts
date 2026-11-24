@@ -10,7 +10,7 @@ import { useMediaQuery } from "@/hooks"
 //
 // A zero height means the content isn't rendered (a hidden tab): the box goes back to its natural
 // height then, so showing the tab again doesn't grow the section from nothing. With reduced motion on,
-// the box never animates. Without ResizeObserver (jsdom) it just keeps its natural height.
+// the box never animates. Without ResizeObserver it just keeps its natural height.
 export const useAnimatedHeight = () => {
   const contentRef = useRef<HTMLDivElement>(null)
 

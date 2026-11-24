@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { Tooltip } from "./Tooltip"
 
-// jsdom has no layout: the balloon measures 0x0, and the viewport is window.innerWidth x innerHeight.
+// happy-dom has no layout: the balloon measures 0x0, and the viewport is window.innerWidth x innerHeight.
 describe("Tooltip", () => {
   it("renders its content into document.body via a portal, as a tooltip", () => {
     render(

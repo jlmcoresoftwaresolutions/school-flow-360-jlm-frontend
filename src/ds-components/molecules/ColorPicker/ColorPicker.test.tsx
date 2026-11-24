@@ -17,7 +17,7 @@ const toRect = (box: Box) =>
     y: box.top,
   }) as DOMRect
 
-// jsdom has no layout, so the control row and the popover report the boxes a real browser would.
+// happy-dom has no layout, so the control row and the popover report the boxes a real browser would.
 const mockLayout = (control: Box, popover: Box) => {
   vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
     if (this.querySelector(".react-colorful")) return toRect(popover)

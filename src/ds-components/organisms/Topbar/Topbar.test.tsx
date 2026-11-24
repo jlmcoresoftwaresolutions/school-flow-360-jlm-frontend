@@ -10,7 +10,7 @@ const actions: TopbarAction[] = [
 
 const renderTopbar = (overrides: Partial<TopbarProps> = {}) => render(<Topbar {...overrides} />)
 
-// jsdom has no matchMedia, so the narrow-screen rule can't be exercised; this only reads the markup.
+// The test window is a fixed 1024x768 desktop, so the narrow-screen rule can't be exercised; this only reads the markup.
 describe("Topbar", () => {
   afterEach(() => {
     vi.restoreAllMocks()

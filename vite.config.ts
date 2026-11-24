@@ -43,7 +43,7 @@ export default defineConfig((configEnv) => {
       },
     },
     test: {
-      environment: "jsdom",
+      environment: "happy-dom",
       exclude: [...configDefaults.exclude, "e2e/**"],
       // Worker threads start faster than the default child processes; each test file is still isolated.
       pool: "threads",

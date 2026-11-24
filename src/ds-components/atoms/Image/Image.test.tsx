@@ -35,7 +35,7 @@ describe("Image", () => {
   it("defaults to the md box shadow", () => {
     render(<Image alt="Foto de perfil" src="/avatar.png" />)
 
-    // Not an exact-value match against shadows.md: jsdom re-serializes the multi-layer rgba()
+    // Not an exact-value match against shadows.md: happy-dom re-serializes the multi-layer rgba()
     // values (spacing/leading zeros), so it would never textually equal the raw token string.
     expect(screen.getByRole("img", { name: "Foto de perfil" })).not.toHaveStyle({ boxShadow: shadows.none })
   })

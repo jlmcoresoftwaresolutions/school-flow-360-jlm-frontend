@@ -30,7 +30,7 @@ const chooseCountry = (name: RegExp) => {
   fireEvent.click(screen.getByText(name))
 }
 
-// The browser's languages, which tell the country of whoever uses the field (jsdom says en-US).
+// The browser's languages, which tell the country of whoever uses the field (happy-dom says en-US).
 const mockLanguages = (languages: string[]) => vi.spyOn(navigator, "languages", "get").mockReturnValue(languages)
 
 describe("PhoneInput", () => {

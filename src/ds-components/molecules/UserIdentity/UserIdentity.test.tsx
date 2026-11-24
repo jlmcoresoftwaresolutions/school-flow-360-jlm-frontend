@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { UserIdentity } from "./UserIdentity"
 
-// jsdom has no matchMedia, so hideTextOnNarrowScreens's media rule can't be exercised here.
+// The test window is a fixed 1024x768 desktop, so hideTextOnNarrowScreens's media rule can't be exercised here.
 describe("UserIdentity", () => {
   it("shows the name and the role", () => {
     render(<UserIdentity name="Maria Silva" role="Diretora" />)
