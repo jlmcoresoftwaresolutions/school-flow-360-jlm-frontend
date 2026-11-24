@@ -2306,6 +2306,7 @@ export const fr: TranslationResource = {
       RESPONSAVEL: "Responsable légal",
       SECRETARIA: "Secrétariat",
     },
+    schoolLogoAlt: "Icône de {{name}}",
     signOut: "Se déconnecter",
     userMenu: "Menu de l'utilisateur",
   },

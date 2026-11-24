@@ -137,13 +137,33 @@ export const SidebarBrandInfo = styled.div<StyledSidebarLayoutProps>`
   ${reducedMotion}
 `
 
+// The title and, under it, the optional subtitle; min-width 0 lets a long name shrink and cut.
+export const SidebarBrandText = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+`
+
 export const SidebarBrandTitle = styled.p`
   color: ${colors.primary[900]};
-  flex: 1;
   font-size: ${typography.fontSize.lg}px;
   font-weight: ${typography.fontWeight.bold};
   line-height: ${typography.lineHeight.lg};
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`
+
+// A discreet line under the title (the product's "Powered by" when the title is a school's).
+export const SidebarBrandSubtitle = styled.p`
+  color: ${colors.neutral[700]};
+  font-size: ${typography.fontSize.xs}px;
+  line-height: ${typography.lineHeight.xs};
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 `
 

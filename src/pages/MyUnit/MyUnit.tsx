@@ -5,7 +5,7 @@ import { toast } from "@/components"
 import { Button, Card, Skeleton } from "@/ds-components/atoms"
 import { PageHeader, StateMessage, Tabs } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
-import { useSignedInUser } from "@/hooks"
+import { refreshSchoolBranding, useSignedInUser } from "@/hooks"
 import type {
   Organization,
   OrganizationBranding,
@@ -161,6 +161,8 @@ export const MyUnit = () => {
     try {
       applyBranding(await updateBranding(update))
       toast.success(t("myUnit.branding.saved"))
+      // The shell (menu, tab) shows the identity just published at once.
+      void refreshSchoolBranding()
       return "saved"
     } catch (error) {
       const status = getErrorStatus(error)

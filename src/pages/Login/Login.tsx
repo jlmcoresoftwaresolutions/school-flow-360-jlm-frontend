@@ -18,6 +18,7 @@ import { isSecureStorageAvailable } from "@/utils/storage"
 
 import { SchoolIdentity } from "../shared/school/SchoolIdentity"
 import { usePublicBranding } from "../shared/school/usePublicBranding"
+import { useSchoolDocument } from "../shared/school/useSchoolDocument"
 import { LoginWrapper } from "./Login.styles"
 import { SessionLimitDialog } from "./SessionLimitDialog"
 
@@ -103,6 +104,7 @@ export const Login = () => {
   })
   const typedLogin = useWatch({ control, name: "login" })
   const branding = usePublicBranding()
+  useSchoolDocument(branding, t("login.signIn"))
   const lockCountdown = useCountdown()
 
   const [signInError, setSignInError] = useState<SignInError | null>(null)

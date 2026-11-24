@@ -2259,6 +2259,7 @@ export const en: TranslationResource = {
       RESPONSAVEL: "Guardian",
       SECRETARIA: "School office",
     },
+    schoolLogoAlt: "{{name}} icon",
     signOut: "Sign out",
     userMenu: "User menu",
   },

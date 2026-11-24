@@ -1,5 +1,6 @@
 export * from "./useCountdown"
 export * from "./useDebouncedValue"
 export * from "./useMediaQuery"
+export * from "./useSchoolBranding"
 export * from "./useSessionExpiry"
 export * from "./useSignedInUser"

@@ -145,9 +145,14 @@ const meta: Meta<typeof Sidebar> = {
       control: "text",
       description: "Accessible name of the navigation landmark. Defaults to a pt-BR label.",
     },
+    subtitle: {
+      control: "text",
+      description:
+        "Optional discreet line under the title, e.g. the product's \"Powered by\" when the title is a school's name.",
+    },
     title: {
       control: "text",
-      description: "Brand name rendered next to the logo.",
+      description: "Brand name rendered next to the logo. A name too long for the panel is cut with an ellipsis.",
     },
   },
   component: Sidebar,
@@ -162,6 +167,15 @@ type Story = StoryObj<typeof Sidebar>
 
 // Default rendering: clicking a leaf or a child moves the active highlight, and clicking a group header expands it (Minha Unidade starts active, so Administração starts open)
 export const Default: Story = {
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
+}
+
+// A school's own identity: its name as the title (a long one is cut with an ellipsis) and the product's discreet "Powered by" under it
+export const WithSubtitle: Story = {
+  args: {
+    subtitle: "Powered by SchoolFlow360º",
+    title: "Colégio Horizonte de Educação Integral",
+  },
   render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
 }
 

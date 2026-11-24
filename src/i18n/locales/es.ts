@@ -2274,6 +2274,7 @@ export const es: TranslationResource = {
       RESPONSAVEL: "Tutor",
       SECRETARIA: "Secretaría",
     },
+    schoolLogoAlt: "Ícono de {{name}}",
     signOut: "Cerrar sesión",
     userMenu: "Menú del usuario",
   },
