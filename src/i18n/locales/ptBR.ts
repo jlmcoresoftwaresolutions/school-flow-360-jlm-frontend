@@ -1010,6 +1010,7 @@ export const ptBR = {
     forbiddenDescription: "Somente a Administração e a Secretaria consultam os responsáveis.",
     forbiddenTitle: "Você não tem acesso aos responsáveis",
     form: {
+      accessTitle: "Acesso",
       conflict: "Este cadastro foi alterado por outra pessoa. Os dados foram relidos: confira e salve de novo.",
       create: "Cadastrar responsável",
       created: "Responsável cadastrado.",
@@ -1571,6 +1572,11 @@ export const ptBR = {
   people: {
     allStatuses: "Todas as situações",
     anonymizedLocked: "Esta pessoa foi anonimizada e não pode mais ser alterada.",
+    anonymizedNoticeDescription:
+      "Os dados pessoais foram apagados a pedido do titular (LGPD). O cadastro fica só para manter os vínculos e o histórico e não pode mais ser alterado.",
+    anonymizedNoticeTitle: "Pessoa anonimizada",
+    anonymizedTag: "Anonimizado",
+    backToProfile: "Voltar ao perfil",
     duplicates: {
       back: "Voltar ao formulário",
       description:
@@ -1647,6 +1653,13 @@ export const ptBR = {
       streetLabel: "Logradouro",
       streetPlaceholder: "Rua, avenida...",
     },
+    nicknameEditHelper:
+      "É com ele que a pessoa entra. Sem e-mail de acesso, trocar o apelido encerra as sessões abertas, e ela entra de novo com o novo apelido.",
+    nicknameInUse: "Esse apelido já está em uso. Escolha outro.",
+    nicknameInvalid: "Use de 3 a 60 letras, números, ponto, hífen ou sublinhado, sem espaços.",
+    nicknameLabel: "Apelido",
+    nicknamePlaceholder: "Ex.: ana.souza",
+    nicknameRequired: "Informe o apelido.",
     rateLimitedDescription:
       "Por segurança, a busca de pessoas tem um limite por minuto. Aguarde um instante e tente de novo.",
     rateLimitedTitle: "Muitas buscas em pouco tempo",
@@ -2035,11 +2048,6 @@ export const ptBR = {
         "O aluno é salvo como rascunho e só fica ativo com um responsável vinculado. Salvar não cria acesso nem matrícula.",
       newTitle: "Novo aluno",
       nicknameHelper: "Usado pelo aluno para entrar. Se ficar em branco, o sistema sugere um a partir do nome.",
-      nicknameInUse: "Esse apelido já está em uso. Escolha outro.",
-      nicknameInvalid: "Use de 3 a 60 letras, números, ponto, hífen ou sublinhado, sem espaços.",
-      nicknameLabel: "Apelido",
-      nicknamePlaceholder: "Ex.: ana.souza",
-      nicknameReadOnly: "O apelido é usado para entrar e não muda aqui.",
       noAnswer:
         "Não houve resposta do servidor. Confira a lista de alunos antes de tentar de novo, para não cadastrar o mesmo aluno duas vezes.",
       observationHelper: "Até {{max}} caracteres. Não registre dados de saúde.",

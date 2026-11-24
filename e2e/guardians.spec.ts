@@ -120,6 +120,22 @@ test.describe("guardian profile", () => {
     expect(lastCall(calls, "PUT", "/api/guardians/302")?.body).toMatchObject({ socialName: "Guga Lima", version: 0 })
   })
 
+  test("changes the nickname the guardian signs in with", async ({ page }) => {
+    const { calls } = await mockPeopleApi(page)
+    await signInAndOpen(page, `${guardiansPath}/302/edit`)
+
+    const nickname = page.getByRole("region", { name: "Acesso" }).getByRole("textbox", { name: /^Apelido/ })
+    await expect(nickname).toHaveValue("gustavo.302")
+    await nickname.fill("ana.souza482")
+    await page.getByRole("button", { name: "Salvar", exact: true }).click()
+    await expect(nickname).toHaveAccessibleDescription("Esse apelido já está em uso. Escolha outro.")
+
+    await nickname.fill("gustavo.lima")
+    await page.getByRole("button", { name: "Salvar", exact: true }).click()
+    await expect(page).toHaveURL(/\/administration\/guardians\/302$/)
+    expect(lastCall(calls, "PUT", "/api/guardians/302")?.body).toMatchObject({ nickname: "gustavo.lima" })
+  })
+
   test("refuses to inactivate the only guardian of an active student", async ({ page }) => {
     await mockPeopleApi(page)
     await signInAndOpen(page, `${guardiansPath}/301`)

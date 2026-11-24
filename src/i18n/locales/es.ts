@@ -1017,6 +1017,7 @@ export const es: TranslationResource = {
     forbiddenDescription: "Solo la Administración y la Secretaría consultan los responsables.",
     forbiddenTitle: "No tienes acceso a los responsables",
     form: {
+      accessTitle: "Acceso",
       conflict: "Otra persona cambió este registro. Los datos se volvieron a leer: revísalos y guarda de nuevo.",
       create: "Registrar responsable",
       created: "Responsable registrado.",
@@ -1579,6 +1580,11 @@ export const es: TranslationResource = {
   people: {
     allStatuses: "Todas las situaciones",
     anonymizedLocked: "Esta persona fue anonimizada y ya no puede modificarse.",
+    anonymizedNoticeDescription:
+      "Los datos personales se borraron a pedido del titular (LGPD). El registro queda solo para mantener los vínculos y el historial, y ya no puede modificarse.",
+    anonymizedNoticeTitle: "Persona anonimizada",
+    anonymizedTag: "Anonimizado",
+    backToProfile: "Volver al perfil",
     duplicates: {
       back: "Volver al formulario",
       description:
@@ -1655,6 +1661,13 @@ export const es: TranslationResource = {
       streetLabel: "Calle",
       streetPlaceholder: "Calle, avenida...",
     },
+    nicknameEditHelper:
+      "Es con lo que la persona entra. Sin correo de acceso, cambiar el apodo cierra las sesiones abiertas, y la persona vuelve a entrar con el nuevo apodo.",
+    nicknameInUse: "Este apodo ya está en uso. Elige otro.",
+    nicknameInvalid: "Usa de 3 a 60 letras, números, punto, guion o guion bajo, sin espacios.",
+    nicknameLabel: "Apodo",
+    nicknamePlaceholder: "Ej.: ana.souza",
+    nicknameRequired: "Indica el apodo.",
     rateLimitedDescription:
       "Por seguridad, la búsqueda de personas tiene un límite por minuto. Espera un momento e inténtalo de nuevo.",
     rateLimitedTitle: "Demasiadas búsquedas en poco tiempo",
@@ -2044,11 +2057,6 @@ export const es: TranslationResource = {
         "El estudiante se guarda como borrador y solo queda activo con un responsable vinculado. Guardar no crea acceso ni matrícula.",
       newTitle: "Nuevo estudiante",
       nicknameHelper: "El estudiante entra con él. Si queda en blanco, el sistema sugiere uno a partir del nombre.",
-      nicknameInUse: "Este apodo ya está en uso. Elige otro.",
-      nicknameInvalid: "Usa de 3 a 60 letras, números, punto, guion o guion bajo, sin espacios.",
-      nicknameLabel: "Apodo",
-      nicknamePlaceholder: "Ej.: ana.souza",
-      nicknameReadOnly: "El apodo se usa para entrar y no cambia aquí.",
       noAnswer:
         "El servidor no respondió. Revisa la lista de estudiantes antes de intentarlo de nuevo, para no registrar al mismo estudiante dos veces.",
       observationHelper: "Hasta {{max}} caracteres. No registres datos de salud.",

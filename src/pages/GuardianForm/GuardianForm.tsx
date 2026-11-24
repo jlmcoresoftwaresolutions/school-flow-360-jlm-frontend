@@ -6,7 +6,7 @@ import { generatePath, useNavigate, useParams } from "react-router-dom"
 import { leavingAfterSave, toast, useUnsavedChanges } from "@/components"
 import { Button, Card, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { DescriptionList, PageHeader, Select, StateMessage } from "@/ds-components/molecules"
+import { DescriptionList, Input, PageHeader, Select, StateMessage } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import type { Guardian, PersonSignals } from "@/models"
 import { paths } from "@/routes/paths"
@@ -24,7 +24,9 @@ import {
 } from "../shared/people/PersonFields"
 import {
   emptyPerson,
+  nicknamePattern,
   type PersonFormValues,
+  toNicknameChange,
   toPersonFields,
   toPersonFormValues,
   toPersonSignals,
@@ -35,17 +37,19 @@ import { usePersonFieldErrors } from "../shared/people/usePersonFieldErrors"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
 
 type GuardianFormValues = PersonFormValues & {
+  nickname: string
   unitId: string
 }
 
 type LoadState = "failed" | "gone" | "loading" | "ready"
 
-const emptyGuardianForm: GuardianFormValues = { ...emptyPerson, unitId: "" }
+const emptyGuardianForm: GuardianFormValues = { ...emptyPerson, nickname: "", unitId: "" }
 
 // A guardian's registration (P03-S06), new or edited: identity, contact, document and address, and -
 // when created - the unit it is registered in (an active unit in reach; it then follows the units of its
 // students). A new guardian is born active. Saving never creates an access, an invitation or a link: the
-// guardian is linked to a student from the student, and gets an access only through an invitation.
+// guardian is linked to a student from the student, and gets an access only through an invitation. An
+// edit may change the nickname the guardian signs in with; an anonymized guardian can't be edited.
 // Refusals land on their field; a possible duplicate opens its review, and saving again carries the
 // decision; a version conflict reads the guardian again and keeps what was typed. Success is only told
 // once the backend saved, and then the guardian's profile opens.
@@ -67,7 +71,7 @@ export const GuardianForm = () => {
   const [nextPath, setNextPath] = useState<string | null>(null)
 
   const isEdit = guardianId !== undefined
-  const { isDirty, isSubmitting } = form.formState
+  const { errors, isDirty, isSubmitting } = form.formState
   const unitOptions: SelectOption[] = unitDirectory.units
     .filter((unit) => unit.active)
     .map((unit) => ({ label: unit.name, value: String(unit.id) }))
@@ -85,7 +89,7 @@ export const GuardianForm = () => {
         const loaded = await getGuardian(Number(guardianId))
         if (isStale) return
         setGuardian(loaded)
-        form.reset({ ...toPersonFormValues(loaded), unitId: "" })
+        form.reset({ ...toPersonFormValues(loaded), nickname: loaded.nickname ?? "", unitId: "" })
         setLoadState("ready")
       } catch (error) {
         if (!isStale) setLoadState(getErrorStatus(error) === 404 ? "gone" : "failed")
@@ -116,6 +120,10 @@ export const GuardianForm = () => {
       form.setError(personError.field, { message: personError.message }, { shouldFocus: true })
     } else if (code === "UNIT_INACTIVE" || code === "UNIT_REQUIRED" || code === "UNIT_NOT_FOUND") {
       form.setError("unitId", { message: t("guardians.form.unitUnavailable") }, { shouldFocus: true })
+    } else if (code === "NICKNAME_IN_USE") {
+      form.setError("nickname", { message: t("people.nicknameInUse") }, { shouldFocus: true })
+    } else if (code === "NICKNAME_INVALID") {
+      form.setError("nickname", { message: t("people.nicknameInvalid") }, { shouldFocus: true })
     } else if (status === 403 && !isEdit) {
       form.setError("unitId", { message: t("guardians.form.unitOutOfReach") }, { shouldFocus: true })
     } else if (code === "VERSION_CONFLICT" && guardian) {
@@ -139,7 +147,12 @@ export const GuardianForm = () => {
 
     try {
       const saved = guardian
-        ? await updateGuardian(guardian.id, { ...toPersonFields(values), duplicateReviewId, version: guardian.version })
+        ? await updateGuardian(guardian.id, {
+            ...toPersonFields(values),
+            duplicateReviewId,
+            nickname: toNicknameChange(values.nickname, guardian.nickname),
+            version: guardian.version,
+          })
         : await createGuardian({ ...toPersonFields(values), duplicateReviewId, unitId: Number(values.unitId) })
 
       toast.success(guardian ? t("guardians.form.saved") : t("guardians.form.created"))
@@ -194,6 +207,17 @@ export const GuardianForm = () => {
       )
     }
 
+    if (guardian?.anonymized) {
+      return (
+        <StateMessage
+          action={<Button onClick={cancel}>{t("people.backToProfile")}</Button>}
+          description={t("people.anonymizedLocked")}
+          icon="shield-outline"
+          title={t("people.anonymizedNoticeTitle")}
+        />
+      )
+    }
+
     return (
       <FormProvider {...form}>
         <form noValidate onSubmit={submit}>
@@ -237,6 +261,31 @@ export const GuardianForm = () => {
                 </FieldRow>
               )}
             </PersonBlock>
+
+            {isEdit && guardian?.nickname && (
+              <PersonBlock title={t("guardians.form.accessTitle")}>
+                <FieldRow>
+                  <Input
+                    autoCapitalize="none"
+                    autoComplete="off"
+                    error={errors.nickname?.message}
+                    helperText={t("people.nicknameEditHelper")}
+                    maxLength={60}
+                    placeholder={t("people.nicknamePlaceholder")}
+                    spellCheck={false}
+                    title={t("people.nicknameLabel")}
+                    required
+                    {...form.register("nickname", {
+                      validate: (value) => {
+                        if (value.trim() === "") return t("people.nicknameRequired")
+
+                        return nicknamePattern.test(value.trim()) || t("people.nicknameInvalid")
+                      },
+                    })}
+                  />
+                </FieldRow>
+              </PersonBlock>
+            )}
 
             <PersonContactFields />
             <PersonDocumentFields currentDocument={guardian?.maskedDocument} documentTypes={documentTypes} />

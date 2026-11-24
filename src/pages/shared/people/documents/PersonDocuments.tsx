@@ -22,6 +22,8 @@ import { useDocumentFailure } from "./useDocumentFailure"
 export type PersonDocumentsProps = {
   documentTypes: CatalogItem[]
   personId: number
+  // Only downloads (an anonymized person): nothing registered, attached or archived.
+  readOnly?: boolean
 }
 
 type LoadResult = { documents: PersonDocument[]; key: string } | { error: true; key: string }
@@ -37,7 +39,7 @@ type DocumentRow = PersonDocument & { actions: string; file: string }
 // downloaded (a 5-minute link, opened at once and never kept) and archived - never deleted. The list is
 // kept with the person it was read for, so another person's documents never show while a new one loads.
 export const PersonDocuments = (props: PersonDocumentsProps) => {
-  const { documentTypes, personId } = props
+  const { documentTypes, personId, readOnly = false } = props
 
   const { i18n, t } = useTranslation()
   const toFailure = useDocumentFailure()
@@ -136,7 +138,7 @@ export const PersonDocuments = (props: PersonDocumentsProps) => {
         onClick: () => void download(row),
       })
     }
-    if (!isArchived) {
+    if (!isArchived && !readOnly) {
       items.push(
         {
           icon: "file-outline",
@@ -221,9 +223,11 @@ export const PersonDocuments = (props: PersonDocumentsProps) => {
     <>
       <PersonBlock
         action={
-          <Button onClick={() => setDialog({ kind: "new" })} size="small">
-            {t("personDocuments.add")}
-          </Button>
+          !readOnly && (
+            <Button onClick={() => setDialog({ kind: "new" })} size="small">
+              {t("personDocuments.add")}
+            </Button>
+          )
         }
         title={t("personDocuments.title")}
       >

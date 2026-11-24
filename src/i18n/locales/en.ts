@@ -1009,6 +1009,7 @@ export const en: TranslationResource = {
     forbiddenDescription: "Only the Administration and the Secretary's office see the guardians.",
     forbiddenTitle: "You don't have access to the guardians",
     form: {
+      accessTitle: "Access",
       conflict: "Someone else changed this record. The data was read again: check it and save again.",
       create: "Register guardian",
       created: "Guardian registered.",
@@ -1566,6 +1567,11 @@ export const en: TranslationResource = {
   people: {
     allStatuses: "All statuses",
     anonymizedLocked: "This person was anonymized and can no longer be changed.",
+    anonymizedNoticeDescription:
+      "The personal data was erased at the data subject's request (LGPD). The record stays only to keep the links and the history, and can no longer be changed.",
+    anonymizedNoticeTitle: "Person anonymized",
+    anonymizedTag: "Anonymized",
+    backToProfile: "Back to the profile",
     duplicates: {
       back: "Back to the form",
       description:
@@ -1643,6 +1649,13 @@ export const en: TranslationResource = {
       streetLabel: "Street",
       streetPlaceholder: "Street, avenue...",
     },
+    nicknameEditHelper:
+      "It's what the person signs in with. Without a sign-in e-mail, changing it ends the open sessions, and the person signs in again with the new nickname.",
+    nicknameInUse: "This nickname is already taken. Choose another.",
+    nicknameInvalid: "Use 3 to 60 letters, digits, dot, hyphen or underscore, without spaces.",
+    nicknameLabel: "Nickname",
+    nicknamePlaceholder: "E.g. ana.souza",
+    nicknameRequired: "Enter the nickname.",
     rateLimitedDescription: "For security, searching people is limited per minute. Wait a moment and try again.",
     rateLimitedTitle: "Too many searches in a short time",
     status: "Status",
@@ -2028,11 +2041,6 @@ export const en: TranslationResource = {
         "The student is saved as a draft and only becomes active with a linked guardian. Saving creates no access or enrollment.",
       newTitle: "New student",
       nicknameHelper: "The student signs in with it. Left blank, the system suggests one from the name.",
-      nicknameInUse: "This nickname is already taken. Choose another.",
-      nicknameInvalid: "Use 3 to 60 letters, digits, dot, hyphen or underscore, without spaces.",
-      nicknameLabel: "Nickname",
-      nicknamePlaceholder: "E.g. ana.souza",
-      nicknameReadOnly: "The nickname is used to sign in and doesn't change here.",
       noAnswer:
         "The server didn't answer. Check the students list before trying again, so the same student isn't registered twice.",
       observationHelper: "Up to {{max}} characters. Don't record health data.",

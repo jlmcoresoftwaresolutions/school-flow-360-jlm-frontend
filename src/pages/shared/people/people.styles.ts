@@ -92,3 +92,22 @@ export const ProfileBarInfo = styled.div`
   flex-wrap: wrap;
   gap: ${spacing[12]};
 `
+
+// The notice of an anonymized person's profile, above its tabs.
+export const AnonymizedNoticeBox = styled.div`
+  align-items: flex-start;
+  background: ${colors.neutral[50]};
+  border: 1px solid ${colors.neutral[300]};
+  border-radius: ${borderRadiusLevels.medium};
+  display: flex;
+  gap: ${spacing[12]};
+  margin-bottom: ${spacing[16]};
+  padding: ${spacing[16]};
+`
+
+// Badges side by side (the status and "Anonimizado"), wrapping on a narrow cell.
+export const BadgeGroup = styled.span`
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: ${spacing[8]};
+`

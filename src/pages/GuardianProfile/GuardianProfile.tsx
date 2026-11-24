@@ -14,6 +14,8 @@ import { getErrorStatus } from "@/services/httpClient"
 import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
 import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
+import { AnonymizedBadge } from "../shared/people/privacy/AnonymizedBadge"
+import { AnonymizedNotice } from "../shared/people/privacy/AnonymizedNotice"
 import { usePersonPrivacy } from "../shared/people/privacy/usePersonPrivacy"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
@@ -72,7 +74,12 @@ export const GuardianProfile = () => {
   const profile = current && "profile" in current ? current.profile : null
   const privacy = usePersonPrivacy(
     profile
-      ? { name: profile.guardian.fullName, personId: profile.guardian.id, status: profile.guardian.status }
+      ? {
+          anonymized: profile.guardian.anonymized,
+          name: profile.guardian.fullName,
+          personId: profile.guardian.id,
+          status: profile.guardian.status,
+        }
       : null,
     reload,
   )
@@ -106,15 +113,17 @@ export const GuardianProfile = () => {
 
   const { guardian } = profile
 
-  const actions: ActionMenuItem[] = [
-    {
+  const isLocked = guardian.anonymized
+  const actions: ActionMenuItem[] = []
+  if (!isLocked) {
+    actions.push({
       icon: "pen-outline",
       key: "edit",
       label: t("guardians.profile.edit"),
       onClick: () => navigate(generatePath(paths.guardianEdit, { guardianId: String(guardian.id) })),
-    },
-  ]
-  if (guardian.status === "DRAFT") {
+    })
+  }
+  if (!isLocked && guardian.status === "DRAFT") {
     actions.push({
       icon: "check-circle-outline",
       key: "activate",
@@ -122,7 +131,7 @@ export const GuardianProfile = () => {
       onClick: () => setDialog("activate"),
     })
   }
-  if (guardian.status === "ACTIVE") {
+  if (!isLocked && guardian.status === "ACTIVE") {
     actions.push({
       icon: "lock-outline",
       key: "inactivate",
@@ -131,7 +140,7 @@ export const GuardianProfile = () => {
       tone: "danger",
     })
   }
-  if (guardian.status === "INACTIVE") {
+  if (!isLocked && guardian.status === "INACTIVE") {
     actions.push({
       icon: "unlock-outline",
       key: "reactivate",
@@ -171,7 +180,7 @@ export const GuardianProfile = () => {
     tabs.push({
       content: (
         <Card elevated style={{ padding: spacing[32] }}>
-          <PersonDocuments documentTypes={documentTypes} personId={guardian.id} />
+          <PersonDocuments documentTypes={documentTypes} personId={guardian.id} readOnly={isLocked} />
         </Card>
       ),
       icon: "file-outline",
@@ -203,12 +212,15 @@ export const GuardianProfile = () => {
       <ProfileBar>
         <ProfileBarInfo>
           <Badge tone={personStatusTone(guardian.status)}>{personStatusLabel(guardian.status)}</Badge>
+          {isLocked && <AnonymizedBadge />}
           <Text color="secondary" fontSize="sm">
             {guardian.units.map((unit) => unit.name).join(", ")}
           </Text>
         </ProfileBarInfo>
-        <ActionMenu items={actions} triggerLabel={t("guardians.profile.actions")} />
+        {actions.length > 0 && <ActionMenu items={actions} triggerLabel={t("guardians.profile.actions")} />}
       </ProfileBar>
+
+      {isLocked && <AnonymizedNotice />}
 
       <Tabs
         items={tabs}

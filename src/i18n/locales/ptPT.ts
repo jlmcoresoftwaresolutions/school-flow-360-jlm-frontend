@@ -1014,6 +1014,7 @@ export const ptPT: TranslationResource = {
     forbiddenDescription: "Apenas a Administração e a Secretaria consultam os encarregados de educação.",
     forbiddenTitle: "Não tem acesso aos encarregados de educação",
     form: {
+      accessTitle: "Acesso",
       conflict: "Este registo foi alterado por outra pessoa. Os dados foram recarregados: confira e guarde novamente.",
       create: "Registar encarregado de educação",
       created: "Encarregado de educação registado.",
@@ -1576,6 +1577,11 @@ export const ptPT: TranslationResource = {
   people: {
     allStatuses: "Todas as situações",
     anonymizedLocked: "Esta pessoa foi anonimizada e não pode mais ser alterada.",
+    anonymizedNoticeDescription:
+      "Os dados pessoais foram apagados a pedido do titular (LGPD). O registo fica apenas para manter os vínculos e o histórico e já não pode ser alterado.",
+    anonymizedNoticeTitle: "Pessoa anonimizada",
+    anonymizedTag: "Anonimizado",
+    backToProfile: "Voltar ao perfil",
     duplicates: {
       back: "Voltar ao formulário",
       description:
@@ -1652,6 +1658,13 @@ export const ptPT: TranslationResource = {
       streetLabel: "Rua",
       streetPlaceholder: "Rua, avenida...",
     },
+    nicknameEditHelper:
+      "É com ela que a pessoa entra. Sem e-mail de acesso, mudar a alcunha termina as sessões abertas, e a pessoa volta a entrar com a nova alcunha.",
+    nicknameInUse: "Esta alcunha já está em uso. Escolha outra.",
+    nicknameInvalid: "Use de 3 a 60 letras, números, ponto, hífen ou sublinhado, sem espaços.",
+    nicknameLabel: "Alcunha",
+    nicknamePlaceholder: "Ex.: ana.sousa",
+    nicknameRequired: "Indique a alcunha.",
     rateLimitedDescription:
       "Por segurança, a pesquisa de pessoas tem um limite por minuto. Aguarde um momento e tente novamente.",
     rateLimitedTitle: "Demasiadas pesquisas em pouco tempo",
@@ -2040,11 +2053,6 @@ export const ptPT: TranslationResource = {
         "O aluno é guardado como rascunho e só fica ativo com um encarregado de educação associado. Guardar não cria acesso nem matrícula.",
       newTitle: "Novo aluno",
       nicknameHelper: "Usada pelo aluno para entrar. Se ficar em branco, o sistema sugere uma a partir do nome.",
-      nicknameInUse: "Esta alcunha já está em uso. Escolha outra.",
-      nicknameInvalid: "Use de 3 a 60 letras, números, ponto, hífen ou sublinhado, sem espaços.",
-      nicknameLabel: "Alcunha",
-      nicknamePlaceholder: "Ex.: ana.sousa",
-      nicknameReadOnly: "A alcunha é usada para entrar e não muda aqui.",
       noAnswer:
         "Não houve resposta do servidor. Confira a lista de alunos antes de tentar novamente, para não registar o mesmo aluno duas vezes.",
       observationHelper: "Até {{max}} caracteres. Não registe dados de saúde.",

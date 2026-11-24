@@ -151,3 +151,14 @@ export const formatPersonAddress = (address: PersonAddress | null): string => {
     .filter(Boolean)
     .join(" · ")
 }
+
+// The nickname rule of the backend (and of the login): 3 to 60 letters, digits, ".", "_" or "-".
+export const nicknamePattern = /^[a-z0-9._-]{3,60}$/i
+
+// The nickname to send on an edit: the typed one, as the backend stores it, only when it differs from
+// the current one (left out, the backend keeps it).
+export const toNicknameChange = (typed: string, current: string | null): string | undefined => {
+  const value = typed.trim().toLowerCase()
+
+  return value === "" || value === current ? undefined : value
+}
