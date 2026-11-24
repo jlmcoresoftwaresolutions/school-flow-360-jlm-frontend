@@ -914,7 +914,6 @@ export const es: TranslationResource = {
     end: {
       action: "Finalizar vínculo",
       confirm: "Finalizar vínculo",
-      confirmWithException: "Finalizar con excepción",
       conflict: "Otra persona cambió este vínculo. Revíselo y confirme de nuevo.",
       description:
         "A partir del fin, el responsable deja de responder por el alumno y de verlo. El vínculo queda en el historial y no se borra.",
@@ -922,9 +921,8 @@ export const es: TranslationResource = {
       endBeforeStart: "El fin no puede ser anterior al inicio del vínculo.",
       endDate: "Fecha de fin",
       endDateHelper: "En blanco, el vínculo termina hoy.",
-      lastGuardian: "Es el único responsable de un alumno activo. Vincule otro responsable antes de finalizar este.",
-      lastGuardianAdmin:
-        "Es el único responsable de un alumno activo. Como Admin, puede finalizarlo de todos modos indicando el motivo de la excepción, que queda registrado.",
+      lastGuardian:
+        "Es el único responsable de un alumno activo menor de 18 años. Vincule otro responsable antes de finalizar este.",
       reason: "Motivo de la finalización",
       reasonPlaceholder: "Ej.: cambio de custodia",
       reasonRequired: "Indique el motivo de la finalización.",
@@ -1084,7 +1082,7 @@ export const es: TranslationResource = {
         title: "¿Desactivar a {{name}}?",
       },
       lastGuardian:
-        "Es el único responsable de un estudiante activo. Vincula otro responsable al estudiante antes de desactivar.",
+        "Es el único responsable de un estudiante activo menor de 18 años. Vincula otro responsable a ese estudiante antes de desactivar.",
       nameRequired: "Indica antes el nombre completo del responsable.",
       reactivate: {
         action: "Reactivar responsable",
@@ -2033,7 +2031,7 @@ export const es: TranslationResource = {
     blockers: {
       BIRTH_DATE_REQUIRED: "fecha de nacimiento",
       NAME_REQUIRED: "nombre completo",
-      NO_GUARDIAN: "un responsable vinculado",
+      NO_GUARDIAN: "un responsable vinculado (menor de 18 años)",
       UNIT_INACTIVE: "sede de referencia activa",
       UNIT_REQUIRED: "sede de referencia",
     },
@@ -2048,13 +2046,15 @@ export const es: TranslationResource = {
     forbiddenTitle: "No tienes acceso a los estudiantes",
     form: {
       birthDateHelper: "Obligatoria para activar al estudiante.",
+      birthDateNeedsGuardian:
+        "Con esta fecha el estudiante queda menor de 18 años, y un estudiante activo menor necesita un responsable. Vincula uno antes.",
       conflict: "Otra persona cambió este registro. Los datos se volvieron a leer: revísalos y guarda de nuevo.",
       created: "Estudiante guardado como borrador.",
       editDescription: "Cambia los datos del registro del estudiante {{code}}.",
       editTitle: "Editar estudiante",
       failed: "No se pudo guardar ahora. Inténtalo de nuevo en unos instantes.",
       newDescription:
-        "El estudiante se guarda como borrador y solo queda activo con un responsable vinculado. Guardar no crea acceso ni matrícula.",
+        "El estudiante se guarda como borrador. Si es menor de 18 años, solo queda activo con un responsable vinculado. Guardar no crea acceso ni matrícula.",
       newTitle: "Nuevo estudiante",
       nicknameHelper: "El estudiante entra con él. Si queda en blanco, el sistema sugiere uno a partir del nombre.",
       noAnswer:
@@ -2140,8 +2140,6 @@ export const es: TranslationResource = {
         done: "Estudiante activado.",
         title: "¿Activar a {{name}}?",
       },
-      activateWithoutGuardian: "Activar sin responsable",
-      adminOnly: "Solo la Administración puede activar a un estudiante sin responsable.",
       conflict: "Otra persona cambió al estudiante. Los datos se volvieron a leer.",
       discard: {
         action: "Descartar borrador",
@@ -2151,14 +2149,9 @@ export const es: TranslationResource = {
         done: "Borrador descartado.",
         title: "¿Descartar el borrador de {{name}}?",
       },
-      exceptionHelper:
-        "Excepción de la Administración (estudiante adulto, educación de adultos). De {{min}} a {{max}} caracteres; queda registrada.",
-      exceptionInvalid: "Escribe el motivo con {{min}} a {{max}} caracteres.",
-      exceptionLabel: "Motivo de la excepción",
-      exceptionPlaceholder: "Explica por qué el estudiante queda activo sin responsable",
       failed: "No se pudo completar ahora. Inténtalo de nuevo en unos instantes.",
       guardianRequired:
-        "Un estudiante activo necesita al menos un responsable vinculado. Vincula un responsable antes de activar.",
+        "Un estudiante menor de 18 años solo queda activo con al menos un responsable vinculado. Vincula un responsable antes de activar.",
       inactivate: {
         action: "Desactivar estudiante",
         confirm: "Desactivar",

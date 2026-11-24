@@ -906,7 +906,6 @@ export const en: TranslationResource = {
     end: {
       action: "End link",
       confirm: "End link",
-      confirmWithException: "End with exception",
       conflict: "Someone else changed this link. Check it and confirm again.",
       description:
         "From the end date on, the guardian no longer answers for the student nor sees them. The link stays in the history and is not deleted.",
@@ -914,9 +913,8 @@ export const en: TranslationResource = {
       endBeforeStart: "The end cannot be before the start of the link.",
       endDate: "End date",
       endDateHelper: "Left blank, the link ends today.",
-      lastGuardian: "This is the only guardian of an active student. Link another guardian before ending this one.",
-      lastGuardianAdmin:
-        "This is the only guardian of an active student. As an Admin, you may end it anyway by giving the reason for the exception, which is recorded.",
+      lastGuardian:
+        "This is the only guardian of an active student under 18. Link another guardian before ending this one.",
       reason: "Reason for ending",
       reasonPlaceholder: "E.g.: change of custody",
       reasonRequired: "Enter the reason for ending the link.",
@@ -1076,7 +1074,7 @@ export const en: TranslationResource = {
         title: "Inactivate {{name}}?",
       },
       lastGuardian:
-        "This is the only guardian of an active student. Link another guardian to the student before inactivating.",
+        "This is the only guardian of an active student under 18. Link another guardian to that student before inactivating.",
       nameRequired: "Enter the guardian's full name first.",
       reactivate: {
         action: "Reactivate guardian",
@@ -2018,7 +2016,7 @@ export const en: TranslationResource = {
     blockers: {
       BIRTH_DATE_REQUIRED: "birth date",
       NAME_REQUIRED: "full name",
-      NO_GUARDIAN: "a linked guardian",
+      NO_GUARDIAN: "a linked guardian (under 18)",
       UNIT_INACTIVE: "an active reference unit",
       UNIT_REQUIRED: "reference unit",
     },
@@ -2032,13 +2030,15 @@ export const en: TranslationResource = {
     forbiddenTitle: "You don't have access to the students",
     form: {
       birthDateHelper: "Required to activate the student.",
+      birthDateNeedsGuardian:
+        "This date makes the student under 18, and an active minor needs a guardian. Link a guardian first.",
       conflict: "Someone else changed this record. The data was read again: check it and save again.",
       created: "Student saved as a draft.",
       editDescription: "Change the registration data of student {{code}}.",
       editTitle: "Edit student",
       failed: "Couldn't save now. Try again in a moment.",
       newDescription:
-        "The student is saved as a draft and only becomes active with a linked guardian. Saving creates no access or enrollment.",
+        "The student is saved as a draft. Under 18, it only becomes active with a linked guardian. Saving creates no access or enrollment.",
       newTitle: "New student",
       nicknameHelper: "The student signs in with it. Left blank, the system suggests one from the name.",
       noAnswer:
@@ -2124,8 +2124,6 @@ export const en: TranslationResource = {
         done: "Student activated.",
         title: "Activate {{name}}?",
       },
-      activateWithoutGuardian: "Activate without a guardian",
-      adminOnly: "Only the Administration can activate a student without a guardian.",
       conflict: "Someone else changed the student. The data was read again.",
       discard: {
         action: "Discard draft",
@@ -2134,13 +2132,9 @@ export const en: TranslationResource = {
         done: "Draft discarded.",
         title: "Discard {{name}}'s draft?",
       },
-      exceptionHelper:
-        "An Administration exception (adult student, adult education). {{min}} to {{max}} characters; it is recorded.",
-      exceptionInvalid: "Write the reason with {{min}} to {{max}} characters.",
-      exceptionLabel: "Reason for the exception",
-      exceptionPlaceholder: "Explain why the student is active without a guardian",
       failed: "Couldn't finish now. Try again in a moment.",
-      guardianRequired: "An active student needs at least one linked guardian. Link a guardian before activating.",
+      guardianRequired:
+        "A student under 18 only becomes active with at least one linked guardian. Link a guardian before activating.",
       inactivate: {
         action: "Inactivate student",
         confirm: "Inactivate",

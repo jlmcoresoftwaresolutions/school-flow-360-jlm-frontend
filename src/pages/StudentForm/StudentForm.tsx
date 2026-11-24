@@ -115,6 +115,8 @@ export const StudentForm = () => {
       setReview(toPersonSignals(values, student))
     } else if (personError) {
       fieldError(personError.field, personError.message)
+    } else if (code === "GUARDIAN_REQUIRED") {
+      fieldError("birthDate", t("students.form.birthDateNeedsGuardian"))
     } else if (code === "NICKNAME_IN_USE") {
       fieldError("nickname", t("people.nicknameInUse"))
     } else if (code === "NICKNAME_INVALID") {

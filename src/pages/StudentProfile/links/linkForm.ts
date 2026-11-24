@@ -4,8 +4,6 @@ import { fromIsoDate } from "@/utils/dates"
 // The backend's limits for a link: the reason to end it, and the reason of the Admin's exception that
 // ends the last guardian of an active student.
 export const linkLimits = {
-  exceptionMax: 500,
-  exceptionMin: 10,
   reasonMax: 500,
 }
 

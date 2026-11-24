@@ -14,6 +14,7 @@ import { getStudentProfile } from "@/services/students"
 import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
 import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
+import { isMinor } from "../shared/people/personAge"
 import { AnonymizedBadge } from "../shared/people/privacy/AnonymizedBadge"
 import { AnonymizedNotice } from "../shared/people/privacy/AnonymizedNotice"
 import { usePersonPrivacy } from "../shared/people/privacy/usePersonPrivacy"
@@ -332,7 +333,7 @@ export const StudentProfile = () => {
       {linkDialog?.kind === "end" && (
         <EndLinkDialog
           guardianName={linkDialog.guardianName}
-          isLastGuardian={student.status === "ACTIVE" && activeLinks.length === 1}
+          isLastGuardian={student.status === "ACTIVE" && activeLinks.length === 1 && isMinor(student.birthDate)}
           link={linkDialog.link}
           onChanged={reload}
           onClose={() => setLinkDialog(null)}

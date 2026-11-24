@@ -912,7 +912,6 @@ export const ptPT: TranslationResource = {
     end: {
       action: "Encerrar vínculo",
       confirm: "Encerrar vínculo",
-      confirmWithException: "Encerrar com exceção",
       conflict: "Outra pessoa alterou este vínculo. Confira e confirme de novo.",
       description:
         "A partir do fim, o responsável deixa de responder pelo aluno e de vê-lo. O vínculo fica no histórico e não é apagado.",
@@ -920,9 +919,8 @@ export const ptPT: TranslationResource = {
       endBeforeStart: "O fim não pode ser antes do início do vínculo.",
       endDate: "Data de fim",
       endDateHelper: "Em branco, o vínculo termina hoje.",
-      lastGuardian: "É o único responsável de um aluno ativo. Vincule outro responsável antes de encerrar este.",
-      lastGuardianAdmin:
-        "É o único responsável de um aluno ativo. Como Admin, pode encerrar mesmo assim, indicando o motivo da exceção, que fica registado.",
+      lastGuardian:
+        "É o único encarregado de educação de um aluno ativo menor de 18 anos. Associe outro antes de encerrar este.",
       reason: "Motivo do encerramento",
       reasonPlaceholder: "Ex.: mudança de tutela",
       reasonRequired: "Indique o motivo do encerramento.",
@@ -1080,7 +1078,8 @@ export const ptPT: TranslationResource = {
         done: "Encarregado de educação inativado.",
         title: "Inativar {{name}}?",
       },
-      lastGuardian: "É o único encarregado de educação de um aluno ativo. Associe outro ao aluno antes de inativar.",
+      lastGuardian:
+        "É o único encarregado de educação de um aluno ativo menor de 18 anos. Associe outro a esse aluno antes de inativar.",
       nameRequired: "Indique antes o nome completo do encarregado de educação.",
       reactivate: {
         action: "Reativar encarregado de educação",
@@ -2029,7 +2028,7 @@ export const ptPT: TranslationResource = {
     blockers: {
       BIRTH_DATE_REQUIRED: "data de nascimento",
       NAME_REQUIRED: "nome completo",
-      NO_GUARDIAN: "um encarregado de educação associado",
+      NO_GUARDIAN: "um encarregado de educação associado (menor de 18 anos)",
       UNIT_INACTIVE: "unidade de referência ativa",
       UNIT_REQUIRED: "unidade de referência",
     },
@@ -2044,13 +2043,15 @@ export const ptPT: TranslationResource = {
     forbiddenTitle: "Não tem acesso aos alunos",
     form: {
       birthDateHelper: "Obrigatória para ativar o aluno.",
+      birthDateNeedsGuardian:
+        "Com esta data o aluno fica menor de 18 anos, e um aluno ativo menor precisa de encarregado de educação. Associe um antes.",
       conflict: "Este registo foi alterado por outra pessoa. Os dados foram recarregados: confira e guarde novamente.",
       created: "Aluno registado como rascunho.",
       editDescription: "Altere os dados do registo do aluno {{code}}.",
       editTitle: "Editar aluno",
       failed: "Não foi possível guardar agora. Tente novamente dentro de instantes.",
       newDescription:
-        "O aluno é guardado como rascunho e só fica ativo com um encarregado de educação associado. Guardar não cria acesso nem matrícula.",
+        "O aluno é guardado como rascunho. Um menor de 18 anos só fica ativo com um encarregado de educação associado. Guardar não cria acesso nem matrícula.",
       newTitle: "Novo aluno",
       nicknameHelper: "Usada pelo aluno para entrar. Se ficar em branco, o sistema sugere uma a partir do nome.",
       noAnswer:
@@ -2136,8 +2137,6 @@ export const ptPT: TranslationResource = {
         done: "Aluno ativado.",
         title: "Ativar {{name}}?",
       },
-      activateWithoutGuardian: "Ativar sem encarregado de educação",
-      adminOnly: "Só a Administração pode ativar um aluno sem encarregado de educação.",
       conflict: "O aluno foi alterado por outra pessoa. Os dados foram recarregados.",
       discard: {
         action: "Descartar rascunho",
@@ -2146,14 +2145,9 @@ export const ptPT: TranslationResource = {
         done: "Rascunho descartado.",
         title: "Descartar o rascunho de {{name}}?",
       },
-      exceptionHelper:
-        "Exceção da Administração (aluno adulto, ensino de adultos). De {{min}} a {{max}} caracteres; fica registada.",
-      exceptionInvalid: "Escreva o motivo com {{min}} a {{max}} caracteres.",
-      exceptionLabel: "Motivo da exceção",
-      exceptionPlaceholder: "Explique porque o aluno fica ativo sem encarregado de educação",
       failed: "Não foi possível concluir agora. Tente novamente dentro de instantes.",
       guardianRequired:
-        "Um aluno ativo precisa de pelo menos um encarregado de educação associado. Associe um antes de ativar.",
+        "Um aluno menor de 18 anos só fica ativo com pelo menos um encarregado de educação associado. Associe um antes de ativar.",
       inactivate: {
         action: "Inativar aluno",
         confirm: "Inativar",

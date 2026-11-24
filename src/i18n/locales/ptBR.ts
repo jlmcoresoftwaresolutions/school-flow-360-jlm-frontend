@@ -908,7 +908,6 @@ export const ptBR = {
     end: {
       action: "Encerrar vínculo",
       confirm: "Encerrar vínculo",
-      confirmWithException: "Encerrar com exceção",
       conflict: "Outra pessoa alterou este vínculo. Confira e confirme de novo.",
       description:
         "A partir do fim, o responsável deixa de responder pelo aluno e de vê-lo. O vínculo fica no histórico e não é apagado.",
@@ -916,9 +915,8 @@ export const ptBR = {
       endBeforeStart: "O fim não pode ser antes do início do vínculo.",
       endDate: "Data de fim",
       endDateHelper: "Em branco, o vínculo termina hoje.",
-      lastGuardian: "É o único responsável de um aluno ativo. Vincule outro responsável antes de encerrar este.",
-      lastGuardianAdmin:
-        "É o único responsável de um aluno ativo. Como Admin, você pode encerrar mesmo assim, informando o motivo da exceção, que fica registrado.",
+      lastGuardian:
+        "É o único responsável de um aluno ativo menor de 18 anos. Vincule outro responsável antes de encerrar este.",
       reason: "Motivo do encerramento",
       reasonPlaceholder: "Ex.: mudança de guarda",
       reasonRequired: "Informe o motivo do encerramento.",
@@ -1077,7 +1075,7 @@ export const ptBR = {
         title: "Inativar {{name}}?",
       },
       lastGuardian:
-        "Este é o único responsável de um aluno ativo. Vincule outro responsável ao aluno antes de inativar.",
+        "Este é o único responsável de um aluno ativo menor de 18 anos. Vincule outro responsável a esse aluno antes de inativar.",
       nameRequired: "Informe o nome completo do responsável antes.",
       reactivate: {
         action: "Reativar responsável",
@@ -2025,7 +2023,7 @@ export const ptBR = {
     blockers: {
       BIRTH_DATE_REQUIRED: "data de nascimento",
       NAME_REQUIRED: "nome completo",
-      NO_GUARDIAN: "um responsável vinculado",
+      NO_GUARDIAN: "um responsável vinculado (menor de 18 anos)",
       UNIT_INACTIVE: "unidade de referência ativa",
       UNIT_REQUIRED: "unidade de referência",
     },
@@ -2039,13 +2037,15 @@ export const ptBR = {
     forbiddenTitle: "Você não tem acesso aos alunos",
     form: {
       birthDateHelper: "Obrigatória para ativar o aluno.",
+      birthDateNeedsGuardian:
+        "Com essa data o aluno fica menor de 18 anos, e um aluno ativo menor de idade precisa de responsável. Vincule um responsável antes.",
       conflict: "Este cadastro foi alterado por outra pessoa. Os dados foram relidos: confira e salve de novo.",
       created: "Aluno cadastrado como rascunho.",
       editDescription: "Altere os dados cadastrais do aluno {{code}}.",
       editTitle: "Editar aluno",
       failed: "Não foi possível salvar agora. Tente novamente em instantes.",
       newDescription:
-        "O aluno é salvo como rascunho e só fica ativo com um responsável vinculado. Salvar não cria acesso nem matrícula.",
+        "O aluno é salvo como rascunho. Menor de 18 anos só fica ativo com um responsável vinculado. Salvar não cria acesso nem matrícula.",
       newTitle: "Novo aluno",
       nicknameHelper: "Usado pelo aluno para entrar. Se ficar em branco, o sistema sugere um a partir do nome.",
       noAnswer:
@@ -2131,8 +2131,6 @@ export const ptBR = {
         done: "Aluno ativado.",
         title: "Ativar {{name}}?",
       },
-      activateWithoutGuardian: "Ativar sem responsável",
-      adminOnly: "Só a Administração pode ativar um aluno sem responsável.",
       conflict: "O aluno foi alterado por outra pessoa. Os dados foram relidos.",
       discard: {
         action: "Descartar rascunho",
@@ -2141,14 +2139,9 @@ export const ptBR = {
         done: "Rascunho descartado.",
         title: "Descartar o rascunho de {{name}}?",
       },
-      exceptionHelper:
-        "Exceção da Administração (aluno adulto, EJA). De {{min}} a {{max}} caracteres; fica registrada.",
-      exceptionInvalid: "Escreva o motivo com {{min}} a {{max}} caracteres.",
-      exceptionLabel: "Motivo da exceção",
-      exceptionPlaceholder: "Explique por que o aluno fica ativo sem responsável",
       failed: "Não foi possível concluir agora. Tente novamente em instantes.",
       guardianRequired:
-        "Um aluno ativo precisa de ao menos um responsável vinculado. Vincule um responsável antes de ativar.",
+        "Um aluno menor de 18 anos só fica ativo com ao menos um responsável vinculado. Vincule um responsável antes de ativar.",
       inactivate: {
         action: "Inativar aluno",
         confirm: "Inativar",

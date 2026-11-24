@@ -47,11 +47,10 @@ export type StudentGuardianLinkUpdateRequest = {
   version: number
 }
 
-// Body of POST /api/student-guardian-links/{id}/end: a reason is required; ending the last guardian of
-// an active student needs the Admin's `exceptionReason`.
+// Body of POST /api/student-guardian-links/{id}/end: a reason is required; the last guardian of an active
+// student under 18 can't be ended by anyone (422 LAST_GUARDIAN).
 export type StudentGuardianLinkEndRequest = {
   endDate?: string
-  exceptionReason?: string
   reason: string
   version: number
 }

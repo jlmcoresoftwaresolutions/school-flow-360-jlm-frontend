@@ -1,4 +1,4 @@
-import { awaitingInvitation, mockPeopleApi } from "./support/people.ts"
+import { awaitingInvitation, mockPeopleApi, students } from "./support/people.ts"
 import { expect, type Page, test } from "./support/test.ts"
 import { lastCall, secretariaContext, signInAndOpen } from "./support/userAccess.ts"
 
@@ -179,42 +179,37 @@ test.describe("link changes", () => {
     })
   })
 
-  test("lets only the Admin end the last guardian of an active student, giving the reason", async ({ page }) => {
-    const { calls } = await mockPeopleApi(page)
+  test("keeps the last guardian of an active student under 18, even from the Admin", async ({ page }) => {
+    await mockPeopleApi(page)
     await signInAndOpen(page, `${studentsPath}/202`)
     await page.getByRole("tab", { name: "Responsáveis" }).click()
 
     await chooseLinkAction(page, "Fernanda Souza", "Encerrar vínculo")
     const dialog = page.getByRole("dialog", { name: "Encerrar vínculo com Fernanda Souza?" })
-    await expect(dialog.getByRole("note")).toContainText("Como Admin, você pode encerrar mesmo assim")
-    await dialog.getByRole("textbox", { name: /^Motivo do encerramento/ }).fill("Aluno passou a morar sozinho")
-    await dialog.getByRole("textbox", { name: /^Motivo da exceção/ }).fill("curto")
-    await dialog.getByRole("button", { name: "Encerrar com exceção" }).click()
-    await expect(dialog.getByRole("textbox", { name: /^Motivo da exceção/ })).toHaveAccessibleDescription(
-      "Escreva o motivo com 10 a 500 caracteres.",
+    await expect(dialog.getByRole("note")).toContainText(
+      "É o único responsável de um aluno ativo menor de 18 anos. Vincule outro responsável antes de encerrar este.",
     )
-
-    await dialog.getByRole("textbox", { name: /^Motivo da exceção/ }).fill("Aluno maior de idade, da EJA")
-    await dialog.getByRole("button", { name: "Encerrar com exceção" }).click()
-
-    await expect(page.getByText("Vínculo com Fernanda Souza encerrado.")).toBeVisible()
-    expect(lastCall(calls, "POST", "/api/student-guardian-links/2020/end")?.body).toEqual({
-      exceptionReason: "Aluno maior de idade, da EJA",
-      reason: "Aluno passou a morar sozinho",
-      version: 0,
-    })
+    await expect(dialog.getByRole("button", { name: "Encerrar vínculo" })).toBeDisabled()
+    await expect(dialog.getByRole("textbox", { name: /^Motivo da exceção/ })).toHaveCount(0)
   })
 
-  test("keeps the last guardian of an active student to a Secretaria", async ({ page }) => {
-    await mockPeopleApi(page)
+  test("ends the last guardian of an adult student", async ({ page }) => {
+    const adult = students.map((item) => (item.id === 202 ? { ...item, birthDate: "2001-02-03" } : item))
+    const { calls } = await mockPeopleApi(page, { students: adult })
     await signInAndOpen(page, `${studentsPath}/202`, secretariaContext)
     await page.getByRole("tab", { name: "Responsáveis" }).click()
 
     await chooseLinkAction(page, "Fernanda Souza", "Encerrar vínculo")
     const dialog = page.getByRole("dialog", { name: "Encerrar vínculo com Fernanda Souza?" })
-    await expect(dialog.getByRole("note")).toContainText("Vincule outro responsável antes de encerrar este.")
-    await expect(dialog.getByRole("button", { name: "Encerrar vínculo" })).toBeDisabled()
-    await expect(dialog.getByRole("textbox", { name: /^Motivo da exceção/ })).toHaveCount(0)
+    await expect(dialog.getByRole("note")).toHaveCount(0)
+    await dialog.getByRole("textbox", { name: /^Motivo do encerramento/ }).fill("Aluno passou a morar sozinho")
+    await dialog.getByRole("button", { name: "Encerrar vínculo" }).click()
+
+    await expect(page.getByText("Vínculo com Fernanda Souza encerrado.")).toBeVisible()
+    expect(lastCall(calls, "POST", "/api/student-guardian-links/2020/end")?.body).toEqual({
+      reason: "Aluno passou a morar sozinho",
+      version: 0,
+    })
   })
 })
 
