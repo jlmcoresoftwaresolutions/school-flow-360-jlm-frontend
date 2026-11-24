@@ -7,6 +7,7 @@ import {
   applySchoolColors,
   buildAccent,
   buildBackdrop,
+  buildPageBackground,
   buildPrimaryScale,
   type PrimaryStep,
   restoreSchoolColors,
@@ -31,6 +32,8 @@ const tint = (hex: string, alpha: number) => {
 const rootVariable = (step: PrimaryStep) => document.documentElement.style.getPropertyValue(`--sf-primary-${step}`)
 
 const accentVariable = () => document.documentElement.style.getPropertyValue("--sf-accent-500")
+
+const pageBackground = () => document.documentElement.style.getPropertyValue("--sf-page-background")
 
 const backdrop = (name: keyof typeof backdropPalette) =>
   document.documentElement.style.getPropertyValue(`--sf-backdrop-${name}`)
@@ -126,6 +129,18 @@ describe("buildBackdrop", () => {
   })
 })
 
+describe("buildPageBackground", () => {
+  it("mixes a touch of the color into the product's light gray", () => {
+    expect(buildPageBackground("#F8F9FA")).toBe(colors.neutral[50])
+    expect(buildPageBackground("#000000", 0.5)).toBe("#7C7D7D")
+    expect(buildPageBackground("#B71C1C")).not.toBe(colors.neutral[50])
+  })
+
+  it("is null for something that isn't a hex color", () => {
+    expect(buildPageBackground("red")).toBeNull()
+  })
+})
+
 describe("applySchoolColors", () => {
   afterEach(() => {
     applySchoolColors(null)
@@ -162,11 +177,23 @@ describe("applySchoolColors", () => {
     expect(backdrop("glowAccent")).toBe(buildBackdrop("#B71C1C", "#B71C1C")?.glowAccent)
   })
 
+  it("tints the pages' background with the school's primary", () => {
+    applySchoolColors(school("#B71C1C"))
+
+    expect(colors.page.background).toContain("--sf-page-background")
+    expect(pageBackground()).toBe(buildPageBackground(buildPrimaryScale("#B71C1C")?.[500] ?? ""))
+
+    applySchoolColors(null)
+
+    expect(pageBackground()).toBe("")
+  })
+
   it("keeps the product's background for the product's own color", () => {
     applySchoolColors(school(brandPalette[900], "#2E7D32"))
 
     expect(backdrop("base")).toBe("")
     expect(backdrop("glowAccent")).toBe("")
+    expect(pageBackground()).toBe("")
   })
 
   it("goes back to the product's palette when null", () => {

@@ -1,5 +1,6 @@
 import { backdropPalette, type BackdropPaletteType } from "@/foundation/backdropPalette"
 import { brandPalette, type BrandPaletteType } from "@/foundation/brandPalette"
+import { colors } from "@/foundation/colors"
 import { getContrastRatio, hexToRgb, type RgbColor, rgbToHex } from "@/utils/colors"
 
 // The school's colors across the interface. colors.primary (src/foundation/colors.ts) reads each step
@@ -209,6 +210,24 @@ export const buildBackdrop = (primary: string, accent: string): BackdropPaletteT
   }
 }
 
+const pageBackgroundVariable = "--sf-page-background"
+
+// How much of the school's primary goes into the light gray of the pages behind the login: enough to
+// give them its hue, little enough that the white cards still stand out and the status colors still
+// read as they do on the gray.
+export const pageTintAmount = 0.03
+
+// The pages' background for a school's primary (its 500 step): the product's light gray with a touch
+// of the color, or null when it isn't a hex color.
+export const buildPageBackground = (primary: string, amount = pageTintAmount): string | null => {
+  const tint = hexToRgb(primary)
+  const gray = hexToRgb(colors.neutral[50]) as RgbColor
+  if (!tint) return null
+  const mix = (channel: keyof RgbColor) => gray[channel] + (tint[channel] - gray[channel]) * amount
+
+  return rgbToHex({ b: mix("b"), g: mix("g"), r: mix("r") })
+}
+
 const paint = (schoolColors: SchoolColors | null) => {
   const style = document.documentElement.style
   const primary = schoolColors?.primaryColor ?? null
@@ -229,6 +248,10 @@ const paint = (schoolColors: SchoolColors | null) => {
     if (backdrop) style.setProperty(backdropVariable(name), backdrop[name])
     else style.removeProperty(backdropVariable(name))
   })
+
+  const pageBackground = scale ? buildPageBackground(scale[500]) : null
+  if (pageBackground) style.setProperty(pageBackgroundVariable, pageBackground)
+  else style.removeProperty(pageBackgroundVariable)
 }
 
 const isSchoolColors = (value: unknown): value is SchoolColors => {

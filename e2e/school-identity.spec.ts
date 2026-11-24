@@ -50,6 +50,8 @@ test("shows the school's name, icon and tab behind the login", async ({ page }) 
   await expect(page.locator("link[rel~='icon']")).toHaveAttribute("href", `${png}#favicon`)
   await expect.poll(() => primaryStep(page, 700)).toBe("#1E40AF")
   await expect.poll(() => rootVariable(page, "--sf-accent-500")).toBe("#2E7D32")
+  // The pages' light gray takes a touch of the school's primary.
+  await expect.poll(() => rootVariable(page, "--sf-page-background")).not.toBe("")
 })
 
 test("keeps the product's look when nothing was published", async ({ page }) => {
@@ -59,6 +61,7 @@ test("keeps the product's look when nothing was published", async ({ page }) => 
   await expect(menu(page)).not.toContainText("Powered by")
   await expect(page).toHaveTitle("SchoolFlow360º | JLM Core")
   expect(await primaryStep(page, 600)).toBe("")
+  expect(await rootVariable(page, "--sf-page-background")).toBe("")
 })
 
 test("names the school in the tab of the login", async ({ page }) => {
