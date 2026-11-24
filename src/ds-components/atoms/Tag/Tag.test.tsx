@@ -63,8 +63,10 @@ describe("Tag", () => {
     )
 
     expect(screen.getByText("Novo")).toHaveStyle({
-      backgroundColor: "rgba(0, 0, 0, 0)",
-      border: `1px solid ${colors.primary[600]}`,
+      backgroundColor: "transparent",
+      borderColor: colors.primary[600],
+      borderStyle: "solid",
+      borderWidth: "1px",
       color: colors.primary[600],
     })
   })

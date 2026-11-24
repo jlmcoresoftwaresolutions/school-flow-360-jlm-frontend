@@ -37,6 +37,8 @@ describe("useMediaQuery", () => {
   })
 
   it("returns false when matchMedia is not available", () => {
+    vi.stubGlobal("matchMedia", undefined)
+
     const { result } = renderHook(() => useMediaQuery("(min-width: 768px)"))
 
     expect(result.current).toBe(false)

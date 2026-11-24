@@ -88,7 +88,7 @@ describe("Breadcrumb", () => {
       ],
     })
 
-    // Read at the document, after React's handlers have run, then cancel it so jsdom doesn't try to navigate.
+    // Read at the document, after React's handlers have run, then cancel it so happy-dom doesn't try to navigate.
     let defaultPrevented = true
     const readAndCancel = (event: Event) => {
       defaultPrevented = event.defaultPrevented

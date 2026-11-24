@@ -103,7 +103,7 @@ describe("Textarea", () => {
       expect(line).toHaveStyle({ alignItems: "center", display: "flex", gap: spacing[8] })
       expect(counter).toHaveStyle({ marginLeft: "auto" })
       // The helper text gives way to the counter instead of pushing it out.
-      expect(helper.parentElement).toHaveStyle({ minWidth: "0px" })
+      expect(helper.parentElement).toHaveStyle({ minWidth: "0" })
       expect(counter).toHaveStyle({ flexShrink: "0" })
     })
 
