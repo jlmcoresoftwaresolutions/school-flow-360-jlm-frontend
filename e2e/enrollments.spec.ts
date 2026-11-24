@@ -236,3 +236,59 @@ test.describe("enrollment guardians", () => {
     expect(calls.some((call) => call.path === "/api/catalogs/relationship-types")).toBe(false)
   })
 })
+
+test.describe("enrollment class", () => {
+  const classItem = (page: Page, code: string) =>
+    page.getByRole("list", { name: "Turmas abertas para matrícula" }).getByRole("listitem").filter({ hasText: code })
+
+  test("chooses a class with its seats read now, never reserving one", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Turma" }).click()
+
+    await expect(page.getByText("Nenhuma turma escolhida ainda.")).toBeVisible()
+    await page.getByRole("button", { name: "Escolher turma" }).click()
+
+    await expect(classItem(page, "1A")).toContainText("28 alunos matriculados")
+    await expect(classItem(page, "1A")).toContainText("2 vagas")
+    await expect(classItem(page, "1B")).toContainText("Sem vaga")
+    await expect(classItem(page, "1C")).toContainText("Ocupação indisponível agora (não quer dizer turma vazia)")
+    await expect(classItem(page, "1C")).toContainText("Vagas indisponíveis agora")
+
+    await page.getByRole("button", { name: "Escolher a turma 1A" }).click()
+    await expect(page.getByText("Turma escolhida. Nenhuma vaga foi reservada.")).toBeVisible()
+    await expect(page.getByRole("region", { name: "Turma da matrícula" })).toContainText("1A · 1º ano A")
+    await expect(page.getByRole("list", { name: "O que falta na turma" })).toHaveCount(0)
+    expect(lastCall(calls, "PUT", "/api/enrollments/501/context")?.body).toEqual({ classId: 701, version: 0 })
+  })
+
+  test("asks before changing or taking back the class", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Turma" }).click()
+    await page.getByRole("button", { name: "Escolher turma" }).click()
+    await page.getByRole("button", { name: "Escolher a turma 1A" }).click()
+    await expect(page.getByText("Turma escolhida. Nenhuma vaga foi reservada.")).toBeVisible()
+
+    await page.getByRole("button", { name: "Trocar turma" }).click()
+    await page.getByRole("button", { name: "Escolher a turma 1B" }).click()
+    const change = page.getByRole("dialog", { name: "Trocar para a turma 1B?" })
+    await expect(change).toContainText("Escolher a turma não reserva vaga.")
+    await change.getByRole("button", { name: "Trocar" }).click()
+    await expect(page.getByRole("list", { name: "O que falta na turma" })).toContainText(
+      "A turma escolhida não tem vaga",
+    )
+
+    await page.getByRole("button", { name: "Desfazer escolha" }).click()
+    await page
+      .getByRole("dialog", { name: "Desfazer a escolha da turma?" })
+      .getByRole("button", { name: "Desfazer escolha" })
+      .click()
+    await expect(page.getByText("Escolha da turma desfeita.")).toBeVisible()
+    await expect(page.getByText("Nenhuma turma escolhida ainda.")).toBeVisible()
+    expect(lastCall(calls, "PUT", "/api/enrollments/501/context")?.body).toEqual({ classId: null, version: 2 })
+
+    await page.getByRole("tab", { name: "Histórico" }).click()
+    await expect(page.getByRole("row").filter({ hasText: "Turma alterada" })).toHaveCount(3)
+  })
+})

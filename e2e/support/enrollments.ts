@@ -66,6 +66,46 @@ const studentRef = (studentId: number) => {
 
 const preparation = ["DRAFT", "PENDING", "BLOCKED"]
 
+// The classes of Unidade Aldeota open for enrollment: one with seats, one full, and one whose occupation
+// couldn't be read (unavailable, never zero).
+const classesByUnit: Record<number, Item[]> = {
+  1: [
+    {
+      capacity: 30,
+      classId: 701,
+      classStatus: "ACTIVE",
+      code: "1A",
+      eligible: true,
+      name: "1º ano A",
+      occupation: { asOf: "2026-11-24T15:00:00Z", status: "AVAILABLE", value: 28 },
+      seats: 2,
+      shift: "MANHA",
+    },
+    {
+      capacity: 25,
+      classId: 702,
+      classStatus: "ACTIVE",
+      code: "1B",
+      eligible: true,
+      name: "1º ano B",
+      occupation: { asOf: "2026-11-24T15:00:00Z", status: "AVAILABLE", value: 25 },
+      seats: 0,
+      shift: "TARDE",
+    },
+    {
+      capacity: 20,
+      classId: 703,
+      classStatus: "ACTIVE",
+      code: "1C",
+      eligible: true,
+      name: "1º ano C",
+      occupation: { asOf: null, status: "UNAVAILABLE", value: null },
+      seats: null,
+      shift: "INTEGRAL",
+    },
+  ],
+}
+
 // What a preparation still lacks, worked out like the backend does.
 const pendenciesOf = (enrollment: Item) => {
   if (!preparation.includes(String(enrollment.status))) return []
@@ -78,7 +118,12 @@ const pendenciesOf = (enrollment: Item) => {
   if (parties.some((party) => !party.linkActive)) items.push({ category: "GUARDIANS", code: "PARTY_LINK_ENDED" })
   if (!active.some((party) => party.financial)) items.push({ category: "GUARDIANS", code: "NO_FINANCIAL_PARTY" })
   if (!active.some((party) => party.signatory)) items.push({ category: "GUARDIANS", code: "NO_SIGNATORY" })
-  if (!enrollment.classContext) items.push({ category: "ACADEMIC_CONTEXT", code: "NO_CLASS" })
+  const context = enrollment.classContext as Item | null
+  if (!context) items.push({ category: "ACADEMIC_CONTEXT", code: "NO_CLASS" })
+  else if (!context.eligible) items.push({ category: "ACADEMIC_CONTEXT", code: "CLASS_NOT_ELIGIBLE" })
+  else if ((context.occupation as Item).status !== "AVAILABLE") {
+    items.push({ category: "ACADEMIC_CONTEXT", code: "OCCUPANCY_UNAVAILABLE" })
+  } else if (context.seats === 0) items.push({ category: "ACADEMIC_CONTEXT", code: "NO_SEAT" })
   return items.map((item) => ({ ...item, message: `${item.code} (backend text)` }))
 }
 
@@ -275,6 +320,24 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
 
     const links = linksByStudent[Number((current.student as Item).id)] ?? []
     const parties = current.parties as Item[]
+
+    if (action === "classes") return route.fulfill(apiAnswer(classesByUnit[Number(current.unitId)] ?? []))
+
+    if (action === "context") {
+      const body = call.body as { classId: number | null; version: number }
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      const chosen = (classesByUnit[Number(current.unitId)] ?? []).find((item) => item.classId === body.classId)
+      if (body.classId !== null && !chosen) return route.fulfill(apiError(422, "ENROLLMENT_CONTEXT_INVALID"))
+      const changed = {
+        ...current,
+        classContext: chosen ?? null,
+        updatedAt: new Date().toISOString(),
+        version: Number(current.version) + 1,
+      }
+      records.set(Number(id), changed)
+      addEvent(Number(id), { action: "CONTEXT_CHANGED", category: "CONTEXT", changedFields: "class" })
+      return route.fulfill(apiAnswer(view(changed)))
+    }
 
     if (action === "guardians") {
       return route.fulfill(

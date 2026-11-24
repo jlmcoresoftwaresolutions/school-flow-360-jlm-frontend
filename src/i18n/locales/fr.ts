@@ -264,7 +264,7 @@ export const fr: TranslationResource = {
     statsLabel: "Chiffres de la structure pédagogique",
     unavailable: "Indisponible",
     unavailableHelp:
-      "L'occupation et les places viennent de l'Inscription, qui n'a pas encore répondu. Cela ne veut pas dire qu'il n'y a pas d'élèves.",
+      "L'occupation et les places viennent des Inscriptions, qui n'ont pas répondu pour le moment. Cela ne veut pas dire qu'il n'y a pas d'élèves.",
     unit: "Unité",
     withoutTeacher: "Actives sans enseignant",
   },
@@ -436,7 +436,7 @@ export const fr: TranslationResource = {
       action: "Autoriser une exception",
       confirm: "Autoriser",
       description:
-        "Des places au-delà de la limite, avec un motif, une validité et la demande concernée. Elle est enregistrée ; rien ne l'utilise tant que l'Inscription n'existe pas.",
+        "Places au-delà de la limite, avec un motif, une validité et la demande qu'elle sert. Elle est enregistrée ; la confirmation de l'inscription ne l'utilise pas encore.",
       disabled: "L'exception d'effectif est désactivée par l'établissement.",
       done: "Exception d'effectif autorisée.",
       enabled: "L'établissement permet d'autoriser des exceptions d'effectif.",
@@ -486,7 +486,7 @@ export const fr: TranslationResource = {
     title: "Capacité",
     unavailable: "Indisponible",
     unavailableHelp:
-      "L'occupation, les places et l'excédent viennent de l'Inscription, qui n'a pas encore répondu. Cela ne veut pas dire que la classe est vide.",
+      "L'occupation, les places et le dépassement viennent des Inscriptions, qui n'ont pas répondu pour le moment. Cela ne veut pas dire que la classe est vide.",
   },
   classes: {
     actionsFor: "Actions pour {{name}}",
@@ -694,7 +694,8 @@ export const fr: TranslationResource = {
       TRANSFERRED: "Transférée",
     },
     student: "Élève",
-    unavailableDescription: "L'Inscription n'a pas encore répondu. Cela ne veut pas dire que la classe est vide.",
+    unavailableDescription:
+      "Les Inscriptions n'ont pas répondu pour le moment. Cela ne veut pas dire que la classe est vide.",
     unavailableTitle: "Liste des élèves indisponible",
   },
   classTeachers: {
@@ -823,6 +824,53 @@ export const fr: TranslationResource = {
     actions: "Actions",
     actionsFor: "Actions de l'inscription de {{name}}",
     allStatuses: "Toutes les situations",
+    class: {
+      capacity_one: "limite de {{count}} élève",
+      capacity_other: "limite de {{count}} élèves",
+      change: "Changer de classe",
+      changeConfirm: "Changer",
+      changeDescription:
+        "Les étapes qui dépendent de la classe seront revues. Choisir la classe ne réserve pas de place.",
+      changeTitle: "Passer à la classe {{name}} ?",
+      choose: "Choisir une classe",
+      chooseNamed: "Choisir la classe {{name}}",
+      chosen: "Classe choisie. Aucune place n'a été réservée.",
+      class: "Classe",
+      clear: "Annuler le choix",
+      clearTitle: "Annuler le choix de la classe ?",
+      cleared: "Choix de la classe annulé.",
+      closeOptions: "Fermer la liste",
+      conflict:
+        "Quelqu'un d'autre a modifié cette inscription. Les données ont été relues : vérifiez et choisissez à nouveau.",
+      current: "Choisie",
+      description:
+        "Choisir la classe ne réserve pas de place : les places sont lues maintenant et peuvent changer jusqu'à la confirmation.",
+      details: "Horaire et limite",
+      empty: "Aucune classe de cet établissement n'est ouverte aux inscriptions pour le moment.",
+      errorDescription: "Impossible de charger les classes. Réessayez dans un instant.",
+      errorTitle: "Classes indisponibles",
+      failed: "Impossible d'enregistrer la classe pour le moment. Réessayez dans un instant.",
+      freeSeats: "Places",
+      invalid: "Cette classe n'est plus ouverte aux inscriptions dans cet établissement. La liste a été relue.",
+      loading: "Chargement des classes...",
+      noSeat: "Pas de place",
+      notOpen: "N'est plus ouverte aux inscriptions",
+      occupation: "Occupation",
+      occupationAsOf_one: "{{count}} élève inscrit (lu le {{moment}})",
+      occupationAsOf_other: "{{count}} élèves inscrits (lu le {{moment}})",
+      occupationUnavailable: "Occupation indisponible pour le moment (cela ne veut pas dire classe vide)",
+      open: "Ouverte aux inscriptions",
+      openForEnrollment: "Situation de la classe",
+      optionsDescription:
+        "Les classes actives de cet établissement ouvertes aux inscriptions, avec les places lues maintenant.",
+      optionsLabel: "Classes ouvertes aux inscriptions",
+      optionsTitle: "Classes disponibles",
+      pendenciesLabel: "Ce qui manque côté classe",
+      seatsUnavailable: "Places indisponibles pour le moment",
+      seats_one: "{{count}} place",
+      seats_other: "{{count}} places",
+      title: "Classe de l'inscription",
+    },
     create: {
       change: "Changer",
       choose: "Choisir",
@@ -977,6 +1025,7 @@ export const fr: TranslationResource = {
       savedAt: "Dernier enregistrement : {{moment}}",
       sectionsLabel: "Sections de l'inscription",
       tabs: {
+        class: "Classe",
         guardians: "Responsables légaux",
         history: "Historique",
         preparation: "Préparation",
