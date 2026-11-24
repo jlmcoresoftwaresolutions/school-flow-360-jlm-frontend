@@ -11,6 +11,16 @@ export type PublishedBrandingResponse = {
   logo?: OrganizationFileLink | null
 }
 
+// GET /api/public/branding: what a school published, for the screens before signing in (login,
+// password recovery). Open to anyone, with only the tenant; the logo and favicon links are temporary.
+export type PublicBrandingResponse = {
+  displayName: string
+  primaryColor: string
+  secondaryColor: string | null
+  favicon?: OrganizationFileLink | null
+  logo?: OrganizationFileLink | null
+}
+
 // GET/PUT .../current/branding and the publish, logo and favicon endpoints answer this: the DRAFT plus
 // its publication state. When nothing was saved yet (`configured` false) the other fields come empty
 // and `version` is null. `hasUnpublishedChanges` says the draft differs from the published copy (enable

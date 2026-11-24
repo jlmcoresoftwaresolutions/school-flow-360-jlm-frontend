@@ -15,6 +15,8 @@ import { getSafeRedirectPath, loginRedirectParam, sessionExpiredParam } from "@/
 import { formatCountdown } from "@/utils/formats"
 import { saveSession } from "@/utils/session"
 
+import { SchoolIdentity } from "../shared/school/SchoolIdentity"
+import { usePublicBranding } from "../shared/school/usePublicBranding"
 import { LoginWrapper } from "./Login.styles"
 import { SessionLimitDialog } from "./SessionLimitDialog"
 
@@ -89,7 +91,8 @@ const toSessionLimitChallenge = (error: unknown): SessionLimitChallenge | null =
 // user from coming back here (see routes.tsx). Arriving with ?expired=1 says the session ended.
 // Repeated wrong passwords make the backend hold the e-mail or nickname back for a while (its 429: 1 minute on the
 // 3rd, 3 minutes on every 5th), shown as a countdown on the button. With 5 sessions already open, the
-// person picks one to end and signs in in the same step (SessionLimitDialog).
+// person picks one to end and signs in in the same step (SessionLimitDialog). The sign-in card opens
+// with the school's published logo and name (SchoolIdentity), when it has them.
 export const Login = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -98,6 +101,7 @@ export const Login = () => {
     defaultValues: { login: "", password: "" },
   })
   const typedLogin = useWatch({ control, name: "login" })
+  const branding = usePublicBranding()
   const lockCountdown = useCountdown()
 
   const [signInError, setSignInError] = useState<SignInError | null>(null)
@@ -222,6 +226,8 @@ export const Login = () => {
               elevated
               style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
             >
+              <SchoolIdentity branding={branding} />
+
               <Text as="h1" fontSize="3xl" bold>
                 {t("login.signInTitle")}
               </Text>

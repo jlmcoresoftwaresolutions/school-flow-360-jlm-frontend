@@ -2,6 +2,7 @@ import type {
   ApiResponse,
   BrandingRequest,
   BrandingResponse,
+  PublicBrandingResponse,
   PublishBrandingRequest,
   PublishedBrandingResponse,
 } from "@/models"
@@ -127,6 +128,16 @@ export const getPublishedBranding = async (config?: RequestConfig): Promise<Publ
     "/api/organizations/current/branding/published",
     config,
   )
+
+  return unwrapApiResponse(response)
+}
+
+// USED: the login and the password recovery (pages/shared/school). GET /api/public/branding: the
+// school's published name, colors, logo and favicon, open to anyone (no token, only the X-Tenant-ID),
+// for the screens before signing in. 404 BRANDING_NOT_PUBLISHED: nothing published yet, use the
+// default look; 404 TENANT_NOT_FOUND: no school with that tenant (the httpClient handles it).
+export const getPublicBranding = async (config?: RequestConfig): Promise<PublicBrandingResponse> => {
+  const response = await httpClient.get<ApiResponse<PublicBrandingResponse>>("/api/public/branding", config)
 
   return unwrapApiResponse(response)
 }

@@ -71,3 +71,11 @@ export const requirePasswordChange = (changePasswordPath: string): void => {
 
   window.location.replace(buildPasswordChangeUrl(changePasswordPath, `${pathname}${search}${hash}`))
 }
+
+// The address names a school the platform doesn't have (404 TENANT_NOT_FOUND): nothing on it can work,
+// so the app reloads on the page that says so, whatever page asked.
+export const showSchoolNotFound = (schoolNotFoundPath: string): void => {
+  if (window.location.pathname === schoolNotFoundPath) return
+
+  window.location.replace(schoolNotFoundPath)
+}

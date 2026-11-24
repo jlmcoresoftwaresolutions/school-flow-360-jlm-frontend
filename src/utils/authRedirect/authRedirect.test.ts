@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { buildLoginUrl, buildPasswordChangeUrl, getSafeRedirectPath } from "./authRedirect"
+import { buildLoginUrl, buildPasswordChangeUrl, getSafeRedirectPath, showSchoolNotFound } from "./authRedirect"
 
 describe("getSafeRedirectPath", () => {
   it.each(["/administration/my-unit", "/administration/my-unit?tab=2#branding", "/"])("keeps %s", (path) => {
@@ -54,5 +54,34 @@ describe("buildPasswordChangeUrl", () => {
 
   it.each([undefined, "/", "/change-password", "https://other.site"])("leaves out a return to %s", (from) => {
     expect(buildPasswordChangeUrl("/change-password", from)).toBe("/change-password")
+  })
+})
+
+describe("showSchoolNotFound", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  const stubLocation = (pathname: string) => {
+    const replace = vi.fn()
+    vi.stubGlobal("location", { pathname, replace })
+
+    return replace
+  }
+
+  it("reloads the app on the school-not-found page", () => {
+    const replace = stubLocation("/login")
+
+    showSchoolNotFound("/school-not-found")
+
+    expect(replace).toHaveBeenCalledWith("/school-not-found")
+  })
+
+  it("stays put when already there", () => {
+    const replace = stubLocation("/school-not-found")
+
+    showSchoolNotFound("/school-not-found")
+
+    expect(replace).not.toHaveBeenCalled()
   })
 })

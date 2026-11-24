@@ -3,12 +3,16 @@ import { AxiosError } from "axios"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { UserContext } from "@/models"
-import { endExpiredSession, requirePasswordChange } from "@/utils/authRedirect"
+import { endExpiredSession, requirePasswordChange, showSchoolNotFound } from "@/utils/authRedirect"
 import { getSessionState, saveSession } from "@/utils/session"
 
 import { getErrorCorrelationId, getErrorData, getErrorMessage, getRetryAfterSeconds, httpClient } from "./httpClient"
 
-vi.mock("@/utils/authRedirect", () => ({ endExpiredSession: vi.fn(), requirePasswordChange: vi.fn() }))
+vi.mock("@/utils/authRedirect", () => ({
+  endExpiredSession: vi.fn(),
+  requirePasswordChange: vi.fn(),
+  showSchoolNotFound: vi.fn(),
+}))
 
 const context: UserContext = {
   admin: true,
@@ -68,6 +72,7 @@ describe("httpClient", () => {
     localStorage.clear()
     vi.mocked(endExpiredSession).mockClear()
     vi.mocked(requirePasswordChange).mockClear()
+    vi.mocked(showSchoolNotFound).mockClear()
   })
 
   it("sends the stored access token and the tenant to the backend", async () => {
@@ -167,6 +172,22 @@ describe("httpClient", () => {
     expect(requirePasswordChange).toHaveBeenCalledWith("/change-password")
     expect(endExpiredSession).not.toHaveBeenCalled()
     expect((await getSessionState()).status).toBe("active")
+  })
+
+  it("goes to the school-not-found page when the address's school doesn't exist", async () => {
+    handle = () => ({ data: { code: "TENANT_NOT_FOUND", data: null }, status: 404 })
+
+    await expect(httpClient.get("/api/public/branding")).rejects.toThrow()
+
+    expect(showSchoolNotFound).toHaveBeenCalledWith("/school-not-found")
+  })
+
+  it("leaves an unknown school of an e-mail's link to the page", async () => {
+    handle = () => ({ data: { code: "TENANT_NOT_FOUND", data: null }, status: 404 })
+
+    await expect(httpClient.get("/api/invitations/validate", { tenantId: "other_school" })).rejects.toThrow()
+
+    expect(showSchoolNotFound).not.toHaveBeenCalled()
   })
 
   it("leaves any other 403 to the caller", async () => {

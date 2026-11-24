@@ -12,6 +12,8 @@ import type { PasswordRecoveryRequest } from "@/models"
 import { paths } from "@/routes/paths"
 import { requestPasswordRecovery } from "@/services"
 
+import { SchoolIdentity } from "../shared/school/SchoolIdentity"
+import { usePublicBranding } from "../shared/school/usePublicBranding"
 import { ForgotPasswordWrapper } from "./ForgotPassword.styles"
 
 // Same loose check as the login: catches typos before a request is spent; the backend decides the rest.
@@ -27,6 +29,7 @@ export const ForgotPassword = () => {
   const { t } = useTranslation()
   const { formState, handleSubmit, register } = useForm<PasswordRecoveryRequest>({ defaultValues: { email: "" } })
   const resendCooldown = useCountdown()
+  const branding = usePublicBranding()
 
   const [hasFailed, setHasFailed] = useState(false)
 
@@ -56,6 +59,8 @@ export const ForgotPassword = () => {
               elevated
               style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
             >
+              <SchoolIdentity branding={branding} />
+
               <div style={{ display: "flex", flexDirection: "column", gap: spacing[8] }}>
                 <Text as="h1" fontSize="3xl" bold>
                   {t("forgotPassword.title")}
