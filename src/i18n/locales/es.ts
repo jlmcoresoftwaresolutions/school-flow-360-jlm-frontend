@@ -1400,6 +1400,8 @@ export const es: TranslationResource = {
     heroSubtitle:
       "Una experiencia ejecutiva para directores, escuela, docentes y familias: cada perfil accede a su propio recorrido visual, con navegación adaptable, indicadores claros e interacciones cercanas.",
     heroTitle: "Gestión escolar que parece sencilla, pero opera en 360º.",
+    insecureAddress:
+      "Esta dirección no es segura (http fuera de localhost) y el navegador no guarda la sesión en ella. Accede por https o por localhost.",
     invalidCredentials: "No fue posible entrar. Revisa el correo o apodo y la contraseña, o habla con la secretaría.",
     loginInvalid: "Introduce un correo electrónico válido o tu apodo.",
     loginLabel: "Correo electrónico o apodo",

@@ -99,6 +99,25 @@ test.describe("login page", () => {
     await expect(page).toHaveURL(/\/home$/)
   })
 
+  test("won't sign in on an address where the browser can't keep the session", async ({ page }) => {
+    // An http network address (http://192.168.0.6:5173) isn't a secure context: no crypto.subtle.
+    await page.addInitScript(() => Object.defineProperty(globalThis.crypto, "subtle", { value: undefined }))
+    let loginCalls = 0
+    await page.route(loginEndpoint, (route) => {
+      loginCalls += 1
+      return route.fulfill({ body: JSON.stringify(successBody), contentType: "application/json", status: 200 })
+    })
+
+    await page.goto("/login")
+    await expect(page.getByRole("alert").first()).toContainText("Este endereço não é seguro")
+    await fillCredentials(page, "diretor@schoolflow360.com.br", "senha-correta")
+    await page.getByRole("button", { name: "Entrar" }).click()
+
+    await expect(page).toHaveURL(/\/login$/)
+    // No session is opened on the backend that this page couldn't keep.
+    expect(loginCalls).toBe(0)
+  })
+
   test("sends the e-mail, the password and the tenant to the backend", async ({ page }) => {
     let body: unknown
     let tenantHeader: string | undefined

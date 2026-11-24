@@ -1397,6 +1397,8 @@ export const ptPT: TranslationResource = {
     heroSubtitle:
       "Uma experiência executiva para diretores, escola, professores e famílias: cada perfil entra num percurso visual próprio, com navegação adaptativa, indicadores claros e interações acolhedoras.",
     heroTitle: "Gestão escolar que parece simples, mas funciona a 360º.",
+    insecureAddress:
+      "Este endereço não é seguro (http fora de localhost), e o navegador não guarda a sessão nele. Aceda por https ou por localhost.",
     invalidCredentials:
       "Não foi possível entrar. Verifique o e-mail ou alcunha e a palavra-passe, ou contacte a secretaria.",
     loginInvalid: "Introduza um e-mail válido ou a sua alcunha.",

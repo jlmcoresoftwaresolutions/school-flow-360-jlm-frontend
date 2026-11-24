@@ -14,6 +14,7 @@ import { getErrorCode, getErrorData, getErrorStatus, getRetryAfterSeconds, login
 import { getSafeRedirectPath, loginRedirectParam, sessionExpiredParam } from "@/utils/authRedirect"
 import { formatCountdown } from "@/utils/formats"
 import { saveSession } from "@/utils/session"
+import { isSecureStorageAvailable } from "@/utils/storage"
 
 import { SchoolIdentity } from "../shared/school/SchoolIdentity"
 import { usePublicBranding } from "../shared/school/usePublicBranding"
@@ -55,7 +56,7 @@ const isValidLogin = (value: string) => {
 
 const signInErrorId = "login-sign-in-error"
 
-type SignInError = "invalidCredentials" | "sessionLimitExpired" | "signInUnavailable"
+type SignInError = "insecureAddress" | "invalidCredentials" | "sessionLimitExpired" | "signInUnavailable"
 
 // Sign-in held back by the backend after repeated wrong passwords (its 429): for which e-mail or
 // nickname, and the wait announced when it started, in whole minutes.
@@ -110,6 +111,9 @@ export const Login = () => {
 
   const { errors, isSubmitting } = formState
   const credentialsRejected = signInError === "invalidCredentials"
+  // Over http on a network address the session can't be stored: signing in would only open a session
+  // on the backend that this page can't keep (and five of those reach the session limit).
+  const canKeepSession = isSecureStorageAvailable()
   const sessionExpired = searchParams.get(sessionExpiredParam) === "1"
   const redirectPath = getSafeRedirectPath(searchParams.get(loginRedirectParam)) ?? homePath
   // Only the locked e-mail or nickname is held back: typing another one frees the button.
@@ -134,8 +138,23 @@ export const Login = () => {
 
   // A new attempt always clears the previous one's error, whether it reaches the backend or stops at
   // the field validation (handleSubmit's second callback).
+  // Ending a session at the limit signs in at once; if the session then can't be stored, the dialog
+  // closes and says so instead of staying open with nothing happening.
+  const finishSessionLimit = async (authData: AuthData) => {
+    try {
+      await finishSignIn(authData)
+    } catch {
+      setSessionLimit(null)
+      setSignInError("signInUnavailable")
+    }
+  }
+
   const onSubmit = async (credentials: LoginRequest) => {
     setSignInError(null)
+    if (!canKeepSession) {
+      setSignInError("insecureAddress")
+      return
+    }
 
     try {
       await finishSignIn(await login({ ...credentials, login: credentials.login.trim() }))
@@ -232,6 +251,12 @@ export const Login = () => {
                 {t("login.signInTitle")}
               </Text>
 
+              {!canKeepSession && (
+                <Text as="p" color="danger" fontSize="sm" role="alert" semibold>
+                  {t("login.insecureAddress")}
+                </Text>
+              )}
+
               {sessionExpired && (
                 <Text as="p" color="warning" fontSize="sm" role="status" semibold>
                   {t("login.sessionExpired")}
@@ -319,7 +344,7 @@ export const Login = () => {
           challenge={sessionLimit}
           onCancel={() => setSessionLimit(null)}
           onChallengeExpired={handleSessionLimitExpired}
-          onSignedIn={(authData) => void finishSignIn(authData)}
+          onSignedIn={(authData) => void finishSessionLimit(authData)}
         />
       )}
     </LoginWrapper>

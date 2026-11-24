@@ -1390,6 +1390,8 @@ export const ptBR = {
     heroSubtitle:
       "Uma experiência executiva para diretores, escola, professores e famílias: cada perfil entra em uma jornada visual própria, com navegação adaptativa, indicadores claros e interações acolhedoras.",
     heroTitle: "Gestão escolar que parece simples, mas opera em 360º.",
+    insecureAddress:
+      "Este endereço não é seguro (http fora de localhost), e o navegador não guarda a sessão nele. Acesse por https ou por localhost.",
     invalidCredentials: "Não foi possível entrar. Verifique o e-mail ou apelido e a senha, ou fale com a secretaria.",
     loginInvalid: "Informe um e-mail válido ou o seu apelido.",
     loginLabel: "E-mail ou apelido",
