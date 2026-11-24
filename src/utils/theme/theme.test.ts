@@ -83,6 +83,8 @@ describe("buildPrimaryScale", () => {
 
       expect(getContrastRatio(scale[600], "#FFFFFF")).toBeGreaterThanOrEqual(4.5)
       expect(getContrastRatio(scale[700], tint(scale[500], 0.18))).toBeGreaterThanOrEqual(4.5)
+      // The avatar's initials, 700 on 50.
+      expect(getContrastRatio(scale[700], scale[50])).toBeGreaterThanOrEqual(4.5)
     },
   )
 

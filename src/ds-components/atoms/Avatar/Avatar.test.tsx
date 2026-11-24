@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { spacing } from "@/foundation"
+import { brandPalette, spacing } from "@/foundation"
 
 import { Avatar } from "./Avatar"
 
@@ -10,6 +10,15 @@ describe("Avatar", () => {
     render(<Avatar name="Maria da Silva" />)
 
     expect(screen.getByRole("img", { name: "Maria da Silva" })).toHaveTextContent("MS")
+  })
+
+  it("paints the initials in the primary scale, so they follow the school's color", () => {
+    render(<Avatar name="Maria Souza" />)
+
+    expect(screen.getByRole("img", { name: "Maria Souza" })).toHaveStyle({
+      backgroundColor: brandPalette[50],
+      color: brandPalette[700],
+    })
   })
 
   it("shows the photo, with the name as its alt text, when src is given", () => {
