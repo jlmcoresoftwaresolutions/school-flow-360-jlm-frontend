@@ -166,6 +166,10 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>((props, re
             onChange={handleChange}
             placeholderText={placeholder}
             popperPlacement="bottom-start"
+            // Positioned against the viewport, not the nearest scrolling box: inside a modal the calendar
+            // would otherwise sit in the body's scroll area, grow it until its scrollbar showed up, move
+            // with the new layout, and loop - the modal flickered - besides being cut by the modal's edge.
+            popperProps={{ strategy: "fixed" }}
             required={required}
             selected={selectedValue}
             showPopperArrow={false}
