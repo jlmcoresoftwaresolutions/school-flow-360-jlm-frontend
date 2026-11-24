@@ -14,6 +14,8 @@ export type ActivationBlocker =
 // unit, how many active guardians and whether one of them is financially responsible.
 export type StudentSummary = {
   activeGuardians: number
+  // Anonymized (LGPD): the name is a neutral placeholder and nothing can be changed.
+  anonymized: boolean
   fullName: string
   hasFinancialGuardian: boolean
   id: number
@@ -43,6 +45,8 @@ export type Student = {
   activationBlockers: ActivationBlocker[]
   activeGuardians: number
   address: PersonAddress | null
+  // Anonymized (LGPD): the personal data is gone and the record can no longer be changed.
+  anonymized: boolean
   birthDate: string | null
   contactEmail: string | null
   createdAt: string
@@ -91,8 +95,11 @@ export type StudentCreateRequest = StudentFields & {
   nickname?: string
 }
 
+// Body of PUT /api/students/{id}. `nickname` changes the one the student signs in with (left out, or
+// the same, keeps it); without a sign-in e-mail the change ends the student's open sessions.
 export type StudentUpdateRequest = StudentFields & {
   version: number
+  nickname?: string
 }
 
 // Body of the state changes (activate, inactivate, reactivate, discard). Only an Admin activates without
@@ -119,6 +126,7 @@ export type Student360Guardian = {
 // The guardian as the student 360 shows it: masked, with what the list also says about it.
 export type Student360GuardianSummary = {
   activeStudents: number
+  anonymized: boolean
   fullName: string
   hasFinancialLink: boolean
   id: number

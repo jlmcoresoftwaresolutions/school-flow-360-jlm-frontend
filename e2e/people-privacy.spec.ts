@@ -49,11 +49,21 @@ test.describe("LGPD tools", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Pessoa anonimizada" })).toBeVisible()
     expect(lastCall(calls, "POST", "/api/people/204/anonymize")?.body).toEqual({ requestRef: "LGPD-2026-0042" })
 
-    // Nothing about an anonymized person can be changed any more.
-    await chooseAction(page, "Ações do aluno", "Editar dados")
-    await page.getByRole("textbox", { name: /^Nome social/ }).fill("Outro nome")
-    await page.getByRole("button", { exact: true, name: "Salvar" }).click()
+    // Nothing about an anonymized person can be changed any more: the profile says so and offers only
+    // the export, and the edit page doesn't open the form.
+    await expect(
+      page.getByText("Os dados pessoais foram apagados a pedido do titular (LGPD).", { exact: false }),
+    ).toBeVisible()
+    await page.getByRole("button", { name: "Ações do aluno" }).click()
+    await expect(page.getByRole("menuitem")).toHaveText(["Exportar dados (LGPD)"])
+    await page.keyboard.press("Escape")
+
+    await page.goto("/administration/students/204/edit")
     await expect(page.getByText("Esta pessoa foi anonimizada e não pode mais ser alterada.")).toBeVisible()
+    await expect(page.getByRole("textbox", { name: /^Nome completo/ })).toHaveCount(0)
+
+    await page.goto("/administration/students")
+    await expect(page.getByRole("row", { name: /Pessoa anonimizada/ })).toContainText("Anonimizado")
   })
 
   test("anonymizes an inactive guardian too", async ({ page }) => {
@@ -67,6 +77,9 @@ test.describe("LGPD tools", () => {
     await dialog.getByRole("button", { name: "Anonimizar" }).click()
 
     await expect(page.getByRole("heading", { level: 1, name: "Pessoa anonimizada" })).toBeVisible()
+    await expect(page.getByText("Anonimizado", { exact: true })).toBeVisible()
+    await page.getByRole("tab", { name: "Documentos" }).click()
+    await expect(page.getByRole("button", { name: "Novo documento" })).toHaveCount(0)
   })
 
   test("offers the anonymization only for an inactive person", async ({ page }) => {

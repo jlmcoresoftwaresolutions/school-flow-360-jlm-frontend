@@ -1028,6 +1028,7 @@ export const fr: TranslationResource = {
     forbiddenDescription: "Seuls l'Administration et le Secrétariat consultent les responsables légaux.",
     forbiddenTitle: "Vous n'avez pas accès aux responsables légaux",
     form: {
+      accessTitle: "Accès",
       conflict:
         "Quelqu'un d'autre a modifié cette fiche. Les données ont été relues : vérifiez et enregistrez à nouveau.",
       create: "Enregistrer le responsable légal",
@@ -1604,6 +1605,11 @@ export const fr: TranslationResource = {
   people: {
     allStatuses: "Toutes les situations",
     anonymizedLocked: "Cette personne a été anonymisée et ne peut plus être modifiée.",
+    anonymizedNoticeDescription:
+      "Les données personnelles ont été effacées à la demande de la personne concernée (LGPD). La fiche reste uniquement pour conserver les liens et l'historique, et ne peut plus être modifiée.",
+    anonymizedNoticeTitle: "Personne anonymisée",
+    anonymizedTag: "Anonymisé",
+    backToProfile: "Retour au profil",
     duplicates: {
       back: "Retour au formulaire",
       description:
@@ -1681,6 +1687,13 @@ export const fr: TranslationResource = {
       streetLabel: "Rue",
       streetPlaceholder: "Rue, avenue...",
     },
+    nicknameEditHelper:
+      "C'est avec lui que la personne se connecte. Sans e-mail de connexion, changer de pseudo ferme les sessions ouvertes, et la personne se reconnecte avec le nouveau pseudo.",
+    nicknameInUse: "Ce pseudo est déjà utilisé. Choisissez-en un autre.",
+    nicknameInvalid: "Utilisez de 3 à 60 lettres, chiffres, point, tiret ou tiret bas, sans espaces.",
+    nicknameLabel: "Pseudo",
+    nicknamePlaceholder: "Ex. : ana.souza",
+    nicknameRequired: "Indiquez le pseudo.",
     rateLimitedDescription:
       "Par sécurité, la recherche de personnes est limitée par minute. Patientez un instant et réessayez.",
     rateLimitedTitle: "Trop de recherches en peu de temps",
@@ -2066,11 +2079,6 @@ export const fr: TranslationResource = {
         "L'élève est enregistré comme brouillon et ne devient actif qu'avec un responsable légal rattaché. Enregistrer ne crée ni accès ni inscription.",
       newTitle: "Nouvel élève",
       nicknameHelper: "L'élève se connecte avec. Laissé vide, le système en propose un à partir du nom.",
-      nicknameInUse: "Ce pseudo est déjà utilisé. Choisissez-en un autre.",
-      nicknameInvalid: "Utilisez de 3 à 60 lettres, chiffres, point, tiret ou tiret bas, sans espaces.",
-      nicknameLabel: "Pseudo",
-      nicknamePlaceholder: "Ex. : ana.souza",
-      nicknameReadOnly: "Le pseudo sert à se connecter et ne change pas ici.",
       noAnswer:
         "Le serveur n'a pas répondu. Vérifiez la liste des élèves avant de réessayer, pour ne pas enregistrer deux fois le même élève.",
       observationHelper: "Jusqu'à {{max}} caractères. N'enregistrez pas de données de santé.",

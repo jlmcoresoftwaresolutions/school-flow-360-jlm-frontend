@@ -14,6 +14,8 @@ import { getStudentProfile } from "@/services/students"
 import { PersonDocuments } from "../shared/people/documents/PersonDocuments"
 import { PersonHistory } from "../shared/people/history/PersonHistory"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
+import { AnonymizedBadge } from "../shared/people/privacy/AnonymizedBadge"
+import { AnonymizedNotice } from "../shared/people/privacy/AnonymizedNotice"
 import { usePersonPrivacy } from "../shared/people/privacy/usePersonPrivacy"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
@@ -46,7 +48,8 @@ type LinkDialog =
 // invited, a link changed or ended, and an accepted invitation confirmed or rejected), the documents and
 // the history. A section that doesn't come isn't shown. The actions: edit the data, the status changes (activate, discard, inactivate, reactivate)
 // and, for an active student, its access (a temporary password: the student signs in with the nickname,
-// without an e-mail). Everything is read again after a change.
+// without an e-mail). Everything is read again after a change. An anonymized student (LGPD) only shows
+// what is left, with a notice: nothing that would change it is offered (the backend would refuse it).
 export const StudentProfile = () => {
   const { studentId } = useParams()
 
@@ -99,7 +102,9 @@ export const StudentProfile = () => {
   const profile = current && "profile" in current ? current.profile : null
   const student = profile?.student ?? null
   const privacy = usePersonPrivacy(
-    student ? { name: student.fullName, personId: student.id, status: student.status } : null,
+    student
+      ? { anonymized: student.anonymized, name: student.fullName, personId: student.id, status: student.status }
+      : null,
     reload,
   )
 
@@ -143,15 +148,17 @@ export const StudentProfile = () => {
   const activeLinks = profile.guardians.filter((item) => item.link.status === "ACTIVE")
   const linkedGuardianIds = activeLinks.map((item) => item.guardian.id)
 
-  const actions: ActionMenuItem[] = [
-    {
+  const isLocked = student.anonymized
+  const actions: ActionMenuItem[] = []
+  if (!isLocked) {
+    actions.push({
       icon: "pen-outline",
       key: "edit",
       label: t("students.profile.edit"),
       onClick: () => navigate(generatePath(paths.studentEdit, { studentId: String(student.id) })),
-    },
-  ]
-  if (student.status === "DRAFT") {
+    })
+  }
+  if (!isLocked && student.status === "DRAFT") {
     actions.push(
       {
         icon: "check-circle-outline",
@@ -168,7 +175,7 @@ export const StudentProfile = () => {
       },
     )
   }
-  if (student.status === "ACTIVE") {
+  if (!isLocked && student.status === "ACTIVE") {
     actions.push(
       {
         icon: "login-outline",
@@ -185,7 +192,7 @@ export const StudentProfile = () => {
       },
     )
   }
-  if (student.status === "INACTIVE") {
+  if (!isLocked && student.status === "INACTIVE") {
     actions.push({
       icon: "unlock-outline",
       key: "reactivate",
@@ -211,7 +218,8 @@ export const StudentProfile = () => {
       content: (
         <Card elevated style={{ padding: spacing[32] }}>
           <StudentGuardians
-            canAdd={student.status !== "INACTIVE"}
+            canAdd={!isLocked && student.status !== "INACTIVE"}
+            canChange={!isLocked}
             guardians={profile.guardians}
             invitations={profile.guardianInvitations}
             onDecide={(invitation, decision) => setLinkDialog({ decision, invitation, kind: "decide" })}
@@ -231,7 +239,7 @@ export const StudentProfile = () => {
     profile.sections.includes("DOCUMENTS") && {
       content: (
         <Card elevated style={{ padding: spacing[32] }}>
-          <PersonDocuments documentTypes={documentTypes} personId={student.id} />
+          <PersonDocuments documentTypes={documentTypes} personId={student.id} readOnly={isLocked} />
         </Card>
       ),
       icon: "file-outline" as const,
@@ -261,12 +269,15 @@ export const StudentProfile = () => {
       <ProfileBar>
         <ProfileBarInfo>
           <Badge tone={personStatusTone(student.status)}>{personStatusLabel(student.status)}</Badge>
+          {isLocked && <AnonymizedBadge />}
           <Text color="secondary" fontSize="sm">
             {[student.studentCode, student.referenceUnit?.name].filter(Boolean).join(" · ")}
           </Text>
         </ProfileBarInfo>
-        <ActionMenu items={actions} triggerLabel={t("students.profile.actions")} />
+        {actions.length > 0 && <ActionMenu items={actions} triggerLabel={t("students.profile.actions")} />}
       </ProfileBar>
+
+      {isLocked && <AnonymizedNotice />}
 
       <Tabs
         items={tabs}

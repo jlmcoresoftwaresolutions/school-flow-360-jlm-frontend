@@ -316,6 +316,7 @@ const toStudent = (summary: Item): Item => ({
   activationBlockers: summary.status !== "ACTIVE" && summary.activeGuardians === 0 ? ["NO_GUARDIAN"] : [],
   activeGuardians: summary.activeGuardians,
   address: null,
+  anonymized: false,
   birthDate: "2016-03-15",
   contactEmail: null,
   createdAt: "2026-11-20T12:00:00Z",
@@ -367,6 +368,7 @@ const today = () => new Date().toISOString().slice(0, 10)
 const toGuardian = (summary: Item): Item => ({
   activeStudents: summary.activeStudents,
   address: null,
+  anonymized: false,
   birthDate: null,
   contactEmail: summary.maskedEmail ? "fernanda@gmail.com" : null,
   createdAt: "2026-11-20T12:00:00Z",
@@ -376,7 +378,7 @@ const toGuardian = (summary: Item): Item => ({
   id: summary.id,
   loginEmail: null,
   maskedDocument: summary.maskedDocument,
-  nickname: null,
+  nickname: `${String(summary.fullName).toLowerCase().split(" ")[0]}.${summary.id}`,
   phone: summary.phone,
   socialName: null,
   status: summary.status,
@@ -778,6 +780,7 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (body.fullName === unexpectedFailureName) return route.fulfill(unexpectedFailure)
 
     if (!action && call.method === "PUT") {
+      if (body.nickname === "ana.souza482") return route.fulfill(apiError(409, "NICKNAME_IN_USE"))
       const updated = { ...student, ...body, version: Number(student.version) + 1 }
       records.set(Number(id), updated)
       return route.fulfill(apiAnswer(updated))
@@ -873,6 +876,7 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (body.version !== guardian.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
 
     if (!action && call.method === "PUT") {
+      if (body.nickname === "ana.souza482") return route.fulfill(apiError(409, "NICKNAME_IN_USE"))
       const updated = { ...guardian, ...body, version: Number(guardian.version) + 1 }
       guardianRecords.set(Number(id), updated)
       return route.fulfill(apiAnswer(updated))
@@ -939,9 +943,18 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (person.status !== "INACTIVE") return route.fulfill(apiError(422, "MUST_BE_INACTIVE"))
 
     anonymized.add(personId)
-    const erased = { contactEmail: null, fullName: "Pessoa anonimizada", maskedDocument: null, phone: null }
+    const erased = {
+      anonymized: true,
+      contactEmail: null,
+      fullName: "Pessoa anonimizada",
+      maskedDocument: null,
+      phone: null,
+    }
     if (student) records.set(personId, { ...student, ...erased })
     else guardianRecords.set(personId, { ...person, ...erased })
+    // The lists show it too.
+    const row = (student ? studentList : guardianList).find((item) => item.id === personId)
+    if (row) Object.assign(row, { anonymized: true, fullName: "Pessoa anonimizada", maskedDocument: null })
     return route.fulfill(apiAnswer(null))
   })
 

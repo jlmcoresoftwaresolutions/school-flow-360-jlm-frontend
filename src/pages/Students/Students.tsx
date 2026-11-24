@@ -13,7 +13,9 @@ import { paths } from "@/routes/paths"
 import { listStudents } from "@/services/students"
 import { hasAnyRole } from "@/utils/access"
 
+import { BadgeGroup } from "../shared/people/people.styles"
 import { PeopleListError } from "../shared/people/PeopleListError"
+import { AnonymizedBadge } from "../shared/people/privacy/AnonymizedBadge"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
 import { usePeopleList } from "../shared/people/usePeopleList"
 import { useAccessLabels } from "../shared/userAccess/useAccessLabels"
@@ -218,7 +220,10 @@ export const Students = () => {
           <Table.Column body={renderGuardians} field="activeGuardians" header={t("students.guardians")} />
           <Table.Column
             body={(row: StudentSummary) => (
-              <Badge tone={personStatusTone(row.status)}>{personStatusLabel(row.status)}</Badge>
+              <BadgeGroup>
+                <Badge tone={personStatusTone(row.status)}>{personStatusLabel(row.status)}</Badge>
+                {row.anonymized && <AnonymizedBadge />}
+              </BadgeGroup>
             )}
             field="status"
             header={t("people.status")}

@@ -14,7 +14,9 @@ import { listGuardians } from "@/services/guardians"
 import { defaultCountry } from "@/utils/countries"
 import { formatPhoneForDisplay } from "@/utils/phone"
 
+import { BadgeGroup } from "../shared/people/people.styles"
 import { PeopleListError } from "../shared/people/PeopleListError"
+import { AnonymizedBadge } from "../shared/people/privacy/AnonymizedBadge"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
 import { usePeopleList } from "../shared/people/usePeopleList"
 import { PersonSummary } from "../shared/userAccess/PersonSummary"
@@ -197,7 +199,10 @@ export const Guardians = () => {
           <Table.Column body={renderStudents} field="activeStudents" header={t("guardians.students")} />
           <Table.Column
             body={(row: GuardianSummary) => (
-              <Badge tone={personStatusTone(row.status)}>{personStatusLabel(row.status)}</Badge>
+              <BadgeGroup>
+                <Badge tone={personStatusTone(row.status)}>{personStatusLabel(row.status)}</Badge>
+                {row.anonymized && <AnonymizedBadge />}
+              </BadgeGroup>
             )}
             field="status"
             header={t("people.status")}

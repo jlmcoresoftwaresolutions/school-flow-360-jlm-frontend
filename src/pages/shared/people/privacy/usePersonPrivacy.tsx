@@ -12,6 +12,7 @@ import { AnonymizeDialog } from "./AnonymizeDialog"
 import { downloadPersonExport } from "./personExport"
 
 export type PersonPrivacyTarget = {
+  anonymized: boolean
   name: string
   personId: number
   status: PersonStatus
@@ -19,7 +20,7 @@ export type PersonPrivacyTarget = {
 
 // The LGPD actions of a student's or a guardian's profile, only for the Admin (the backend refuses them to
 // anyone else): export everything kept about the person (right of access, audited) and, once the person
-// is inactive, anonymize it. Returns the items for the profile's action menu and the dialog to render.
+// is inactive and not anonymized yet, anonymize it. Returns the items for the profile's action menu and the dialog to render.
 // `target` is null while the profile loads.
 export const usePersonPrivacy = (target: PersonPrivacyTarget | null, onChanged: () => void) => {
   const { t } = useTranslation()
@@ -47,7 +48,7 @@ export const usePersonPrivacy = (target: PersonPrivacyTarget | null, onChanged: 
       label: t("peoplePrivacy.export.action"),
       onClick: () => void exportData(target.personId),
     })
-    if (target.status === "INACTIVE") {
+    if (target.status === "INACTIVE" && !target.anonymized) {
       items.push({
         icon: "shield-outline",
         key: "anonymize",

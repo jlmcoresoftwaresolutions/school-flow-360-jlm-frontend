@@ -21,14 +21,13 @@ import {
   PersonDocumentFields,
   PersonIdentityFields,
 } from "../shared/people/PersonFields"
-import { toPersonSignals } from "../shared/people/personForm"
+import { nicknamePattern, toNicknameChange, toPersonSignals } from "../shared/people/personForm"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { usePersonFieldErrors } from "../shared/people/usePersonFieldErrors"
 import { useUnitDirectory } from "../shared/userAccess/useUnitDirectory"
 import {
   emptyStudentForm,
-  nicknamePattern,
   observationMaxLength,
   type StudentFormValues,
   toStudentFields,
@@ -40,7 +39,8 @@ type LoadState = "failed" | "gone" | "loading" | "ready"
 // A student's registration (P03-S03), new or edited: identity, contact, document, address, the reference
 // unit (an active unit in reach; it is the record's unit, not an enrollment) and an observation. A new
 // student is saved as a draft and gets the nickname it signs in with (suggested by the backend when
-// left blank); saving never creates an access or an enrollment. The backend's refusals land on their
+// left blank), which an edit may change; saving never creates an access or an enrollment. An anonymized
+// student can't be edited: the page says so instead of showing the form. The backend's refusals land on their
 // field; a possible duplicate opens its review, and saving again carries the decision; a version
 // conflict reads the student again and keeps what was typed. A create without an answer isn't repeated
 // (the backend has no idempotency here): the list must be checked first. Success is only told once the
@@ -116,7 +116,9 @@ export const StudentForm = () => {
     } else if (personError) {
       fieldError(personError.field, personError.message)
     } else if (code === "NICKNAME_IN_USE") {
-      fieldError("nickname", t("students.form.nicknameInUse"))
+      fieldError("nickname", t("people.nicknameInUse"))
+    } else if (code === "NICKNAME_INVALID") {
+      fieldError("nickname", t("people.nicknameInvalid"))
     } else if (code === "UNIT_INACTIVE" || code === "UNIT_REQUIRED" || code === "UNIT_NOT_FOUND") {
       fieldError("referenceUnitId", t("students.form.unitUnavailable"))
     } else if (status === 403) {
@@ -142,7 +144,12 @@ export const StudentForm = () => {
 
     try {
       const saved = student
-        ? await updateStudent(student.id, { ...toStudentFields(values), duplicateReviewId, version: student.version })
+        ? await updateStudent(student.id, {
+            ...toStudentFields(values),
+            duplicateReviewId,
+            nickname: toNicknameChange(values.nickname, student.nickname),
+            version: student.version,
+          })
         : await createStudent({
             ...toStudentFields(values),
             duplicateReviewId,
@@ -201,6 +208,17 @@ export const StudentForm = () => {
       )
     }
 
+    if (student?.anonymized) {
+      return (
+        <StateMessage
+          action={<Button onClick={cancel}>{t("people.backToProfile")}</Button>}
+          description={t("people.anonymizedLocked")}
+          icon="shield-outline"
+          title={t("people.anonymizedNoticeTitle")}
+        />
+      )
+    }
+
     return (
       <FormProvider {...form}>
         <form noValidate onSubmit={submit}>
@@ -232,29 +250,25 @@ export const StudentForm = () => {
                   )}
                   rules={{ validate: (value) => value !== "" || t("students.form.referenceUnitRequired") }}
                 />
-                {isEdit ? (
-                  <Input
-                    helperText={t("students.form.nicknameReadOnly")}
-                    title={t("students.form.nicknameLabel")}
-                    value={student?.nickname ?? ""}
-                    readOnly
-                  />
-                ) : (
-                  <Input
-                    autoCapitalize="none"
-                    autoComplete="off"
-                    error={errors.nickname?.message}
-                    helperText={t("students.form.nicknameHelper")}
-                    maxLength={60}
-                    placeholder={t("students.form.nicknamePlaceholder")}
-                    spellCheck={false}
-                    title={t("students.form.nicknameLabel")}
-                    {...form.register("nickname", {
-                      validate: (value) =>
-                        value.trim() === "" || nicknamePattern.test(value.trim()) || t("students.form.nicknameInvalid"),
-                    })}
-                  />
-                )}
+                <Input
+                  autoCapitalize="none"
+                  autoComplete="off"
+                  error={errors.nickname?.message}
+                  helperText={isEdit ? t("people.nicknameEditHelper") : t("students.form.nicknameHelper")}
+                  maxLength={60}
+                  placeholder={t("people.nicknamePlaceholder")}
+                  required={isEdit}
+                  spellCheck={false}
+                  title={t("people.nicknameLabel")}
+                  {...form.register("nickname", {
+                    validate: (value) => {
+                      // A blank nickname is suggested on a create; an edit keeps one.
+                      if (value.trim() === "") return !isEdit || t("people.nicknameRequired")
+
+                      return nicknamePattern.test(value.trim()) || t("people.nicknameInvalid")
+                    },
+                  })}
+                />
               </FieldRow>
             </PersonSection>
 

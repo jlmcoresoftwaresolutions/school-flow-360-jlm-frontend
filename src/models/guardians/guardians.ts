@@ -6,6 +6,8 @@ import type { StudentGuardianLink } from "../studentGuardianLinks/studentGuardia
 // operator may see) and whether one of the links is financial.
 export type GuardianSummary = {
   activeStudents: number
+  // Anonymized (LGPD): the name is a neutral placeholder and nothing can be changed.
+  anonymized: boolean
   fullName: string
   hasFinancialLink: boolean
   id: number
@@ -33,6 +35,8 @@ export type GuardianSearchParams = {
 export type Guardian = {
   activeStudents: number
   address: PersonAddress | null
+  // Anonymized (LGPD): the personal data is gone and the record can no longer be changed.
+  anonymized: boolean
   birthDate: string | null
   contactEmail: string | null
   createdAt: string
@@ -77,8 +81,11 @@ export type GuardianCreateRequest = GuardianFields & {
   unitId: number
 }
 
+// Body of PUT /api/guardians/{id}. `nickname` changes the one the guardian signs in with (left out, or
+// the same, keeps it); without a sign-in e-mail the change ends the guardian's open sessions.
 export type GuardianUpdateRequest = GuardianFields & {
   version: number
+  nickname?: string
 }
 
 // Body of the guardian's state changes (activate, inactivate, reactivate).

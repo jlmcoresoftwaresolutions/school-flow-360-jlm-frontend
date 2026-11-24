@@ -50,7 +50,7 @@ export const StudentData = (props: StudentDataProps) => {
               value: student.birthDate ? formatDate(student.birthDate) : "",
             },
             { key: "code", label: t("students.profile.code"), value: student.studentCode },
-            { key: "nickname", label: t("students.form.nicknameLabel"), value: student.nickname ?? "" },
+            { key: "nickname", label: t("people.nicknameLabel"), value: student.nickname ?? "" },
             {
               key: "access",
               label: t("students.profile.access"),

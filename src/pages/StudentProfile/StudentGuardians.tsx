@@ -10,12 +10,15 @@ import { paths } from "@/routes/paths"
 import { LinkPeriod, LinkResponsibilities, LinkStatusBadge } from "../shared/people/LinkCells"
 import { PersonSections } from "../shared/people/people.styles"
 import { PersonBlock } from "../shared/people/PersonBlock"
+import { AnonymizedBadge } from "../shared/people/privacy/AnonymizedBadge"
 import { ActionRow, PersonCell } from "../shared/userAccess/userAccess.styles"
 import type { InvitationDecision } from "./links/InvitationDecisionDialog"
 
 export type StudentGuardiansProps = {
-  // A new link or invitation can be made (the student isn't inactive).
+  // A new link or invitation can be made (the student isn't inactive nor anonymized).
   canAdd: boolean
+  // The links and the invitations can be changed (the student isn't anonymized).
+  canChange: boolean
   guardians: Student360Guardian[]
   invitations: GuardianInvitation[]
   relationshipTypes: CatalogItem[]
@@ -48,6 +51,7 @@ type GuardianRow = Student360Guardian & {
 export const StudentGuardians = (props: StudentGuardiansProps) => {
   const {
     canAdd,
+    canChange,
     guardians,
     invitations,
     onDecide,
@@ -75,7 +79,7 @@ export const StudentGuardians = (props: StudentGuardiansProps) => {
   const relationshipLabel = (code: string) => relationshipTypes.find((type) => type.code === code)?.label ?? code
 
   const renderLinkActions = (row: GuardianRow) => {
-    if (row.link.status !== "ACTIVE") return null
+    if (!canChange || row.link.status !== "ACTIVE") return null
 
     return (
       <ActionMenu
@@ -100,7 +104,7 @@ export const StudentGuardians = (props: StudentGuardiansProps) => {
   }
 
   const renderInvitationActions = (row: InvitationRow) => {
-    if (row.status !== "AWAITING_CONFIRMATION") return null
+    if (!canChange || row.status !== "AWAITING_CONFIRMATION") return null
 
     return (
       <ActionMenu
@@ -135,6 +139,7 @@ export const StudentGuardians = (props: StudentGuardiansProps) => {
       >
         {row.guardian.fullName}
       </Text>
+      {row.guardian.anonymized && <AnonymizedBadge />}
       {row.guardian.maskedEmail && (
         <Text color="secondary" fontSize="sm">
           {row.guardian.maskedEmail}

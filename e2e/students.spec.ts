@@ -166,6 +166,30 @@ test.describe("student profile", () => {
     await expect(page.getByText("Dados do aluno atualizados.")).toBeVisible()
     await expect(page.getByRole("heading", { level: 1, name: "Bruno Lima Neto" })).toBeVisible()
     expect(lastCall(calls, "PUT", "/api/students/202")?.body).toMatchObject({ fullName: "Bruno Lima Neto", version: 0 })
+    // The nickname wasn't touched: it isn't sent, and the backend keeps it.
+    expect(lastCall(calls, "PUT", "/api/students/202")?.body).not.toHaveProperty("nickname")
+  })
+
+  test("changes the nickname the student signs in with", async ({ page }) => {
+    const { calls } = await mockPeopleApi(page)
+    await signInAndOpen(page, `${studentsPath}/202/edit`)
+
+    const nickname = page.getByRole("textbox", { name: /^Apelido/ })
+    await expect(nickname).toHaveValue("bruno.202")
+    await expect(nickname).toHaveAccessibleDescription(/trocar o apelido encerra as sessões abertas/)
+
+    await nickname.fill("")
+    await page.getByRole("button", { name: "Salvar", exact: true }).click()
+    await expect(nickname).toHaveAccessibleDescription("Informe o apelido.")
+
+    await nickname.fill("ana.souza482")
+    await page.getByRole("button", { name: "Salvar", exact: true }).click()
+    await expect(nickname).toHaveAccessibleDescription("Esse apelido já está em uso. Escolha outro.")
+
+    await nickname.fill("Bruno.Lima")
+    await page.getByRole("button", { name: "Salvar", exact: true }).click()
+    await expect(page).toHaveURL(/\/administration\/students\/202$/)
+    expect(lastCall(calls, "PUT", "/api/students/202")?.body).toMatchObject({ nickname: "bruno.lima" })
   })
 
   test("lets only the Admin activate a student without a guardian, giving the reason", async ({ page }) => {
