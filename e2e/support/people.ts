@@ -474,8 +474,10 @@ const withoutUnitIds = (item: Item) => {
 
 export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => {
   const calls: RecordedCall[] = []
-  const studentList = [...(options.students ?? students)]
-  const guardianList = [...(options.guardians ?? guardians)]
+  // Each spec gets its own copy of every row: a change (an anonymization) must never reach the shared
+  // lists, which the other spec files of the same worker read too.
+  const studentList = (options.students ?? students).map((item) => ({ ...item }))
+  const guardianList = (options.guardians ?? guardians).map((item) => ({ ...item }))
 
   // A JSON body is kept parsed; a file upload (multipart), as the raw text, where the file name shows.
   const readBody = (request: Request) => {
