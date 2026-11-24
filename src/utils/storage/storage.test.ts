@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { getStorageItem, removeStorageItem, setStorageItem } from "./storage"
+import { getStorageItem, isSecureStorageAvailable, removeStorageItem, setStorageItem } from "./storage"
 
 // Only the test data keys are cleared between tests, not the whole storage - the encryption key
 // this module persists under its own key must survive across tests the same way it survives
@@ -85,5 +85,21 @@ describe("storage", () => {
     const reloaded = await import("./storage")
 
     expect(await reloaded.getStorageItem("token")).toBe("jwt-abc123")
+  })
+})
+
+describe("isSecureStorageAvailable", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it("is true where the browser offers its cryptography", () => {
+    expect(isSecureStorageAvailable()).toBe(true)
+  })
+
+  it("is false on an insecure address, where crypto.subtle doesn't exist", () => {
+    vi.stubGlobal("crypto", { getRandomValues: crypto.getRandomValues.bind(crypto) })
+
+    expect(isSecureStorageAvailable()).toBe(false)
   })
 })

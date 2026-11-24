@@ -1388,6 +1388,8 @@ export const en: TranslationResource = {
     heroSubtitle:
       "An executive experience for principals, school staff, teachers and families: every profile gets its own visual journey, with adaptive navigation, clear indicators and welcoming interactions.",
     heroTitle: "School management that feels simple, yet runs in 360º.",
+    insecureAddress:
+      "This address isn't secure (http outside localhost), and the browser doesn't keep the session on it. Open it over https or on localhost.",
     invalidCredentials: "Couldn't sign in. Check the email or nickname and the password, or contact the school office.",
     loginInvalid: "Enter a valid email or your nickname.",
     loginLabel: "Email or nickname",

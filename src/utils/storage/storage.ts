@@ -18,6 +18,12 @@ const algorithmName = "AES-GCM"
 const ivLength = 12
 const encryptionKeyStorageKey = "__sf360_storage_key__"
 
+// Whether this page can keep values here at all: the browser only offers its cryptography
+// (crypto.subtle) in a secure context - https, or localhost. Opening the dev server by its network
+// address over http (http://192.168.0.6:5173) leaves it out, so nothing can be stored there.
+export const isSecureStorageAvailable = (): boolean =>
+  typeof crypto !== "undefined" && typeof crypto.subtle !== "undefined"
+
 const resolveStorage = (area: StorageArea): Storage => (area === "session" ? sessionStorage : localStorage)
 
 const toBase64 = (bytes: Uint8Array): string => btoa(String.fromCharCode(...bytes))

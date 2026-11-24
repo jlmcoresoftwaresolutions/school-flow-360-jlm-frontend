@@ -1418,6 +1418,8 @@ export const fr: TranslationResource = {
     heroSubtitle:
       "Une expérience de pilotage pour les directions, l'établissement, les enseignants et les familles : chaque profil accède à son propre parcours visuel, avec une navigation adaptative, des indicateurs clairs et des interactions chaleureuses.",
     heroTitle: "Une gestion scolaire qui paraît simple, mais opère à 360º.",
+    insecureAddress:
+      "Cette adresse n'est pas sécurisée (http hors localhost) et le navigateur n'y conserve pas la session. Accédez-y en https ou sur localhost.",
     invalidCredentials:
       "Connexion impossible. Vérifiez l'e-mail ou le pseudo et le mot de passe, ou contactez le secrétariat.",
     loginInvalid: "Saisissez une adresse e-mail valide ou votre pseudo.",
