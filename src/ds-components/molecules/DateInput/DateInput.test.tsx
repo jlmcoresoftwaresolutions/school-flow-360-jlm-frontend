@@ -98,6 +98,14 @@ describe("DateInput", () => {
     expect(container.querySelector(".react-datepicker")).toBeInTheDocument()
   })
 
+  it("positions the calendar against the viewport, out of any scrolling box around the field", () => {
+    const { container } = render(<DateInput placeholder="dd/mm/aaaa" />)
+
+    openCalendar(screen.getByPlaceholderText("dd/mm/aaaa"))
+
+    expect(container.querySelector(".react-datepicker-popper")).toHaveStyle({ position: "fixed" })
+  })
+
   it("renders the calendar month name in pt-BR", () => {
     const { container } = render(<DateInput placeholder="dd/mm/aaaa" value={new Date(2026, 7, 15)} />)
 
