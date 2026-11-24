@@ -1,3 +1,4 @@
+import { backdropPalette, type BackdropPaletteType } from "./backdropPalette"
 import { brandPalette, type BrandPaletteType } from "./brandPalette"
 
 // A step of the primary scale: the school's color when it published one (the CSS variable that
@@ -5,11 +6,22 @@ import { brandPalette, type BrandPaletteType } from "./brandPalette"
 // theme's (--sf-primary-<step>).
 const primaryStep = (step: keyof BrandPaletteType) => `var(--sf-primary-${step}, ${brandPalette[step]})`
 
+// A color of the animated background before signing in, in the school's hue when it published a color.
+// The variable's name must match the theme's (--sf-backdrop-<name>).
+const backdropColor = (name: keyof BackdropPaletteType) => `var(--sf-backdrop-${name}, ${backdropPalette[name]})`
+
 export const colors = {
   // The school's secondary color, for details only (the active submenu item's dot, the loading
   // spinner): never text nor a fill under text. Without one it follows the primary scale's 500.
   accent: {
     500: `var(--sf-accent-500, ${primaryStep(500)})`,
+  },
+  // The animated background of the screens before signing in (GlobalStyle).
+  backdrop: {
+    base: backdropColor("base"),
+    glow: backdropColor("glow"),
+    glowAccent: backdropColor("glowAccent"),
+    glowLow: backdropColor("glowLow"),
   },
   primary: {
     50: primaryStep(50),

@@ -1,3 +1,4 @@
+import { backdropPalette, type BackdropPaletteType } from "@/foundation/backdropPalette"
 import { brandPalette, type BrandPaletteType } from "@/foundation/brandPalette"
 import { getContrastRatio, hexToRgb, type RgbColor, rgbToHex } from "@/utils/colors"
 
@@ -178,6 +179,36 @@ const accentVariable = "--sf-accent-500"
 // nothing about the person, and never the image links, which expire.
 const storageKey = "sf360.schoolColors"
 
+type BackdropName = keyof BackdropPaletteType
+
+const backdropNames = Object.keys(backdropPalette) as BackdropName[]
+
+const backdropVariable = (name: BackdropName) => `--sf-backdrop-${name}`
+
+// The animated background before signing in, in the school's hues: each of the product's backdrop
+// colors keeps its light and takes the hue of the school's primary (the teal glow, of its accent), with
+// the school's saturation but never more than the product's own, so a vivid color stays as muted as the
+// navy it replaces. A gray school color gives a gray background.
+export const buildBackdrop = (primary: string, accent: string): BackdropPaletteType | null => {
+  const primaryRgb = hexToRgb(primary)
+  const accentRgb = hexToRgb(accent)
+  if (!primaryRgb || !accentRgb) return null
+
+  const primaryHsl = toHsl(primaryRgb)
+  const accentHsl = toHsl(accentRgb)
+  const inHue = (name: BackdropName, hue: HslColor) => {
+    const own = toHsl(hexToRgb(backdropPalette[name]) as RgbColor)
+    return hslToHex({ h: hue.h, l: own.l, s: Math.min(own.s, hue.s) })
+  }
+
+  return {
+    base: inHue("base", primaryHsl),
+    glow: inHue("glow", primaryHsl),
+    glowAccent: inHue("glowAccent", accentHsl),
+    glowLow: inHue("glowLow", primaryHsl),
+  }
+}
+
 const paint = (schoolColors: SchoolColors | null) => {
   const style = document.documentElement.style
   const primary = schoolColors?.primaryColor ?? null
@@ -191,6 +222,13 @@ const paint = (schoolColors: SchoolColors | null) => {
   })
   if (accent) style.setProperty(accentVariable, accent)
   else style.removeProperty(accentVariable)
+
+  // Only a school's own primary changes the background: the product's colors keep its navy.
+  const backdrop = primary && scale ? buildBackdrop(primary, accent ?? primary) : null
+  backdropNames.forEach((name) => {
+    if (backdrop) style.setProperty(backdropVariable(name), backdrop[name])
+    else style.removeProperty(backdropVariable(name))
+  })
 }
 
 const isSchoolColors = (value: unknown): value is SchoolColors => {

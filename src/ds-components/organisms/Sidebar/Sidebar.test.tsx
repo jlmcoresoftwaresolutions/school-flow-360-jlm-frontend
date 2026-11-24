@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { brandPalette } from "@/foundation"
+
 import type { SidebarNavItem, SidebarProps } from "./Sidebar"
 import { Sidebar } from "./Sidebar"
 
@@ -59,6 +61,13 @@ describe("Sidebar", () => {
 
     expect(screen.getByRole("button", { name: "Início" })).toHaveAttribute("aria-current", "page")
     expect(screen.getByRole("button", { name: "Usuários" })).not.toHaveAttribute("aria-current")
+  })
+
+  it("paints the active item's icon in the primary color, like its label", () => {
+    renderSidebar({ items: [{ active: true, icon: "home-outline", key: "inicio", label: "Início" }, items[2]] })
+
+    // The icon inherits the button's color, which follows the school's primary scale.
+    expect(screen.getByRole("button", { name: "Início" })).toHaveStyle({ color: brandPalette[700] })
   })
 
   it("calls onClick when an item is clicked", () => {

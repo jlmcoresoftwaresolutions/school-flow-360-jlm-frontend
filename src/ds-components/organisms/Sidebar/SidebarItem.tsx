@@ -77,7 +77,7 @@ export const SidebarItem = (props: SidebarItemProps) => {
         onClick={handleClick}
         type="button"
       >
-        <Icon color={isActive ? "info" : "secondary"} name={item.icon} size={20} />
+        <Icon color={isActive ? "inherit" : "secondary"} name={item.icon} size={20} />
 
         <SidebarItemLabel $active={isActive} $hidden={collapsed}>
           {item.label}
@@ -85,7 +85,7 @@ export const SidebarItem = (props: SidebarItemProps) => {
 
         {hasChildren && (
           <Icon
-            color={isActive ? "info" : "muted"}
+            color={isActive ? "inherit" : "muted"}
             name="chevron-down"
             size={16}
             style={{

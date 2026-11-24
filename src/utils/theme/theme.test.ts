@@ -1,9 +1,16 @@
 import { afterEach, describe, expect, it } from "vitest"
 
-import { brandPalette, colors } from "@/foundation"
+import { backdropPalette, brandPalette, colors } from "@/foundation"
 import { getContrastRatio, hexToRgb } from "@/utils/colors"
 
-import { applySchoolColors, buildAccent, buildPrimaryScale, type PrimaryStep, restoreSchoolColors } from "./theme"
+import {
+  applySchoolColors,
+  buildAccent,
+  buildBackdrop,
+  buildPrimaryScale,
+  type PrimaryStep,
+  restoreSchoolColors,
+} from "./theme"
 
 const steps = Object.keys(brandPalette).map(Number) as PrimaryStep[]
 
@@ -24,6 +31,21 @@ const tint = (hex: string, alpha: number) => {
 const rootVariable = (step: PrimaryStep) => document.documentElement.style.getPropertyValue(`--sf-primary-${step}`)
 
 const accentVariable = () => document.documentElement.style.getPropertyValue("--sf-accent-500")
+
+const backdrop = (name: keyof typeof backdropPalette) =>
+  document.documentElement.style.getPropertyValue(`--sf-backdrop-${name}`)
+
+// The HSL lightness of a hex color, 0 to 100.
+const hslLightness = (hex: string) => (lightness(hex) / 255) * 100
+
+// The HSL saturation of a hex color, 0 to 100.
+const saturation = (hex: string) => {
+  const { b, g, r } = hexToRgb(hex) ?? { b: 0, g: 0, r: 0 }
+  const max = Math.max(r, g, b) / 255
+  const min = Math.min(r, g, b) / 255
+  const l = (max + min) / 2
+  return max === min ? 0 : ((max - min) / (1 - Math.abs(2 * l - 1))) * 100
+}
 
 const storageKey = "sf360.schoolColors"
 
@@ -85,6 +107,25 @@ describe("buildAccent", () => {
   })
 })
 
+describe("buildBackdrop", () => {
+  it("keeps the light of the product's background in the school's hue, never more saturated", () => {
+    const built = buildBackdrop("#B71C1C", "#2E7D32")
+    if (!built) throw new Error("no backdrop")
+    ;(Object.keys(backdropPalette) as (keyof typeof backdropPalette)[]).forEach((name) => {
+      expect(Math.abs(hslLightness(built[name]) - hslLightness(backdropPalette[name]))).toBeLessThan(1.5)
+      expect(saturation(built[name])).toBeLessThanOrEqual(saturation(backdropPalette[name]) + 1.5)
+    })
+  })
+
+  it("gives a gray background for a gray school color", () => {
+    expect(saturation(buildBackdrop("#555555", "#555555")?.base ?? "")).toBe(0)
+  })
+
+  it("is null for something that isn't a hex color", () => {
+    expect(buildBackdrop("red", "#2E7D32")).toBeNull()
+  })
+})
+
 describe("applySchoolColors", () => {
   afterEach(() => {
     applySchoolColors(null)
@@ -109,12 +150,32 @@ describe("applySchoolColors", () => {
     expect(accentVariable()).toBe("")
   })
 
+  it("repaints the background of the screens before signing in, the accent in the top right glow", () => {
+    applySchoolColors(school("#B71C1C", "#2E7D32"))
+
+    expect(colors.backdrop.base).toContain("--sf-backdrop-base")
+    expect(backdrop("base")).toBe(buildBackdrop("#B71C1C", "#2E7D32")?.base)
+    expect(backdrop("glowAccent")).toBe(buildBackdrop("#B71C1C", "#2E7D32")?.glowAccent)
+
+    applySchoolColors(school("#B71C1C"))
+
+    expect(backdrop("glowAccent")).toBe(buildBackdrop("#B71C1C", "#B71C1C")?.glowAccent)
+  })
+
+  it("keeps the product's background for the product's own color", () => {
+    applySchoolColors(school(brandPalette[900], "#2E7D32"))
+
+    expect(backdrop("base")).toBe("")
+    expect(backdrop("glowAccent")).toBe("")
+  })
+
   it("goes back to the product's palette when null", () => {
     applySchoolColors(school("#B71C1C", "#2E7D32"))
     applySchoolColors(null)
 
     steps.forEach((step) => expect(rootVariable(step)).toBe(""))
     expect(accentVariable()).toBe("")
+    expect(backdrop("base")).toBe("")
   })
 
   it("sets no primary step for the product's own color, in any case", () => {
