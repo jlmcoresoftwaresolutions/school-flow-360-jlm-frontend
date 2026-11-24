@@ -22,9 +22,9 @@ const toSchoolBranding = (published: PublishedBrandingResponse): SchoolBranding 
 })
 
 // The identity last read, shared by every component that shows it, in memory only: the image links
-// last 5 minutes, so nothing is kept between visits. null until it is read, and when nothing was
-// published (the default look).
-let current: SchoolBranding | null = null
+// last 5 minutes, so nothing is kept between visits. undefined until it is first read (or while it
+// can't be), null when nothing was published (the default look).
+let current: SchoolBranding | null | undefined = undefined
 const listeners = new Set<() => void>()
 
 const subscribe = (listener: () => void) => {
@@ -49,11 +49,12 @@ export const refreshSchoolBranding = async (): Promise<void> => {
   listeners.forEach((listener) => listener())
 }
 
-// The school's published identity for the shell behind the login: its name, logo and favicon (and,
-// later, its colors). Read again whenever a component using it mounts, so the image links are fresh;
-// meanwhile the last known one is shown. null means the default SchoolFlow360º look.
-export const useSchoolBranding = (): SchoolBranding | null => {
-  const branding = useSyncExternalStore(subscribe, getSnapshot, () => null)
+// The school's published identity for the shell behind the login: its name, logo, favicon and colors.
+// Read again whenever a component using it mounts, so the image links are fresh; meanwhile the last
+// known one is shown. null means the default SchoolFlow360º look, and undefined that it wasn't read
+// yet, so the colors kept from the last visit (restoreSchoolColors) stay until it is.
+export const useSchoolBranding = (): SchoolBranding | null | undefined => {
+  const branding = useSyncExternalStore(subscribe, getSnapshot, () => undefined)
 
   useEffect(() => {
     void refreshSchoolBranding()

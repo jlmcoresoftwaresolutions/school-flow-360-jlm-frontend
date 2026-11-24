@@ -28,6 +28,15 @@ describe("useSchoolBranding", () => {
     vi.mocked(getPublishedBranding).mockReset()
   })
 
+  // First, while nothing was read yet in this file.
+  it("is undefined until it is first read", () => {
+    vi.mocked(getPublishedBranding).mockReturnValue(new Promise(() => {}))
+
+    const { result } = renderHook(() => useSchoolBranding())
+
+    expect(result.current).toBeUndefined()
+  })
+
   it("reads the published identity when used", async () => {
     vi.mocked(getPublishedBranding).mockResolvedValue(published)
 

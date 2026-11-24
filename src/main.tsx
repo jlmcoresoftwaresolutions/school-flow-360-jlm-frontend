@@ -5,9 +5,13 @@ import { RouterProvider } from "react-router-dom"
 
 import { GlobalLoading, Toast } from "@/components"
 import { i18n } from "@/i18n"
+import { restoreSchoolColors } from "@/utils/theme"
 
 import { router } from "./routes"
 import GlobalStyle from "./styles/GlobalStyle"
+
+// The school's colors from the last visit, painted before the first frame instead of the product's.
+restoreSchoolColors()
 
 const app = (
   <I18nextProvider i18n={i18n}>

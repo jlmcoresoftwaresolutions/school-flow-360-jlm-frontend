@@ -1,9 +1,10 @@
 import { brandPalette, type BrandPaletteType } from "@/foundation/brandPalette"
 import { getContrastRatio, hexToRgb, type RgbColor, rgbToHex } from "@/utils/colors"
 
-// The school's color across the interface. colors.primary (src/foundation/colors.ts) reads each step
-// from a CSS variable, --sf-primary-<step>, falling back to the product's own palette (brandPalette);
-// setting those variables on the root element repaints every button, link, tab and focused field.
+// The school's colors across the interface. colors.primary (src/foundation/colors.ts) reads each step
+// from a CSS variable, --sf-primary-<step>, falling back to the product's own palette (brandPalette),
+// and colors.accent reads --sf-accent-500, falling back to the primary 500; setting those variables on
+// the root element repaints every button, link, tab and focused field, and the details in the accent.
 
 export type PrimaryStep = keyof BrandPaletteType
 
@@ -140,17 +141,91 @@ export const buildPrimaryScale = (color: string): PrimaryScale | null => {
   return scale
 }
 
-const variableName = (step: PrimaryStep) => `--sf-primary-${step}`
+// The WCAG minimum for a graphic that shows a state (the active item's dot) against its background.
+const minimumGraphicContrast = 3
 
-// Paints the interface with the school's color, or back with the product's when null. The product's
-// own color (brandPalette[900], the default a school starts with) needs no variables at all.
-export const applySchoolColor = (color: string | null): void => {
+// The school's secondary color as the accent, darkened (keeping its hue) until it shows against white,
+// or null when it isn't a hex color.
+export const buildAccent = (color: string): string | null => {
+  const rgb = hexToRgb(color)
+  if (!rgb) return null
+  if ((getContrastRatio(rgbToHex(rgb), white) ?? 0) >= minimumGraphicContrast) return rgbToHex(rgb)
+
+  const base = toHsl(rgb)
+  let lightness = base.l
+  while (
+    lightness > 0 &&
+    (getContrastRatio(hslToHex({ ...base, l: lightness }), white) ?? 0) < minimumGraphicContrast
+  ) {
+    lightness -= 1
+  }
+
+  return hslToHex({ ...base, l: Math.max(0, lightness) })
+}
+
+// The colors a school publishes, as both the published and the public identity bring them.
+export type SchoolColors = {
+  primaryColor: string
+  secondaryColor: string | null
+}
+
+const primaryVariable = (step: PrimaryStep) => `--sf-primary-${step}`
+
+const accentVariable = "--sf-accent-500"
+
+// The last colors applied, kept in the browser (per address, so per school) to paint the next visit
+// before the identity is read again, instead of flashing the product's colors first. Colors only:
+// nothing about the person, and never the image links, which expire.
+const storageKey = "sf360.schoolColors"
+
+const paint = (schoolColors: SchoolColors | null) => {
   const style = document.documentElement.style
-  const isProductColor = color?.toUpperCase() === brandPalette[900].toUpperCase()
-  const scale = color && !isProductColor ? buildPrimaryScale(color) : null
+  const primary = schoolColors?.primaryColor ?? null
+  const isProductColor = primary?.toUpperCase() === brandPalette[900].toUpperCase()
+  const scale = primary && !isProductColor ? buildPrimaryScale(primary) : null
+  const accent = schoolColors?.secondaryColor ? buildAccent(schoolColors.secondaryColor) : null
 
   steps.forEach((step) => {
-    if (scale) style.setProperty(variableName(step), scale[step])
-    else style.removeProperty(variableName(step))
+    if (scale) style.setProperty(primaryVariable(step), scale[step])
+    else style.removeProperty(primaryVariable(step))
   })
+  if (accent) style.setProperty(accentVariable, accent)
+  else style.removeProperty(accentVariable)
+}
+
+const isSchoolColors = (value: unknown): value is SchoolColors => {
+  if (typeof value !== "object" || value === null) return false
+  const { primaryColor, secondaryColor } = value as Record<string, unknown>
+
+  return typeof primaryColor === "string" && (secondaryColor === null || typeof secondaryColor === "string")
+}
+
+// Paints the interface with the school's colors, or back with the product's when null, and keeps them
+// for the next visit. The product's own primary color (brandPalette[900], the default a school starts
+// with) needs no variables; without a secondary color, the accent follows the primary.
+export const applySchoolColors = (schoolColors: SchoolColors | null): void => {
+  const kept = schoolColors && {
+    primaryColor: schoolColors.primaryColor,
+    secondaryColor: schoolColors.secondaryColor,
+  }
+  paint(kept)
+
+  try {
+    if (kept) localStorage.setItem(storageKey, JSON.stringify(kept))
+    else localStorage.removeItem(storageKey)
+  } catch {
+    // Without storage, the next visit just starts with the product's colors.
+  }
+}
+
+// Paints the colors kept from the last visit, if any. Called once when the app starts, before the first
+// render, so the school's colors are there from the first frame.
+export const restoreSchoolColors = (): void => {
+  try {
+    const stored = localStorage.getItem(storageKey)
+    const parsed: unknown = stored ? JSON.parse(stored) : null
+    if (isSchoolColors(parsed)) paint(parsed)
+  } catch {
+    // An unreadable entry is the product's colors.
+  }
 }
