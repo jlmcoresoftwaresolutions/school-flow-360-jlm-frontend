@@ -48,7 +48,9 @@ export const createStudent = async (request: StudentCreateRequest, config?: Requ
   return unwrapApiResponse(response)
 }
 
-// USED by the student form. PUT /api/students/{id}: replaces the editable data; a blank document keeps the current one.
+// USED by the student form. PUT /api/students/{id}: replaces the editable data (send every field: one left out is
+// cleared); a blank document keeps the current one. 422 GUARDIAN_REQUIRED: the birth date would make an active
+// adult without a guardian a minor. 409 NICKNAME_IN_USE, 422 NICKNAME_INVALID.
 export const updateStudent = async (
   studentId: number,
   request: StudentUpdateRequest,
@@ -59,9 +61,9 @@ export const updateStudent = async (
   return unwrapApiResponse(response)
 }
 
-// USED by the student profile. POST /api/students/{id}/activate, /inactivate, /reactivate, /discard. Activating without
-// a guardian: Admin only, with `exceptionReason` (403 ADMIN_EXCEPTION_ONLY, 422 GUARDIAN_REQUIRED,
-// EXCEPTION_REASON_INVALID, UNIT_INACTIVE). 409 STATE_INVALID. Reactivating checks everything again and
+// USED by the student profile. POST /api/students/{id}/activate, /inactivate, /reactivate, /discard. A student
+// under 18 is activated only with an active guardian, no exception for anyone (422 GUARDIAN_REQUIRED); from
+// 18 on the guardian isn't required. 422 UNIT_INACTIVE, 409 STATE_INVALID. Reactivating checks everything again and
 // doesn't reopen ended links; discarding a draft cancels its open invitations.
 export const changeStudentState = async (
   studentId: number,

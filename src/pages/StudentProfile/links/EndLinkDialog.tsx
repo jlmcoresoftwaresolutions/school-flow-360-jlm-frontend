@@ -5,11 +5,9 @@ import { toast, useUnsavedChanges } from "@/components"
 import { Text } from "@/ds-components/atoms"
 import { DateInput, Textarea } from "@/ds-components/molecules"
 import { ConfirmDialog } from "@/ds-components/organisms"
-import { useSignedInUser } from "@/hooks"
 import type { StudentGuardianLink } from "@/models"
 import { getErrorCode } from "@/services/httpClient"
 import { endStudentGuardianLink, getStudentGuardianLink } from "@/services/studentGuardianLinks"
-import { hasAnyRole } from "@/utils/access"
 import { fromIsoDate, toIsoDate } from "@/utils/dates"
 
 import { linkLimits } from "./linkForm"
@@ -17,7 +15,7 @@ import { useLinkErrors } from "./useLinkErrors"
 
 export type EndLinkDialogProps = {
   guardianName: string
-  // The link is the only active one of an active student: ending it leaves the student without a guardian.
+  // The link is the only active one of an active student under 18: it can't be ended (DP-P03-02).
   isLastGuardian: boolean
   link: StudentGuardianLink
   onClose: () => void
@@ -28,44 +26,29 @@ export type EndLinkDialogProps = {
 // Ends a link, confirmed first, with the reason and the end date (today if left blank, never before the
 // start). Ending cuts what the link allowed from then on (the guardian no longer sees the student nor
 // answers for it); the link stays in the history, never deleted. The last guardian of an active student
-// can't be ended - only the Admin may, giving the reason of the exception, which is recorded.
+// under 18 can't be ended, by anyone: another guardian is linked first. An adult may lose the last one.
 export const EndLinkDialog = (props: EndLinkDialogProps) => {
   const { guardianName, isLastGuardian, link, onChanged, onClose } = props
 
   const { t } = useTranslation()
-  const signedIn = useSignedInUser()
   const toFailure = useLinkErrors()
 
   const [reason, setReason] = useState("")
   const [endDate, setEndDate] = useState<Date | null>(null)
-  const [exceptionReason, setExceptionReason] = useState("")
   const [version, setVersion] = useState(link.version)
   const [lastGuardian, setLastGuardian] = useState(isLastGuardian)
-  const [errors, setErrors] = useState<{ endDate?: string; exception?: string; reason?: string }>({})
+  const [errors, setErrors] = useState<{ endDate?: string; reason?: string }>({})
   const [failure, setFailure] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
-  const isAdmin = hasAnyRole(signedIn, ["ADMIN"])
-  const needsException = lastGuardian && isAdmin
   const startDate = link.startDate ? fromIsoDate(link.startDate) : undefined
-  const exceptionMessage = t("students.state.exceptionInvalid", {
-    max: linkLimits.exceptionMax,
-    min: linkLimits.exceptionMin,
-  })
 
   useUnsavedChanges(reason.trim() !== "" && !isSaving)
 
   const confirm = async () => {
     const trimmedReason = reason.trim()
-    const trimmedException = exceptionReason.trim()
     const found: typeof errors = {}
     if (!trimmedReason) found.reason = t("guardianLinks.end.reasonRequired")
-    if (
-      needsException &&
-      (trimmedException.length < linkLimits.exceptionMin || trimmedException.length > linkLimits.exceptionMax)
-    ) {
-      found.exception = exceptionMessage
-    }
     setErrors(found)
     setFailure("")
     if (Object.keys(found).length > 0) return
@@ -74,7 +57,6 @@ export const EndLinkDialog = (props: EndLinkDialogProps) => {
     try {
       await endStudentGuardianLink(link.id, {
         endDate: endDate ? toIsoDate(endDate) : undefined,
-        exceptionReason: needsException ? trimmedException : undefined,
         reason: trimmedReason,
         version,
       })
@@ -84,16 +66,8 @@ export const EndLinkDialog = (props: EndLinkDialogProps) => {
       setIsSaving(false)
       const code = getErrorCode(error)
       if (code === "LAST_GUARDIAN") {
+        // The screen thought otherwise (the birth date changed meanwhile, or the day it counts from).
         setLastGuardian(true)
-        if (!isAdmin) setFailure(t("guardianLinks.end.lastGuardian"))
-        return
-      }
-      if (code === "ADMIN_EXCEPTION_ONLY") {
-        setFailure(t("guardianLinks.end.lastGuardian"))
-        return
-      }
-      if (code === "EXCEPTION_REASON_INVALID") {
-        setErrors({ exception: exceptionMessage })
         return
       }
 
@@ -126,8 +100,8 @@ export const EndLinkDialog = (props: EndLinkDialogProps) => {
   return (
     <ConfirmDialog
       cancelLabel={t("common.cancel")}
-      confirmDisabled={lastGuardian && !isAdmin}
-      confirmLabel={needsException ? t("guardianLinks.end.confirmWithException") : t("guardianLinks.end.confirm")}
+      confirmDisabled={lastGuardian}
+      confirmLabel={t("guardianLinks.end.confirm")}
       description={t("guardianLinks.end.description")}
       loading={isSaving}
       onClose={onClose}
@@ -138,7 +112,7 @@ export const EndLinkDialog = (props: EndLinkDialogProps) => {
     >
       {lastGuardian && (
         <Text as="p" color="warning" fontSize="sm" role="note">
-          {isAdmin ? t("guardianLinks.end.lastGuardianAdmin") : t("guardianLinks.end.lastGuardian")}
+          {t("guardianLinks.end.lastGuardian")}
         </Text>
       )}
 
@@ -165,22 +139,6 @@ export const EndLinkDialog = (props: EndLinkDialogProps) => {
         title={t("guardianLinks.end.endDate")}
         value={endDate}
       />
-
-      {needsException && (
-        <Textarea
-          error={errors.exception}
-          helperText={t("students.state.exceptionHelper", {
-            max: linkLimits.exceptionMax,
-            min: linkLimits.exceptionMin,
-          })}
-          maxLength={linkLimits.exceptionMax}
-          onChange={(event) => setExceptionReason(event.target.value)}
-          placeholder={t("students.state.exceptionPlaceholder")}
-          title={t("students.state.exceptionLabel")}
-          value={exceptionReason}
-          required
-        />
-      )}
 
       {failure && (
         <Text as="p" color="danger" fontSize="sm" role="alert">

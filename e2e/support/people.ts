@@ -309,15 +309,27 @@ export const duplicateCandidates = [
   },
 ]
 
-// A student as GET /api/students/{id} returns it, from a list row: a draft without a guardian can't be
-// activated yet.
+// Under 18 today, by the birth date (the backend's rule; no birth date counts as a minor).
+const isMinor = (birthDate: unknown) => {
+  if (!birthDate) return true
+  const [year, month, day] = String(birthDate).split("-").map(Number)
+  const now = new Date()
+  const hadBirthday = now.getMonth() + 1 > month || (now.getMonth() + 1 === month && now.getDate() >= day)
+  return now.getFullYear() - year - (hadBirthday ? 0 : 1) < 18
+}
+
+// A student as GET /api/students/{id} returns it, from a list row (born in 2016 unless the row says
+// otherwise): a draft under 18 without a guardian can't be activated yet; an adult can.
 const toStudent = (summary: Item): Item => ({
   activatedByException: false,
-  activationBlockers: summary.status !== "ACTIVE" && summary.activeGuardians === 0 ? ["NO_GUARDIAN"] : [],
+  activationBlockers:
+    summary.status !== "ACTIVE" && summary.activeGuardians === 0 && isMinor(summary.birthDate ?? "2016-03-15")
+      ? ["NO_GUARDIAN"]
+      : [],
   activeGuardians: summary.activeGuardians,
   address: null,
   anonymized: false,
-  birthDate: "2016-03-15",
+  birthDate: summary.birthDate ?? "2016-03-15",
   contactEmail: null,
   createdAt: "2026-11-20T12:00:00Z",
   documentType: summary.maskedDocument ? "CPF" : null,
@@ -695,7 +707,7 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     const others = links.filter(
       (item) => item.id !== link.id && item.status === "ACTIVE" && (item.student as Item).id === studentId,
     )
-    if (student.status === "ACTIVE" && others.length === 0 && !body.exceptionReason) {
+    if (student.status === "ACTIVE" && isMinor(student.birthDate) && others.length === 0) {
       return route.fulfill(apiError(422, "LAST_GUARDIAN"))
     }
     const ended = {
@@ -781,19 +793,25 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
 
     if (!action && call.method === "PUT") {
       if (body.nickname === "ana.souza482") return route.fulfill(apiError(409, "NICKNAME_IN_USE"))
-      const updated = { ...student, ...body, version: Number(student.version) + 1 }
+      // A birth date can't make an active adult without a guardian a minor.
+      const hasGuardian = links.some((item) => item.status === "ACTIVE" && (item.student as Item).id === Number(id))
+      if (student.status === "ACTIVE" && !hasGuardian && !isMinor(student.birthDate) && isMinor(body.birthDate)) {
+        return route.fulfill(apiError(422, "GUARDIAN_REQUIRED"))
+      }
+      // The PUT replaces the whole form: what isn't sent is cleared.
+      const cleared = Object.fromEntries(
+        ["birthDate", "contactEmail", "phone", "socialName", "observation"].map((field) => [field, null]),
+      )
+      const updated = { ...student, ...cleared, ...body, version: Number(student.version) + 1 }
       records.set(Number(id), updated)
       return route.fulfill(apiAnswer(updated))
     }
 
     const blockers = student.activationBlockers as string[]
     const activating = action === "activate" || action === "reactivate"
-    if (activating && blockers.includes("NO_GUARDIAN") && !body.exceptionReason) {
-      return route.fulfill(apiError(422, "GUARDIAN_REQUIRED"))
-    }
+    if (activating && blockers.includes("NO_GUARDIAN")) return route.fulfill(apiError(422, "GUARDIAN_REQUIRED"))
     const changed = {
       ...student,
-      activatedByException: Boolean(body.exceptionReason),
       activationBlockers: activating ? [] : blockers,
       status: nextStatus[action],
       version: Number(student.version) + 1,

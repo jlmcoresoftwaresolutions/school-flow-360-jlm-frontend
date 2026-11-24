@@ -1,4 +1,4 @@
-import { mockPeopleApi } from "./support/people.ts"
+import { mockPeopleApi, students } from "./support/people.ts"
 import { expect, type Page, test } from "./support/test.ts"
 import { lastCall, secretariaContext, signInAndOpen } from "./support/userAccess.ts"
 
@@ -41,7 +41,7 @@ test.describe("new student", () => {
     await expect(page.getByText("Aluno cadastrado como rascunho.")).toBeVisible()
     await expect(page.getByRole("heading", { level: 1, name: "Lia Martins" })).toBeVisible()
     await expect(page.getByText("Rascunho", { exact: true })).toBeVisible()
-    await expect(page.getByText("Para ativar, falta: um responsável vinculado.")).toBeVisible()
+    await expect(page.getByText("Para ativar, falta: um responsável vinculado (menor de 18 anos).")).toBeVisible()
 
     expect(lastCall(calls, "POST", "/api/students")?.body).toEqual({
       contactEmail: "lia@familia.com.br",
@@ -192,36 +192,35 @@ test.describe("student profile", () => {
     expect(lastCall(calls, "PUT", "/api/students/202")?.body).toMatchObject({ nickname: "bruno.lima" })
   })
 
-  test("lets only the Admin activate a student without a guardian, giving the reason", async ({ page }) => {
-    const { calls } = await mockPeopleApi(page)
+  test("keeps a student under 18 without a guardian from being activated, even by the Admin", async ({ page }) => {
+    await mockPeopleApi(page)
     await signInAndOpen(page, `${studentsPath}/203`)
 
     await chooseAction(page, "Ativar aluno")
     const confirm = page.getByRole("dialog", { name: "Ativar Carla Dias?" })
-    await confirm.getByRole("button", { name: "Ativar sem responsável" }).click()
-    await expect(confirm.getByRole("textbox", { name: /^Motivo da exceção/ })).toHaveAccessibleDescription(
-      "Escreva o motivo com 10 a 500 caracteres.",
+    await expect(confirm).toContainText(
+      "Um aluno menor de 18 anos só fica ativo com ao menos um responsável vinculado.",
     )
-
-    await confirm.getByRole("textbox", { name: /^Motivo da exceção/ }).fill("Aluna adulta da EJA, sem responsável")
-    await confirm.getByRole("button", { name: "Ativar sem responsável" }).click()
-
-    await expect(page.getByText("Aluno ativado.")).toBeVisible()
-    await expect(page.getByText("Ativo", { exact: true })).toBeVisible()
-    expect(lastCall(calls, "POST", "/api/students/203/activate")?.body).toEqual({
-      exceptionReason: "Aluna adulta da EJA, sem responsável",
-      version: 0,
-    })
+    await expect(confirm.getByRole("button", { name: "Ativar", exact: true })).toBeDisabled()
+    await expect(confirm.getByRole("textbox")).toHaveCount(0)
   })
 
-  test("keeps the activation closed to a Secretaria while the guardian is missing", async ({ page }) => {
-    await mockPeopleApi(page)
+  test("activates an adult without a guardian, then won't make it a minor without one", async ({ page }) => {
+    const adult = students.map((item) => (item.id === 203 ? { ...item, birthDate: "2000-05-10" } : item))
+    const { calls } = await mockPeopleApi(page, { students: adult })
     await signInAndOpen(page, `${studentsPath}/203`, secretariaContext)
 
     await chooseAction(page, "Ativar aluno")
-    const confirm = page.getByRole("dialog", { name: "Ativar Carla Dias?" })
-    await expect(confirm).toContainText("Vincule um responsável antes de ativar.")
-    await expect(confirm.getByRole("button", { name: "Ativar", exact: true })).toBeDisabled()
+    await page.getByRole("dialog", { name: "Ativar Carla Dias?" }).getByRole("button", { name: "Ativar" }).click()
+    await expect(page.getByText("Aluno ativado.")).toBeVisible()
+    expect(lastCall(calls, "POST", "/api/students/203/activate")?.body).toEqual({ version: 0 })
+
+    // A birth date that makes the active student, still without a guardian, a minor is refused on the field.
+    await chooseAction(page, "Editar dados")
+    const birthDate = page.getByRole("textbox", { name: /^Data de nascimento/ })
+    await birthDate.fill("10/05/2015")
+    await page.getByRole("button", { name: "Salvar", exact: true }).click()
+    await expect(birthDate).toHaveAccessibleDescription(/Com essa data o aluno fica menor de 18 anos/)
   })
 
   test("inactivates and reactivates an active student", async ({ page }) => {

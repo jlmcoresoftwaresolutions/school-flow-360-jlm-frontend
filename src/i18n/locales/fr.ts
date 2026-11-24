@@ -923,7 +923,6 @@ export const fr: TranslationResource = {
     end: {
       action: "Terminer le lien",
       confirm: "Terminer le lien",
-      confirmWithException: "Terminer avec exception",
       conflict: "Quelqu'un d'autre a modifié ce lien. Vérifiez-le et confirmez à nouveau.",
       description:
         "À partir de la fin, le responsable ne répond plus de l'élève et ne le voit plus. Le lien reste dans l'historique et n'est pas supprimé.",
@@ -931,9 +930,8 @@ export const fr: TranslationResource = {
       endBeforeStart: "La fin ne peut pas précéder le début du lien.",
       endDate: "Date de fin",
       endDateHelper: "Laissé vide, le lien se termine aujourd'hui.",
-      lastGuardian: "C'est le seul responsable d'un élève actif. Liez un autre responsable avant de terminer celui-ci.",
-      lastGuardianAdmin:
-        "C'est le seul responsable d'un élève actif. En tant qu'Admin, vous pouvez le terminer quand même en indiquant le motif de l'exception, qui est enregistré.",
+      lastGuardian:
+        "C'est le seul responsable d'un élève actif de moins de 18 ans. Liez un autre responsable avant de terminer celui-ci.",
       reason: "Motif de la fin",
       reasonPlaceholder: "Ex. : changement de garde",
       reasonRequired: "Indiquez le motif de la fin du lien.",
@@ -1097,7 +1095,7 @@ export const fr: TranslationResource = {
         title: "Désactiver {{name}} ?",
       },
       lastGuardian:
-        "C'est le seul responsable légal d'un élève actif. Rattachez-en un autre à l'élève avant de désactiver.",
+        "C'est le seul responsable légal d'un élève actif de moins de 18 ans. Rattachez-en un autre à cet élève avant de désactiver.",
       nameRequired: "Indiquez d'abord le nom complet du responsable légal.",
       reactivate: {
         action: "Réactiver le responsable légal",
@@ -2060,7 +2058,7 @@ export const fr: TranslationResource = {
     blockers: {
       BIRTH_DATE_REQUIRED: "date de naissance",
       NAME_REQUIRED: "nom complet",
-      NO_GUARDIAN: "un responsable légal rattaché",
+      NO_GUARDIAN: "un responsable légal rattaché (moins de 18 ans)",
       UNIT_INACTIVE: "établissement de référence actif",
       UNIT_REQUIRED: "établissement de référence",
     },
@@ -2075,6 +2073,8 @@ export const fr: TranslationResource = {
     forbiddenTitle: "Vous n'avez pas accès aux élèves",
     form: {
       birthDateHelper: "Obligatoire pour activer l'élève.",
+      birthDateNeedsGuardian:
+        "Avec cette date, l'élève a moins de 18 ans, et un élève actif mineur a besoin d'un responsable légal. Rattachez-en un d'abord.",
       conflict:
         "Quelqu'un d'autre a modifié cette fiche. Les données ont été relues : vérifiez et enregistrez à nouveau.",
       created: "Élève enregistré comme brouillon.",
@@ -2082,7 +2082,7 @@ export const fr: TranslationResource = {
       editTitle: "Modifier l'élève",
       failed: "Impossible d'enregistrer pour l'instant. Réessayez dans un instant.",
       newDescription:
-        "L'élève est enregistré comme brouillon et ne devient actif qu'avec un responsable légal rattaché. Enregistrer ne crée ni accès ni inscription.",
+        "L'élève est enregistré comme brouillon. De moins de 18 ans, il ne devient actif qu'avec un responsable légal rattaché. Enregistrer ne crée ni accès ni inscription.",
       newTitle: "Nouvel élève",
       nicknameHelper: "L'élève se connecte avec. Laissé vide, le système en propose un à partir du nom.",
       noAnswer:
@@ -2168,8 +2168,6 @@ export const fr: TranslationResource = {
         done: "Élève activé.",
         title: "Activer {{name}} ?",
       },
-      activateWithoutGuardian: "Activer sans responsable légal",
-      adminOnly: "Seule l'Administration peut activer un élève sans responsable légal.",
       conflict: "Quelqu'un d'autre a modifié l'élève. Les données ont été relues.",
       discard: {
         action: "Abandonner le brouillon",
@@ -2179,14 +2177,9 @@ export const fr: TranslationResource = {
         done: "Brouillon abandonné.",
         title: "Abandonner le brouillon de {{name}} ?",
       },
-      exceptionHelper:
-        "Exception de l'Administration (élève adulte, formation pour adultes). De {{min}} à {{max}} caractères ; elle est enregistrée.",
-      exceptionInvalid: "Rédigez le motif avec {{min}} à {{max}} caractères.",
-      exceptionLabel: "Motif de l'exception",
-      exceptionPlaceholder: "Expliquez pourquoi l'élève est actif sans responsable légal",
       failed: "Impossible de terminer pour l'instant. Réessayez dans un instant.",
       guardianRequired:
-        "Un élève actif a besoin d'au moins un responsable légal rattaché. Rattachez-en un avant d'activer.",
+        "Un élève de moins de 18 ans ne devient actif qu'avec au moins un responsable légal rattaché. Rattachez-en un avant d'activer.",
       inactivate: {
         action: "Désactiver l'élève",
         confirm: "Désactiver",

@@ -58,3 +58,11 @@ export const fromIsoDate = (value: string): Date => {
 
   return new Date(year, month - 1, day)
 }
+
+// Completed years from a yyyy-MM-dd birth date to `today` (a local day): the birthday itself counts.
+export const getAgeInYears = (birthDate: string, today: Date = new Date()): number => {
+  const { day, month, year } = parseIsoDate(birthDate)
+  const hadBirthday = today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day)
+
+  return today.getFullYear() - year - (hadBirthday ? 0 : 1)
+}

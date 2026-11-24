@@ -41,6 +41,7 @@ export type StudentSearchParams = {
 // A student as GET /api/students/{id} returns it. `hasAccess` says whether the student has an account
 // (given by the school with a temporary password, signing in with the nickname); saving never creates one.
 export type Student = {
+  // Activated without a guardian by the Admin's exception, which no longer exists: history only.
   activatedByException: boolean
   activationBlockers: ActivationBlocker[]
   activeGuardians: number
@@ -102,10 +103,9 @@ export type StudentUpdateRequest = StudentFields & {
   nickname?: string
 }
 
-// Body of the state changes (activate, inactivate, reactivate, discard). Only an Admin activates without
-// a guardian, with an `exceptionReason` of 10 to 500 characters.
+// Body of the state changes (activate, inactivate, reactivate, discard). A student under 18 is activated
+// only with an active guardian, with no exception for anyone (DP-P03-02).
 export type StudentStateChange = {
-  exceptionReason?: string
   version: number
 }
 

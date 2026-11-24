@@ -22,8 +22,8 @@ export type GuardianStateDialogProps = {
 }
 
 // A change of the guardian's status, confirmed first. Inactivating keeps the record and its links, but
-// the backend refuses it while the guardian is the only one of an active student (LAST_GUARDIAN): another
-// guardian must be linked first. Activating a draft and reactivating need the name.
+// the backend refuses it while the guardian is the only one of an active student under 18 (LAST_GUARDIAN),
+// even if it answers for adults too: another guardian must be linked first. Activating a draft and reactivating need the name.
 export const GuardianStateDialog = (props: GuardianStateDialogProps) => {
   const { action, guardian, onChanged, onClose, onGone } = props
 

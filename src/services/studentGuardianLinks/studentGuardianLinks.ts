@@ -56,7 +56,7 @@ export const updateStudentGuardianLink = async (
 
 // USED by the student profile. POST /api/student-guardian-links/{id}/end: ends the link with a reason. Errors: 409
 // LINK_ENDED; 422 REASON_REQUIRED, END_BEFORE_START, LAST_GUARDIAN (the last guardian of an active
-// student; only the Admin, with an `exceptionReason`).
+// student under 18, for everyone; an adult's may be ended).
 export const endStudentGuardianLink = async (
   linkId: number,
   request: StudentGuardianLinkEndRequest,

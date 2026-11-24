@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { formatDate, fromIsoDate, toIsoDate } from "./dates"
+import { formatDate, fromIsoDate, getAgeInYears, toIsoDate } from "./dates"
 
 describe("formatDate", () => {
   it("formats a date-only ISO string by default (no time)", () => {
@@ -52,5 +52,19 @@ describe("fromIsoDate", () => {
 
   it("goes back to the same day", () => {
     expect(toIsoDate(fromIsoDate("2016-12-31"))).toBe("2016-12-31")
+  })
+})
+
+describe("getAgeInYears", () => {
+  it("counts the completed years, the birthday included", () => {
+    expect(getAgeInYears("2008-11-24", new Date(2026, 10, 24))).toBe(18)
+    expect(getAgeInYears("2008-11-25", new Date(2026, 10, 24))).toBe(17)
+    expect(getAgeInYears("2008-12-01", new Date(2026, 10, 24))).toBe(17)
+    expect(getAgeInYears("2008-01-31", new Date(2026, 10, 24))).toBe(18)
+  })
+
+  it("counts a 29 February birthday from 1 March in a common year", () => {
+    expect(getAgeInYears("2008-02-29", new Date(2026, 1, 28))).toBe(17)
+    expect(getAgeInYears("2008-02-29", new Date(2026, 2, 1))).toBe(18)
   })
 })
