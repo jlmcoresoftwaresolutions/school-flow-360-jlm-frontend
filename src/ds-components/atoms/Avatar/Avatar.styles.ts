@@ -29,8 +29,9 @@ export const StyledAvatarImage = styled.img<StyledAvatarProps>`
 export const StyledAvatarInitials = styled.span<StyledAvatarProps>`
   ${avatarShape}
   align-items: center;
-  background: ${colors.info[50]};
-  color: ${colors.info[700]};
+  /* The primary scale, so the initials follow the school's color; the 700 keeps WCAG AA on the 50. */
+  background-color: ${colors.primary[50]};
+  color: ${colors.primary[700]};
   display: inline-flex;
   font-family: ${typography.fontFamily.sans};
   font-size: ${(props) => avatarSizeMap[props.$size].fontSize}px;

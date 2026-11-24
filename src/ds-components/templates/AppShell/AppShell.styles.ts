@@ -20,8 +20,9 @@ export const AppShellBody = styled.div`
   min-width: 0;
 `
 
+// The page's background follows the school: the light gray with a touch of its primary.
 export const AppShellContent = styled.main`
-  background: ${colors.neutral[50]};
+  background: ${colors.page.background};
   flex: 1;
   overflow-y: auto;
   padding: ${spacing[16]};

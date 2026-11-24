@@ -10,6 +10,20 @@ const primaryStep = (step: keyof BrandPaletteType) => `var(--sf-primary-${step},
 // The variable's name must match the theme's (--sf-backdrop-<name>).
 const backdropColor = (name: keyof BackdropPaletteType) => `var(--sf-backdrop-${name}, ${backdropPalette[name]})`
 
+const neutral = {
+  0: "#FFFFFF",
+  50: "#F8F9FA",
+  100: "#F1F3F5",
+  200: "#E9ECEF",
+  300: "#DEE2E6",
+  400: "#CED4DA",
+  500: "#ADB5BD",
+  600: "#6C757D",
+  700: "#495057",
+  800: "#343A40",
+  900: "#212529",
+}
+
 export const colors = {
   // The school's secondary color, for details only (the active submenu item's dot, the loading
   // spinner): never text nor a fill under text. Without one it follows the primary scale's 500.
@@ -35,18 +49,11 @@ export const colors = {
     800: primaryStep(800),
     900: primaryStep(900),
   },
-  neutral: {
-    0: "#FFFFFF",
-    50: "#F8F9FA",
-    100: "#F1F3F5",
-    200: "#E9ECEF",
-    300: "#DEE2E6",
-    400: "#CED4DA",
-    500: "#ADB5BD",
-    600: "#6C757D",
-    700: "#495057",
-    800: "#343A40",
-    900: "#212529",
+  neutral,
+  // The background of the pages behind the login (AppShell's content area): the neutral 50 with a
+  // touch of the school's primary when it published one, set by the theme (--sf-page-background).
+  page: {
+    background: `var(--sf-page-background, ${neutral[50]})`,
   },
   success: {
     50: "#F0FDF4",
