@@ -1922,6 +1922,12 @@ export const en: TranslationResource = {
     unit: "Unit",
     unitPlaceholder: "Select the unit",
   },
+  schoolNotFound: {
+    description: "This address looks like a school's, but no school on the platform uses it:",
+    help: "Check that it was typed as the school gave it. If in doubt, contact the school office.",
+    retry: "Try again",
+    title: "School not found",
+  },
   shell: {
     account: "My account",
     breadcrumbLabel: "You are here",
