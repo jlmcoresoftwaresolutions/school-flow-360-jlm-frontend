@@ -3,8 +3,8 @@ import styled, { css } from "styled-components"
 import { colors, motion, opacity, radius, shadows, spacing, typography, zIndex } from "@/foundation"
 import { hexToRgba } from "@/utils/colors"
 
-const activeBackground = hexToRgba(colors.info[500], 0.12)
-const activeChildBackground = hexToRgba(colors.info[500], 0.18)
+const activeBackground = hexToRgba(colors.primary[500], 0.12)
+const activeChildBackground = hexToRgba(colors.primary[500], 0.18)
 
 // Side inset of the content inside the panel. The icon-only rail is narrow, so it gets a tighter one
 // to leave the icon buttons a comfortable width.
@@ -313,7 +313,7 @@ export type StyledSidebarItemLabelProps = StyledSidebarButtonProps & {
 // In the rail the label stays in the layout and accessibility tree (so the button keeps its accessible
 // name) and is only faded out; the panel clips it, and the tooltip names the item on hover.
 export const SidebarItemLabel = styled.span<StyledSidebarItemLabelProps>`
-  color: ${(props) => (props.$active ? colors.info[700] : colors.neutral[700])};
+  color: ${(props) => (props.$active ? colors.primary[700] : colors.neutral[700])};
   flex: 1;
   font-size: ${typography.fontSize.sm}px;
   font-weight: ${(props) => (props.$active ? typography.fontWeight.semibold : typography.fontWeight.medium)};
@@ -326,7 +326,7 @@ export const SidebarItemLabel = styled.span<StyledSidebarItemLabelProps>`
 `
 
 export const SidebarDot = styled.span<StyledSidebarButtonProps>`
-  background: ${(props) => (props.$active ? colors.info[500] : colors.neutral[400])};
+  background: ${(props) => (props.$active ? colors.primary[500] : colors.neutral[400])};
   border-radius: ${radius.full};
   flex-shrink: 0;
   height: ${spacing[8]};

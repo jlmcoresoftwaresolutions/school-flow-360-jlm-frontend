@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import { useState } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-import { colors } from "@/foundation"
+import { brandPalette, colors } from "@/foundation"
 
 import { Tabs, type TabsItem } from "./Tabs"
 
@@ -38,7 +38,7 @@ describe("Tabs", () => {
   it("highlights the selected tab", () => {
     renderTabs()
 
-    expect(screen.getByRole("tab", { name: "Aba A" })).toHaveStyle({ color: colors.primary[600] })
+    expect(screen.getByRole("tab", { name: "Aba A" })).toHaveStyle({ color: brandPalette[600] })
     expect(screen.getByRole("tab", { name: "Aba B" })).toHaveStyle({ color: colors.neutral[700] })
   })
 

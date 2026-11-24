@@ -1,4 +1,5 @@
 export * from "./borderRadiusLevels"
+export * from "./brandPalette"
 export * from "./breakpoints"
 export * from "./colors"
 export * from "./motion"

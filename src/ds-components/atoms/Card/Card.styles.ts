@@ -15,7 +15,7 @@ export const StyledCard = styled.div<StyledCardProps>`
     const { $backdropFilter, $background, $border, $borderRadius, $boxShadow } = props
 
     return css`
-      background: ${$background};
+      background-color: ${$background};
       border-radius: ${$borderRadius};
       border: ${$border};
       overflow: hidden;
