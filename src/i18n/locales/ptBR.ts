@@ -2189,6 +2189,13 @@ export const ptBR = {
     searchPlaceholder: "Código ou nome",
     subject: "Disciplina",
   },
+  unknownSchool: {
+    description: "Cada escola tem o próprio endereço. Acesse pelo endereço da sua escola, neste formato:",
+    descriptionWithoutDomain: "Cada escola tem o próprio endereço. Acesse pelo endereço da sua escola.",
+    exampleName: "nome-da-escola",
+    help: "Em caso de dúvida, fale com a secretaria.",
+    title: "Este endereço não é de uma escola",
+  },
   unsavedChanges: {
     description: "Você tem alterações que ainda não foram salvas. Se sair agora, elas serão perdidas.",
     leave: "Sair sem salvar",

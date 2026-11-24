@@ -6,6 +6,7 @@ import type { UserContext } from "@/models"
 import { canOpenPage } from "@/utils/access"
 import { buildLoginUrl, buildPasswordChangeUrl, getSafeRedirectPath, loginRedirectParam } from "@/utils/authRedirect"
 import { clearSession, getSessionState, getSessionToken, hasSession, updateSessionContext } from "@/utils/session"
+import { getTenantId } from "@/utils/tenant"
 
 import { getPageKey, pageRoles } from "./access"
 import { homePath, paths, shellRouteId } from "./paths"
@@ -21,12 +22,23 @@ import { homePath, paths, shellRouteId } from "./paths"
 // the login) send a visitor without a session to /login (and back after signing in), and /login
 // sends a signed-in user home. Any other path also lands on /login, which then forwards a signed-in
 // user home.
+// Every page needs to know which school it serves, the login included: an address that serves none
+// (see src/utils/tenant) goes to the page that says so. The links of the e-mails (password reset,
+// invitation) carry their own school and open anywhere.
+const toUnknownSchool = () => (getTenantId() ? null : redirect(paths.unknownSchool))
+
+// The page for an address without a school, which an address that does serve one never needs.
+const leaveUnknownSchool = () => (getTenantId() ? redirect(paths.login) : null)
+
 // The pages for signing in (login, password recovery) are pointless with a session already open.
-const redirectSignedInUserHome = async () => ((await hasSession()) ? redirect(homePath) : null)
+const redirectSignedInUserHome = async () => toUnknownSchool() ?? ((await hasSession()) ? redirect(homePath) : null)
 
 // The login does the same, but honors the page the user was sent from (?redirect=), if it is one of
 // this app's own paths.
 const redirectSignedInUserBack = async (args: LoaderFunctionArgs) => {
+  const unknownSchool = toUnknownSchool()
+  if (unknownSchool) return unknownSchool
+
   if (!(await hasSession())) return null
 
   const redirectPath = getSafeRedirectPath(new URL(args.request.url).searchParams.get(loginRedirectParam))
@@ -76,6 +88,9 @@ const getContext = async (stored: UserContext | null | undefined): Promise<UserC
 // can no longer open stays closed. Someone who signed in with a temporary password goes to create their
 // own first, and comes back here after. The loader's data is who signed in, which the AppShell shows.
 const requireSession = async (args: LoaderFunctionArgs): Promise<Response | UserContext | null> => {
+  const unknownSchool = toUnknownSchool()
+  if (unknownSchool) return unknownSchool
+
   const { pathname, search } = new URL(args.request.url)
   const toLogin = (sessionExpired: boolean) =>
     redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired }))
@@ -106,6 +121,9 @@ const requireSession = async (args: LoaderFunctionArgs): Promise<Response | User
 // here too): trusting it could bounce the person between this page and the refused one. When /api/me
 // can't be read, the page still opens: the backend decides.
 const requirePendingPasswordChange = async (args: LoaderFunctionArgs): Promise<Response | null> => {
+  const unknownSchool = toUnknownSchool()
+  if (unknownSchool) return unknownSchool
+
   const { pathname, search, searchParams } = new URL(args.request.url)
   const toLogin = (sessionExpired: boolean) =>
     redirect(buildLoginUrl(paths.login, { from: `${pathname}${search}`, sessionExpired }))
@@ -535,5 +553,14 @@ export const router = createBrowserRouter([
     shouldRevalidate: revalidateOnNewPage,
   },
   { loader: signOut, path: paths.signOut },
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
+      const { UnknownSchool } = await import("@/pages/UnknownSchool")
+      return { Component: UnknownSchool }
+    },
+    loader: leaveUnknownSchool,
+    path: paths.unknownSchool,
+  },
   { element: <Navigate to={paths.login} replace />, path: "*" },
 ])

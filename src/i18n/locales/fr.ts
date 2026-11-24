@@ -2229,6 +2229,15 @@ export const fr: TranslationResource = {
     searchPlaceholder: "Code ou nom",
     subject: "Matière",
   },
+  unknownSchool: {
+    description:
+      "Chaque établissement a sa propre adresse. Accédez à l'application par l'adresse de votre établissement, sous cette forme :",
+    descriptionWithoutDomain:
+      "Chaque établissement a sa propre adresse. Accédez à l'application par l'adresse de votre établissement.",
+    exampleName: "nom-de-l-ecole",
+    help: "En cas de doute, contactez le secrétariat.",
+    title: "Cette adresse n'est pas celle d'un établissement",
+  },
   unsavedChanges: {
     description:
       "Vous avez des modifications qui n'ont pas encore été enregistrées. Si vous quittez maintenant, elles seront perdues.",

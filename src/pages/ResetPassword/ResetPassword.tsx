@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 
 import { toast } from "@/components"
 import { Button, Card, Grid, Text } from "@/ds-components/atoms"
@@ -10,6 +10,8 @@ import { spacing } from "@/foundation"
 import { paths } from "@/routes/paths"
 import { confirmPasswordRecovery, getErrorStatus, validatePasswordRecoveryToken } from "@/services"
 
+import { SchoolLink } from "../shared/school/SchoolLink"
+import { useGoToSchool } from "../shared/school/useGoToSchool"
 import { ResetPasswordWrapper } from "./ResetPassword.styles"
 
 // The backend's password policy: 12 to 128 characters, nothing else required.
@@ -30,7 +32,7 @@ type TokenStatus = "checking" | "invalid" | "unavailable" | "valid"
 // the tenant named in the link, which is the school the token was issued for.
 export const ResetPassword = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
+  const goToSchool = useGoToSchool()
   const [searchParams] = useSearchParams()
   const { formState, getValues, handleSubmit, register } = useForm<ResetPasswordValues>({
     defaultValues: { confirmPassword: "", newPassword: "" },
@@ -80,7 +82,7 @@ export const ResetPassword = () => {
     try {
       await confirmPasswordRecovery({ newPassword: values.newPassword, token }, { tenantId })
       toast.success(t("resetPassword.saved"))
-      navigate(paths.login, { replace: true })
+      goToSchool(tenantId, paths.login)
     } catch (error) {
       // The password already meets the policy here, so a 400 means the token died while the form was
       // open (expired, or used from another tab); anything else isn't the user's fault.
@@ -94,9 +96,9 @@ export const ResetPassword = () => {
       return (
         <StateMessage
           action={
-            <Button as={Link} to={paths.forgotPassword}>
+            <SchoolLink tenantId={tenantId} to={paths.forgotPassword}>
               {t("resetPassword.requestNewLink")}
-            </Button>
+            </SchoolLink>
           }
           description={t("resetPassword.invalidLinkDescription")}
           title={t("resetPassword.invalidLinkTitle")}
@@ -186,9 +188,9 @@ export const ResetPassword = () => {
               {t("resetPassword.submit")}
             </Button>
 
-            <Button as={Link} size="small" to={paths.login} variant="link">
+            <SchoolLink size="small" tenantId={tenantId} to={paths.login} variant="link">
               {t("resetPassword.backToLogin")}
-            </Button>
+            </SchoolLink>
           </div>
         </form>
       </>

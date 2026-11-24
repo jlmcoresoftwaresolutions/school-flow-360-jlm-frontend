@@ -71,13 +71,15 @@ describe("httpClient", () => {
   })
 
   it("sends the stored access token and the tenant to the backend", async () => {
+    vi.stubEnv("VITE_TENANT_ID", "schoolflow_demo")
     await saveSession({ expiresAt: inOneHour(), refreshToken: "refresh-1", token: "token-1" })
     handle = () => ({ status: 200 })
 
     await httpClient.get("/api/me")
 
     expect(requests[0].headers.Authorization).toBe("Bearer token-1")
-    expect(requests[0].headers["X-Tenant-ID"]).toBeTruthy()
+    expect(requests[0].headers["X-Tenant-ID"]).toBe("schoolflow_demo")
+    vi.unstubAllEnvs()
   })
 
   it("never sends the token to a third-party API", async () => {
