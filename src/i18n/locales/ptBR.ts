@@ -1942,6 +1942,12 @@ export const ptBR = {
     unit: "Unidade",
     unitPlaceholder: "Selecione a unidade",
   },
+  schoolNotFound: {
+    description: "Este endereço parece o de uma escola, mas nenhuma escola da plataforma o usa:",
+    help: "Confira se ele foi digitado como a escola informou. Em caso de dúvida, fale com a secretaria.",
+    retry: "Tentar de novo",
+    title: "Escola não encontrada",
+  },
   shell: {
     account: "Minha conta",
     breadcrumbLabel: "Você está em",

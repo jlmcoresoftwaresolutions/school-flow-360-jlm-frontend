@@ -20,12 +20,20 @@ export const apiAnswer = (data: unknown) => ({
 })
 
 // The specs' `test`: a page where the backend's session routes are already mocked, so nothing reaches
-// the real backend through the dev server's proxy. /api/me answers `signedInUser`, and a session
-// renewal is refused, as for the made-up tokens the specs sign in with. A spec overrides either with
+// the real backend through the dev server's proxy. /api/me answers `signedInUser`, a session renewal
+// is refused, as for the made-up tokens the specs sign in with, and the school has published no
+// branding (the login and the password recovery keep the default look). A spec overrides either with
 // its own page.route (the last route added for a URL wins).
 export const test = base.extend({
   page: async ({ page }, provide) => {
     await page.route("**/api/me", (route) => route.fulfill(apiAnswer(signedInUser)))
+    await page.route("**/api/public/branding", (route) =>
+      route.fulfill({
+        body: JSON.stringify({ code: "BRANDING_NOT_PUBLISHED", data: null, message: "", status: "Error" }),
+        contentType: "application/json",
+        status: 404,
+      }),
+    )
     await page.route("**/api/auth/refresh", (route) =>
       route.fulfill({
         body: JSON.stringify({ data: null, message: "Refresh token is invalid.", status: "Error" }),

@@ -1946,6 +1946,12 @@ export const ptPT: TranslationResource = {
     unit: "Unidade",
     unitPlaceholder: "Selecione a unidade",
   },
+  schoolNotFound: {
+    description: "Este endereço parece o de uma escola, mas nenhuma escola da plataforma o utiliza:",
+    help: "Confirme se foi escrito tal como a escola indicou. Em caso de dúvida, contacte a secretaria.",
+    retry: "Tentar novamente",
+    title: "Escola não encontrada",
+  },
   shell: {
     account: "A minha conta",
     breadcrumbLabel: "Está em",

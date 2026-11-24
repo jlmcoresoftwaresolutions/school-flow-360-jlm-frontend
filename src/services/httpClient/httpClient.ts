@@ -3,7 +3,7 @@ import axios, { isAxiosError } from "axios"
 
 import type { ApiErrorCode } from "@/models"
 import { paths } from "@/routes/paths"
-import { endExpiredSession, requirePasswordChange } from "@/utils/authRedirect"
+import { endExpiredSession, requirePasswordChange, showSchoolNotFound } from "@/utils/authRedirect"
 import { markBackendResponse } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { getSessionState, saveSession } from "@/utils/session"
@@ -234,6 +234,18 @@ httpClient.interceptors.response.use(
     // until then, and the app goes to the change page (the routes send there too, from the context).
     if (error.response?.status === 403 && sentToken && error.response.data?.code === "PASSWORD_CHANGE_REQUIRED") {
       requirePasswordChange(paths.changePassword)
+    }
+
+    // The address's school doesn't exist on the backend: the app goes to the page that says so. Only for
+    // the address's own school - a call for the school of an e-mail's link (`tenantId`) is the page's
+    // to handle, as any link that leads nowhere.
+    if (
+      error.response?.status === 404 &&
+      error.response.data?.code === "TENANT_NOT_FOUND" &&
+      !error.config?.tenantId &&
+      isBackendRequest(error.config?.url)
+    ) {
+      showSchoolNotFound(paths.schoolNotFound)
     }
 
     return Promise.reject(error)

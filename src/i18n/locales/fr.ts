@@ -1977,6 +1977,12 @@ export const fr: TranslationResource = {
     unit: "Unité",
     unitPlaceholder: "Sélectionnez l'unité",
   },
+  schoolNotFound: {
+    description: "Cette adresse a la forme de celle d'une école, mais aucune école de la plateforme ne l'utilise :",
+    help: "Vérifiez qu'elle a été saisie comme l'école l'a indiquée. En cas de doute, contactez le secrétariat.",
+    retry: "Réessayer",
+    title: "École introuvable",
+  },
   shell: {
     account: "Mon compte",
     breadcrumbLabel: "Vous êtes ici",

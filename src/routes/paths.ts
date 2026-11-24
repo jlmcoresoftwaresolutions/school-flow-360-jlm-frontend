@@ -57,6 +57,8 @@ export const paths = {
   // No page: its loader ends the session and goes to the login. Being a navigation, it goes through
   // the unsaved-changes warning like any other way out of a page.
   signOut: "/sign-out",
+  // Where an address naming a school the backend doesn't have lands (404 TENANT_NOT_FOUND).
+  schoolNotFound: "/school-not-found",
   // Where an address that serves no school lands (the domain itself, the Render one in production).
   unknownSchool: "/unknown-school",
   // A student's 360 profile, its edition and a new student (not in the menu; under the students page,

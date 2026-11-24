@@ -1950,6 +1950,12 @@ export const es: TranslationResource = {
     unit: "Unidad",
     unitPlaceholder: "Seleccione la unidad",
   },
+  schoolNotFound: {
+    description: "Esta dirección tiene el formato de la de una escuela, pero ninguna escuela de la plataforma la usa:",
+    help: "Comprueba que se haya escrito tal como la indicó la escuela. Si tienes dudas, habla con la secretaría.",
+    retry: "Intentar de nuevo",
+    title: "Escuela no encontrada",
+  },
   shell: {
     account: "Mi cuenta",
     breadcrumbLabel: "Estás en",
