@@ -3,13 +3,15 @@ import { createGlobalStyle, keyframes } from "styled-components"
 import appBackground from "@/assets/images/app-background.png"
 import { colors, radius, spacing, typography } from "@/foundation"
 import { hexToRgba } from "@/utils/colors"
+import { schoolBackdropLayers } from "@/utils/theme"
 
 const scrollbarThumb = hexToRgba(colors.neutral[900], 0.16)
 const scrollbarThumbHover = hexToRgba(colors.neutral[900], 0.28)
 
 // Oversizing the image and panning it lets the same blurry glow drift slowly across the
 // viewport - motion.duration's tokens are all UI-transition scale (150-400ms), not ambient
-// background scale, so this duration is deliberately its own hardcoded value.
+// background scale, so this duration is deliberately its own hardcoded value. The position moves
+// every layer, but the school's tint fills the viewport (100% 100%), so only the image drifts.
 const drift = keyframes`
   0% {
     background-position: 0% 30%;
@@ -57,9 +59,13 @@ const GlobalStyle = createGlobalStyle`
   body {
     animation: ${drift} 40s ease-in-out infinite;
     background-attachment: fixed;
-    background-image: url(${appBackground});
+    background-blend-mode: color, color, normal;
+    background-image: ${schoolBackdropLayers.join(", ")}, url(${appBackground});
     background-repeat: no-repeat;
-    background-size: 200% 200%;
+    background-size:
+      100% 100%,
+      100% 100%,
+      200% 200%;
     font-family: ${typography.fontFamily.sans};
     min-height: 100vh;
   }

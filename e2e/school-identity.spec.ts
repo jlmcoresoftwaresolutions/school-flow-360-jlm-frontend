@@ -74,12 +74,16 @@ test("paints the login with the school's color", async ({ page }) => {
   await page.goto("/login")
 
   await expect(loginButton(page)).toHaveCSS("background-color", schoolButton)
+  // The animated background takes the school's hues too.
+  await expect.poll(() => rootVariable(page, "--sf-backdrop-tint")).not.toBe("")
+  await expect.poll(() => rootVariable(page, "--sf-backdrop-glow")).not.toBe("")
 })
 
 test("keeps the product's color on the login when nothing was published", async ({ page }) => {
   await page.goto("/login")
 
   await expect(loginButton(page)).toHaveCSS("background-color", productButton)
+  expect(await rootVariable(page, "--sf-backdrop-tint")).toBe("")
 })
 
 test("starts the next visit with the school's colors, before the identity is read again", async ({ page }) => {

@@ -178,6 +178,30 @@ const accentVariable = "--sf-accent-500"
 // nothing about the person, and never the image links, which expire.
 const storageKey = "sf360.schoolColors"
 
+const backdropTintVariable = "--sf-backdrop-tint"
+
+const backdropGlowVariable = "--sf-backdrop-glow"
+
+// How saturated the background's tint can be, so a vivid school color stays as muted as the product's
+// own navy background instead of glaring behind the login.
+const maximumBackdropSaturation = 55
+
+const backdropColor = (color: string): string => {
+  const hsl = toHsl(hexToRgb(color) as RgbColor)
+
+  return hslToHex({ ...hsl, s: Math.min(hsl.s, maximumBackdropSaturation) })
+}
+
+// The tint over the animated background of the screens before signing in (the body's, in
+// GlobalStyle). Blended with "color", each layer gives its hue and keeps the image's light, so the
+// glows and their drift stay: the school's primary over the whole image, and its accent as a glow at
+// the top right, where the product's image glows teal. Transparent, the product's own image, without
+// a school color. The layers, from the top.
+export const schoolBackdropLayers = [
+  `radial-gradient(circle at 85% 10%, var(${backdropGlowVariable}, transparent), transparent 45%)`,
+  `linear-gradient(var(${backdropTintVariable}, transparent), var(${backdropTintVariable}, transparent))`,
+]
+
 const paint = (schoolColors: SchoolColors | null) => {
   const style = document.documentElement.style
   const primary = schoolColors?.primaryColor ?? null
@@ -191,6 +215,15 @@ const paint = (schoolColors: SchoolColors | null) => {
   })
   if (accent) style.setProperty(accentVariable, accent)
   else style.removeProperty(accentVariable)
+
+  // Only a school's own primary tints the background: the product's colors keep the image as it is.
+  if (scale) {
+    style.setProperty(backdropTintVariable, backdropColor(scale[500]))
+    style.setProperty(backdropGlowVariable, backdropColor(accent ?? scale[500]))
+  } else {
+    style.removeProperty(backdropTintVariable)
+    style.removeProperty(backdropGlowVariable)
+  }
 }
 
 const isSchoolColors = (value: unknown): value is SchoolColors => {

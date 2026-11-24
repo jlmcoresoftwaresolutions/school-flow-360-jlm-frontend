@@ -25,6 +25,17 @@ const rootVariable = (step: PrimaryStep) => document.documentElement.style.getPr
 
 const accentVariable = () => document.documentElement.style.getPropertyValue("--sf-accent-500")
 
+const backdrop = (name: "glow" | "tint") => document.documentElement.style.getPropertyValue(`--sf-backdrop-${name}`)
+
+// The HSL saturation of a hex color, 0 to 100.
+const saturation = (hex: string) => {
+  const { b, g, r } = hexToRgb(hex) ?? { b: 0, g: 0, r: 0 }
+  const max = Math.max(r, g, b) / 255
+  const min = Math.min(r, g, b) / 255
+  const l = (max + min) / 2
+  return max === min ? 0 : ((max - min) / (1 - Math.abs(2 * l - 1))) * 100
+}
+
 const storageKey = "sf360.schoolColors"
 
 const school = (primaryColor: string, secondaryColor: string | null = null) => ({ primaryColor, secondaryColor })
@@ -109,12 +120,32 @@ describe("applySchoolColors", () => {
     expect(accentVariable()).toBe("")
   })
 
+  it("tints the background of the screens before signing in, muted", () => {
+    applySchoolColors(school("#B71C1C", "#2E7D32"))
+
+    expect(backdrop("tint")).not.toBe("")
+    expect(backdrop("glow")).not.toBe("")
+    expect(saturation(backdrop("tint"))).toBeLessThanOrEqual(56)
+
+    applySchoolColors(school("#B71C1C"))
+
+    expect(backdrop("glow")).toBe(backdrop("tint"))
+  })
+
+  it("keeps the product's background for the product's own color", () => {
+    applySchoolColors(school(brandPalette[900], "#2E7D32"))
+
+    expect(backdrop("tint")).toBe("")
+    expect(backdrop("glow")).toBe("")
+  })
+
   it("goes back to the product's palette when null", () => {
     applySchoolColors(school("#B71C1C", "#2E7D32"))
     applySchoolColors(null)
 
     steps.forEach((step) => expect(rootVariable(step)).toBe(""))
     expect(accentVariable()).toBe("")
+    expect(backdrop("tint")).toBe("")
   })
 
   it("sets no primary step for the product's own color, in any case", () => {
