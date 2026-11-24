@@ -14,6 +14,7 @@ import { getErrorStatus } from "@/services/httpClient"
 import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
+import { EnrollmentClass } from "./EnrollmentClass"
 import { EnrollmentGuardians } from "./EnrollmentGuardians"
 import { EnrollmentHistory } from "./EnrollmentHistory"
 import { EnrollmentPreparation } from "./EnrollmentPreparation"
@@ -22,7 +23,7 @@ type LoadResult = { error: "failed" | "gone"; key: string } | { enrollment: Enro
 
 // An enrollment (JLM-339, 375 and 381 in part): the student, the unit and the status in the header, and
 // the sections in tabs - the preparation (what was chosen, what is still missing and the stages not
-// evaluated yet), the guardians and their roles, and the history. Every read comes from the backend, so resuming a preparation shows
+// evaluated yet), the guardians and their roles, the class with its seats, and the history. Every read comes from the backend, so resuming a preparation shows
 // only what was saved; the actions are the ones the server allows (`eligibleActions`). An enrollment out
 // of reach answers like one that doesn't exist. Another enrollment's answer is never shown while this
 // one is read.
@@ -129,6 +130,16 @@ export const EnrollmentProfile = () => {
       icon: "users-outline",
       key: "guardians",
       label: t("enrollments.profile.tabs.guardians"),
+    },
+    {
+      content: (
+        <Card elevated style={{ padding: spacing[32] }}>
+          <EnrollmentClass enrollment={enrollment} onChanged={reload} onGone={reload} />
+        </Card>
+      ),
+      icon: "school-outline",
+      key: "class",
+      label: t("enrollments.profile.tabs.class"),
     },
     {
       content: (

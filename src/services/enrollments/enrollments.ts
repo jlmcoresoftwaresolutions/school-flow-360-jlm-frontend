@@ -99,7 +99,7 @@ export const saveEnrollmentParties = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET (the enrollment's class tab). GET /api/enrollments/{id}/classes: the active classes of the
+// USED by the enrollment's class tab. GET /api/enrollments/{id}/classes: the active classes of the
 // enrollment's unit open for enrollment, each with its limit, the occupation read now and the seats.
 export const listEnrollmentClasses = async (
   enrollmentId: number,
@@ -113,7 +113,7 @@ export const listEnrollmentClasses = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET (the enrollment's class tab). PUT /api/enrollments/{id}/context: chooses the class (null takes
+// USED by the enrollment's class tab. PUT /api/enrollments/{id}/context: chooses the class (null takes
 // the choice back). Choosing never reserves a seat. 422 ENROLLMENT_CONTEXT_INVALID: a class of another
 // unit, missing, or not open for enrollment.
 export const saveEnrollmentContext = async (
