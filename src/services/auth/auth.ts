@@ -9,7 +9,6 @@ import type {
   PasswordRecoveryRequest,
   PasswordRecoveryTokenValidationRequest,
   RefreshTokenRequest,
-  RegisterUserRequest,
   SessionReplaceRequest,
 } from "@/models"
 
@@ -121,11 +120,4 @@ export const validateInvitation = async (
 // INVITATION_INVALID, 409 USER_DUPLICATE, 422 UNIT_INACTIVE.
 export const acceptInvitation = async (request: AcceptInvitationRequest, config?: RequestConfig): Promise<void> => {
   await httpClient.post<ApiResponse<null>>("/api/auth/invitations/accept", request, config)
-}
-
-// NOT USED, AND NOT MEANT TO BE (there is no self-signup: accounts will come from invitations). POST
-// /api/auth/register: creates an account tied to a school unit. The backend answers 201, though the
-// Swagger documents 200.
-export const registerUser = async (request: RegisterUserRequest, config?: RequestConfig): Promise<void> => {
-  await httpClient.post<ApiResponse<null>>("/api/auth/register", request, config)
 }
