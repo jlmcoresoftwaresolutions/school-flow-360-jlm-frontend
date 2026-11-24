@@ -279,6 +279,8 @@ export const SidebarItemButton = styled.button<StyledSidebarItemButtonProps>`
   ${buttonBase}
 
   background: ${(props) => (props.$active ? activeBackground : "transparent")};
+  /* The active item's icon and chevron inherit this, so they follow the school's color like the label. */
+  color: ${(props) => (props.$active ? colors.primary[700] : "inherit")};
   padding: ${spacing[8]} ${(props) => itemPaddingFor(props.$collapsed)};
   transition:
     background ${motion.duration.fast} ${motion.easing.ease},

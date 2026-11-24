@@ -1,3 +1,4 @@
+import { backdropPalette, type BackdropPaletteType } from "@/foundation/backdropPalette"
 import { brandPalette, type BrandPaletteType } from "@/foundation/brandPalette"
 import { getContrastRatio, hexToRgb, type RgbColor, rgbToHex } from "@/utils/colors"
 
@@ -178,29 +179,35 @@ const accentVariable = "--sf-accent-500"
 // nothing about the person, and never the image links, which expire.
 const storageKey = "sf360.schoolColors"
 
-const backdropTintVariable = "--sf-backdrop-tint"
+type BackdropName = keyof BackdropPaletteType
 
-const backdropGlowVariable = "--sf-backdrop-glow"
+const backdropNames = Object.keys(backdropPalette) as BackdropName[]
 
-// How saturated the background's tint can be, so a vivid school color stays as muted as the product's
-// own navy background instead of glaring behind the login.
-const maximumBackdropSaturation = 55
+const backdropVariable = (name: BackdropName) => `--sf-backdrop-${name}`
 
-const backdropColor = (color: string): string => {
-  const hsl = toHsl(hexToRgb(color) as RgbColor)
+// The animated background before signing in, in the school's hues: each of the product's backdrop
+// colors keeps its light and takes the hue of the school's primary (the teal glow, of its accent), with
+// the school's saturation but never more than the product's own, so a vivid color stays as muted as the
+// navy it replaces. A gray school color gives a gray background.
+export const buildBackdrop = (primary: string, accent: string): BackdropPaletteType | null => {
+  const primaryRgb = hexToRgb(primary)
+  const accentRgb = hexToRgb(accent)
+  if (!primaryRgb || !accentRgb) return null
 
-  return hslToHex({ ...hsl, s: Math.min(hsl.s, maximumBackdropSaturation) })
+  const primaryHsl = toHsl(primaryRgb)
+  const accentHsl = toHsl(accentRgb)
+  const inHue = (name: BackdropName, hue: HslColor) => {
+    const own = toHsl(hexToRgb(backdropPalette[name]) as RgbColor)
+    return hslToHex({ h: hue.h, l: own.l, s: Math.min(own.s, hue.s) })
+  }
+
+  return {
+    base: inHue("base", primaryHsl),
+    glow: inHue("glow", primaryHsl),
+    glowAccent: inHue("glowAccent", accentHsl),
+    glowLow: inHue("glowLow", primaryHsl),
+  }
 }
-
-// The tint over the animated background of the screens before signing in (the body's, in
-// GlobalStyle). Blended with "color", each layer gives its hue and keeps the image's light, so the
-// glows and their drift stay: the school's primary over the whole image, and its accent as a glow at
-// the top right, where the product's image glows teal. Transparent, the product's own image, without
-// a school color. The layers, from the top.
-export const schoolBackdropLayers = [
-  `radial-gradient(circle at 85% 10%, var(${backdropGlowVariable}, transparent), transparent 45%)`,
-  `linear-gradient(var(${backdropTintVariable}, transparent), var(${backdropTintVariable}, transparent))`,
-]
 
 const paint = (schoolColors: SchoolColors | null) => {
   const style = document.documentElement.style
@@ -216,14 +223,12 @@ const paint = (schoolColors: SchoolColors | null) => {
   if (accent) style.setProperty(accentVariable, accent)
   else style.removeProperty(accentVariable)
 
-  // Only a school's own primary tints the background: the product's colors keep the image as it is.
-  if (scale) {
-    style.setProperty(backdropTintVariable, backdropColor(scale[500]))
-    style.setProperty(backdropGlowVariable, backdropColor(accent ?? scale[500]))
-  } else {
-    style.removeProperty(backdropTintVariable)
-    style.removeProperty(backdropGlowVariable)
-  }
+  // Only a school's own primary changes the background: the product's colors keep its navy.
+  const backdrop = primary && scale ? buildBackdrop(primary, accent ?? primary) : null
+  backdropNames.forEach((name) => {
+    if (backdrop) style.setProperty(backdropVariable(name), backdrop[name])
+    else style.removeProperty(backdropVariable(name))
+  })
 }
 
 const isSchoolColors = (value: unknown): value is SchoolColors => {
