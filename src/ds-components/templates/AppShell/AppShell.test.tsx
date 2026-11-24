@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { createMemoryRouter, RouterProvider } from "react-router-dom"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { useUnsavedChanges } from "@/components"
+import { useUnsavedChanges } from "@/components/UnsavedChangesGuard"
 import { i18n } from "@/i18n"
 import type { UserContext } from "@/models"
 

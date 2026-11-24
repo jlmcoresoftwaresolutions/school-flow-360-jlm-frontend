@@ -56,6 +56,25 @@ export default defineConfig([
     },
   },
   {
+    // Inside the design system and src/components, a component imports another one from its own folder,
+    // not from a layer's barrel: outside a bundle (unit tests, the dev server) a barrel loads every
+    // component of the layer - the molecules barrel brings PhoneInput, Select and DateInput along. The
+    // atoms barrel is light and stays allowed; the pages keep using the barrels (the build drops what
+    // they don't use).
+    files: ["src/ds-components/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: ["molecules", "organisms", "templates"]
+            .map((layer) => `@/ds-components/${layer}`)
+            .concat("@/components")
+            .map((name) => ({ message: "Import the component from its own folder instead of the barrel.", name })),
+        },
+      ],
+    },
+  },
+  {
     // src/foundation/ token scales are intentionally ordered by size (xs -> 4xl, 50 -> 900),
     // not alphabetically, so only enforce alphabetical prop/destructuring order for components.
     files: ["src/ds-components/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],

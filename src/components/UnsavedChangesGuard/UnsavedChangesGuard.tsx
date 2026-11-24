@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useBlocker } from "react-router-dom"
 
-import { ConfirmDialog } from "@/ds-components/organisms"
+import { ConfirmDialog } from "@/ds-components/organisms/ConfirmDialog"
 
 import { leavingAfterSave, UnsavedChangesContext } from "./unsavedChangesContext"
 

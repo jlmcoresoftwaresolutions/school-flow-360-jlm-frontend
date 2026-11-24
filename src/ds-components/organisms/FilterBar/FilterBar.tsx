@@ -2,7 +2,8 @@ import type { CSSProperties, MouseEvent, ReactNode, TransitionEvent } from "reac
 import { Children, isValidElement, useState } from "react"
 
 import { Button, Text } from "@/ds-components/atoms"
-import { Collapsible, Input } from "@/ds-components/molecules"
+import { Collapsible } from "@/ds-components/molecules/Collapsible"
+import { Input } from "@/ds-components/molecules/Input"
 
 import {
   StyledFilterBar,

@@ -1,6 +1,6 @@
 import styled, { css } from "styled-components"
 
-import { Collapsible } from "@/ds-components/molecules"
+import { Collapsible } from "@/ds-components/molecules/Collapsible"
 import { motion, opacity, spacing } from "@/foundation"
 
 // The most filters on a row; more of them wrap onto the next one.

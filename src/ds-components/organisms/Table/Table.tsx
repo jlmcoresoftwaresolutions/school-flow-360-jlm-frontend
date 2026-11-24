@@ -2,7 +2,7 @@ import type { CSSProperties, ReactElement, ReactNode } from "react"
 import { Children, isValidElement, useState } from "react"
 
 import { Icon, Text } from "@/ds-components/atoms"
-import { Pagination } from "@/ds-components/molecules"
+import { Pagination } from "@/ds-components/molecules/Pagination"
 
 import type { TableAlign } from "./Table.styles"
 import {
