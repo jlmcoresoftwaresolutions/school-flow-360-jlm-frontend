@@ -2199,6 +2199,13 @@ export const es: TranslationResource = {
     searchPlaceholder: "Código o nombre",
     subject: "Asignatura",
   },
+  unknownSchool: {
+    description: "Cada escuela tiene su propia dirección. Entre por la dirección de su escuela, con este formato:",
+    descriptionWithoutDomain: "Cada escuela tiene su propia dirección. Entre por la dirección de su escuela.",
+    exampleName: "nombre-de-la-escuela",
+    help: "Si tiene dudas, hable con la secretaría.",
+    title: "Esta dirección no es de una escuela",
+  },
   unsavedChanges: {
     description: "Tienes cambios que aún no se han guardado. Si sales ahora, se perderán.",
     leave: "Salir sin guardar",

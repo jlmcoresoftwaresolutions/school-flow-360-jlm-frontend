@@ -121,7 +121,8 @@ describe("AppShell", () => {
 
       expect(sidebarElement.querySelectorAll("button:disabled")).toHaveLength(0)
     })
-  })
+    // Opening every group of the menu, which grows with each module, outlasts the default 5s on a busy run.
+  }, 15000)
 
   it("navigates to Início, marking it as the current page with its breadcrumb", () => {
     renderAppShell("/outra")

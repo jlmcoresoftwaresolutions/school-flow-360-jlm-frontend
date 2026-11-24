@@ -57,6 +57,8 @@ export const paths = {
   // No page: its loader ends the session and goes to the login. Being a navigation, it goes through
   // the unsaved-changes warning like any other way out of a page.
   signOut: "/sign-out",
+  // Where an address that serves no school lands (the domain itself, the Render one in production).
+  unknownSchool: "/unknown-school",
   // A student's 360 profile, its edition and a new student (not in the menu; under the students page,
   // so they get its access rule). Built with generatePath (react-router-dom).
   studentEdit: "/administration/students/:studentId/edit",

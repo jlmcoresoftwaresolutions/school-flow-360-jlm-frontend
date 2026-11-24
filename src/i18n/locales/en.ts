@@ -2181,6 +2181,13 @@ export const en: TranslationResource = {
     searchPlaceholder: "Code or name",
     subject: "Subject",
   },
+  unknownSchool: {
+    description: "Each school has its own address. Open the app through your school's address, like this:",
+    descriptionWithoutDomain: "Each school has its own address. Open the app through your school's address.",
+    exampleName: "school-name",
+    help: "If in doubt, contact the school office.",
+    title: "This address isn't a school's",
+  },
   unsavedChanges: {
     description: "You have changes that haven't been saved yet. If you leave now, they will be lost.",
     leave: "Leave without saving",

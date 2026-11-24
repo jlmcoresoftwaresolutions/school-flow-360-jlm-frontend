@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { Link, useNavigate, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 
 import { toast } from "@/components"
 import { Button, Card, Grid, Text } from "@/ds-components/atoms"
@@ -15,6 +15,8 @@ import { defaultCountry } from "@/utils/countries"
 import { isValidPhone, toInternationalPhone } from "@/utils/phone"
 
 import { usePhoneInputTexts } from "../shared/phone/usePhoneInputTexts"
+import { SchoolLink } from "../shared/school/SchoolLink"
+import { useGoToSchool } from "../shared/school/useGoToSchool"
 import { AcceptInvitationWrapper } from "./AcceptInvitation.styles"
 
 // The backend's password policy: 12 to 128 characters, nothing else required.
@@ -58,7 +60,7 @@ const deadEnds: Partial<Record<LinkStatus, "forgotPassword" | "login">> = {
 export const AcceptInvitation = () => {
   const { i18n, t } = useTranslation()
   const phoneTexts = usePhoneInputTexts()
-  const navigate = useNavigate()
+  const goToSchool = useGoToSchool()
   const [searchParams] = useSearchParams()
   const { control, formState, getValues, handleSubmit, register, reset, setError, setValue } =
     useForm<AcceptInvitationValues>({
@@ -147,7 +149,7 @@ export const AcceptInvitation = () => {
     try {
       await acceptInvitation(request, { tenantId })
       toast.success(t("acceptInvitation.activated"))
-      navigate(paths.login, { replace: true })
+      goToSchool(tenantId, paths.login)
     } catch (error) {
       switch (getErrorCode(error)) {
         case "WEAK_PASSWORD":
@@ -199,9 +201,9 @@ export const AcceptInvitation = () => {
   const renderDeadEnd = (deadEnd: "forgotPassword" | "login") => (
     <StateMessage
       action={
-        <Button as={Link} to={deadEnd === "forgotPassword" ? paths.forgotPassword : paths.login}>
+        <SchoolLink tenantId={tenantId} to={deadEnd === "forgotPassword" ? paths.forgotPassword : paths.login}>
           {deadEnd === "forgotPassword" ? t("acceptInvitation.recoverPassword") : t("acceptInvitation.goToLogin")}
-        </Button>
+        </SchoolLink>
       }
       description={t(`acceptInvitation.${status}Description` as "acceptInvitation.invalidDescription")}
       title={t(`acceptInvitation.${status}Title` as "acceptInvitation.invalidTitle")}
@@ -428,9 +430,9 @@ export const AcceptInvitation = () => {
               {t("acceptInvitation.submit")}
             </Button>
 
-            <Button as={Link} size="small" to={paths.login} variant="link">
+            <SchoolLink size="small" tenantId={tenantId} to={paths.login} variant="link">
               {t("acceptInvitation.haveAccount")}
-            </Button>
+            </SchoolLink>
           </div>
         </form>
       </>
