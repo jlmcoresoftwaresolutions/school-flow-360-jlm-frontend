@@ -167,3 +167,72 @@ test.describe("enrollment", () => {
     await expect(page.getByText("Matrícula não encontrada")).toBeVisible()
   })
 })
+
+test.describe("enrollment guardians", () => {
+  const guardianItem = (page: Page, name: string) =>
+    page.getByRole("list", { name: "Responsáveis do aluno" }).getByRole("listitem").filter({ hasText: name })
+
+  test("chooses who takes part, who is financial and who signs, never an ended link", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Responsáveis" }).click()
+
+    await expect(guardianItem(page, "Fernanda Souza")).toContainText("Mãe")
+    await expect(guardianItem(page, "Gustavo Lima")).toContainText("Vínculo encerrado")
+    await expect(page.getByRole("list", { name: "O que falta nos responsáveis" })).toContainText(
+      "Nenhum responsável escolhido",
+    )
+
+    await page.getByRole("button", { name: "Alterar escolhas" }).click()
+    const gustavo = guardianItem(page, "Gustavo Lima")
+    await expect(gustavo.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeDisabled()
+    const fernanda = guardianItem(page, "Fernanda Souza")
+    await expect(fernanda.getByRole("checkbox", { name: "Financeiro" })).toBeDisabled()
+    await fernanda.getByRole("checkbox", { name: "Participa desta matrícula" }).check()
+    await fernanda.getByRole("checkbox", { name: "Financeiro" }).check()
+    await fernanda.getByRole("checkbox", { name: "Assina" }).check()
+    await page.getByRole("button", { exact: true, name: "Salvar" }).click()
+
+    await expect(page.getByText("Escolhas dos responsáveis salvas.")).toBeVisible()
+    await expect(guardianItem(page, "Fernanda Souza")).toContainText("Nesta matrícula: Financeiro · Assina")
+    await expect(page.getByRole("list", { name: "O que falta nos responsáveis" })).toHaveCount(0)
+    expect(lastCall(calls, "PUT", "/api/enrollments/501/parties")?.body).toEqual({
+      parties: [{ financial: true, guardianId: 301, signatory: true }],
+      version: 0,
+    })
+
+    await page.getByRole("tab", { name: "Histórico" }).click()
+    await expect(page.getByRole("row").filter({ hasText: "Responsáveis alterados" })).toContainText(
+      "Responsáveis, Responsável financeiro, Quem assina",
+    )
+  })
+
+  test("keeps the choices when someone else changed the enrollment meanwhile", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page, { conflictOnFirstSave: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Responsáveis" }).click()
+
+    await page.getByRole("button", { name: "Alterar escolhas" }).click()
+    const fernanda = guardianItem(page, "Fernanda Souza")
+    await fernanda.getByRole("checkbox", { name: "Participa desta matrícula" }).check()
+    await page.getByRole("button", { exact: true, name: "Salvar" }).click()
+
+    await expect(page.getByRole("alert")).toContainText("as suas escolhas foram mantidas")
+    await expect(fernanda.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeChecked()
+    await page.getByRole("button", { exact: true, name: "Salvar" }).click()
+
+    await expect(page.getByText("Escolhas dos responsáveis salvas.")).toBeVisible()
+    expect(lastCall(calls, "PUT", "/api/enrollments/501/parties")?.body).toMatchObject({ version: 1 })
+  })
+
+  test("shows the guardians without changing them to the Coordenação", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page, { readOnly: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`, withRole("COORDENACAO"))
+    await page.getByRole("tab", { name: "Responsáveis" }).click()
+
+    await expect(guardianItem(page, "Fernanda Souza")).toContainText("Não participa desta matrícula")
+    await expect(page.getByRole("button", { name: "Alterar escolhas" })).toHaveCount(0)
+    // The Coordenação doesn't read the kinship catalog, which is the Secretaria's.
+    expect(calls.some((call) => call.path === "/api/catalogs/relationship-types")).toBe(false)
+  })
+})

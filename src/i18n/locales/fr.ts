@@ -871,6 +871,34 @@ export const fr: TranslationResource = {
     forbiddenDescription:
       "Seuls l'Administration, le Secrétariat, les Finances et la Coordination consultent les inscriptions de leurs établissements.",
     forbiddenTitle: "Vous n'avez pas accès aux inscriptions",
+    guardians: {
+      choose: "Participe à cette inscription",
+      conflict:
+        "Quelqu'un d'autre a modifié cette inscription. Les données ont été relues et vos choix conservés : vérifiez-les et enregistrez à nouveau.",
+      contact: "contact",
+      description:
+        "Les responsables légaux viennent de la fiche de l'élève. Qui participe, qui est financier et qui signe sont des choix de cette inscription, jamais déduits du lien de parenté.",
+      edit: "Modifier les choix",
+      empty: "L'élève n'a encore aucun responsable légal rattaché. Le lien se fait dans la fiche de l'élève.",
+      errorDescription: "Impossible de charger les responsables légaux. Réessayez dans un instant.",
+      errorTitle: "Responsables légaux indisponibles",
+      failed: "Impossible d'enregistrer les choix pour le moment. Réessayez dans un instant.",
+      financialInPeople: "financière",
+      fixInPeople: "Corriger les liens dans la fiche de l'élève",
+      inPeople: "Dans la fiche : {{detail}}",
+      inThisEnrollment: "Dans cette inscription : {{roles}}",
+      linkActive: "Lien en vigueur",
+      listLabel: "Responsables légaux de l'élève",
+      loading: "Chargement des responsables légaux...",
+      notChosen: "Ne participe pas à cette inscription",
+      partyInvalid:
+        "L'un des responsables légaux choisis n'a plus de lien actif avec l'élève ou n'est pas actif. La liste a été relue.",
+      pedagogical: "pédagogique",
+      pendenciesLabel: "Ce qui manque côté responsables légaux",
+      saved: "Choix des responsables légaux enregistrés.",
+      signs: "Signe",
+      title: "Responsables légaux et rôles",
+    },
     history: {
       actor: "Qui",
       changes: "Détails",
@@ -900,6 +928,7 @@ export const fr: TranslationResource = {
     newEnrollment: "Nouvelle inscription",
     noPendencies: "Aucun point en attente évalué",
     noResults: "Aucune inscription trouvée avec ces filtres.",
+    notInPreparation: "Cette inscription n'est plus en préparation. Les données ont été relues.",
     open: "Ouvrir",
     openStudent: "Ouvrir la fiche de l'élève",
     pendencies: "En attente",
@@ -948,6 +977,7 @@ export const fr: TranslationResource = {
       savedAt: "Dernier enregistrement : {{moment}}",
       sectionsLabel: "Sections de l'inscription",
       tabs: {
+        guardians: "Responsables légaux",
         history: "Historique",
         preparation: "Préparation",
       },

@@ -854,6 +854,34 @@ export const en: TranslationResource = {
     forbiddenDescription:
       "Only the Administration, the School office, Finance and the Coordination see the enrollments of their units.",
     forbiddenTitle: "You don't have access to the enrollments",
+    guardians: {
+      choose: "Takes part in this enrollment",
+      conflict:
+        "Someone else changed this enrollment. The data was read again and your choices were kept: check them and save again.",
+      contact: "contact",
+      description:
+        "The guardians come from the student's record. Who takes part, who is financial and who signs are choices of this enrollment, never taken from the kinship.",
+      edit: "Change the choices",
+      empty: "The student has no linked guardian yet. The link is made in the student's record.",
+      errorDescription: "Couldn't load the guardians. Try again in a moment.",
+      errorTitle: "Guardians unavailable",
+      failed: "Couldn't save the choices now. Try again in a moment.",
+      financialInPeople: "financial",
+      fixInPeople: "Fix the links in the student's record",
+      inPeople: "In the record: {{detail}}",
+      inThisEnrollment: "In this enrollment: {{roles}}",
+      linkActive: "Current link",
+      listLabel: "The student's guardians",
+      loading: "Loading the guardians...",
+      notChosen: "Doesn't take part in this enrollment",
+      partyInvalid:
+        "One of the chosen guardians no longer has an active link to the student or isn't active. The list was read again.",
+      pedagogical: "pedagogical",
+      pendenciesLabel: "What the guardians still lack",
+      saved: "Guardian choices saved.",
+      signs: "Signs",
+      title: "Guardians and roles",
+    },
     history: {
       actor: "Who",
       changes: "Details",
@@ -883,6 +911,7 @@ export const en: TranslationResource = {
     newEnrollment: "New enrollment",
     noPendencies: "No pendencies evaluated",
     noResults: "No enrollment found with these filters.",
+    notInPreparation: "This enrollment is no longer in preparation. The data was read again.",
     open: "Open",
     openStudent: "Open the student's record",
     pendencies: "Pendencies",
@@ -930,6 +959,7 @@ export const en: TranslationResource = {
       savedAt: "Last saved: {{moment}}",
       sectionsLabel: "Enrollment sections",
       tabs: {
+        guardians: "Guardians",
         history: "History",
         preparation: "Preparation",
       },

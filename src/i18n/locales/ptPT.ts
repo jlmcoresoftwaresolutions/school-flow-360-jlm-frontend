@@ -861,6 +861,34 @@ export const ptPT: TranslationResource = {
     forbiddenDescription:
       "Só a Administração, a Secretaria, o Financeiro e a Coordenação consultam as matrículas das suas unidades.",
     forbiddenTitle: "Não tem acesso às matrículas",
+    guardians: {
+      choose: "Participa nesta matrícula",
+      conflict:
+        "Outra pessoa alterou esta matrícula. Os dados foram recarregados e as suas escolhas mantidas: confira e guarde novamente.",
+      contact: "contacto",
+      description:
+        "Os encarregados de educação vêm do registo do aluno. Quem participa, quem é financeiro e quem assina são escolhas desta matrícula, nunca deduzidas do parentesco.",
+      edit: "Alterar escolhas",
+      empty: "O aluno ainda não tem encarregados de educação associados. A ligação é feita no registo do aluno.",
+      errorDescription: "Não foi possível carregar os encarregados de educação. Tente novamente dentro de instantes.",
+      errorTitle: "Encarregados de educação indisponíveis",
+      failed: "Não foi possível guardar as escolhas agora. Tente novamente dentro de instantes.",
+      financialInPeople: "financeira",
+      fixInPeople: "Corrigir ligações no registo do aluno",
+      inPeople: "No registo: {{detail}}",
+      inThisEnrollment: "Nesta matrícula: {{roles}}",
+      linkActive: "Ligação em vigor",
+      listLabel: "Encarregados de educação do aluno",
+      loading: "A carregar os encarregados de educação...",
+      notChosen: "Não participa nesta matrícula",
+      partyInvalid:
+        "Um dos encarregados de educação escolhidos já não tem ligação ativa com o aluno ou não está ativo. A lista foi recarregada.",
+      pedagogical: "pedagógica",
+      pendenciesLabel: "O que falta nos encarregados de educação",
+      saved: "Escolhas dos encarregados de educação guardadas.",
+      signs: "Assina",
+      title: "Encarregados de educação e papéis",
+    },
     history: {
       actor: "Quem",
       changes: "Detalhes",
@@ -890,6 +918,7 @@ export const ptPT: TranslationResource = {
     newEnrollment: "Nova matrícula",
     noPendencies: "Sem pendências avaliadas",
     noResults: "Nenhuma matrícula encontrada com estes filtros.",
+    notInPreparation: "Esta matrícula já não está em preparação. Os dados foram recarregados.",
     open: "Abrir",
     openStudent: "Abrir o registo do aluno",
     pendencies: "Pendências",
@@ -937,6 +966,7 @@ export const ptPT: TranslationResource = {
       savedAt: "Última gravação: {{moment}}",
       sectionsLabel: "Secções da matrícula",
       tabs: {
+        guardians: "Encarregados de educação",
         history: "Histórico",
         preparation: "Preparação",
       },

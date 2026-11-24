@@ -863,6 +863,34 @@ export const es: TranslationResource = {
     forbiddenDescription:
       "Solo la Administración, la Secretaría, Finanzas y la Coordinación consultan las matrículas de sus sedes.",
     forbiddenTitle: "No tienes acceso a las matrículas",
+    guardians: {
+      choose: "Participa en esta matrícula",
+      conflict:
+        "Otra persona cambió esta matrícula. Los datos se volvieron a leer y tus elecciones se mantuvieron: revísalas y guarda de nuevo.",
+      contact: "contacto",
+      description:
+        "Los responsables vienen del registro del estudiante. Quién participa, quién es financiero y quién firma son elecciones de esta matrícula, nunca deducidas del parentesco.",
+      edit: "Cambiar elecciones",
+      empty: "El estudiante aún no tiene responsables vinculados. El vínculo se hace en el registro del estudiante.",
+      errorDescription: "No se pudieron cargar los responsables. Inténtalo de nuevo en unos instantes.",
+      errorTitle: "Responsables no disponibles",
+      failed: "No se pudieron guardar las elecciones ahora. Inténtalo de nuevo en unos instantes.",
+      financialInPeople: "financiera",
+      fixInPeople: "Corregir vínculos en el registro del estudiante",
+      inPeople: "En el registro: {{detail}}",
+      inThisEnrollment: "En esta matrícula: {{roles}}",
+      linkActive: "Vínculo vigente",
+      listLabel: "Responsables del estudiante",
+      loading: "Cargando los responsables...",
+      notChosen: "No participa en esta matrícula",
+      partyInvalid:
+        "Uno de los responsables elegidos ya no tiene vínculo activo con el estudiante o no está activo. La lista se volvió a leer.",
+      pedagogical: "pedagógica",
+      pendenciesLabel: "Lo que falta en los responsables",
+      saved: "Elecciones de los responsables guardadas.",
+      signs: "Firma",
+      title: "Responsables y roles",
+    },
     history: {
       actor: "Quién",
       changes: "Detalles",
@@ -892,6 +920,7 @@ export const es: TranslationResource = {
     newEnrollment: "Nueva matrícula",
     noPendencies: "Sin pendientes evaluados",
     noResults: "No se encontró ninguna matrícula con estos filtros.",
+    notInPreparation: "Esta matrícula ya no está en preparación. Los datos se volvieron a leer.",
     open: "Abrir",
     openStudent: "Abrir el registro del estudiante",
     pendencies: "Pendientes",
@@ -939,6 +968,7 @@ export const es: TranslationResource = {
       savedAt: "Última grabación: {{moment}}",
       sectionsLabel: "Secciones de la matrícula",
       tabs: {
+        guardians: "Responsables",
         history: "Historial",
         preparation: "Preparación",
       },
