@@ -353,7 +353,7 @@ export const es: TranslationResource = {
     author: "Autor",
     changedFields: "Campos cambiados: {{fields}}",
     description:
-      "Lo que se hizo en la institución, quién, sobre qué y con qué resultado. Los registros se guardan 12 meses y no se pueden cambiar.",
+      "Lo que se hizo en la institución, quién, sobre qué y con qué resultado. Los registros se guardan 5 años y no se pueden cambiar.",
     empty: "Ningún evento registrado en este período.",
     entities: {
       INVITATION: "Invitación n.º {{id}}",
@@ -2162,7 +2162,7 @@ export const es: TranslationResource = {
     actor: "Por",
     changes: "Qué cambió",
     description:
-      "Solo aparecen los nombres de los campos cambiados, nunca los valores. El historial guarda los últimos 12 meses; la traza de seguridad está en la Auditoría.",
+      "Solo aparecen los nombres de los campos cambiados, nunca los valores. El historial guarda los últimos 5 años; la traza de seguridad está en la Auditoría.",
     empty: "Ningún evento registrado.",
     entities: {
       GUARDIAN: "Responsable n.º {{id}}",

@@ -362,7 +362,7 @@ export const fr: TranslationResource = {
     author: "Auteur",
     changedFields: "Champs modifiés : {{fields}}",
     description:
-      "Ce qui a été fait dans l'établissement, par qui, sur quoi et avec quel résultat. Les enregistrements sont conservés 12 mois et ne peuvent pas être modifiés.",
+      "Ce qui a été fait dans l'établissement, par qui, sur quoi et avec quel résultat. Les enregistrements sont conservés 5 ans et ne peuvent pas être modifiés.",
     empty: "Aucun événement enregistré sur cette période.",
     entities: {
       INVITATION: "Invitation n° {{id}}",
@@ -2195,7 +2195,7 @@ export const fr: TranslationResource = {
     actor: "Par",
     changes: "Ce qui a changé",
     description:
-      "Seuls les noms des champs modifiés apparaissent, jamais les valeurs. L'historique conserve les 12 derniers mois ; la piste de sécurité se trouve dans l'Audit.",
+      "Seuls les noms des champs modifiés apparaissent, jamais les valeurs. L'historique conserve les 5 dernières années ; la piste de sécurité se trouve dans l'Audit.",
     empty: "Aucun événement enregistré.",
     entities: {
       GUARDIAN: "Responsable n° {{id}}",

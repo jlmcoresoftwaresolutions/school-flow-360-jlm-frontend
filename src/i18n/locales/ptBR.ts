@@ -346,7 +346,7 @@ export const ptBR = {
     author: "Autor",
     changedFields: "Campos alterados: {{fields}}",
     description:
-      "O que foi feito na instituição, por quem, em quê e com qual resultado. Os registros ficam guardados por 12 meses e não podem ser alterados.",
+      "O que foi feito na instituição, por quem, em quê e com qual resultado. Os registros ficam guardados por 5 anos e não podem ser alterados.",
     empty: "Nenhum evento registrado neste período.",
     entities: {
       INVITATION: "Convite nº {{id}}",
@@ -2152,7 +2152,7 @@ export const ptBR = {
     actor: "Por",
     changes: "O que mudou",
     description:
-      "Só os nomes dos campos alterados aparecem, nunca os valores. O histórico guarda os últimos 12 meses; a trilha de segurança fica na Auditoria.",
+      "Só os nomes dos campos alterados aparecem, nunca os valores. O histórico guarda os últimos 5 anos; a trilha de segurança fica na Auditoria.",
     empty: "Nenhum evento registrado.",
     entities: {
       GUARDIAN: "Responsável nº {{id}}",

@@ -348,7 +348,7 @@ export const en: TranslationResource = {
     author: "Author",
     changedFields: "Changed fields: {{fields}}",
     description:
-      "What was done in the institution, by whom, on what and with which result. The records are kept for 12 months and can't be changed.",
+      "What was done in the institution, by whom, on what and with which result. The records are kept for 5 years and can't be changed.",
     empty: "No events recorded in this period.",
     entities: {
       INVITATION: "Invitation #{{id}}",
@@ -2145,7 +2145,7 @@ export const en: TranslationResource = {
     actor: "By",
     changes: "What changed",
     description:
-      "Only the names of the changed fields are shown, never the values. The history keeps the last 12 months; the security trail is in the Audit.",
+      "Only the names of the changed fields are shown, never the values. The history keeps the last 5 years; the security trail is in the Audit.",
     empty: "No events recorded.",
     entities: {
       GUARDIAN: "Guardian no. {{id}}",
