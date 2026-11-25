@@ -80,7 +80,7 @@ O contrato é o `docs/P04_CONTRATO.md` do backend (conferido no `61c4178`), com 
 O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com as decisões da seção 6c do `sfback-basis.md` e as respostas do Lucas de 24/11/2026. Ele é entregue em fatias, e a tela acompanha só o que já existe:
 
 - **Prontas no backend:** base (acesso, estados, histórico), preparação com aluno e responsáveis, turma com vagas, data de início e confirmação (Fatia 3A), documentos e exceções (3B) e contrato com aceite (3C).
-- **Na tela:** tudo até a confirmação (3A) e a aba de documentos e exceções (3B); o catálogo de exigências, anexar um documento que já está em Pessoas, o contrato, a página pública de aceite e a "Minha matrícula" do aluno e do responsável vêm nos próximos PRs.
+- **Na tela:** tudo até a confirmação (3A), a aba de documentos e exceções e o catálogo de exigências (3B); anexar um documento que já está em Pessoas, o contrato, a página pública de aceite e a "Minha matrícula" do aluno e do responsável vêm nos próximos PRs.
 - **Ainda não existem no backend:** as condições financeiras, que esperam o EPIC 8.
 
 **Quem abre:**
@@ -95,7 +95,7 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com 
 
 - Lista pelo `usePeopleList`, da alteração mais recente para a mais antiga, com busca por nome ou código do aluno e filtros por unidade e situação. As abandonadas só aparecem pedidas.
 - Uma preparação mostra quantas pendências tem.
-- "Nova matrícula" (`NewEnrollmentModal`) escolhe uma unidade ativa onde a pessoa opera e um aluno já cadastrado nela (`searchEnrollmentStudents`, que divide o limite de buscas de Pessoas). Ninguém é cadastrado ali. Um aluno não ativo pode ser preparado, mas a tela avisa que só um ativo é confirmado.
+- "Nova matrícula" (`NewEnrollmentModal`) escolhe uma unidade ativa onde a pessoa opera, o tipo (Nova, padrão; Rematrícula; Transferência: é ele que escolhe as exigências de documentos que valem) e um aluno já cadastrado nela (`searchEnrollmentStudents`, que divide o limite de buscas de Pessoas). Ninguém é cadastrado ali. Um aluno não ativo pode ser preparado, mas a tela avisa que só um ativo é confirmado.
 - Um aluno que já tem matrícula viva na unidade (409 `ENROLLMENT_CONFLICT`) não ganha outra. A tela acha a existente pela lista (nunca pelo texto da mensagem) e oferece abri-la.
 
 **A matrícula** (`/administration/enrollments/:enrollmentId`, `paths.enrollmentProfile`, página `EnrollmentProfile`) tem as abas emendadas Preparação, Responsáveis, Turma, Documentos (só Admin e Secretaria) e Histórico:
@@ -126,10 +126,13 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com 
   - A conferência (`ReviewDocumentDialog`): aprovar, ou recusar com motivo obrigatório. Baixar pede um link de 5 minutos a cada vez.
   - **Exceções** (decisão do Lucas de 24/11/2026): a Secretaria ou o Admin pede uma para um documento obrigatório que não pode ser apresentado agora (`RequestExceptionDialog`, com motivo); obrigação legal e comprovação de representação não podem ser dispensadas (a ação nem vem). Só o Admin decide (`DecideExceptionDialog`, com motivo e um prazo opcional que só encurta os 30 dias corridos, nunca além do fim do período), e nunca quem pediu (`EXCEPTION_SAME_PERSON`; a tela nem oferece). Uma exceção aprovada cobre a linha, mas ela nunca aparece como entregue; vencido o prazo, volta a impedir.
   - Cada mudança relê a matrícula, cujas pendências (`DOCUMENTS_PENDING`) dependem dos documentos.
+- **Documentos exigidos** (`/administration/document-requirements`, página `DocumentRequirements`, no grupo Administração do menu; Admin e Secretaria) é o catálogo da escola: o que uma preparação pede, de quem (o aluno ou quem assina), os tipos de documento aceitos, onde vale (uma unidade e uma etapa, ou todas), para qual tipo de matrícula, se é obrigatória, se admite exceção, a validade (em dias e/ou a do próprio documento) e a vigência.
+  - Só o Admin escreve: "Nova exigência" e "Editar" (`RequirementFormModal`; o código e de quem é o documento nunca mudam depois de cadastrada; código repetido na mesma unidade, etapa e tipo é `REQUIREMENT_DUPLICATE`, no campo), "Publicar" e "Retirar" (`RequirementStatusDialog`). Nada é apagado.
+  - Uma exigência nasce retirada (o catálogo inicial do backend também) e só é pedida depois de publicada; uma matrícula já confirmada nunca ganha uma exigência nova. A Secretaria só consulta.
 - O **Histórico** (`EnrollmentHistory`) mostra o evento, o autor (sem autor, "Sistema") e os nomes do que mudou. Numa mudança de situação, mostra o antes e o depois. Não é a auditoria.
 - Salvar uma preparação nunca cria acesso, cobrança nem matrícula ativa.
 
-Coberto pelo E2E `e2e/enrollments.spec.ts`, com o backend simulado em `e2e/support/enrollments.ts`.
+Coberto pelo E2E `e2e/enrollments.spec.ts` e `e2e/document-requirements.spec.ts`, com o backend simulado em `e2e/support/enrollments.ts`.
 
 ### `src/pages/` guarda as views roteadas, e fica propositalmente fora de `src/ds-components/`
 

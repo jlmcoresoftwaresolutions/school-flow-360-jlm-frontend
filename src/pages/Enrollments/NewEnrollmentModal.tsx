@@ -8,7 +8,7 @@ import type { SelectOption } from "@/ds-components/molecules"
 import { Input, Select } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import { useDebouncedValue } from "@/hooks"
-import type { PeopleSearchItem } from "@/models"
+import type { EnrollmentKind, PeopleSearchItem } from "@/models"
 import { paths } from "@/routes/paths"
 import { listEnrollments, searchEnrollmentStudents, startEnrollment } from "@/services/enrollments"
 import { getErrorCode, getErrorStatus } from "@/services/httpClient"
@@ -19,6 +19,8 @@ import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { usePeopleLabels } from "../shared/people/usePeopleLabels"
 import { AccessItem, AccessItems, FormFields } from "../shared/userAccess/userAccess.styles"
 import type { DirectoryUnit } from "../shared/userAccess/useUnitDirectory"
+
+const enrollmentKinds: EnrollmentKind[] = ["NEW", "REENROLLMENT", "TRANSFER"]
 
 export type NewEnrollmentModalProps = {
   // The active units where the person may start a preparation.
@@ -55,6 +57,7 @@ export const NewEnrollmentModal = (props: NewEnrollmentModalProps) => {
   const toFailureMessage = useFailureMessage()
 
   const [unitId, setUnitId] = useState(units.length === 1 ? String(units[0].id) : "")
+  const [kind, setKind] = useState<EnrollmentKind>("NEW")
   const [term, setTerm] = useState("")
   const [search, setSearch] = useState<SearchResult | null>(null)
   const [student, setStudent] = useState<PeopleSearchItem | null>(null)
@@ -68,6 +71,10 @@ export const NewEnrollmentModal = (props: NewEnrollmentModalProps) => {
   const searchKey = `${unitId}#${searchTerm}`
   const current = search && search.key === searchKey ? search : null
   const unitOptions: SelectOption[] = units.map((unit) => ({ label: unit.name, value: String(unit.id) }))
+  const kindOptions: SelectOption[] = enrollmentKinds.map((value) => ({
+    label: t(`enrollments.kinds.${value}`),
+    value,
+  }))
 
   useEffect(() => {
     if (!searchTerm) return
@@ -138,7 +145,7 @@ export const NewEnrollmentModal = (props: NewEnrollmentModalProps) => {
 
     setIsSaving(true)
     try {
-      const created = await startEnrollment({ studentId: student.id, unitId: Number(unitId) })
+      const created = await startEnrollment({ kind, studentId: student.id, unitId: Number(unitId) })
       toast.success(t("enrollments.create.done"))
       navigate(generatePath(paths.enrollmentProfile, { enrollmentId: String(created.id) }))
     } catch (error) {
@@ -326,6 +333,17 @@ export const NewEnrollmentModal = (props: NewEnrollmentModalProps) => {
             placeholder={t("enrollments.create.unitPlaceholder")}
             title={t("enrollments.unit")}
             value={unitOptions.find((option) => option.value === unitId) ?? null}
+            required
+          />
+
+          <Select
+            helperText={t("enrollments.create.kindHelper")}
+            noOptionsMessage={t("common.noOptions")}
+            onChange={(option) => setKind((option?.value as EnrollmentKind | undefined) ?? "NEW")}
+            options={kindOptions}
+            placeholder={t("enrollments.create.kindPlaceholder")}
+            title={t("enrollments.kind")}
+            value={kindOptions.find((option) => option.value === kind) ?? null}
             required
           />
 

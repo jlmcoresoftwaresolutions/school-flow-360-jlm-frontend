@@ -85,13 +85,17 @@ test.describe("new preparation", () => {
     await dialog.getByRole("searchbox", { name: /^Aluno/ }).fill("Carla")
     await dialog.getByRole("button", { name: "Escolher Carla Dias" }).click()
     await expect(dialog.getByRole("note")).toContainText("só é confirmada com o aluno ativo")
+    // The kind picks the school's document requirements; a new enrollment is the default.
+    await expect(dialog.getByRole("combobox", { name: /^Tipo de matrícula/ })).toBeVisible()
+    await expect(dialog.getByText("Nova", { exact: true })).toBeVisible()
+    await pick(page, dialog, /^Tipo de matrícula/, "Transferência")
     await dialog.getByRole("button", { name: "Iniciar preparação" }).click()
 
     await expect(page).toHaveURL(new RegExp(`${enrollmentsPath}/600$`))
     await expect(page.getByText("Preparação iniciada. Ela ainda não é uma matrícula confirmada.")).toBeVisible()
     await expect(page.getByRole("heading", { level: 1, name: "Carla Dias" })).toBeVisible()
     await expect(page.getByRole("region", { name: "O que falta" })).toContainText("O cadastro do aluno não está ativo")
-    expect(lastCall(calls, "POST", "/api/enrollments")?.body).toEqual({ studentId: 203, unitId: 1 })
+    expect(lastCall(calls, "POST", "/api/enrollments")?.body).toEqual({ kind: "TRANSFER", studentId: 203, unitId: 1 })
   })
 
   test("points to the enrollment the student already has in the unit instead of a second one", async ({ page }) => {
