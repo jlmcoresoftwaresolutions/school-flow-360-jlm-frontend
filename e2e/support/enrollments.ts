@@ -1,6 +1,6 @@
 import type { Request } from "@playwright/test"
 
-import { relationshipTypes } from "./people.ts"
+import { documentTypes, relationshipTypes } from "./people.ts"
 import { apiAnswer, type Page } from "./test.ts"
 import { apiError, type RecordedCall, units } from "./userAccess.ts"
 
@@ -13,6 +13,9 @@ type Item = Record<string, unknown>
 export type EnrollmentOptions = {
   // Someone else changes the enrollment before the first save of the guardians: it gets 409 VERSION_CONFLICT.
   conflictOnFirstSave?: boolean
+  // The school published documents for Ana's preparation (501): her identity document, her transcript
+  // (with an exception the Secretaria asked for) and a proof of residence, all mandatory.
+  documents?: boolean
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
   readOnly?: boolean
   // Ana's preparation (501) already has her mother as financial party and signatory and the class with
@@ -113,7 +116,7 @@ const classesByUnit: Record<number, Item[]> = {
 }
 
 // What a preparation still lacks, worked out like the backend does.
-const pendenciesOf = (enrollment: Item) => {
+const pendenciesOf = (enrollment: Item, documentsOpen = false) => {
   if (!preparation.includes(String(enrollment.status))) return []
   const student = enrollment.student as Item
   const parties = enrollment.parties as Item[]
@@ -133,6 +136,7 @@ const pendenciesOf = (enrollment: Item) => {
   } else if (context.seats === 0) items.push({ category: "ACADEMIC_CONTEXT", code: "NO_SEAT" })
   if (!startDate) items.push({ category: "ACADEMIC_CONTEXT", code: "START_DATE_MISSING" })
   else if (startDate < today()) items.push({ category: "ACADEMIC_CONTEXT", code: "START_DATE_INVALID" })
+  if (documentsOpen) items.push({ category: "DOCUMENTS", code: "DOCUMENTS_PENDING" })
   return items.map((item) => ({ ...item, message: `${item.code} (backend text)` }))
 }
 
@@ -230,11 +234,108 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     })
   }
 
+  // The school's requirements for Ana's preparation, and what was attached to each (by requirement).
+  const requirements: Item[] = options.documents
+    ? [
+        {
+          acceptedTypes: ["RG"],
+          code: "STUDENT_ID",
+          exemptable: false,
+          label: "Documento de identidade",
+          requirementId: 11,
+        },
+        { acceptedTypes: [], code: "TRANSCRIPT", exemptable: true, label: "Histórico escolar", requirementId: 12 },
+        {
+          acceptedTypes: [],
+          code: "RESIDENCE",
+          exemptable: true,
+          label: "Comprovante de residência",
+          requirementId: 13,
+        },
+      ]
+    : []
+  const attached = new Map<number, Item>()
+  const exceptions: Item[] = options.documents
+    ? [
+        {
+          decidedAt: null,
+          decidedBy: null,
+          decisionReason: null,
+          dueDate: null,
+          id: 801,
+          overdue: false,
+          personId: null,
+          personName: null,
+          reason: "A escola de origem ainda não emitiu o histórico",
+          requestedAt: "2026-11-24T12:00:00Z",
+          requestedBy: 2,
+          requirementCode: "TRANSCRIPT",
+          requirementId: 12,
+          status: "REQUESTED",
+          version: 0,
+        },
+      ]
+    : []
+  let nextItemId = 900
+  let nextExceptionId = 802
+  if (options.documents) {
+    const ana = records.get(501) as Item
+    records.set(501, { ...ana, notEvaluated: ["FINANCIAL_CONDITIONS", "CONTRACT"] })
+  }
+
+  // A line of the checklist, worked out like the backend does: an approved exception covers the line
+  // (EXCEPTED) without making it look delivered.
+  const checklistLine = (requirement: Item): Item => {
+    const item = attached.get(requirement.requirementId as number)
+    const exception =
+      exceptions.find((entry) => entry.requirementId === requirement.requirementId && entry.status !== "DENIED") ?? null
+    let status = item ? String(item.status) : "PENDING"
+    if (status !== "APPROVED" && exception?.status === "APPROVED") status = "EXCEPTED"
+    const satisfied = status === "APPROVED" || status === "EXCEPTED"
+    const actions = ["UPLOAD"]
+    if (item) actions.push("DOWNLOAD")
+    if (status === "RECEIVED") actions.push("APPROVE", "REJECT")
+    if (requirement.exemptable && !satisfied && !exception) actions.push("REQUEST_EXCEPTION")
+    return {
+      acceptedTypes: requirement.acceptedTypes,
+      blocking: !satisfied,
+      code: requirement.code,
+      document: item ? (item.document as Item) : null,
+      eligibleActions: options.readOnly ? [] : actions,
+      exception,
+      exemptable: requirement.exemptable,
+      itemId: item ? item.itemId : null,
+      itemVersion: item ? item.version : null,
+      label: requirement.label,
+      mandatory: true,
+      party: "STUDENT",
+      personId: null,
+      personName: null,
+      rejectReason: item ? (item.rejectReason ?? null) : null,
+      requirementId: requirement.requirementId,
+      satisfied,
+      status,
+      validUntil: null,
+    }
+  }
+  const checklist = (enrollmentId: number) => {
+    const items = enrollmentId === 501 ? requirements.map(checklistLine) : []
+    return {
+      enrollmentId,
+      items,
+      openCodes: items.filter((item) => item.blocking).map((item) => item.code),
+      published: items.length > 0,
+    }
+  }
+  const documentsOpen = (enrollmentId: number) => checklist(enrollmentId).openCodes.length > 0
+
   const record = (request: Request) => {
     const url = new URL(request.url())
     const raw = request.postData()
+    // A JSON body is kept parsed; a file upload (multipart), as the raw text, where the file name shows.
+    const isJson = (request.headers()["content-type"] ?? "").includes("application/json")
     const call: RecordedCall = {
-      body: raw ? request.postDataJSON() : undefined,
+      body: raw && isJson ? request.postDataJSON() : (raw ?? undefined),
       headers: request.headers(),
       method: request.method(),
       path: url.pathname,
@@ -267,7 +368,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
 
   // The enrollment as the backend answers it: the pendencies read again, the actions of a preparation.
   const view = (item: Item): Item => {
-    const pendencies = pendenciesOf(item)
+    const pendencies = pendenciesOf(item, documentsOpen(item.id as number))
     const operates = !options.readOnly && preparation.includes(String(item.status))
     const actions = operates ? ["CHOOSE_PARTIES", "CHOOSE_CONTEXT", "SET_START_DATE", "ABANDON"] : []
     if (operates && pendencies.length === 0) actions.push("CONFIRM")
@@ -462,7 +563,9 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         return route.fulfill(apiError(409, "ENROLLMENT_ALREADY_CONFIRMED"))
       }
       if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
-      if (pendenciesOf(current).length > 0) return route.fulfill(apiError(422, "ENROLLMENT_NOT_READY"))
+      if (pendenciesOf(current, documentsOpen(Number(id))).length > 0) {
+        return route.fulfill(apiError(422, "ENROLLMENT_NOT_READY"))
+      }
       const changed = {
         ...current,
         confirmedAt: new Date().toISOString(),
@@ -511,5 +614,133 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fallback()
   })
 
-  return { calls, records }
+  await page.route("**/api/catalogs/document-types", (route) => route.fulfill(apiAnswer(documentTypes)))
+
+  // The documents and the exceptions (registered last, so they answer before the route above).
+  await page.route(/\/api\/enrollments\/\d+\/(documents|exceptions)(\/.*)?$/, (route) => {
+    const call = record(route.request())
+    const enrollmentId = Number(/\/api\/enrollments\/(\d+)\//.exec(call.path)?.[1])
+    const rest = call.path.replace(/^\/api\/enrollments\/\d+\//, "")
+    const bumpEnrollment = () => {
+      const current = records.get(enrollmentId) as Item
+      records.set(enrollmentId, { ...current, version: Number(current.version) + 1 })
+    }
+
+    if (rest === "documents" && call.method === "GET") return route.fulfill(apiAnswer(checklist(enrollmentId)))
+
+    const upload = /^documents\/(\d+)\/file$/.exec(rest)
+    if (upload) {
+      const requirement = requirements.find((item) => item.requirementId === Number(upload[1]))
+      if (!requirement) return route.fulfill(apiError(404, "REQUIREMENT_NOT_FOUND"))
+      const raw = String(call.body ?? "")
+      const documentType = /name="documentType"\r\n\r\n([^\r]*)/.exec(raw)?.[1] ?? ""
+      const accepted = requirement.acceptedTypes as string[]
+      if (accepted.length > 0 && !accepted.includes(documentType)) {
+        return route.fulfill(apiError(422, "ENROLLMENT_DOCUMENT_INVALID"))
+      }
+      const fileName = /filename="([^"]*)"/.exec(raw)?.[1] ?? null
+      const previous = attached.get(requirement.requirementId as number)
+      attached.set(requirement.requirementId as number, {
+        document: {
+          documentType,
+          documentTypeLabel: documentTypes.find((item) => item.code === documentType)?.label ?? null,
+          expiresOn: null,
+          fileName,
+          hasFile: true,
+          id: nextItemId + 100,
+          issuedOn: null,
+        },
+        itemId: previous?.itemId ?? nextItemId++,
+        rejectReason: null,
+        status: "RECEIVED",
+        version: previous ? Number(previous.version) + 1 : 0,
+      })
+      bumpEnrollment()
+      return route.fulfill(apiAnswer(checklist(enrollmentId)))
+    }
+
+    const itemAction = /^documents\/items\/(\d+)\/(review|download)$/.exec(rest)
+    if (itemAction) {
+      const entry = [...attached.entries()].find(([, item]) => item.itemId === Number(itemAction[1]))
+      if (!entry) return route.fulfill(apiError(404, "ENROLLMENT_DOCUMENT_NOT_FOUND"))
+      const [requirementId, item] = entry
+      if (itemAction[2] === "download") {
+        return route.fulfill(apiAnswer({ expiresAt: new Date().toISOString(), url: "about:blank" }))
+      }
+      const body = call.body as { decision: string; reason?: string; version: number }
+      if (body.version !== item.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      if (body.decision === "REJECT" && !body.reason) return route.fulfill(apiError(422, "REASON_REQUIRED"))
+      attached.set(requirementId, {
+        ...item,
+        rejectReason: body.decision === "REJECT" ? body.reason : null,
+        status: body.decision === "REJECT" ? "REJECTED" : "APPROVED",
+        version: Number(item.version) + 1,
+      })
+      bumpEnrollment()
+      return route.fulfill(apiAnswer(checklist(enrollmentId)))
+    }
+
+    if (rest === "exceptions" && call.method === "GET") {
+      return route.fulfill(apiAnswer(enrollmentId === 501 ? exceptions : []))
+    }
+
+    if (rest === "exceptions" && call.method === "POST") {
+      const body = call.body as { reason: string; requirementId: number }
+      const requirement = requirements.find((item) => item.requirementId === body.requirementId)
+      if (!requirement) return route.fulfill(apiError(422, "EXCEPTION_REQUIREMENT_INVALID"))
+      if (!requirement.exemptable) return route.fulfill(apiError(422, "EXCEPTION_NOT_ALLOWED"))
+      if (exceptions.some((item) => item.requirementId === body.requirementId && item.status !== "DENIED")) {
+        return route.fulfill(apiError(409, "EXCEPTION_OPEN"))
+      }
+      const created = {
+        decidedAt: null,
+        decidedBy: null,
+        decisionReason: null,
+        dueDate: null,
+        id: nextExceptionId++,
+        overdue: false,
+        personId: null,
+        personName: null,
+        reason: body.reason,
+        requestedAt: new Date().toISOString(),
+        requestedBy: 1,
+        requirementCode: requirement.code,
+        requirementId: requirement.requirementId,
+        status: "REQUESTED",
+        version: 0,
+      }
+      exceptions.push(created)
+      return route.fulfill(apiAnswer(created))
+    }
+
+    const decision = /^exceptions\/(\d+)\/decision$/.exec(rest)
+    if (decision) {
+      const index = exceptions.findIndex((item) => item.id === Number(decision[1]))
+      if (index < 0) return route.fulfill(apiError(404, "EXCEPTION_NOT_FOUND"))
+      const current = exceptions[index]
+      const body = call.body as { decision: string; dueDate?: string; reason: string; version: number }
+      if (current.status !== "REQUESTED") return route.fulfill(apiError(409, "EXCEPTION_ALREADY_DECIDED"))
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      // The signed-in Admin of these specs is user 1: an exception they asked for isn't theirs to decide.
+      if (current.requestedBy === 1) return route.fulfill(apiError(409, "EXCEPTION_SAME_PERSON"))
+      const due = new Date()
+      due.setDate(due.getDate() + 30)
+      const approved = body.decision === "APPROVE"
+      exceptions[index] = {
+        ...current,
+        decidedAt: new Date().toISOString(),
+        decidedBy: 1,
+        decisionReason: body.reason,
+        dueDate: approved ? (body.dueDate ?? due.toLocaleDateString("en-CA")) : null,
+        status: approved ? "APPROVED" : "DENIED",
+        version: Number(current.version) + 1,
+      }
+      bumpEnrollment()
+      return route.fulfill(apiAnswer(exceptions[index]))
+    }
+
+    return route.fallback()
+  })
+
+  return { calls, exceptions, records }
 }

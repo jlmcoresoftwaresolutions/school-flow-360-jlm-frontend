@@ -6,16 +6,19 @@ import { Badge, Button, Card, Text } from "@/ds-components/atoms"
 import type { ActionMenuItem, TabsItem } from "@/ds-components/molecules"
 import { ActionMenu, PageHeader, StateMessage, Tabs } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
+import { useSignedInUser } from "@/hooks"
 import type { Enrollment } from "@/models"
 import { paths } from "@/routes/paths"
 import { getEnrollment } from "@/services/enrollments"
 import { getErrorStatus } from "@/services/httpClient"
+import { hasAnyRole } from "@/utils/access"
 import { formatDate } from "@/utils/dates"
 
 import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
 import { ConfirmEnrollmentDialog } from "./ConfirmEnrollmentDialog"
+import { EnrollmentDocuments } from "./documents/EnrollmentDocuments"
 import { EnrollmentClass } from "./EnrollmentClass"
 import { EnrollmentGuardians } from "./EnrollmentGuardians"
 import { EnrollmentHistory } from "./EnrollmentHistory"
@@ -35,6 +38,7 @@ export const EnrollmentProfile = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { formatMoment, statusLabel, statusTone } = useEnrollmentLabels()
+  const signedIn = useSignedInUser()
 
   const [result, setResult] = useState<LoadResult | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
@@ -147,6 +151,22 @@ export const EnrollmentProfile = () => {
       key: "class",
       label: t("enrollments.profile.tabs.class"),
     },
+    // The documents are the Admin's and the Secretaria's only (the Financeiro and the Coordenação see the
+    // pendency on the enrollment, not the files).
+    ...(hasAnyRole(signedIn, ["SECRETARIA"])
+      ? [
+          {
+            content: (
+              <Card elevated style={{ padding: spacing[32] }}>
+                <EnrollmentDocuments enrollmentId={enrollment.id} onChanged={reload} refreshKey={reloadToken} />
+              </Card>
+            ),
+            icon: "file-outline" as const,
+            key: "documents",
+            label: t("enrollments.profile.tabs.documents"),
+          },
+        ]
+      : []),
     {
       content: (
         <Card elevated style={{ padding: spacing[32] }}>

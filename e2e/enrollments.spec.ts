@@ -360,3 +360,100 @@ test.describe("start date and confirmation", () => {
     await expect(page.getByText("Início em 01/02/2027")).toBeVisible()
   })
 })
+
+test.describe("enrollment documents", () => {
+  const pdf = (name: string) => ({ buffer: Buffer.from("%PDF-1.4 documento"), mimeType: "application/pdf", name })
+  const lineOf = (page: Page, text: string) =>
+    page.getByRole("list", { name: "Documentos da matrícula" }).getByRole("listitem").filter({ hasText: text })
+  const openLineAction = async (page: Page, label: string, action: string) => {
+    await page.getByRole("button", { name: `Ações de ${label}` }).click()
+    await page.getByRole("menuitem", { name: action }).click()
+  }
+
+  test("sends a document and checks it, approving or rejecting with a reason", async ({ page }) => {
+    const api = await mockEnrollmentApi(page, { documents: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await expect(page.getByText("Documentos obrigatórios pendentes")).toBeVisible()
+    await page.getByRole("tab", { name: "Documentos" }).click()
+
+    await expect(lineOf(page, "Documento de identidade")).toContainText("Pendente")
+    await expect(lineOf(page, "Documento de identidade")).toContainText("Impede a confirmação")
+
+    await openLineAction(page, "Documento de identidade", "Enviar arquivo")
+    const dialog = page.getByRole("dialog", { name: "Enviar documento" })
+    await dialog.getByLabel(/^Arquivo/).setInputFiles(pdf("rg-ana.pdf"))
+    await dialog.getByRole("button", { name: "Enviar" }).click()
+    await expect(page.getByText("Documento enviado. A escola ainda precisa conferi-lo.")).toBeVisible()
+    await expect(lineOf(page, "Documento de identidade")).toContainText("Recebido")
+    await expect(lineOf(page, "Documento de identidade")).toContainText("rg-ana.pdf")
+    const upload = lastCall(api.calls, "POST", "/api/enrollments/501/documents/11/file")
+    expect(String(upload?.body)).toContain('name="documentType"\r\n\r\nRG')
+
+    await openLineAction(page, "Documento de identidade", "Recusar")
+    const reject = page.getByRole("dialog", { name: "Recusar Documento de identidade?" })
+    await reject.getByRole("button", { name: "Recusar" }).click()
+    await expect(reject.getByText("Informe o motivo da recusa.")).toBeVisible()
+    await reject.getByLabel(/^Motivo da recusa/).fill("Documento ilegível")
+    await reject.getByRole("button", { name: "Recusar" }).click()
+    await expect(lineOf(page, "Documento de identidade")).toContainText("Recusado: Documento ilegível")
+
+    await openLineAction(page, "Documento de identidade", "Enviar outro arquivo")
+    await dialog.getByLabel(/^Arquivo/).setInputFiles(pdf("rg-ana-novo.pdf"))
+    await dialog.getByRole("button", { name: "Enviar" }).click()
+    await expect(lineOf(page, "Documento de identidade")).toContainText("Recebido")
+
+    await openLineAction(page, "Documento de identidade", "Aprovar")
+    await page
+      .getByRole("dialog", { name: "Aprovar Documento de identidade?" })
+      .getByRole("button", { name: "Aprovar" })
+      .click()
+    await expect(lineOf(page, "Documento de identidade")).toContainText("Aprovado")
+    await expect(lineOf(page, "Documento de identidade")).not.toContainText("Impede a confirmação")
+  })
+
+  test("asks for an exception, and lets only another Admin decide one", async ({ page }) => {
+    const api = await mockEnrollmentApi(page, { documents: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Documentos" }).click()
+
+    // The identity document is a legal obligation: it can't be waived.
+    await page.getByRole("button", { name: "Ações de Documento de identidade" }).click()
+    await expect(page.getByRole("menuitem", { name: "Pedir exceção" })).toHaveCount(0)
+    await page.keyboard.press("Escape")
+
+    // The transcript's exception was asked by the Secretaria: the Admin decides it, with a reason.
+    const exceptions = page.getByRole("list", { name: "Exceções de documentos" })
+    const transcript = exceptions.getByRole("listitem").filter({ hasText: "Histórico escolar" })
+    await expect(transcript).toContainText("Pedida")
+    await transcript.getByRole("button", { name: "Aprovar exceção" }).click()
+    const decide = page.getByRole("dialog", { name: "Aprovar a exceção de Histórico escolar?" })
+    await decide.getByLabel(/^Motivo da decisão/).fill("A família entrega na próxima semana")
+    await decide.getByRole("button", { name: "Aprovar exceção" }).click()
+    await expect(page.getByText("Exceção aprovada.")).toBeVisible()
+    await expect(lineOf(page, "Histórico escolar")).toContainText("Coberto por exceção")
+    await expect(transcript).toContainText("Decisão: A família entrega na próxima semana")
+    expect(lastCall(api.calls, "POST", "/api/enrollments/501/exceptions/801/decision")?.body).toMatchObject({
+      decision: "APPROVE",
+      reason: "A família entrega na próxima semana",
+      version: 0,
+    })
+
+    // An exception the Admin asks for waits for another person of the Administration.
+    await openLineAction(page, "Comprovante de residência", "Pedir exceção")
+    const request = page.getByRole("dialog", { name: "Pedir exceção para Comprovante de residência?" })
+    await request.getByLabel(/^Motivo/).fill("A família mudou de endereço")
+    await request.getByRole("button", { name: "Pedir exceção" }).click()
+    await expect(page.getByText("Exceção pedida. A Administração decide.")).toBeVisible()
+    const residence = exceptions.getByRole("listitem").filter({ hasText: "Comprovante de residência" })
+    await expect(residence).toContainText("Aguardando a decisão da Administração.")
+    await expect(residence.getByRole("button", { name: "Aprovar exceção" })).toHaveCount(0)
+    await expect(lineOf(page, "Comprovante de residência")).toContainText("Exceção pedida")
+  })
+
+  test("keeps the documents away from the Coordenação", async ({ page }) => {
+    await mockEnrollmentApi(page, { documents: true, readOnly: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`, withRole("COORDENACAO"))
+    await expect(page.getByRole("tab", { name: "Preparação" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "Documentos" })).toHaveCount(0)
+  })
+})
