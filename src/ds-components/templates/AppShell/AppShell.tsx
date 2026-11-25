@@ -61,7 +61,7 @@ const menuGroups: NavGroup[] = [
   { children: ["notices", "messages", "notifications"], icon: "chat-outline", key: "communication" },
   { children: ["academicReports", "financialReports", "exports"], icon: "file-outline", key: "reports" },
   {
-    children: ["myOrganization", "peopleSearch", "students", "guardians", "enrollments"],
+    children: ["myOrganization", "peopleSearch", "students", "guardians", "enrollments", "documentRequirements"],
     icon: "briefcase-outline",
     key: "administration",
   },

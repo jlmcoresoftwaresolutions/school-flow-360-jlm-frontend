@@ -156,6 +156,60 @@ const enrollment = (fields: Item): Item => ({
   ...fields,
 })
 
+// The stages of the academic catalog, for the requirements' selects.
+const stages = [
+  { eligibleActions: [], id: 1, name: "Educação Infantil", sortOrder: 1, status: "ACTIVE", version: 0 },
+  { eligibleActions: [], id: 2, name: "Ensino Fundamental", sortOrder: 2, status: "ACTIVE", version: 0 },
+]
+
+// A requirement of the school's catalog as the backend answers it.
+const requirement = (fields: Item): Item => ({
+  acceptedTypes: [],
+  active: false,
+  code: "",
+  enrollmentKind: "ALL",
+  exemptable: true,
+  label: "",
+  mandatory: true,
+  party: "STUDENT",
+  sortOrder: 0,
+  stageId: null,
+  unitId: null,
+  useDocumentExpiry: false,
+  validFrom: "2026-11-24",
+  validTo: null,
+  validityDays: null,
+  version: 0,
+  ...fields,
+})
+
+// The catalog the backend creates with the school: withdrawn, except the student's identity, published.
+export const initialRequirements = (): Item[] => [
+  requirement({
+    acceptedTypes: ["RG", "CPF"],
+    active: true,
+    code: "STUDENT_ID",
+    exemptable: false,
+    id: 31,
+    label: "Identificação do aluno",
+  }),
+  requirement({
+    acceptedTypes: ["RG", "CPF"],
+    code: "PROOF_OF_ADDRESS",
+    id: 32,
+    label: "Comprovante de endereço",
+    validityDays: 90,
+  }),
+  requirement({
+    acceptedTypes: ["RG"],
+    code: "TRANSCRIPT",
+    enrollmentKind: "TRANSFER",
+    id: 33,
+    label: "Histórico escolar",
+    unitId: 1,
+  }),
+]
+
 export const initialEnrollments = (): Item[] => [
   enrollment({
     id: 501,
@@ -405,6 +459,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         createdAt: now,
         id,
         status: "DRAFT",
+        kind: body.kind ?? "NEW",
         student: studentRef(student.id),
         unitId: body.unitId,
         unitName: unitName(Number(body.unitId)),
@@ -742,5 +797,56 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fallback()
   })
 
-  return { calls, exceptions, records }
+  // The school's catalog of document requirements: only the Admin writes, nothing is deleted.
+  const catalog: Item[] = initialRequirements()
+  let nextRequirementId = 40
+
+  await page.route("**/api/academic/stages?*", (route) =>
+    route.fulfill(apiAnswer({ items: stages, page: 0, size: 100, totalElements: stages.length, totalPages: 1 })),
+  )
+
+  await page.route(/\/api\/enrollment-documents\/requirements(\/\d+(\/(activate|inactivate))?)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, action] = /requirements(?:\/(\d+)(?:\/(activate|inactivate))?)?$/.exec(call.path) ?? []
+    if (call.method === "GET") return route.fulfill(apiAnswer(catalog))
+    if (options.readOnly) return route.fulfill(apiError(403, "ACCESS_DENIED"))
+    const body = call.body as Item
+    const clashes = (candidate: Item) =>
+      catalog.some(
+        (item) =>
+          item.id !== candidate.id &&
+          item.code === candidate.code &&
+          item.unitId === candidate.unitId &&
+          item.stageId === candidate.stageId &&
+          item.enrollmentKind === candidate.enrollmentKind,
+      )
+
+    if (!id) {
+      const created = {
+        ...requirement({ ...body, id: nextRequirementId++ }),
+        active: false,
+        version: 0,
+      }
+      if (clashes(created)) return route.fulfill(apiError(409, "REQUIREMENT_DUPLICATE"))
+      catalog.push(created)
+      return route.fulfill({ ...apiAnswer(created), status: 201 })
+    }
+
+    const index = catalog.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ENROLLMENT_NOT_FOUND"))
+    const current = catalog[index]
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    // The code and whose document it is never change.
+    const changed = action
+      ? { ...current, active: action === "activate" }
+      : {
+          ...requirement({ ...body, code: current.code, id: current.id, party: current.party }),
+          active: current.active,
+        }
+    if (!action && clashes(changed)) return route.fulfill(apiError(409, "REQUIREMENT_DUPLICATE"))
+    catalog[index] = { ...changed, version: Number(current.version) + 1 }
+    return route.fulfill(apiAnswer(catalog[index]))
+  })
+
+  return { calls, catalog, exceptions, records }
 }

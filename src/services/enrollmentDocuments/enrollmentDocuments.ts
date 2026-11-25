@@ -158,7 +158,7 @@ export const decideEnrollmentException = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. GET /api/enrollment-documents/requirements: the school's catalog (Admin and Secretaria read).
+// USED by the document requirements page. GET /api/enrollment-documents/requirements: the school's catalog (Admin and Secretaria read).
 export const listDocumentRequirements = async (config?: RequestConfig): Promise<DocumentRequirement[]> => {
   const response = await httpClient.get<ApiResponse<DocumentRequirement[]>>(
     "/api/enrollment-documents/requirements",
@@ -168,7 +168,7 @@ export const listDocumentRequirements = async (config?: RequestConfig): Promise<
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/enrollment-documents/requirements: Admin only; born inactive.
+// USED by the document requirements page. POST /api/enrollment-documents/requirements: Admin only; born inactive.
 // Errors: 409 REQUIREMENT_DUPLICATE.
 export const createDocumentRequirement = async (
   request: DocumentRequirementWrite,
@@ -183,7 +183,7 @@ export const createDocumentRequirement = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. PUT /api/enrollment-documents/requirements/{id}: Admin only, with `version`.
+// USED by the document requirements page. PUT /api/enrollment-documents/requirements/{id}: Admin only, with `version`.
 export const updateDocumentRequirement = async (
   requirementId: number,
   request: DocumentRequirementWrite,
@@ -198,7 +198,7 @@ export const updateDocumentRequirement = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET. POST /api/enrollment-documents/requirements/{id}/activate or /inactivate: publishes or
+// USED by the document requirements page. POST /api/enrollment-documents/requirements/{id}/activate or /inactivate: publishes or
 // withdraws a requirement (never deleted). Admin only.
 export const setDocumentRequirementActive = async (
   requirementId: number,

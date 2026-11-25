@@ -124,7 +124,9 @@ export type EnrollmentStudentSearchParams = {
 }
 
 // Body of POST /api/enrollments: starts a preparation (DRAFT).
+// `kind` picks the school's document requirements that apply (NEW when left out).
 export type EnrollmentStartRequest = {
+  kind?: EnrollmentKind
   studentId: number
   unitId: number
 }
