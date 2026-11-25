@@ -18,6 +18,7 @@ import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
 import { ConfirmEnrollmentDialog } from "./ConfirmEnrollmentDialog"
+import { EnrollmentContract } from "./contract/EnrollmentContract"
 import { EnrollmentDocuments } from "./documents/EnrollmentDocuments"
 import { EnrollmentClass } from "./EnrollmentClass"
 import { EnrollmentGuardians } from "./EnrollmentGuardians"
@@ -151,8 +152,8 @@ export const EnrollmentProfile = () => {
       key: "class",
       label: t("enrollments.profile.tabs.class"),
     },
-    // The documents are the Admin's and the Secretaria's only (the Financeiro and the Coordenação see the
-    // pendency on the enrollment, not the files).
+    // The documents and the contract are the Admin's and the Secretaria's only (the Financeiro and the
+    // Coordenação see the pendencies on the enrollment, not the files nor the contract).
     ...(hasAnyRole(signedIn, ["SECRETARIA"])
       ? [
           {
@@ -164,6 +165,16 @@ export const EnrollmentProfile = () => {
             icon: "file-outline" as const,
             key: "documents",
             label: t("enrollments.profile.tabs.documents"),
+          },
+          {
+            content: (
+              <Card elevated style={{ padding: spacing[32] }}>
+                <EnrollmentContract enrollment={enrollment} onChanged={reload} refreshKey={reloadToken} />
+              </Card>
+            ),
+            icon: "contract-outline" as const,
+            key: "contract",
+            label: t("enrollments.profile.tabs.contract"),
           },
         ]
       : []),
