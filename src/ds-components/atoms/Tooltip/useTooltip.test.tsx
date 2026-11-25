@@ -60,6 +60,30 @@ describe("useTooltip", () => {
     expect(screen.getByRole("tooltip")).toHaveStyle({ left: "66px", top: "76px" })
   })
 
+  it("never shows on a touch, whose emulated hover would never end", () => {
+    render(<HintedButton tooltip="Salva as alterações" />)
+
+    const button = screen.getByRole("button")
+    fireEvent.touchStart(button)
+    fireEvent.mouseEnter(button)
+    fireEvent.focus(button)
+
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument()
+  })
+
+  it("shows again on a mouse hover a while after a touch", () => {
+    vi.useFakeTimers()
+    render(<HintedButton tooltip="Salva as alterações" />)
+
+    const button = screen.getByRole("button")
+    fireEvent.touchStart(button)
+    vi.advanceTimersByTime(1500)
+    fireEvent.mouseEnter(button)
+
+    expect(screen.getByRole("tooltip")).toBeInTheDocument()
+    vi.useRealTimers()
+  })
+
   it("leaves the element's own handlers alone when there is no tooltip", () => {
     const onFocus = vi.fn()
     render(<HintedButton onFocus={onFocus} />)
