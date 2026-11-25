@@ -35,7 +35,8 @@ const isShift = (value: string | null): value is AcademicShiftCode =>
   value !== null && (shifts as string[]).includes(value)
 
 // The class of the enrollment (JLM-348): the one chosen, with its limit, the occupation read now (and
-// when) and the free seats, and the classes of the enrollment's unit open for enrollment to choose from.
+// when) and the free seats, and the classes of the enrollment's unit open for enrollment to choose from,
+// right below the chosen one (asked by Lucas on 25/11/2026), before the start date.
 // Seats are information, never a reservation: the class may fill up until the confirmation. An occupation
 // that couldn't be read is "unavailable", never zero. Changing or taking back the class is confirmed
 // first, since the stages that depend on it will be reviewed. The server checks the class again on every
@@ -59,10 +60,17 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
   const canChoose = enrollment.eligibleActions.includes("CHOOSE_CONTEXT")
   const requestKey = `${enrollment.id}#${reloadToken}`
   const current = result?.key === requestKey ? result : null
-  const contextPendencies = enrollment.pendencies.filter((pendency) => pendency.category === "ACADEMIC_CONTEXT")
+  // Without a class chosen, the classes to choose from show at once (no need to ask for the list).
+  const showOptions = isChoosing || (!chosen && canChoose)
+  const classes = current && "classes" in current ? current.classes : null
+  // The unit has no class open for enrollment: asking to choose one would only confuse (Lucas, 25/11/2026).
+  const noClassToChoose = !chosen && classes !== null && classes.length === 0
+  const contextPendencies = enrollment.pendencies.filter(
+    (pendency) => pendency.category === "ACADEMIC_CONTEXT" && !(noClassToChoose && pendency.code === "NO_CLASS"),
+  )
 
   useEffect(() => {
-    if (!isChoosing) return
+    if (!showOptions) return
 
     let isStale = false
 
@@ -80,7 +88,7 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
     return () => {
       isStale = true
     }
-  }, [enrollment.id, isChoosing, requestKey])
+  }, [enrollment.id, requestKey, showOptions])
 
   const occupationText = (context: EnrollmentClassContext) => {
     if (context.occupation.status !== "AVAILABLE" || context.occupation.value === null) {
@@ -150,9 +158,10 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
 
   const renderChosen = () => {
     if (!chosen) {
+      if (noClassToChoose) return null
       return (
         <Text color="secondary" fontSize="sm">
-          {t("enrollments.preparation.noClass")}
+          {canChoose ? t("enrollments.class.selectPrompt") : t("enrollments.preparation.noClass")}
         </Text>
       )
     }
@@ -245,7 +254,8 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
   }
 
   const renderActions = () => {
-    if (!canChoose) return null
+    // Without a class chosen the list is always open.
+    if (!canChoose || !chosen) return null
     if (isChoosing) {
       return (
         <Button onClick={() => setIsChoosing(false)} size="small" variant="outlined">
@@ -256,13 +266,11 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
 
     return (
       <span style={{ display: "flex", gap: spacing[8] }}>
-        {chosen && (
-          <Button onClick={() => setPending({ classContext: null })} size="small" variant="outlined">
-            {t("enrollments.class.clear")}
-          </Button>
-        )}
+        <Button onClick={() => setPending({ classContext: null })} size="small" variant="outlined">
+          {t("enrollments.class.clear")}
+        </Button>
         <Button onClick={() => setIsChoosing(true)} size="small">
-          {chosen ? t("enrollments.class.change") : t("enrollments.class.choose")}
+          {t("enrollments.class.change")}
         </Button>
       </span>
     )
@@ -296,9 +304,7 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
         )}
       </PersonBlock>
 
-      <EnrollmentStartDate enrollment={enrollment} onChanged={onChanged} onGone={onGone} />
-
-      {isChoosing && (
+      {showOptions && (
         <PersonBlock title={t("enrollments.class.optionsTitle")}>
           <Text color="secondary" fontSize="sm">
             {t("enrollments.class.optionsDescription")}
@@ -306,6 +312,8 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
           {renderOptions()}
         </PersonBlock>
       )}
+
+      <EnrollmentStartDate enrollment={enrollment} onChanged={onChanged} onGone={onGone} />
 
       {pending && (
         <ConfirmDialog

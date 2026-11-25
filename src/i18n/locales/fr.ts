@@ -1038,7 +1038,6 @@ export const fr: TranslationResource = {
       changeDescription:
         "Les étapes qui dépendent de la classe seront revues. Choisir la classe ne réserve pas de place.",
       changeTitle: "Passer à la classe {{name}} ?",
-      choose: "Choisir une classe",
       chooseNamed: "Choisir la classe {{name}}",
       chosen: "Classe choisie. Aucune place n'a été réservée.",
       class: "Classe",
@@ -1075,6 +1074,7 @@ export const fr: TranslationResource = {
       seatsUnavailable: "Places indisponibles pour le moment",
       seats_one: "{{count}} place",
       seats_other: "{{count}} places",
+      selectPrompt: "Sélectionnez une classe pour réaliser l'inscription.",
       title: "Classe de l'inscription",
     },
     contract: {

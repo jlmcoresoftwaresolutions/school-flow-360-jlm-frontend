@@ -1023,7 +1023,6 @@ export const es: TranslationResource = {
       changeConfirm: "Cambiar",
       changeDescription: "Las etapas que dependen del grupo se revisarán. Elegir el grupo no reserva plaza.",
       changeTitle: "¿Cambiar al grupo {{name}}?",
-      choose: "Elegir grupo",
       chooseNamed: "Elegir el grupo {{name}}",
       chosen: "Grupo elegido. No se reservó ninguna plaza.",
       class: "Grupo",
@@ -1057,6 +1056,7 @@ export const es: TranslationResource = {
       seatsUnavailable: "Plazas no disponibles ahora",
       seats_one: "{{count}} plaza",
       seats_other: "{{count}} plazas",
+      selectPrompt: "Seleccione un grupo para realizar la matrícula.",
       title: "Grupo de la matrícula",
     },
     contract: {

@@ -1021,7 +1021,6 @@ export const ptPT: TranslationResource = {
       changeConfirm: "Trocar",
       changeDescription: "As etapas que dependem da turma serão revistas. Escolher a turma não reserva vaga.",
       changeTitle: "Trocar para a turma {{name}}?",
-      choose: "Escolher turma",
       chooseNamed: "Escolher a turma {{name}}",
       chosen: "Turma escolhida. Nenhuma vaga foi reservada.",
       class: "Turma",
@@ -1055,6 +1054,7 @@ export const ptPT: TranslationResource = {
       seatsUnavailable: "Vagas indisponíveis agora",
       seats_one: "{{count}} vaga",
       seats_other: "{{count}} vagas",
+      selectPrompt: "Selecione uma turma para a realização da matrícula.",
       title: "Turma da matrícula",
     },
     contract: {

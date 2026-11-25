@@ -1,7 +1,7 @@
 import type { Locator } from "@playwright/test"
 
 import { mockEnrollmentApi } from "./support/enrollments.ts"
-import { expect, type Page, test } from "./support/test.ts"
+import { apiAnswer, expect, type Page, test } from "./support/test.ts"
 import { lastCall, secretariaContext, signInAndOpen } from "./support/userAccess.ts"
 
 // The enrollments of the EPIC 6 (P05, slices 0 and 1): the list, a new preparation, the enrollment with
@@ -283,10 +283,14 @@ test.describe("enrollment class", () => {
     await signInAndOpen(page, `${enrollmentsPath}/501`)
     await page.getByRole("tab", { name: "Turma" }).click()
 
-    await expect(page.getByText("Nenhuma turma escolhida ainda.")).toBeVisible()
-    await page.getByRole("button", { name: "Escolher turma" }).click()
-
+    // Without a class chosen, the classes to choose from show at once, right below the choice (above the
+    // start date).
+    await expect(page.getByText("Selecione uma turma para realização da matrícula.")).toBeVisible()
     await expect(classItem(page, "1A")).toContainText("28 alunos matriculados")
+    const optionsTop = (await page.getByRole("region", { name: "Turmas disponíveis" }).boundingBox())?.y ?? 0
+    const startDateTop = (await page.getByRole("region", { name: "Data de início" }).boundingBox())?.y ?? 0
+    expect(optionsTop).toBeLessThan(startDateTop)
+
     await expect(classItem(page, "1A")).toContainText("2 vagas")
     await expect(classItem(page, "1B")).toContainText("Sem vaga")
     await expect(classItem(page, "1C")).toContainText("Ocupação indisponível agora (não quer dizer turma vazia)")
@@ -306,7 +310,6 @@ test.describe("enrollment class", () => {
     const { calls } = await mockEnrollmentApi(page)
     await signInAndOpen(page, `${enrollmentsPath}/501`)
     await page.getByRole("tab", { name: "Turma" }).click()
-    await page.getByRole("button", { name: "Escolher turma" }).click()
     await page.getByRole("button", { name: "Escolher a turma 1A" }).click()
     await expect(page.getByText("Turma escolhida. Nenhuma vaga foi reservada.")).toBeVisible()
 
@@ -325,11 +328,26 @@ test.describe("enrollment class", () => {
       .getByRole("button", { name: "Desfazer escolha" })
       .click()
     await expect(page.getByText("Escolha da turma desfeita.")).toBeVisible()
-    await expect(page.getByText("Nenhuma turma escolhida ainda.")).toBeVisible()
+    await expect(page.getByText("Selecione uma turma para realização da matrícula.")).toBeVisible()
     expect(lastCall(calls, "PUT", "/api/enrollments/501/context")?.body).toEqual({ classId: null, version: 2 })
 
     await page.getByRole("tab", { name: "Histórico" }).click()
     await expect(page.getByRole("row").filter({ hasText: "Turma alterada" })).toHaveCount(3)
+  })
+})
+
+test.describe("enrollment class without classes", () => {
+  test("doesn't ask to choose a class when the unit has none open", async ({ page }) => {
+    await mockEnrollmentApi(page)
+    await page.route("**/api/enrollments/501/classes", (route) => route.fulfill(apiAnswer([])))
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Turma" }).click()
+
+    await expect(page.getByRole("region", { name: "Turmas disponíveis" })).toContainText(
+      "Nenhuma turma desta unidade está aberta para matrícula",
+    )
+    await expect(page.getByText("Selecione uma turma para realização da matrícula.")).toHaveCount(0)
+    await expect(page.getByRole("region", { name: "Turma da matrícula" })).not.toContainText("Nenhuma turma escolhida")
   })
 })
 
