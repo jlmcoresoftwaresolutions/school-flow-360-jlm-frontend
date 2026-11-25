@@ -10,6 +10,7 @@ import type { AcademicCalendarItem, AcademicPeriod } from "@/models"
 import { listAcademicCalendarItems, removeAcademicCalendarItem } from "@/services/academicCalendar"
 import { getErrorCode } from "@/services/httpClient"
 
+import { academicMaxPageSize } from "../shared/academic/academicLimits"
 import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import type { AcademicUnits } from "../shared/academic/useAcademicUnits"
 import { useFailureMessage } from "../shared/people/useFailureMessage"
@@ -31,8 +32,6 @@ export type CalendarItemsProps = {
 type ItemsResult = { error: true; key: string } | { items: AcademicCalendarItem[]; key: string }
 
 type Dialog = { item: AcademicCalendarItem; kind: "edit" | "remove" } | { kind: "new" } | null
-
-const itemsSize = 200
 
 // The items being prepared for a unit and period: school days, holidays and events, in date order. Saving
 // or removing an item never touches what was published; it changes only the next publication. Removing
@@ -57,7 +56,14 @@ export const CalendarItems = (props: CalendarItemsProps) => {
     const load = async () => {
       try {
         const page = await listAcademicCalendarItems(
-          { direction: "asc", periodId: period.id, size: itemsSize, sortBy: "startDate", status: "ACTIVE", unitId },
+          {
+            direction: "asc",
+            periodId: period.id,
+            size: academicMaxPageSize,
+            sortBy: "startDate",
+            status: "ACTIVE",
+            unitId,
+          },
           { showLoading: false },
         )
         if (!isStale) setResult({ items: page.items, key: requestKey })

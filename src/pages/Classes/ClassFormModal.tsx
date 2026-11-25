@@ -19,7 +19,7 @@ import { listAcademicOffers, listAcademicRooms } from "@/services/academicCatalo
 import { createAcademicClass, getAcademicClass, updateAcademicClass } from "@/services/academicClasses"
 
 import { ConflictNotice } from "../MyOrganization/shared/ConflictNotice"
-import { academicLimits } from "../shared/academic/academicLimits"
+import { academicLimits, academicMaxPageSize } from "../shared/academic/academicLimits"
 import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import type { AcademicUnits } from "../shared/academic/useAcademicUnits"
 import { useCatalogSave } from "../shared/academic/useCatalogSave"
@@ -55,8 +55,6 @@ type Values = {
 type Errors = Partial<Record<"capacity" | "code" | "grade" | "name" | "period" | "room" | "shift" | "unit", string>>
 
 const shifts: AcademicShiftCode[] = ["MANHA", "TARDE", "NOITE", "INTEGRAL"]
-
-const lookupSize = 200
 
 const toValues = (schoolClass?: AcademicClass): Values => ({
   capacity: schoolClass ? String(schoolClass.capacity) : "",
@@ -141,7 +139,12 @@ export const ClassFormModal = (props: ClassFormModalProps) => {
     const load = async () => {
       try {
         const page = await listAcademicOffers(
-          { periodId: Number(values.periodId), size: lookupSize, status: "ACTIVE", unitId: Number(values.unitId) },
+          {
+            periodId: Number(values.periodId),
+            size: academicMaxPageSize,
+            status: "ACTIVE",
+            unitId: Number(values.unitId),
+          },
           { showLoading: false },
         )
         if (!isStale) setOffers({ items: page.items, key })
