@@ -2,7 +2,7 @@ import { deflateSync } from "node:zlib"
 
 import { expect, type Page, test } from "./support/test.ts"
 
-// Minha Unidade runs on the backend: the organization, its visual identity and its units. Everything
+// Minha Organização runs on the backend: the organization, its visual identity and its units. Everything
 // on the network (login, those three, the CEP lookup) is mocked here, each mock keeping what is saved
 // the way the backend does; the empty state is an empty list.
 
@@ -551,8 +551,8 @@ const signInAndOpen = async (
   await expect(page).toHaveURL(/\/home$/)
 
   await page.getByRole("complementary").getByRole("button", { name: "Administração" }).click()
-  await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
+  await page.getByRole("complementary").getByRole("button", { name: "Minha Organização" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Minha Organização" })).toBeVisible()
 
   return organizationMock
 }
@@ -1436,7 +1436,7 @@ test.describe("units", () => {
   })
 })
 
-// A Secretaria of Unidade Aldeota: it reads Minha Unidade (matrix ORG-M01 to M04) and edits nothing.
+// A Secretaria of Unidade Aldeota: it reads Minha Organização (matrix ORG-M01 to M04) and edits nothing.
 const secretaria = {
   admin: false,
   assignments: [
@@ -1515,8 +1515,8 @@ const openAsSecretaria = async (page: Page, options: { published?: boolean; unit
   await expect(page).toHaveURL(/\/home$/)
 
   await page.getByRole("complementary").getByRole("button", { name: "Administração" }).click()
-  await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
+  await page.getByRole("complementary").getByRole("button", { name: "Minha Organização" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Minha Organização" })).toBeVisible()
 
   return adminOnlyCalls
 }

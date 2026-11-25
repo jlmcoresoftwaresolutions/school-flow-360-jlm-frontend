@@ -213,7 +213,7 @@ test.describe("people access", () => {
     await page.goto(guardiansPath)
     await expect(page).toHaveURL(/\/access-denied$/)
 
-    // Without Minha Unidade either, the Administração group isn't in the menu at all.
+    // Without Minha Organização either, the Administração group isn't in the menu at all.
     await expect(page.getByRole("complementary").getByRole("button", { name: "Administração" })).toHaveCount(0)
   })
 })

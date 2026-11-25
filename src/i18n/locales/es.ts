@@ -1369,7 +1369,7 @@ export const es: TranslationResource = {
       },
       myUnit: {
         description: "Los datos de la institución, las sedes y la identidad visual de la escuela.",
-        title: "Mi Sede",
+        title: "Mi Organización",
       },
       people: {
         description: "Registro de estudiantes y responsables, los vínculos entre ellos, documentos e historial.",
@@ -1652,7 +1652,7 @@ export const es: TranslationResource = {
       overview: "Visión general",
       units: "Sedes",
     },
-    title: "Mi Sede",
+    title: "Mi Organización",
     units: {
       actions: "Acciones",
       actionsFor: "Acciones de {{name}}",
@@ -2302,7 +2302,7 @@ export const es: TranslationResource = {
       integrations: "Integraciones",
       invites: "Invitaciones",
       messages: "Mensajes",
-      myUnit: "Mi Sede",
+      myUnit: "Mi Organización",
       notices: "Avisos",
       notifications: "Notificaciones",
       offers: "Ofertas",

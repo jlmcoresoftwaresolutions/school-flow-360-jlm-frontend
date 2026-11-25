@@ -31,7 +31,7 @@ test("offers an Admin every main area, each opening its page", async ({ page }) 
     "/access-logs/audit",
   )
 
-  await page.getByRole("link", { name: "Abrir Minha Unidade" }).click()
+  await page.getByRole("link", { name: "Abrir Minha Organização" }).click()
 
   await expect(page).toHaveURL(/\/administration\/my-unit$/)
 })
@@ -43,5 +43,5 @@ test("offers a Professor only the areas the role opens", async ({ page }) => {
   await expect(featureLinks(page)).toHaveCount(2)
   await expect(page.getByRole("link", { name: "Abrir Estrutura acadêmica" })).toBeVisible()
   await expect(page.getByRole("link", { name: "Abrir Calendário letivo" })).toBeVisible()
-  await expect(page.getByRole("link", { name: "Abrir Minha Unidade" })).toHaveCount(0)
+  await expect(page.getByRole("link", { name: "Abrir Minha Organização" })).toHaveCount(0)
 })

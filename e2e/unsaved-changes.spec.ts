@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "./support/test.ts"
 
-// Signs in (backend mocked) and opens the edit form of Minha Unidade's institutional data.
+// Signs in (backend mocked) and opens the edit form of Minha Organização's institutional data.
 const openDetailsForm = async (page: Page) => {
   await page.route("**/api/auth/login", (route) =>
     route.fulfill({
@@ -19,7 +19,7 @@ const openDetailsForm = async (page: Page) => {
     }),
   )
   await page.route("**/api/auth/logout", (route) => route.fulfill({ body: "{}", contentType: "application/json" }))
-  // Minha Unidade reads the visual identity from the backend; nothing saved yet is enough here.
+  // Minha Organização reads the visual identity from the backend; nothing saved yet is enough here.
   await page.route("**/api/organizations/current/branding", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -31,7 +31,7 @@ const openDetailsForm = async (page: Page) => {
       contentType: "application/json",
     }),
   )
-  // Minha Unidade reads the organization from the backend.
+  // Minha Organização reads the organization from the backend.
   await page.route("**/api/organizations/current/editable", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -61,7 +61,7 @@ const openDetailsForm = async (page: Page) => {
       contentType: "application/json",
     }),
   )
-  // Minha Unidade lists the units from the backend; an empty list is enough here.
+  // Minha Organização lists the units from the backend; an empty list is enough here.
   await page.route("**/api/school-units?*", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -81,8 +81,8 @@ const openDetailsForm = async (page: Page) => {
   await expect(page).toHaveURL(/\/home$/)
 
   await page.getByRole("complementary").getByRole("button", { name: "Administração" }).click()
-  await page.getByRole("complementary").getByRole("button", { name: "Minha Unidade" }).click()
-  await expect(page.getByRole("heading", { level: 1, name: "Minha Unidade" })).toBeVisible()
+  await page.getByRole("complementary").getByRole("button", { name: "Minha Organização" }).click()
+  await expect(page.getByRole("heading", { level: 1, name: "Minha Organização" })).toBeVisible()
 
   await page.getByRole("button", { name: "Editar Dados institucionais" }).click()
 }

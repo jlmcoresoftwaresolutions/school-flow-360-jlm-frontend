@@ -1361,7 +1361,7 @@ export const en: TranslationResource = {
       },
       myUnit: {
         description: "The institution's details, its units and the school's visual identity.",
-        title: "My Unit",
+        title: "My Organization",
       },
       people: {
         description: "Student and guardian records, the links between them, documents and history.",
@@ -1635,7 +1635,7 @@ export const en: TranslationResource = {
       overview: "Overview",
       units: "Units",
     },
-    title: "My Unit",
+    title: "My Organization",
     units: {
       actions: "Actions",
       actionsFor: "Actions for {{name}}",
@@ -2284,7 +2284,7 @@ export const en: TranslationResource = {
       integrations: "Integrations",
       invites: "Invitations",
       messages: "Messages",
-      myUnit: "My Unit",
+      myUnit: "My Organization",
       notices: "Announcements",
       notifications: "Notifications",
       offers: "Offerings",

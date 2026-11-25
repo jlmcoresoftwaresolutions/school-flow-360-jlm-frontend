@@ -4,7 +4,7 @@ import { apiAnswer, expect, type Page, signedInUser, test } from "./support/test
 // it is sent, so a test can hand out a session that ends a few seconds later.
 const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
   const lengths = [...sessionLengthsMs]
-  // Minha Unidade reads the visual identity from the backend; nothing saved yet is enough here.
+  // Minha Organização reads the visual identity from the backend; nothing saved yet is enough here.
   await page.route("**/api/organizations/current/branding", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -16,7 +16,7 @@ const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
       contentType: "application/json",
     }),
   )
-  // Minha Unidade reads the organization from the backend.
+  // Minha Organização reads the organization from the backend.
   await page.route("**/api/organizations/current/editable", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -46,7 +46,7 @@ const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
       contentType: "application/json",
     }),
   )
-  // Minha Unidade lists the units from the backend; an empty list is enough here.
+  // Minha Organização lists the units from the backend; an empty list is enough here.
   await page.route("**/api/school-units?*", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -94,7 +94,7 @@ const signOut = async (page: Page) => {
 
 const oneHour = 60 * 60 * 1000
 const expiredNotice = "Sua sessão expirou. Entre novamente para continuar."
-const myUnitHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
+const myUnitHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Organização" })
 
 test("ends the session when it expires, even on an idle page, and brings the user back after signing in", async ({
   page,

@@ -1365,7 +1365,7 @@ export const ptPT: TranslationResource = {
       },
       myUnit: {
         description: "Os dados da instituição, as unidades e a identidade visual da escola.",
-        title: "A Minha Unidade",
+        title: "A Minha Organização",
       },
       people: {
         description: "Registo de alunos e encarregados de educação, as ligações entre eles, documentos e histórico.",
@@ -1648,7 +1648,7 @@ export const ptPT: TranslationResource = {
       overview: "Visão geral",
       units: "Unidades",
     },
-    title: "A Minha Unidade",
+    title: "A Minha Organização",
     units: {
       actions: "Ações",
       actionsFor: "Ações de {{name}}",
@@ -2298,7 +2298,7 @@ export const ptPT: TranslationResource = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      myUnit: "A Minha Unidade",
+      myUnit: "A Minha Organização",
       notices: "Comunicados",
       notifications: "Notificações",
       offers: "Ofertas",

@@ -1360,7 +1360,7 @@ export const ptBR = {
       },
       myUnit: {
         description: "Os dados da instituição, as unidades e a identidade visual da escola.",
-        title: "Minha Unidade",
+        title: "Minha Organização",
       },
       people: {
         description: "Cadastro de alunos e responsáveis, vínculos entre eles, documentos e histórico.",
@@ -1641,7 +1641,7 @@ export const ptBR = {
       overview: "Visão geral",
       units: "Unidades",
     },
-    title: "Minha Unidade",
+    title: "Minha Organização",
     units: {
       actions: "Ações",
       actionsFor: "Ações de {{name}}",
@@ -2292,7 +2292,7 @@ export const ptBR = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      myUnit: "Minha Unidade",
+      myUnit: "Minha Organização",
       notices: "Comunicados",
       notifications: "Notificações",
       offers: "Ofertas",

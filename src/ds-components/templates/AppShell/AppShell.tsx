@@ -39,7 +39,7 @@ type NavGroup = {
 
 // The groups mirror the menu in the P1 "Especificação Visual Final"; the art doesn't specify their
 // children, so those are plausible placeholders, each with its own page (blank for now, except
-// Minha Unidade).
+// Minha Organização).
 const menuGroups: NavGroup[] = [
   {
     children: [
