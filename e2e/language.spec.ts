@@ -8,16 +8,16 @@ test.describe("in a browser set to English", () => {
   test("shows the login in English", async ({ page }) => {
     await page.goto("/login")
 
-    await expect(page.getByRole("heading", { level: 1, name: "Access your SchoolFlow360º journey" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Sign in" })).toBeVisible()
     await expect(page.locator("html")).toHaveAttribute("lang", /^en/)
   })
 })
 
 // Each browser language with its login heading and the <html lang> the app sets.
 const localized = [
-  { heading: "Aceda ao seu percurso SchoolFlow360º", lang: "pt-PT", locale: "pt-PT" },
-  { heading: "Accede a tu experiencia SchoolFlow360º", lang: "es", locale: "es-MX" },
-  { heading: "Accédez à votre parcours SchoolFlow360º", lang: "fr", locale: "fr-FR" },
+  { heading: "Iniciar sessão", lang: "pt-PT", locale: "pt-PT" },
+  { heading: "Iniciar sesión", lang: "es", locale: "es-MX" },
+  { heading: "Se connecter", lang: "fr", locale: "fr-FR" },
 ]
 
 for (const { heading, lang, locale } of localized) {
@@ -39,7 +39,7 @@ test.describe("in a browser set to a language the app doesn't have", () => {
   test("falls back to pt-BR", async ({ page }) => {
     await page.goto("/login")
 
-    await expect(page.getByRole("heading", { level: 1, name: "Acesse sua jornada SchoolFlow360º" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Entrar" })).toBeVisible()
   })
 })
 
@@ -47,7 +47,7 @@ test.describe("in a browser set to pt-BR", () => {
   test("shows the login in pt-BR, with no way to pick another language", async ({ page }) => {
     await page.goto("/login")
 
-    await expect(page.getByRole("heading", { level: 1, name: "Acesse sua jornada SchoolFlow360º" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Entrar" })).toBeVisible()
     await expect(page.getByRole("button", { name: /idioma|language/i })).toHaveCount(0)
   })
 
@@ -56,6 +56,6 @@ test.describe("in a browser set to pt-BR", () => {
 
     await page.goto("/login")
 
-    await expect(page.getByRole("heading", { level: 1, name: "Acesse sua jornada SchoolFlow360º" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Entrar" })).toBeVisible()
   })
 })

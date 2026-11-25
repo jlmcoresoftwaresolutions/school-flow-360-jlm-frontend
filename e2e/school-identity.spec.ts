@@ -72,6 +72,27 @@ test("names the school in the tab of the login", async ({ page }) => {
   await expect(page.locator("link[rel~='icon']")).toHaveAttribute("href", `${png}#favicon`)
 })
 
+test("puts the school first on the login, the product only signing it", async ({ page }) => {
+  await page.route("**/api/public/branding", (route) => route.fulfill(apiAnswer(identity)))
+  await page.goto("/login")
+
+  const panel = page.getByRole("region", { name: "Colégio Horizonte" })
+  await expect(panel).toContainText("Colégio Horizonte")
+  await expect(panel).toContainText("Bem-vindo(a) ao portal da escola.")
+  await expect(panel).toContainText("Powered by SchoolFlow360º")
+  await expect(page.getByRole("heading", { level: 1, name: "Entrar" })).toBeVisible()
+  // No sales copy on a school's login.
+  await expect(page.getByText("White Label")).toHaveCount(0)
+})
+
+test("lets the product host the login when nothing was published", async ({ page }) => {
+  await page.goto("/login")
+
+  const panel = page.getByRole("region", { name: "SchoolFlow360º" })
+  await expect(panel).toContainText("Bem-vindo(a) ao SchoolFlow360º.")
+  await expect(panel).not.toContainText("Powered by")
+})
+
 test("paints the login with the school's color", async ({ page }) => {
   await page.route("**/api/public/branding", (route) => route.fulfill(apiAnswer(identity)))
   await page.goto("/login")

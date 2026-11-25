@@ -1905,9 +1905,6 @@ export const fr: TranslationResource = {
     emailPlaceholder: "Saisissez votre e-mail",
     emailRequired: "Saisissez votre e-mail.",
     forgotPassword: "Mot de passe oublié",
-    heroSubtitle:
-      "Une expérience de pilotage pour les directions, l'établissement, les enseignants et les familles : chaque profil accède à son propre parcours visuel, avec une navigation adaptative, des indicateurs clairs et des interactions chaleureuses.",
-    heroTitle: "Une gestion scolaire qui paraît simple, mais opère à 360º.",
     insecureAddress:
       "Cette adresse n'est pas sécurisée (http hors localhost) et le navigateur n'y conserve pas la session. Accédez-y en https ou sur localhost.",
     invalidCredentials:
@@ -1916,11 +1913,13 @@ export const fr: TranslationResource = {
     loginLabel: "E-mail ou pseudo",
     loginPlaceholder: "Saisissez votre e-mail ou pseudo",
     loginRequired: "Saisissez votre e-mail ou pseudo.",
-    logoAlt: "Icône SchoolFlow360",
     passwordLabel: "Mot de passe",
     passwordPlaceholder: "Saisissez votre mot de passe",
     passwordRequired: "Saisissez votre mot de passe.",
+    productWelcome:
+      "Bienvenue sur SchoolFlow360º. Connectez-vous avec l'accès que votre établissement a créé pour vous.",
     retryIn: "Réessayer dans {{time}}",
+    schoolWelcome: "Bienvenue sur le portail de l'établissement. Suivez la vie scolaire en un seul endroit.",
     sessionExpired: "Votre session a expiré. Reconnectez-vous pour continuer.",
     sessionLimit: {
       alreadyEnded: "Cette session était déjà fermée. Choisissez-en une autre.",
@@ -1938,13 +1937,9 @@ export const fr: TranslationResource = {
     },
     sessionLimitExpired: "Le temps pour choisir une session est écoulé. Connectez-vous à nouveau.",
     signIn: "Se connecter",
-    signInTitle: "Accédez à votre parcours SchoolFlow360º",
     signInUnavailable: "Connexion impossible pour le moment. Réessayez dans quelques instants.",
-    tagAi: "IA",
-    tagDashboard: "Tableau de bord 360º",
-    tagFinance: "Finances",
-    tagStudents: "Élèves",
-    tagWhiteLabel: "Marque blanche",
+    subtitle: "Utilisez l'e-mail ou le pseudo que l'établissement a enregistré pour vous.",
+    title: "Se connecter",
     tooManyAttempts_one: "Trop de tentatives incorrectes. Patientez {{count}} minute avant de réessayer.",
     tooManyAttempts_other: "Trop de tentatives incorrectes. Patientez {{count}} minutes avant de réessayer.",
   },
