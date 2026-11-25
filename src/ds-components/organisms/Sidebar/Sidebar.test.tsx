@@ -39,6 +39,22 @@ describe("Sidebar", () => {
     expect(screen.getByText("Powered by SchoolFlow360º")).toBeInTheDocument()
   })
 
+  it("shows placeholders instead of the brand while it is loading", () => {
+    const { container } = renderSidebar({ brandLoading: true, subtitle: "Powered by SchoolFlow360º" })
+
+    expect(screen.queryByText("SchoolFlow360º")).not.toBeInTheDocument()
+    expect(screen.queryByText("Powered by SchoolFlow360º")).not.toBeInTheDocument()
+    expect(screen.queryByRole("img", { name: "Ícone" })).not.toBeInTheDocument()
+    expect(container.querySelector("[aria-busy='true']")).toBeInTheDocument()
+  })
+
+  it("shows the brand, not busy, once it is loaded", () => {
+    const { container } = renderSidebar({ brandLoading: false })
+
+    expect(screen.getByText("SchoolFlow360º")).toBeInTheDocument()
+    expect(container.querySelector("[aria-busy]")).not.toBeInTheDocument()
+  })
+
   it("keeps the whole title available on hover when a long one is cut", () => {
     renderSidebar({ title: "Colégio Horizonte de Educação Integral" })
 

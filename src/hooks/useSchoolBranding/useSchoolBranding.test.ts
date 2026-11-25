@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import type { PublishedBrandingResponse } from "@/models"
 import { getPublishedBranding } from "@/services/branding"
 
-import { refreshSchoolBranding, useSchoolBranding } from "./useSchoolBranding"
+import { refreshSchoolBranding, useSchoolBranding, useSchoolBrandingSettled } from "./useSchoolBranding"
 
 vi.mock("@/services/branding", () => ({ getPublishedBranding: vi.fn() }))
 
@@ -29,12 +29,29 @@ describe("useSchoolBranding", () => {
   })
 
   // First, while nothing was read yet in this file.
-  it("is undefined until it is first read", () => {
+  it("is undefined, and not settled, until it is first read", () => {
     vi.mocked(getPublishedBranding).mockReturnValue(new Promise(() => {}))
 
-    const { result } = renderHook(() => useSchoolBranding())
+    const { result } = renderHook(() => ({ branding: useSchoolBranding(), settled: useSchoolBrandingSettled() }))
 
-    expect(result.current).toBeUndefined()
+    expect(result.current.branding).toBeUndefined()
+    expect(result.current.settled).toBe(false)
+  })
+
+  it("is settled once a reading is over, even a failed one", async () => {
+    // A fresh module, with nothing read yet.
+    vi.resetModules()
+    const service = await import("@/services/branding")
+    const fresh = await import("./useSchoolBranding")
+    vi.mocked(service.getPublishedBranding).mockRejectedValue(failure(500))
+
+    const { result } = renderHook(() => ({
+      branding: fresh.useSchoolBranding(),
+      settled: fresh.useSchoolBrandingSettled(),
+    }))
+
+    await waitFor(() => expect(result.current.settled).toBe(true))
+    expect(result.current.branding).toBeUndefined()
   })
 
   it("reads the published identity when used", async () => {

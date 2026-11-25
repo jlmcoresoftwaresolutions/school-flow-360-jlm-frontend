@@ -120,6 +120,11 @@ const meta: Meta<typeof Sidebar> = {
       control: false,
       description: "Optional items pinned below the scrollable menu, e.g. a help entry. Same shape as items.",
     },
+    brandLoading: {
+      control: "boolean",
+      description:
+        "Shows placeholders in place of the logo, title and subtitle while the brand is still being read, so it doesn't swap a moment after the page shows.",
+    },
     collapseLabel: {
       control: "text",
       description: "Accessible name of the compact-screen button while the panel is open. Defaults to a pt-BR label.",
@@ -176,6 +181,12 @@ export const WithSubtitle: Story = {
     subtitle: "Powered by SchoolFlow360º",
     title: "Colégio Horizonte de Educação Integral",
   },
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
+}
+
+// The brandLoading prop: placeholders where the logo, title and subtitle go while a school's identity is read
+export const BrandLoading: Story = {
+  args: { brandLoading: true },
   render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
 }
 
