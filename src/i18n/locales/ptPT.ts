@@ -162,6 +162,14 @@ export const ptPT: TranslationResource = {
     loadingItems: "A carregar os itens...",
     loadingPreview: "A carregar a pré-visualização...",
     loadingPublished: "A carregar o calendário publicado...",
+    month: {
+      addOn: "Adicionar item em {{date}}",
+      hint: "Clique num dia, ou arraste por vários dias, para adicionar um feriado, dia letivo ou evento. Clique num item para o editar.",
+      more: "+{{count}} mais",
+      next: "Mês seguinte",
+      previous: "Mês anterior",
+      today: "Hoje",
+    },
     new: "Novo item",
     notPublishedDescription: "Quando a escola publicar o calendário, aparece aqui.",
     notPublishedTitle: "Nenhum calendário publicado",
@@ -218,6 +226,11 @@ export const ptPT: TranslationResource = {
       title: "Versões",
       version: "Versão",
       withdrawReason: "Motivo: {{reason}}",
+    },
+    view: {
+      label: "Como ver os itens",
+      list: "Lista",
+      month: "Calendário",
     },
     withdraw: {
       action: "Retirar",

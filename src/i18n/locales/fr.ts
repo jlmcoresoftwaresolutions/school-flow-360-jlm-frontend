@@ -166,6 +166,14 @@ export const fr: TranslationResource = {
     loadingItems: "Chargement des éléments...",
     loadingPreview: "Chargement de l'aperçu...",
     loadingPublished: "Chargement du calendrier publié...",
+    month: {
+      addOn: "Ajouter un élément le {{date}}",
+      hint: "Cliquez sur un jour, ou faites glisser sur plusieurs jours, pour ajouter un jour férié, un jour de classe ou un événement. Cliquez sur un élément pour le modifier.",
+      more: "+{{count}} de plus",
+      next: "Mois suivant",
+      previous: "Mois précédent",
+      today: "Aujourd'hui",
+    },
     new: "Nouvel élément",
     notPublishedDescription: "Quand l'école publiera le calendrier, il apparaîtra ici.",
     notPublishedTitle: "Aucun calendrier publié",
@@ -222,6 +230,11 @@ export const fr: TranslationResource = {
       title: "Versions",
       version: "Version",
       withdrawReason: "Motif : {{reason}}",
+    },
+    view: {
+      label: "Comment voir les éléments",
+      list: "Liste",
+      month: "Calendrier",
     },
     withdraw: {
       action: "Retirer",

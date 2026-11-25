@@ -30,6 +30,8 @@ export type CalendarItemModalProps = {
   onSaved: () => void
   // The item to edit; none creates one.
   item?: AcademicCalendarItem
+  // The days chosen on the month view for a new item (yyyy-MM-dd); a single day leaves the end blank.
+  range?: { end: string; start: string }
 }
 
 type Values = {
@@ -45,12 +47,22 @@ type Errors = Partial<Record<"category" | "end" | "start" | "title" | "units", s
 
 const categories: AcademicCalendarCategory[] = ["DIA_LETIVO", "FERIADO", "EVENTO"]
 
+const initialStart = (item?: AcademicCalendarItem, range?: { end: string; start: string }) => {
+  if (item) return fromIsoDate(item.startDate)
+  return range ? fromIsoDate(range.start) : null
+}
+
+const initialEnd = (item?: AcademicCalendarItem, range?: { end: string; start: string }) => {
+  if (item) return fromIsoDate(item.endDate)
+  return range && range.end !== range.start ? fromIsoDate(range.end) : null
+}
+
 // Prepares an item of the calendar: a school day, a holiday or an event, with its title, an optional
 // description, the dates (inclusive, inside the period) and the units it applies to (the period's active
 // units the person manages). Saving never publishes: the published version only changes when it is
 // published again. If someone else changed the item meanwhile, it is read again, keeping the draft.
 export const CalendarItemModal = (props: CalendarItemModalProps) => {
-  const { item, onClose, onSaved, period, unitId, units } = props
+  const { item, onClose, onSaved, period, range, unitId, units } = props
 
   const { t } = useTranslation()
   const { calendarCategoryLabel } = useAcademicLabels()
@@ -60,8 +72,8 @@ export const CalendarItemModal = (props: CalendarItemModalProps) => {
   const [original] = useState<Values>(() => ({
     category: item?.category ?? "",
     description: item?.description ?? "",
-    end: item ? fromIsoDate(item.endDate) : null,
-    start: item ? fromIsoDate(item.startDate) : null,
+    end: initialEnd(item, range),
+    start: initialStart(item, range),
     title: item?.title ?? "",
     unitIds: item?.unitIds ?? [unitId],
   }))
