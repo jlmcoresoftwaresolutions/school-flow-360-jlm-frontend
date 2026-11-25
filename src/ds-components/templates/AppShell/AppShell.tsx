@@ -10,7 +10,6 @@ import type { BreadcrumbItem } from "@/ds-components/molecules/Breadcrumb"
 import { Breadcrumb } from "@/ds-components/molecules/Breadcrumb"
 import type { SidebarNavChild, SidebarNavItem } from "@/ds-components/organisms/Sidebar"
 import { Sidebar } from "@/ds-components/organisms/Sidebar"
-import type { TopbarAction } from "@/ds-components/organisms/Topbar"
 import { Topbar } from "@/ds-components/organisms/Topbar"
 import { useSchoolBranding, useSchoolBrandingSettled, useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
@@ -175,13 +174,6 @@ export const AppShell = () => {
     .map((role) => t(`shell.roles.${role}`))
     .join(", ")
 
-  // The art puts notifications and help in the topbar, but neither feature exists yet, so - like the
-  // menu entries without a page - they are rendered disabled instead of as buttons that do nothing.
-  const topbarActions: TopbarAction[] = [
-    { disabled: true, icon: "bell-outline", key: "notifications", label: t("shell.notifications") },
-    { disabled: true, icon: "help-outline", key: "help", label: t("shell.help") },
-  ]
-
   // The own profile and signing out live in the menu the user block opens.
   const userMenuItems: ActionMenuItem[] = [
     { icon: "user-outline", key: "myProfile", label: t("shell.myProfile"), onClick: () => navigate(paths.myProfile) },
@@ -238,7 +230,6 @@ export const AppShell = () => {
       <UnsavedChangesGuard>
         <AppShellBody>
           <Topbar
-            actions={topbarActions}
             user={{ name: userName, role: userRoles || undefined }}
             userMenuItems={userMenuItems}
             userMenuLabel={t("shell.userMenu")}
