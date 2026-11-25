@@ -1,7 +1,7 @@
 import type { ApiItemsPage } from "../httpClient/httpClient"
 import type { PersonStatus } from "../people/people"
 
-// The EPIC 6 enrollment (backend docs/P05_CONTRATO.md, slices 0 to 2 part 1). DRAFT is a preparation;
+// The EPIC 6 enrollment (backend docs/P05_CONTRATO.md, slices 0 to 3A). DRAFT is a preparation;
 // PENDING and BLOCKED will be stored once the confirmation exists; ACTIVE is a confirmed enrollment;
 // LOCKED, CANCELLED, COMPLETED and TRANSFERRED belong to the P06 lifecycle (reserved); ABANDONED is a
 // preparation given up.
@@ -17,7 +17,11 @@ export type EnrollmentStatus =
   | "TRANSFERRED"
 
 // What the server lets the person do with this enrollment (only in preparation, only where they operate).
-export type EnrollmentAction = "ABANDON" | "CHOOSE_CONTEXT" | "CHOOSE_PARTIES"
+// CONFIRM comes only for a preparation with no pendency left.
+export type EnrollmentAction = "ABANDON" | "CHOOSE_CONTEXT" | "CHOOSE_PARTIES" | "CONFIRM" | "SET_START_DATE"
+
+// The kind of enrollment, which decides the documents it asks for.
+export type EnrollmentKind = "NEW" | "REENROLLMENT" | "TRANSFER"
 
 // The stages later slices add: not evaluated yet, so never read as fulfilled (RN39).
 export type EnrollmentStage = "ACADEMIC_CONTEXT" | "CONTRACT" | "DOCUMENTS" | "FINANCIAL_CONDITIONS"
@@ -73,16 +77,23 @@ export type EnrollmentClassContext = {
   shift: string | null
 }
 
-// An enrollment as the list and the detail answer it.
+// An enrollment as the list and the detail answer it. `enrollmentNumber` (AAAA-NNNNNN) and `confirmedAt`
+// come only once it is confirmed; `startDate` (yyyy-MM-dd) once chosen. `inactive`: a preparation not
+// saved for 30 days (opening it doesn't count), still resumable.
 export type Enrollment = {
   abandonReason: string | null
   classContext: EnrollmentClassContext | null
+  confirmedAt: string | null
   createdAt: string
   eligibleActions: EnrollmentAction[]
+  enrollmentNumber: string | null
   id: number
+  inactive: boolean
+  kind: EnrollmentKind
   notEvaluated: EnrollmentStage[]
   parties: EnrollmentParty[]
   pendencies: EnrollmentPendency[]
+  startDate: string | null
   status: EnrollmentStatus
   student: EnrollmentStudent
   unitId: number
@@ -149,6 +160,20 @@ export type EnrollmentPartiesRequest = {
 // Body of PUT /api/enrollments/{id}/context: the class chosen, or null to take the choice back.
 export type EnrollmentContextRequest = {
   classId: number | null
+  version: number
+}
+
+// Body of PUT /api/enrollments/{id}/start-date: today or a later day (yyyy-MM-dd) within the class's
+// period, never in the past; null takes the date back. The class must be chosen first.
+export type EnrollmentStartDateRequest = {
+  startDate: string | null
+  version: number
+}
+
+// Body of POST /api/enrollments/{id}/confirm. `intent` is an opaque id made by the screen (up to 64
+// characters), one per attempt the person understands as one: sending it again gives the same result.
+export type EnrollmentConfirmRequest = {
+  intent: string
   version: number
 }
 

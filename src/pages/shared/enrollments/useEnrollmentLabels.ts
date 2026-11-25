@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next"
 
 import type { BadgeProps } from "@/ds-components/atoms"
-import type { EnrollmentStage, EnrollmentStatus } from "@/models"
+import type { EnrollmentKind, EnrollmentStage, EnrollmentStatus } from "@/models"
 
 type BadgeTone = NonNullable<BadgeProps["tone"]>
 
@@ -30,6 +30,8 @@ export const preparationStatuses: EnrollmentStatus[] = ["DRAFT", "PENDING", "BLO
 // The pendencies and history events the screen knows; anything else shows as it came.
 const knownPendencies = [
   "CLASS_NOT_ELIGIBLE",
+  "CONTRACT_PENDING",
+  "DOCUMENTS_PENDING",
   "NO_CLASS",
   "NO_FINANCIAL_PARTY",
   "NO_PARTY",
@@ -37,10 +39,30 @@ const knownPendencies = [
   "NO_SIGNATORY",
   "OCCUPANCY_UNAVAILABLE",
   "PARTY_LINK_ENDED",
+  "START_DATE_INVALID",
+  "START_DATE_MISSING",
   "STUDENT_NOT_ELIGIBLE",
 ] as const
 
-const knownEvents = ["ABANDONED", "CONTEXT_CHANGED", "PARTIES_CHANGED", "PREPARATION_STARTED"] as const
+const knownEvents = [
+  "ABANDONED",
+  "ACCEPTANCE_REQUESTED",
+  "ACCEPTANCE_RESENT",
+  "ACCEPTANCE_REVOKED",
+  "CONFIRMED",
+  "CONTEXT_CHANGED",
+  "CONTRACT_ACCEPTED",
+  "CONTRACT_GENERATED",
+  "DOCUMENT_APPROVED",
+  "DOCUMENT_RECEIVED",
+  "DOCUMENT_REJECTED",
+  "EXCEPTION_APPROVED",
+  "EXCEPTION_DENIED",
+  "EXCEPTION_REQUESTED",
+  "PARTIES_CHANGED",
+  "PREPARATION_STARTED",
+  "START_DATE_CHANGED",
+] as const
 
 type KnownPendency = (typeof knownPendencies)[number]
 type KnownEvent = (typeof knownEvents)[number]
@@ -57,6 +79,7 @@ export const useEnrollmentLabels = () => {
     eventLabel: (action: string) => (isKnownEvent(action) ? t(`enrollments.events.${action}`) : action),
     formatMoment: (value: string) =>
       new Intl.DateTimeFormat(i18n.language, { dateStyle: "short", timeStyle: "short" }).format(new Date(value)),
+    kindLabel: (kind: EnrollmentKind) => t(`enrollments.kinds.${kind}`),
     pendencyLabel: (code: string) => (isKnownPendency(code) ? t(`enrollments.pendencyCodes.${code}`) : code),
     stageLabel: (stage: EnrollmentStage) => t(`enrollments.stages.${stage}`),
     statusLabel: (status: EnrollmentStatus) => t(`enrollments.statuses.${status}`),

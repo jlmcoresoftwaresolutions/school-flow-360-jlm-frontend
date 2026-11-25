@@ -10,10 +10,12 @@ import type { Enrollment } from "@/models"
 import { paths } from "@/routes/paths"
 import { getEnrollment } from "@/services/enrollments"
 import { getErrorStatus } from "@/services/httpClient"
+import { formatDate } from "@/utils/dates"
 
 import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
+import { ConfirmEnrollmentDialog } from "./ConfirmEnrollmentDialog"
 import { EnrollmentClass } from "./EnrollmentClass"
 import { EnrollmentGuardians } from "./EnrollmentGuardians"
 import { EnrollmentHistory } from "./EnrollmentHistory"
@@ -38,6 +40,7 @@ export const EnrollmentProfile = () => {
   const [reloadToken, setReloadToken] = useState(0)
   const [tab, setTab] = useState("preparation")
   const [isAbandoning, setIsAbandoning] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   const requestKey = `${enrollmentId}#${reloadToken}`
   // While the same enrollment is read again its last answer stays on screen, so a choice being made in a
@@ -65,6 +68,7 @@ export const EnrollmentProfile = () => {
 
   const reload = () => {
     setIsAbandoning(false)
+    setIsConfirming(false)
     setReloadToken((value) => value + 1)
   }
 
@@ -109,6 +113,8 @@ export const EnrollmentProfile = () => {
       tone: "danger",
     })
   }
+
+  const canConfirm = enrollment.eligibleActions.includes("CONFIRM")
 
   const tabs: TabsItem[] = [
     {
@@ -164,14 +170,32 @@ export const EnrollmentProfile = () => {
       <ProfileBar>
         <ProfileBarInfo>
           <Badge tone={statusTone(enrollment.status)}>{statusLabel(enrollment.status)}</Badge>
+          {enrollment.inactive && <Badge tone="neutral">{t("enrollments.profile.inactive")}</Badge>}
+          {enrollment.enrollmentNumber && (
+            <Text fontSize="sm" semibold>
+              {t("enrollments.profile.number", { number: enrollment.enrollmentNumber })}
+            </Text>
+          )}
           <Text color="secondary" fontSize="sm">
             {[enrollment.student.code, enrollment.unitName].filter(Boolean).join(" · ")}
           </Text>
+          {enrollment.startDate && (
+            <Text color="secondary" fontSize="sm">
+              {t("enrollments.profile.startsOn", { date: formatDate(enrollment.startDate) })}
+            </Text>
+          )}
           <Text color="secondary" fontSize="sm">
             {t("enrollments.profile.savedAt", { moment: formatMoment(enrollment.updatedAt) })}
           </Text>
         </ProfileBarInfo>
-        {actions.length > 0 && <ActionMenu items={actions} triggerLabel={t("enrollments.profile.actions")} />}
+        <span style={{ alignItems: "center", display: "flex", gap: spacing[8] }}>
+          {canConfirm && (
+            <Button onClick={() => setIsConfirming(true)} size="small">
+              {t("enrollments.confirm.action")}
+            </Button>
+          )}
+          {actions.length > 0 && <ActionMenu items={actions} triggerLabel={t("enrollments.profile.actions")} />}
+        </span>
       </ProfileBar>
 
       <Tabs
@@ -181,6 +205,15 @@ export const EnrollmentProfile = () => {
         value={tabs.some((item) => item.key === tab) ? tab : tabs[0].key}
         attached
       />
+
+      {isConfirming && (
+        <ConfirmEnrollmentDialog
+          enrollment={enrollment}
+          onChanged={reload}
+          onClose={() => setIsConfirming(false)}
+          onGone={reload}
+        />
+      )}
 
       {isAbandoning && (
         <AbandonEnrollmentDialog

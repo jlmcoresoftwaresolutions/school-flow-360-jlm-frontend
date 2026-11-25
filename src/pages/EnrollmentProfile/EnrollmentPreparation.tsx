@@ -8,6 +8,7 @@ import type { Enrollment, EnrollmentParty } from "@/models"
 import { pageRoles } from "@/routes/access"
 import { paths } from "@/routes/paths"
 import { canOpenPage } from "@/utils/access"
+import { formatDate } from "@/utils/dates"
 
 import { preparationStatuses, useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { PersonSections } from "../shared/people/people.styles"
@@ -28,7 +29,7 @@ export const EnrollmentPreparation = (props: EnrollmentPreparationProps) => {
 
   const { t } = useTranslation()
   const signedIn = useSignedInUser()
-  const { pendencyLabel, stageLabel } = useEnrollmentLabels()
+  const { formatMoment, kindLabel, pendencyLabel, stageLabel } = useEnrollmentLabels()
   const { personStatusLabel, personStatusTone } = usePeopleLabels()
 
   const { classContext, student } = enrollment
@@ -106,20 +107,49 @@ export const EnrollmentPreparation = (props: EnrollmentPreparationProps) => {
       </PersonBlock>
 
       <PersonBlock title={t("enrollments.preparation.classTitle")}>
-        {classContext ? (
-          <Text fontSize="sm">{[classContext.code, classContext.name].filter(Boolean).join(" · ")}</Text>
-        ) : (
-          <Text color="secondary" fontSize="sm">
-            {t("enrollments.preparation.noClass")}
-          </Text>
-        )}
+        <DescriptionList
+          emptyValue={t("common.notInformed")}
+          items={[
+            {
+              key: "class",
+              label: t("enrollments.class.class"),
+              value: classContext
+                ? [classContext.code, classContext.name].filter(Boolean).join(" · ")
+                : t("enrollments.preparation.noClass"),
+            },
+            {
+              key: "startDate",
+              label: t("enrollments.startDate.title"),
+              value: enrollment.startDate ? formatDate(enrollment.startDate) : t("enrollments.startDate.none"),
+            },
+            { key: "kind", label: t("enrollments.kind"), value: kindLabel(enrollment.kind) },
+          ]}
+        />
       </PersonBlock>
+
+      {enrollment.enrollmentNumber && (
+        <PersonBlock title={t("enrollments.preparation.confirmedTitle")}>
+          <DescriptionList
+            emptyValue={t("common.notInformed")}
+            items={[
+              { key: "number", label: t("enrollments.number"), value: enrollment.enrollmentNumber },
+              {
+                key: "confirmedAt",
+                label: t("enrollments.preparation.confirmedAt"),
+                value: enrollment.confirmedAt ? formatMoment(enrollment.confirmedAt) : "",
+              },
+            ]}
+          />
+        </PersonBlock>
+      )}
 
       {inPreparation && (
         <PersonBlock title={t("enrollments.preparation.pendenciesTitle")}>
           {enrollment.pendencies.length === 0 ? (
             <Text color="secondary" fontSize="sm">
-              {t("enrollments.preparation.noPendencies")}
+              {enrollment.eligibleActions.includes("CONFIRM")
+                ? t("enrollments.preparation.readyToConfirm")
+                : t("enrollments.preparation.noPendencies")}
             </Text>
           ) : (
             <AccessItems aria-label={t("enrollments.preparation.pendenciesTitle")}>

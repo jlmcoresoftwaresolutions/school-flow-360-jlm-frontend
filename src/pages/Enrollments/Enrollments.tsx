@@ -207,7 +207,16 @@ export const Enrollments = () => {
             header={t("enrollments.unit")}
           />
           <Table.Column
-            body={(row: Enrollment) => <Badge tone={statusTone(row.status)}>{statusLabel(row.status)}</Badge>}
+            body={(row: Enrollment) => (
+              <PersonCell>
+                <Badge tone={statusTone(row.status)}>{statusLabel(row.status)}</Badge>
+                {row.enrollmentNumber && (
+                  <Text color="secondary" fontSize="sm">
+                    {row.enrollmentNumber}
+                  </Text>
+                )}
+              </PersonCell>
+            )}
             field="status"
             header={t("enrollments.status")}
           />
