@@ -926,7 +926,10 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     if (options.duplicateEmail && body.contactEmail === options.duplicateEmail && !body.duplicateReviewId) {
       return route.fulfill(apiError(409, "DUPLICATE_REVIEW_REQUIRED"))
     }
-    if (body.documentNumber === "11122233344") return route.fulfill(apiError(409, "DOCUMENT_IN_USE"))
+    // The backend keeps only the letters and digits of a number, so a masked CPF is the same document.
+    if (String(body.documentNumber ?? "").replace(/[^A-Za-z0-9]/g, "") === "11144477735") {
+      return route.fulfill(apiError(409, "DOCUMENT_IN_USE"))
+    }
 
     const id = nextGuardianId++
     const created = {

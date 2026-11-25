@@ -1924,6 +1924,7 @@ export const en: TranslationResource = {
       contactEmailLabel: "Contact email",
       contactEmailPlaceholder: "name@example.com",
       contactTitle: "Contact",
+      documentCpfInvalid: "Invalid CPF: check the 11 digits.",
       documentHelper: "Optional. No document is mandatory.",
       documentInUse:
         "This document already belongs to another person. Use the existing record or correct the document.",
@@ -1931,6 +1932,8 @@ export const en: TranslationResource = {
       documentKeepHelper: "Leave blank to keep the current document ({{document}}).",
       documentNumberLabel: "Document number",
       documentNumberPlaceholder: "Enter the number",
+      documentNumberPlaceholderCnh: "00000000000",
+      documentNumberPlaceholderCpf: "000.000.000-00",
       documentNumberRequired: "Enter the document number.",
       documentTitle: "Document",
       documentTypeInvalid: "This document type isn't accepted.",

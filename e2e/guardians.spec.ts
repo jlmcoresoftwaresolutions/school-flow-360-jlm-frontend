@@ -49,13 +49,33 @@ test.describe("new guardian", () => {
     await page.getByRole("textbox", { name: /^Nome completo/ }).fill("Paula Mendes")
     await pick(page, /^Unidade/, "Unidade Aldeota")
     await pick(page, /^Tipo de documento/, "CPF")
-    await page.getByRole("textbox", { name: /^Número do documento/ }).fill("11122233344")
+    await page.getByRole("textbox", { name: /^Número do documento/ }).fill("11144477735")
+    // The CPF takes its mask as it is typed.
+    await expect(page.getByRole("textbox", { name: /^Número do documento/ })).toHaveValue("111.444.777-35")
     await page.getByRole("button", { name: "Cadastrar responsável" }).click()
 
     await expect(page.getByRole("textbox", { name: /^Número do documento/ })).toHaveAccessibleDescription(
       "Esse documento já pertence a outra pessoa. Use o cadastro existente ou corrija o documento.",
     )
     await expect(page).toHaveURL(/\/new$/)
+  })
+
+  test("refuses a CPF whose check digits don't match, before sending it", async ({ page }) => {
+    const { calls } = await mockPeopleApi(page)
+    await signInAndOpen(page, `${guardiansPath}/new`)
+
+    await page.getByRole("textbox", { name: /^Nome completo/ }).fill("Paula Mendes")
+    await pick(page, /^Unidade/, "Unidade Aldeota")
+    await page.getByRole("textbox", { name: /^Número do documento/ }).fill("11122233344")
+    // Choosing CPF after typing masks what was typed.
+    await pick(page, /^Tipo de documento/, "CPF")
+    await expect(page.getByRole("textbox", { name: /^Número do documento/ })).toHaveValue("111.222.333-44")
+    await page.getByRole("button", { name: "Cadastrar responsável" }).click()
+
+    await expect(page.getByRole("textbox", { name: /^Número do documento/ })).toHaveAccessibleDescription(
+      "CPF inválido: confira os 11 dígitos.",
+    )
+    expect(lastCall(calls, "POST", "/api/guardians")).toBeUndefined()
   })
 
   test("asks for the document number once its type is chosen", async ({ page }) => {
