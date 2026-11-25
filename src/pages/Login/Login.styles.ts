@@ -2,12 +2,16 @@ import styled from "styled-components"
 
 import { borderRadiusLevels, colors, media, radius, shadows, spacing, translucency } from "@/foundation"
 
+import { photoBackdrop } from "../shared/backdrop/photoBackdrop"
+
 export const LoginWrapper = styled.div`
   align-items: center;
   display: flex;
   justify-content: center;
   min-height: 100vh;
   padding: ${spacing[24]};
+
+  ${photoBackdrop}
 
   @media not all and ${media.md} {
     padding: ${spacing[16]};
