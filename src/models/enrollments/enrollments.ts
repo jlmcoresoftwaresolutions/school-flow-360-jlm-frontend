@@ -202,6 +202,24 @@ export type EnrollmentHistoryEvent = {
 
 export type EnrollmentHistoryPage = ApiItemsPage<EnrollmentHistoryEvent>
 
+// What a student or a guardian sees of an enrollment (GET /api/enrollments/mine, backend slice 3C): a
+// preparation is only IN_PREPARATION, never in detail; the start date and the class come only once it is
+// confirmed. Never documents, contract text, financial data, pendencies nor the school's history.
+export type MyEnrollmentStatus =
+  | Exclude<EnrollmentStatus, "ABANDONED" | "BLOCKED" | "DRAFT" | "PENDING">
+  | "IN_PREPARATION"
+
+export type MyEnrollment = {
+  className: string | null
+  enrollmentNumber: string | null
+  id: number
+  startDate: string | null
+  status: MyEnrollmentStatus
+  studentId: number
+  studentName: string | null
+  unitName: string | null
+}
+
 export type EnrollmentHistoryParams = {
   direction?: "asc" | "desc"
   page?: number

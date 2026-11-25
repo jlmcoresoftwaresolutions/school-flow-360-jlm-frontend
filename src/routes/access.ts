@@ -15,7 +15,8 @@ type PageKey = keyof PathsType
 // Aluno's and the Responsável's, who only see the published one. The Financeiro sees none of it.
 // The enrollments (P05, CT09) are operated by the Admin and the Secretaria and read by the Financeiro
 // and the Coordenação, each in their units; the Professor, the Aluno and the Responsável don't open them.
-// Their document catalog and contract model are written by the Admin and read by the Secretaria.
+// Their document catalog and contract model are written by the Admin and read by the Secretaria. The Aluno
+// and the Responsável see only the minimum of their own enrollments (Minhas matrículas).
 // The menu hides what a user can't open, and the AppShell's loader sends a direct visit to the access
 // denied page; neither replaces the backend's own check on every call.
 export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
@@ -34,6 +35,7 @@ export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   guardianProfile: ["ADMIN", "SECRETARIA"],
   guardians: ["ADMIN", "SECRETARIA"],
   invites: ["ADMIN", "SECRETARIA"],
+  myEnrollments: ["ALUNO", "RESPONSAVEL"],
   myOrganization: ["ADMIN", "SECRETARIA"],
   offers: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   peopleSearch: ["ADMIN", "SECRETARIA"],
