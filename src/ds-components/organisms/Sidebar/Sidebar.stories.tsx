@@ -175,11 +175,20 @@ export const Default: Story = {
   render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
 }
 
-// A school's own identity: its name as the title (a long one is cut with an ellipsis) and the product's discreet "Powered by" under it
+// A school's own identity: its name as the title (a long one wraps onto a second line, a step smaller) and the product's discreet "Powered by" under it
 export const WithSubtitle: Story = {
   args: {
     subtitle: "Powered by SchoolFlow360º",
-    title: "Colégio Horizonte de Educação Integral",
+    title: "Rede Colégio Saber de Ensino",
+  },
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
+}
+
+// A name too long even for two lines ends in an ellipsis, and the whole name shows on hover
+export const VeryLongTitle: Story = {
+  args: {
+    subtitle: "Powered by SchoolFlow360º",
+    title: "Rede Colégio Horizonte de Educação Integral e Profissional do Ceará",
   },
   render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
 }

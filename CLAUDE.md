@@ -222,7 +222,7 @@ Uma exceção: as props de breakpoint do `Grid.Col` (`xs`/`sm`/`md`/`lg`/`xl`/`x
 
 - O `useSchoolBranding` (de `@/hooks`) lê o `GET .../branding/published`. A resposta fica só em memória e é relida a cada montagem, porque os links de imagem valem 5 minutos (só as cores ficam guardadas, ver abaixo).
 - **Enquanto a identidade não foi lida, o topo do menu mostra blocos de carregamento** (prop `brandLoading` do `Sidebar`, pelo `useSchoolBrandingSettled` de `@/hooks`), não o nome e o ícone do produto, que os da escola trocariam um instante depois. Uma leitura que falha também encerra a espera, e aí fica o visual do produto.
-- O menu lateral mostra o favicon da escola (quadrado, cabe no espaço do ícone, inclusive no menu recolhido) ou, sem ele, o logo, o nome da escola e um "Powered by SchoolFlow360º" discreto (prop `subtitle` do `Sidebar`).
+- O menu lateral mostra o favicon da escola (quadrado, cabe no espaço do ícone, inclusive no menu recolhido) ou, sem ele, o logo, o nome da escola e um "Powered by SchoolFlow360º" discreto (prop `subtitle` do `Sidebar`). O nome nunca é cortado numa linha só: quebra em até duas, um passo menor quando passa de 20 caracteres, e só depois disso termina em reticências, com o nome inteiro num tooltip ao passar o mouse (medido por um `ResizeObserver`).
 - A aba do navegador mostra "Página · Escola" com o favicon da escola (`setDocumentIdentity`, de `src/utils/documentIdentity/`). O login e a recuperação de senha fazem o mesmo pela identidade pública (`useSchoolDocument`).
 - Publicar na Minha Organização chama o `refreshSchoolBranding`, e o menu muda na hora.
 - Sem nada publicado fica o visual do produto.
