@@ -3,8 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import type { ApiItemsPage } from "@/models"
 import type { RequestConfig } from "@/services/httpClient"
 
-// The backend's largest page for the academic lists.
-const directorySize = 200
+import { academicMaxPageSize } from "./academicLimits"
 
 // Every item of a short academic list (the stages, the grades of the institution), read once for the
 // selects and to name an item by its id, without the global overlay; `reload` reads it again after a
@@ -20,7 +19,7 @@ export const useAcademicDirectory = <T>(
 
     const read = async () => {
       try {
-        const page = await load({ size: directorySize }, { showLoading: false })
+        const page = await load({ size: academicMaxPageSize }, { showLoading: false })
         if (!isStale) setItems(page.items)
       } catch {
         if (!isStale) setItems([])
