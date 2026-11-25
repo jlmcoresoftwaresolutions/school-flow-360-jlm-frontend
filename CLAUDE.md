@@ -77,10 +77,11 @@ O contrato é o `docs/P04_CONTRATO.md` do backend (conferido no `61c4178`), com 
 
 ### Matrícula (P05, EPIC 6)
 
-O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `1f7b763`), com as decisões da seção 6c do `sfback-basis.md`. Ele é entregue em fatias, e a tela acompanha só o que já existe:
+O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com as decisões da seção 6c do `sfback-basis.md` e as respostas do Lucas de 24/11/2026. Ele é entregue em fatias, e a tela acompanha só o que já existe:
 
-- **Prontas no backend:** base (acesso, estados, histórico), preparação com aluno e responsáveis, e turma com vagas.
-- **Ainda não existem:** documentos, condições financeiras, contrato, aceite, exceções e a confirmação, que esperam a Fatia 3 em diante, o EPIC 8 e decisões de Produto.
+- **Prontas no backend:** base (acesso, estados, histórico), preparação com aluno e responsáveis, turma com vagas, data de início e confirmação (Fatia 3A), documentos e exceções (3B) e contrato com aceite (3C).
+- **Na tela:** tudo até a confirmação (3A); documentos, exceções, contrato, a página pública de aceite e a "Minha matrícula" do aluno e do responsável vêm nos próximos PRs.
+- **Ainda não existem no backend:** as condições financeiras, que esperam o EPIC 8.
 
 **Quem abre:**
 
@@ -117,6 +118,8 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `1f7b763`), com 
   - Escolher a primeira turma salva na hora. Trocar ou desfazer a escolha (`classId: null`) pede confirmação, porque as etapas que dependem dela serão revistas.
   - Escolher nunca reserva vaga, e a tela diz isso.
   - O servidor confere a turma de novo a cada mudança (`ENROLLMENT_CONTEXT_INVALID`).
+- A **data de início** (`EnrollmentStartDate`, na aba Turma, com o `SET_START_DATE`): hoje ou uma data futura dentro do período da turma, nunca no passado, e só depois de a turma ser escolhida (`ENROLLMENT_START_DATE_INVALID` no campo). Em branco, retira a data. É diferente de quando a preparação foi criada e de quando é confirmada.
+- **"Confirmar matrícula"** (`ConfirmEnrollmentDialog`) aparece no topo só quando o backend libera o `CONFIRM`, isto é, numa preparação sem pendência. O diálogo resume turma, data de início, responsável financeiro e quem assina (aluno adulto sem responsável: ele mesmo), e diz que confirmar não registra pagamento nem gera cobrança. Cada abertura do diálogo gera um `intent` (`crypto.randomUUID()`): mandar de novo depois de uma falta de resposta devolve a mesma confirmação, nunca uma segunda. Um `ENROLLMENT_NOT_READY` ou `VERSION_CONFLICT` relê a matrícula, que mostra o que falta agora. Confirmada, a matrícula fica `ACTIVE`, com o número `AAAA-NNNNNN` (criado só aí) e o `confirmedAt`, mostrados no topo, na Preparação e na lista; a vaga é ocupada na hora. Uma preparação parada há 30 dias (`inactive`) ganha a tag "Parada há 30 dias", e continua podendo ser retomada.
 - O **Histórico** (`EnrollmentHistory`) mostra o evento, o autor (sem autor, "Sistema") e os nomes do que mudou. Numa mudança de situação, mostra o antes e o depois. Não é a auditoria.
 - Salvar uma preparação nunca cria acesso, cobrança nem matrícula ativa.
 

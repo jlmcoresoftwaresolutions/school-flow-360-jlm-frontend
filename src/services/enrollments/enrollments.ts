@@ -3,6 +3,7 @@ import type {
   Enrollment,
   EnrollmentAbandonRequest,
   EnrollmentClassContext,
+  EnrollmentConfirmRequest,
   EnrollmentContextRequest,
   EnrollmentGuardianOption,
   EnrollmentHistoryPage,
@@ -10,6 +11,7 @@ import type {
   EnrollmentPage,
   EnrollmentPartiesRequest,
   EnrollmentSearchParams,
+  EnrollmentStartDateRequest,
   EnrollmentStartRequest,
   EnrollmentStudentSearchParams,
   PeopleSearchPage,
@@ -123,6 +125,42 @@ export const saveEnrollmentContext = async (
 ): Promise<Enrollment> => {
   const response = await httpClient.put<ApiResponse<Enrollment>>(
     `/api/enrollments/${enrollmentId}/context`,
+    request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the enrollment's class tab. PUT /api/enrollments/{id}/start-date: the day the enrollment starts,
+// today or later within the class's period (null takes it back); the class must be chosen first.
+// Errors: 422 ENROLLMENT_START_DATE_INVALID, 409 VERSION_CONFLICT, 409 ENROLLMENT_NOT_IN_PREPARATION.
+export const saveEnrollmentStartDate = async (
+  enrollmentId: number,
+  request: EnrollmentStartDateRequest,
+  config?: RequestConfig,
+): Promise<Enrollment> => {
+  const response = await httpClient.put<ApiResponse<Enrollment>>(
+    `/api/enrollments/${enrollmentId}/start-date`,
+    request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the enrollment page. POST /api/enrollments/{id}/confirm: checks everything again on the server
+// and answers the enrollment ACTIVE, with its number (AAAA-NNNNNN), start date and confirmedAt; the class's
+// seat is taken now (a capacity exception is used when it is full). The same `intent` again gives the same
+// result. Errors: 422 ENROLLMENT_NOT_READY (the codes still open in the message; nothing is created),
+// 409 ENROLLMENT_ALREADY_CONFIRMED, 409 CONFIRMATION_INTENT_REUSED, 409 VERSION_CONFLICT.
+export const confirmEnrollment = async (
+  enrollmentId: number,
+  request: EnrollmentConfirmRequest,
+  config?: RequestConfig,
+): Promise<Enrollment> => {
+  const response = await httpClient.post<ApiResponse<Enrollment>>(
+    `/api/enrollments/${enrollmentId}/confirm`,
     request,
     config,
   )

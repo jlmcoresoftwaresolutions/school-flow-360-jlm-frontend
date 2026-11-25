@@ -41,7 +41,7 @@ test.describe("enrollments list", () => {
     await expect(page).toHaveURL(new RegExp(`${enrollmentsPath}$`))
     await expect(page.getByRole("heading", { level: 1, name: "Matrículas" })).toBeVisible()
     await expect(rowOf(page, "Ana Beatriz Souza")).toContainText("Em preparação")
-    await expect(rowOf(page, "Ana Beatriz Souza")).toContainText("4 pendências")
+    await expect(rowOf(page, "Ana Beatriz Souza")).toContainText("5 pendências")
     await expect(rowOf(page, "Bruno Lima")).toContainText("Ativa")
     await expect(rowOf(page, "Carla Dias")).toHaveCount(0)
 
@@ -258,7 +258,10 @@ test.describe("enrollment class", () => {
     await page.getByRole("button", { name: "Escolher a turma 1A" }).click()
     await expect(page.getByText("Turma escolhida. Nenhuma vaga foi reservada.")).toBeVisible()
     await expect(page.getByRole("region", { name: "Turma da matrícula" })).toContainText("1A · 1º ano A")
-    await expect(page.getByRole("list", { name: "O que falta na turma" })).toHaveCount(0)
+    // Only the start date is left of the class's part.
+    await expect(page.getByRole("list", { name: "O que falta na turma" })).toHaveText(
+      "Nenhuma data de início escolhida",
+    )
     expect(lastCall(calls, "PUT", "/api/enrollments/501/context")?.body).toEqual({ classId: 701, version: 0 })
   })
 
@@ -290,5 +293,70 @@ test.describe("enrollment class", () => {
 
     await page.getByRole("tab", { name: "Histórico" }).click()
     await expect(page.getByRole("row").filter({ hasText: "Turma alterada" })).toHaveCount(3)
+  })
+})
+
+test.describe("start date and confirmation", () => {
+  test("chooses the start date once the class is chosen, never in the past", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page, { readyButStartDate: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    // Only the start date is missing: no confirmation yet.
+    await expect(page.getByRole("button", { name: "Confirmar matrícula" })).toHaveCount(0)
+    await page.getByRole("tab", { name: "Turma" }).click()
+
+    const startDate = page.getByRole("region", { name: "Data de início" })
+    await expect(startDate).toContainText("Nenhuma data escolhida.")
+    await startDate.getByRole("button", { name: "Escolher data" }).click()
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const typed = tomorrow.toLocaleDateString("pt-BR")
+    await startDate.getByRole("textbox", { name: /^Data de início/ }).fill(typed)
+    await startDate.getByRole("button", { name: "Salvar" }).click()
+
+    await expect(page.getByText("Data de início salva.")).toBeVisible()
+    await expect(startDate).toContainText(typed)
+    expect(lastCall(calls, "PUT", "/api/enrollments/501/start-date")?.body).toEqual({
+      startDate: tomorrow.toLocaleDateString("en-CA"),
+      version: 0,
+    })
+    // Nothing is missing now: the enrollment can be confirmed.
+    await expect(page.getByRole("button", { name: "Confirmar matrícula" })).toBeVisible()
+  })
+
+  test("confirms the enrollment, which gets its number", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page, { readyButStartDate: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+    await page.getByRole("tab", { name: "Turma" }).click()
+    const startDate = page.getByRole("region", { name: "Data de início" })
+    await startDate.getByRole("button", { name: "Escolher data" }).click()
+    await startDate.getByRole("textbox", { name: /^Data de início/ }).fill(new Date().toLocaleDateString("pt-BR"))
+    await startDate.getByRole("button", { name: "Salvar" }).click()
+    await expect(page.getByText("Data de início salva.")).toBeVisible()
+
+    await page.getByRole("button", { name: "Confirmar matrícula" }).click()
+    const dialog = page.getByRole("dialog", { name: "Confirmar a matrícula de Ana Beatriz Souza?" })
+    await expect(dialog).toContainText("1A · 1º ano A")
+    await expect(dialog).toContainText("Fernanda Souza")
+    await expect(dialog).toContainText("Confirmar não registra pagamento nem gera cobrança.")
+    await dialog.getByRole("button", { name: "Confirmar matrícula" }).click()
+
+    await expect(page.getByText("Matrícula confirmada: 2027-000042.")).toBeVisible()
+    await expect(page.getByText("Matrícula 2027-000042")).toBeVisible()
+    await expect(page.getByText("Ativa", { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole("button", { name: "Confirmar matrícula" })).toHaveCount(0)
+    const body = lastCall(calls, "POST", "/api/enrollments/501/confirm")?.body as { intent: string; version: number }
+    expect(body.version).toBe(1)
+    expect(body.intent).toMatch(/^[0-9a-f-]{36}$/)
+  })
+
+  test("shows the number and the start date of a confirmed enrollment", async ({ page }) => {
+    await mockEnrollmentApi(page)
+    await signInAndOpen(page, enrollmentsPath)
+
+    await expect(page.getByRole("row").filter({ hasText: "Bruno Lima" })).toContainText("2027-000041")
+
+    await page.goto(`${enrollmentsPath}/502`)
+    await expect(page.getByText("Matrícula 2027-000041")).toBeVisible()
+    await expect(page.getByText("Início em 01/02/2027")).toBeVisible()
   })
 })

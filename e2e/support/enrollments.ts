@@ -15,7 +15,13 @@ export type EnrollmentOptions = {
   conflictOnFirstSave?: boolean
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
   readOnly?: boolean
+  // Ana's preparation (501) already has her mother as financial party and signatory and the class with
+  // seats: only the start date is missing before it can be confirmed.
+  readyButStartDate?: boolean
 }
+
+// Today as the screen counts it (the browser's local day), the same machine and time zone as this mock.
+const today = () => new Date().toLocaleDateString("en-CA")
 
 // The guardians linked to each student in Pessoas: Ana's mother (current link) and father (ended link).
 const linksByStudent: Record<number, Item[]> = {
@@ -113,6 +119,7 @@ const pendenciesOf = (enrollment: Item) => {
   const parties = enrollment.parties as Item[]
   const active = parties.filter((party) => party.linkActive)
   const items: { category: string; code: string }[] = []
+  const startDate = enrollment.startDate as string | null
   if (!student.eligible) items.push({ category: "STUDENT", code: "STUDENT_NOT_ELIGIBLE" })
   if (parties.length === 0) items.push({ category: "GUARDIANS", code: "NO_PARTY" })
   if (parties.some((party) => !party.linkActive)) items.push({ category: "GUARDIANS", code: "PARTY_LINK_ENDED" })
@@ -124,13 +131,20 @@ const pendenciesOf = (enrollment: Item) => {
   else if ((context.occupation as Item).status !== "AVAILABLE") {
     items.push({ category: "ACADEMIC_CONTEXT", code: "OCCUPANCY_UNAVAILABLE" })
   } else if (context.seats === 0) items.push({ category: "ACADEMIC_CONTEXT", code: "NO_SEAT" })
+  if (!startDate) items.push({ category: "ACADEMIC_CONTEXT", code: "START_DATE_MISSING" })
+  else if (startDate < today()) items.push({ category: "ACADEMIC_CONTEXT", code: "START_DATE_INVALID" })
   return items.map((item) => ({ ...item, message: `${item.code} (backend text)` }))
 }
 
 const enrollment = (fields: Item): Item => ({
   abandonReason: null,
   classContext: null,
+  confirmedAt: null,
   createdAt: "2026-11-24T12:00:00Z",
+  enrollmentNumber: null,
+  inactive: false,
+  kind: "NEW",
+  startDate: null,
   notEvaluated: ["DOCUMENTS", "FINANCIAL_CONDITIONS", "CONTRACT"],
   parties: [],
   updatedAt: "2026-11-24T12:00:00Z",
@@ -147,7 +161,16 @@ export const initialEnrollments = (): Item[] => [
     unitName: unitName(1),
     updatedAt: "2026-11-24T14:00:00Z",
   }),
-  enrollment({ id: 502, status: "ACTIVE", student: studentRef(202), unitId: 2, unitName: unitName(2) }),
+  enrollment({
+    confirmedAt: "2026-11-24T16:00:00Z",
+    enrollmentNumber: "2027-000041",
+    id: 502,
+    startDate: "2027-02-01",
+    status: "ACTIVE",
+    student: studentRef(202),
+    unitId: 2,
+    unitName: unitName(2),
+  }),
   enrollment({
     abandonReason: "Família mudou de cidade",
     id: 503,
@@ -186,6 +209,26 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
   let nextId = 600
   let nextEventId = 1
   let conflictPending = Boolean(options.conflictOnFirstSave)
+  // The confirmations done, by intent: the same intent again gives the same result.
+  const confirmations = new Map<string, number>()
+  if (options.readyButStartDate) {
+    const ana = records.get(501) as Item
+    records.set(501, {
+      ...ana,
+      classContext: classesByUnit[1][0],
+      parties: [
+        {
+          financial: true,
+          guardianId: 301,
+          guardianName: "Fernanda Souza",
+          linkActive: true,
+          linkId: 2010,
+          relationshipCode: "MOTHER",
+          signatory: true,
+        },
+      ],
+    })
+  }
 
   const record = (request: Request) => {
     const url = new URL(request.url())
@@ -223,14 +266,13 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
   )
 
   // The enrollment as the backend answers it: the pendencies read again, the actions of a preparation.
-  const view = (item: Item): Item => ({
-    ...item,
-    eligibleActions:
-      !options.readOnly && preparation.includes(String(item.status))
-        ? ["CHOOSE_PARTIES", "CHOOSE_CONTEXT", "ABANDON"]
-        : [],
-    pendencies: pendenciesOf(item),
-  })
+  const view = (item: Item): Item => {
+    const pendencies = pendenciesOf(item)
+    const operates = !options.readOnly && preparation.includes(String(item.status))
+    const actions = operates ? ["CHOOSE_PARTIES", "CHOOSE_CONTEXT", "SET_START_DATE", "ABANDON"] : []
+    if (operates && pendencies.length === 0) actions.push("CONFIRM")
+    return { ...item, eligibleActions: actions, pendencies }
+  }
 
   await page.route("**/api/catalogs/relationship-types", (route) => {
     record(route.request())
@@ -307,9 +349,9 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fulfill(apiAnswer(toPage(found, call.query)))
   })
 
-  await page.route(/\/api\/enrollments\/\d+(\/[a-z]+)?(\?.*)?$/, (route) => {
+  await page.route(/\/api\/enrollments\/\d+(\/[a-z-]+)?(\?.*)?$/, (route) => {
     const call = record(route.request())
-    const [, id, action] = /\/api\/enrollments\/(\d+)(?:\/([a-z]+))?/.exec(call.path) ?? []
+    const [, id, action] = /\/api\/enrollments\/(\d+)(?:\/([a-z-]+))?/.exec(call.path) ?? []
     const current = records.get(Number(id))
     if (!current) return route.fulfill(apiError(404, "ENROLLMENT_NOT_FOUND"))
 
@@ -389,6 +431,54 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         action: "PARTIES_CHANGED",
         category: "PARTY",
         changedFields: "guardians,financial,signatory",
+      })
+      return route.fulfill(apiAnswer(view(changed)))
+    }
+
+    if (action === "start-date") {
+      const body = call.body as { startDate: string | null; version: number }
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      // The class comes first, and the day is today or later.
+      if (body.startDate !== null && (!current.classContext || body.startDate < today())) {
+        return route.fulfill(apiError(422, "ENROLLMENT_START_DATE_INVALID"))
+      }
+      const changed = {
+        ...current,
+        startDate: body.startDate,
+        updatedAt: new Date().toISOString(),
+        version: Number(current.version) + 1,
+      }
+      records.set(Number(id), changed)
+      addEvent(Number(id), { action: "START_DATE_CHANGED", category: "CONTEXT", changedFields: "startDate" })
+      return route.fulfill(apiAnswer(view(changed)))
+    }
+
+    if (action === "confirm") {
+      const body = call.body as { intent: string; version: number }
+      const done = confirmations.get(body.intent)
+      if (done === Number(id)) return route.fulfill(apiAnswer(view(current)))
+      if (done !== undefined) return route.fulfill(apiError(409, "CONFIRMATION_INTENT_REUSED"))
+      if (!preparation.includes(String(current.status))) {
+        return route.fulfill(apiError(409, "ENROLLMENT_ALREADY_CONFIRMED"))
+      }
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      if (pendenciesOf(current).length > 0) return route.fulfill(apiError(422, "ENROLLMENT_NOT_READY"))
+      const changed = {
+        ...current,
+        confirmedAt: new Date().toISOString(),
+        enrollmentNumber: "2027-000042",
+        status: "ACTIVE",
+        updatedAt: new Date().toISOString(),
+        version: Number(current.version) + 1,
+      }
+      records.set(Number(id), changed)
+      confirmations.set(body.intent, Number(id))
+      addEvent(Number(id), {
+        action: "CONFIRMED",
+        afterValue: "ACTIVE",
+        beforeValue: current.status,
+        category: "STATUS",
+        changedFields: "status,enrollmentNumber,startDate",
       })
       return route.fulfill(apiAnswer(view(changed)))
     }

@@ -16,6 +16,7 @@ import { CandidateHeader, PersonSections } from "../shared/people/people.styles"
 import { PersonBlock } from "../shared/people/PersonBlock"
 import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { AccessItem, AccessItems } from "../shared/userAccess/userAccess.styles"
+import { EnrollmentStartDate } from "./EnrollmentStartDate"
 
 export type EnrollmentClassProps = {
   enrollment: Enrollment
@@ -294,6 +295,8 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
           </Text>
         )}
       </PersonBlock>
+
+      <EnrollmentStartDate enrollment={enrollment} onChanged={onChanged} onGone={onGone} />
 
       {isChoosing && (
         <PersonBlock title={t("enrollments.class.optionsTitle")}>
