@@ -2658,6 +2658,7 @@ export const en: TranslationResource = {
     filtersLabel: "Room filters",
     forbiddenDescription: "Your profile doesn't view the rooms of this unit.",
     forbiddenTitle: "Restricted access",
+    inactiveUnit: "{{name}} (inactive)",
     form: {
       create: "Register room",
       createTitle: "New room",
@@ -2681,6 +2682,7 @@ export const en: TranslationResource = {
     searchLabel: "Search room",
     searchPlaceholder: "Room name",
     unit: "Unit",
+    unitInactive: "{{unit}} is inactive: its rooms can only be looked up, and no new room is registered.",
     unitPlaceholder: "Select the unit",
   },
   schoolInactive: {

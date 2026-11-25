@@ -2673,6 +2673,7 @@ export const ptPT: TranslationResource = {
     filtersLabel: "Filtros das salas",
     forbiddenDescription: "O seu perfil não consulta as salas desta unidade.",
     forbiddenTitle: "Acesso restrito",
+    inactiveUnit: "{{name}} (inativa)",
     form: {
       create: "Registar sala",
       createTitle: "Nova sala",
@@ -2696,6 +2697,7 @@ export const ptPT: TranslationResource = {
     searchLabel: "Procurar sala",
     searchPlaceholder: "Nome da sala",
     unit: "Unidade",
+    unitInactive: "{{unit}} está inativa: as salas dela só podem ser consultadas, e nenhuma sala nova é registada.",
     unitPlaceholder: "Selecione a unidade",
   },
   schoolInactive: {
