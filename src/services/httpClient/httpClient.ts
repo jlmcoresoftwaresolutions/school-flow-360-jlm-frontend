@@ -182,7 +182,10 @@ httpClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) =
     const tenantId = config.tenantId ?? getTenantId()
     if (tenantId && !config.headers["X-Tenant-ID"]) config.headers["X-Tenant-ID"] = tenantId
 
-    if (!config.headers.Authorization && !isRenewalRequest(config.url)) {
+    // A call for the school of an e-mail's link (`tenantId`: a password reset, an invitation, a contract
+    // acceptance) is public and never carries this browser's session: it may be another school's, and an
+    // expired one must not take the page to the login.
+    if (!config.headers.Authorization && !isRenewalRequest(config.url) && !config.tenantId) {
       const token = await getUsableToken()
       if (token) config.headers.Authorization = `Bearer ${token}`
     }

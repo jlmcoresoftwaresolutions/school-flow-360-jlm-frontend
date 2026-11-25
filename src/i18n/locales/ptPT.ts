@@ -795,6 +795,28 @@ export const ptPT: TranslationResource = {
     slowWait: "Isto está a demorar mais do que o habitual. Aguarde um momento.",
     tryAgain: "Tentar novamente",
   },
+  contractAcceptance: {
+    acceptedDescription: "O seu aceite foi registado e a escola já o pode ver. Pode fechar esta página.",
+    acceptedTitle: "Contrato aceito",
+    code: "Código do texto: {{code}}",
+    confirmLabel: "Li o contrato acima e aceito os termos desta versão",
+    confirmRequired: "Assinale a confirmação para aceitar o contrato.",
+    description:
+      "{{signer}}, leia o contrato de matrícula de {{student}} na {{unit}}. Ao aceitar, você concorda com esta versão do texto.",
+    failed: "Não foi possível registar o aceite agora. Tente novamente dentro de instantes.",
+    invalidDescription:
+      "Esta ligação expirou, foi substituída por uma mais recente ou já foi usada. Peça uma nova ligação à escola.",
+    invalidTitle: "Ligação inválida",
+    openingIsNotAccepting:
+      "Abrir esta ligação não é aceitar. O aceite só vale quando assinala a confirmação e clica em Aceitar contrato, e fica registado com a data, a hora e o endereço de acesso.",
+    submit: "Aceitar contrato",
+    textLabel: "Texto do contrato",
+    title: "Aceite do contrato",
+    unavailableDescription: "Não foi possível abrir o contrato agora. Verifique a sua ligação e tente de novo.",
+    unavailableTitle: "Contrato indisponível",
+    validUntil: "Ligação válida até {{moment}}.",
+    versionChanged: "A escola gerou uma versão nova do contrato. Leia a versão abaixo e confirme de novo.",
+  },
   contractTemplates: {
     actions: "Ações",
     actionsFor: "Ações da versão {{version}}",

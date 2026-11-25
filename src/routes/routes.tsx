@@ -225,6 +225,15 @@ export const router = createBrowserRouter([
     },
     path: paths.acceptInvitation,
   },
+  // Public too: the signer of an enrollment contract accepts it by the link, with or without a session.
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
+      const { ContractAcceptance } = await import("@/pages/ContractAcceptance")
+      return { Component: ContractAcceptance }
+    },
+    path: paths.contractAcceptance,
+  },
   {
     children: [
       {

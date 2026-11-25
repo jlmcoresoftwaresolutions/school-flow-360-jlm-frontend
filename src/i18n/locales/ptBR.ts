@@ -791,6 +791,28 @@ export const ptBR = {
     slowWait: "Isso está levando mais tempo que o normal. Aguarde um instante.",
     tryAgain: "Tentar novamente",
   },
+  contractAcceptance: {
+    acceptedDescription: "Seu aceite foi registrado e a escola já pode vê-lo. Você pode fechar esta página.",
+    acceptedTitle: "Contrato aceito",
+    code: "Código do texto: {{code}}",
+    confirmLabel: "Li o contrato acima e aceito os termos desta versão",
+    confirmRequired: "Marque a confirmação para aceitar o contrato.",
+    description:
+      "{{signer}}, leia o contrato de matrícula de {{student}} na {{unit}}. Ao aceitar, você concorda com esta versão do texto.",
+    failed: "Não foi possível registrar o aceite agora. Tente novamente em instantes.",
+    invalidDescription:
+      "Este link venceu, foi substituído por um mais novo ou já foi usado. Peça um novo link à escola.",
+    invalidTitle: "Link inválido",
+    openingIsNotAccepting:
+      "Abrir este link não é aceitar. O aceite só vale quando você marca a confirmação e clica em Aceitar contrato, e fica registrado com a data, a hora e o endereço de acesso.",
+    submit: "Aceitar contrato",
+    textLabel: "Texto do contrato",
+    title: "Aceite do contrato",
+    unavailableDescription: "Não foi possível abrir o contrato agora. Confira sua conexão e tente de novo.",
+    unavailableTitle: "Contrato indisponível",
+    validUntil: "Link válido até {{moment}}.",
+    versionChanged: "A escola gerou uma versão nova do contrato. Leia a versão abaixo e confirme de novo.",
+  },
   contractTemplates: {
     actions: "Ações",
     actionsFor: "Ações da versão {{version}}",

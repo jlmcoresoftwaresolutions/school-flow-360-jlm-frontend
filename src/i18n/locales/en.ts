@@ -790,6 +790,28 @@ export const en: TranslationResource = {
     slowWait: "This is taking longer than usual. Please wait a moment.",
     tryAgain: "Try again",
   },
+  contractAcceptance: {
+    acceptedDescription: "Your acceptance was recorded and the school can already see it. You can close this page.",
+    acceptedTitle: "Contract accepted",
+    code: "Text code: {{code}}",
+    confirmLabel: "I read the contract above and accept the terms of this version",
+    confirmRequired: "Check the confirmation to accept the contract.",
+    description:
+      "{{signer}}, read the enrollment contract of {{student}} at {{unit}}. By accepting, you agree to this version of the text.",
+    failed: "Couldn't record the acceptance now. Try again in a moment.",
+    invalidDescription:
+      "This link expired, was replaced by a newer one or was already used. Ask the school for a new link.",
+    invalidTitle: "Invalid link",
+    openingIsNotAccepting:
+      "Opening this link isn't accepting. The acceptance only counts once you check the confirmation and click Accept contract, and it is recorded with the date, the time and the access address.",
+    submit: "Accept contract",
+    textLabel: "Contract text",
+    title: "Contract acceptance",
+    unavailableDescription: "Couldn't open the contract now. Check your connection and try again.",
+    unavailableTitle: "Contract unavailable",
+    validUntil: "Link valid until {{moment}}.",
+    versionChanged: "The school generated a new version of the contract. Read the version below and confirm again.",
+  },
   contractTemplates: {
     actions: "Actions",
     actionsFor: "Actions for version {{version}}",
