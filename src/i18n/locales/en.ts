@@ -1284,9 +1284,12 @@ export const en: TranslationResource = {
     forbiddenTitle: "You don't have access to the enrollments",
     guardians: {
       choose: "Takes part in this enrollment",
+      chooseParticipants: "Choose participants",
       conflict:
         "Someone else changed this enrollment. The data was read again and your choices were kept: check them and save again.",
       contact: "contact",
+      defineFinancial: "Define who is the financial party of this enrollment.",
+      defineSignatory: "Define who signs this enrollment's contract.",
       description:
         "The guardians come from the student's record. Who takes part, who is financial and who signs are choices of this enrollment, never taken from the kinship.",
       edit: "Change the choices",
@@ -1294,6 +1297,7 @@ export const en: TranslationResource = {
       errorDescription: "Couldn't load the guardians. Try again in a moment.",
       errorTitle: "Guardians unavailable",
       failed: "Couldn't save the choices now. Try again in a moment.",
+      financialCandidate: "Financial guardian in the student's record",
       financialInPeople: "financial",
       fixInPeople: "Fix the links in the student's record",
       inPeople: "In the record: {{detail}}",
@@ -1301,6 +1305,8 @@ export const en: TranslationResource = {
       linkActive: "Current link",
       listLabel: "The student's guardians",
       loading: "Loading the guardians...",
+      manyFinancialCandidates:
+        "More than one guardian is financial in the student's record. Define which one is the financial party of this enrollment.",
       notChosen: "Doesn't take part in this enrollment",
       partyInvalid:
         "One of the chosen guardians no longer has an active link to the student or isn't active. The list was read again.",
@@ -1308,6 +1314,8 @@ export const en: TranslationResource = {
       pendenciesLabel: "What the guardians still lack",
       saved: "Guardian choices saved.",
       signs: "Signs",
+      suggested:
+        "Suggestion: the guardians with a current link take part and, when the student's record has a single financial guardian, they come checked. Check and save: nothing counts before that, and the kinship alone never defines who pays or who signs.",
       title: "Guardians and roles",
     },
     history: {
@@ -1353,10 +1361,10 @@ export const en: TranslationResource = {
     pendencyCodes: {
       CLASS_NOT_ELIGIBLE: "The chosen class is no longer open for enrollment",
       NO_CLASS: "No class chosen",
-      NO_FINANCIAL_PARTY: "No financial guardian",
-      NO_PARTY: "No guardian chosen",
+      NO_FINANCIAL_PARTY: "Define who is the financial party of this enrollment",
+      NO_PARTY: "Define who takes part in this enrollment",
       NO_SEAT: "The chosen class has no free seat",
-      NO_SIGNATORY: "Nobody chosen to sign",
+      NO_SIGNATORY: "Define who signs this enrollment's contract",
       OCCUPANCY_UNAVAILABLE: "The class's seats couldn't be read now",
       PARTY_LINK_ENDED: "The link of a chosen guardian ended",
       STUDENT_NOT_ELIGIBLE: "The student's record isn't active",
@@ -1372,10 +1380,10 @@ export const en: TranslationResource = {
       classTitle: "Class",
       confirmation: "Confirmation",
       eligible: "The student's enrollment can be confirmed",
-      guardiansTitle: "Chosen guardians",
+      guardiansTitle: "Enrollment participants",
       linkEnded: "Link ended",
       noClass: "No class chosen yet.",
-      noGuardians: "No guardian chosen yet.",
+      noGuardians: "Nobody was defined to take part in this enrollment yet.",
       noPendencies: "No pendency in the stages already evaluated.",
       notEligible: "Only an active student's enrollment is confirmed. Activate the record in Students.",
       notEvaluated: "Not evaluated yet",

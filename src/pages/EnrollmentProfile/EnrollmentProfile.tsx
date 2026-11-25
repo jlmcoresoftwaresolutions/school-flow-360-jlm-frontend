@@ -44,6 +44,8 @@ export const EnrollmentProfile = () => {
   const [result, setResult] = useState<LoadResult | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [tab, setTab] = useState("preparation")
+  // Grows when the Preparation asks to choose the participants: the Responsáveis tab opens the choice.
+  const [chooseRequest, setChooseRequest] = useState(0)
   const [isAbandoning, setIsAbandoning] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
 
@@ -125,7 +127,13 @@ export const EnrollmentProfile = () => {
     {
       content: (
         <Card elevated style={{ padding: spacing[32] }}>
-          <EnrollmentPreparation enrollment={enrollment} />
+          <EnrollmentPreparation
+            enrollment={enrollment}
+            onChooseParticipants={() => {
+              setChooseRequest((value) => value + 1)
+              setTab("guardians")
+            }}
+          />
         </Card>
       ),
       icon: "check-circle-outline",
@@ -135,7 +143,12 @@ export const EnrollmentProfile = () => {
     {
       content: (
         <Card elevated style={{ padding: spacing[32] }}>
-          <EnrollmentGuardians enrollment={enrollment} onChanged={reload} onGone={reload} />
+          <EnrollmentGuardians
+            chooseRequest={chooseRequest}
+            enrollment={enrollment}
+            onChanged={reload}
+            onGone={reload}
+          />
         </Card>
       ),
       icon: "users-outline",

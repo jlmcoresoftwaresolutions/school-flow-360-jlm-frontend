@@ -18,6 +18,8 @@ import { AccessItem, AccessItems } from "../shared/userAccess/userAccess.styles"
 
 export type EnrollmentPreparationProps = {
   enrollment: Enrollment
+  // "Escolher participantes", beside the guardians' pendency: opens the choice in the Responsáveis tab.
+  onChooseParticipants: () => void
 }
 
 // The preparation at a glance (JLM-342, 375 in part): the student as Pessoas has them now (only an active
@@ -25,7 +27,7 @@ export type EnrollmentPreparationProps = {
 // what is still missing - the pendencies the server works out on every read - and the stages that don't
 // exist yet, which are never taken as fulfilled. An abandoned preparation shows its reason.
 export const EnrollmentPreparation = (props: EnrollmentPreparationProps) => {
-  const { enrollment } = props
+  const { enrollment, onChooseParticipants } = props
 
   const { t } = useTranslation()
   const signedIn = useSignedInUser()
@@ -35,6 +37,8 @@ export const EnrollmentPreparation = (props: EnrollmentPreparationProps) => {
   const { classContext, student } = enrollment
   const inPreparation = preparationStatuses.includes(enrollment.status)
   const canOpenStudent = canOpenPage(signedIn, pageRoles.students)
+  const canChoose = enrollment.eligibleActions.includes("CHOOSE_PARTIES")
+  const firstGuardianPendency = enrollment.pendencies.find((pendency) => pendency.category === "GUARDIANS")
   const studentPath = generatePath(paths.studentProfile, { studentId: String(student.id) })
 
   const studentName = canOpenStudent ? (
@@ -158,6 +162,13 @@ export const EnrollmentPreparation = (props: EnrollmentPreparationProps) => {
                   <Text color="warning" fontSize="sm" semibold>
                     {pendencyLabel(pendency.code)}
                   </Text>
+                  {canChoose && pendency === firstGuardianPendency && (
+                    <span>
+                      <Button onClick={onChooseParticipants} size="small" variant="outlined">
+                        {t("enrollments.guardians.chooseParticipants")}
+                      </Button>
+                    </span>
+                  )}
                 </AccessItem>
               ))}
             </AccessItems>

@@ -1293,9 +1293,12 @@ export const es: TranslationResource = {
     forbiddenTitle: "No tienes acceso a las matrículas",
     guardians: {
       choose: "Participa en esta matrícula",
+      chooseParticipants: "Elegir participantes",
       conflict:
         "Otra persona cambió esta matrícula. Los datos se volvieron a leer y tus elecciones se mantuvieron: revísalas y guarda de nuevo.",
       contact: "contacto",
+      defineFinancial: "Defina quién es el responsable financiero de esta matrícula.",
+      defineSignatory: "Defina quién firma el contrato de esta matrícula.",
       description:
         "Los responsables vienen del registro del estudiante. Quién participa, quién es financiero y quién firma son elecciones de esta matrícula, nunca deducidas del parentesco.",
       edit: "Cambiar elecciones",
@@ -1303,6 +1306,7 @@ export const es: TranslationResource = {
       errorDescription: "No se pudieron cargar los responsables. Inténtalo de nuevo en unos instantes.",
       errorTitle: "Responsables no disponibles",
       failed: "No se pudieron guardar las elecciones ahora. Inténtalo de nuevo en unos instantes.",
+      financialCandidate: "Responsable financiero en el registro del alumno",
       financialInPeople: "financiera",
       fixInPeople: "Corregir vínculos en el registro del estudiante",
       inPeople: "En el registro: {{detail}}",
@@ -1310,6 +1314,8 @@ export const es: TranslationResource = {
       linkActive: "Vínculo vigente",
       listLabel: "Responsables del estudiante",
       loading: "Cargando los responsables...",
+      manyFinancialCandidates:
+        "Más de un responsable es financiero en el registro del alumno. Defina cuál es el financiero de esta matrícula.",
       notChosen: "No participa en esta matrícula",
       partyInvalid:
         "Uno de los responsables elegidos ya no tiene vínculo activo con el estudiante o no está activo. La lista se volvió a leer.",
@@ -1317,6 +1323,8 @@ export const es: TranslationResource = {
       pendenciesLabel: "Lo que falta en los responsables",
       saved: "Elecciones de los responsables guardadas.",
       signs: "Firma",
+      suggested:
+        "Sugerencia: los responsables con vínculo vigente participan y, cuando hay un solo financiero en el registro del alumno, viene marcado. Revise y guarde: nada vale antes de eso, y el parentesco por sí solo no define quién paga ni quién firma.",
       title: "Responsables y roles",
     },
     history: {
@@ -1362,10 +1370,10 @@ export const es: TranslationResource = {
     pendencyCodes: {
       CLASS_NOT_ELIGIBLE: "El grupo elegido ya no está abierto para matrícula",
       NO_CLASS: "Ningún grupo elegido",
-      NO_FINANCIAL_PARTY: "Ningún responsable financiero",
-      NO_PARTY: "Ningún responsable elegido",
+      NO_FINANCIAL_PARTY: "Defina quién es el responsable financiero de esta matrícula",
+      NO_PARTY: "Defina quién participa en esta matrícula",
       NO_SEAT: "El grupo elegido no tiene plaza",
-      NO_SIGNATORY: "Nadie elegido para firmar",
+      NO_SIGNATORY: "Defina quién firma el contrato de esta matrícula",
       OCCUPANCY_UNAVAILABLE: "No se pudieron leer las plazas del grupo ahora",
       PARTY_LINK_ENDED: "Se cerró el vínculo de un responsable elegido",
       STUDENT_NOT_ELIGIBLE: "El registro del estudiante no está activo",
@@ -1381,10 +1389,10 @@ export const es: TranslationResource = {
       classTitle: "Grupo",
       confirmation: "Confirmación",
       eligible: "La matrícula del estudiante puede confirmarse",
-      guardiansTitle: "Responsables elegidos",
+      guardiansTitle: "Participantes de la matrícula",
       linkEnded: "Vínculo cerrado",
       noClass: "Aún no se eligió ningún grupo.",
-      noGuardians: "Aún no se eligió ningún responsable.",
+      noGuardians: "Aún no se definió quién participa en esta matrícula.",
       noPendencies: "Ningún pendiente en las etapas ya evaluadas.",
       notEligible: "Solo se confirma la matrícula de un estudiante activo. Activa el registro en Estudiantes.",
       notEvaluated: "Aún no evaluado",

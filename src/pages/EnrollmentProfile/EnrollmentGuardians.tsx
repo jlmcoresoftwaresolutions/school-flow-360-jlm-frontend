@@ -21,6 +21,9 @@ import { useRelationshipTypes } from "../shared/people/useRelationshipTypes"
 import { AccessItem, AccessItems, FormFields } from "../shared/userAccess/userAccess.styles"
 
 export type EnrollmentGuardiansProps = {
+  // Grows each time the choice is asked for from elsewhere (the Preparation's "Escolher participantes"):
+  // the tab then opens the choice, with the suggestions.
+  chooseRequest: number
   enrollment: Enrollment
   // The enrollment was changed: read it again (the draft here is kept).
   onChanged: () => void
@@ -39,6 +42,27 @@ const toChoices = (options: EnrollmentGuardianOption[]) =>
     ]),
   ) as Record<number, Choice>
 
+// What the choice opens with. Once something was chosen, exactly that. Before, a suggestion the school
+// still has to check and save (decided by Lucas on 25/11/2026): every guardian with a current link takes
+// part, and the one marked financial in the student's record is the financial party only when he is the
+// only candidate. With more than one, the screen asks for the decision; the kinship alone never decides
+// who pays or who signs, and nobody is suggested to sign.
+const suggestChoices = (options: EnrollmentGuardianOption[], saved: Record<number, Choice>) => {
+  if (Object.values(saved).some((choice) => choice.chosen)) return saved
+  const current = options.filter((option) => option.linkStatus === "ACTIVE")
+  const financialCandidates = current.filter((option) => option.financialResponsible)
+  return Object.fromEntries(
+    options.map((option) => [
+      option.guardianId,
+      {
+        chosen: option.linkStatus === "ACTIVE",
+        financial: financialCandidates.length === 1 && financialCandidates[0].guardianId === option.guardianId,
+        signatory: false,
+      },
+    ]),
+  ) as Record<number, Choice>
+}
+
 const sameChoices = (first: Record<number, Choice>, second: Record<number, Choice>) =>
   Object.keys(first).every((key) => {
     const one = first[Number(key)]
@@ -54,11 +78,13 @@ const sameChoices = (first: Record<number, Choice>, second: Record<number, Choic
 // ended, with the kinship and the responsibilities the link has there, and what was chosen for this
 // enrollment - who takes part, who is financial and who signs, each an explicit choice, never taken from
 // the kinship. An ended link can't be chosen, and one chosen before it ended shows so (its roles no
-// longer count). A link is created or fixed in the student's record, never here. The choices are edited
-// in place and saved as a whole set with the `version`; a change by someone else meanwhile reads the
-// enrollment again and keeps what was being chosen.
+// longer count). A link is created or fixed in the student's record, never here. Having a linked guardian
+// isn't having the enrollment's participants: the pendency asks to define them, with "Escolher
+// participantes" beside it, and the first choice opens with suggestions (suggestChoices) that are only
+// saved when the school saves them. The choices are edited in place and saved as a whole set with the
+// `version`; a change by someone else meanwhile reads the enrollment again and keeps what was being chosen.
 export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
-  const { enrollment, onChanged, onGone } = props
+  const { chooseRequest, enrollment, onChanged, onGone } = props
 
   const { t } = useTranslation()
   const signedIn = useSignedInUser()
@@ -70,6 +96,8 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
   const [result, setResult] = useState<LoadResult | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [draft, setDraft] = useState<Record<number, Choice> | null>(null)
+  // The last request from elsewhere already handled (opened, saved or cancelled).
+  const [handledRequest, setHandledRequest] = useState(0)
   const [failure, setFailure] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
@@ -78,8 +106,17 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
   const options = current && "options" in current ? current.options : null
   const saved = options ? toChoices(options) : {}
   const canChoose = enrollment.eligibleActions.includes("CHOOSE_PARTIES")
-  const isEditing = draft !== null
-  const hasChanges = isEditing && !sameChoices(draft, saved)
+  // A request from elsewhere opens the choice as soon as the guardians are read.
+  const requested = chooseRequest !== handledRequest && canChoose && options !== null
+  const activeDraft = draft ?? (requested && options ? suggestChoices(options, saved) : null)
+  const isEditing = activeDraft !== null
+  const hasChanges = isEditing && !sameChoices(activeDraft, saved)
+  const hasSavedChoice = Object.values(saved).some((choice) => choice.chosen)
+  const currentOptions = (options ?? []).filter((option) => option.linkStatus === "ACTIVE")
+  const financialCandidates = currentOptions.filter((option) => option.financialResponsible)
+  const chosenInDraft = activeDraft ? Object.values(activeDraft).filter((choice) => choice.chosen) : []
+  const needsFinancial = isEditing && chosenInDraft.length > 0 && !chosenInDraft.some((choice) => choice.financial)
+  const needsSignatory = isEditing && chosenInDraft.length > 0 && !chosenInDraft.some((choice) => choice.signatory)
   const studentPath = generatePath(paths.studentProfile, { studentId: String(enrollment.student.id) })
   const guardianPendencies = enrollment.pendencies.filter((pendency) => pendency.category === "GUARDIANS")
 
@@ -115,21 +152,34 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
       .filter(Boolean)
       .join(", ")
 
-  const change = (guardianId: number, patch: Partial<Choice>) =>
+  const openChoice = () => {
+    if (options) setDraft(suggestChoices(options, saved))
+  }
+
+  const closeChoice = () => {
+    setDraft(null)
+    setHandledRequest(chooseRequest)
+  }
+
+  const change = (guardianId: number, patch: Partial<Choice>) => {
+    const base = activeDraft
+    setHandledRequest(chooseRequest)
     setDraft((currentDraft) => {
-      if (!currentDraft) return currentDraft
-      const next = { ...currentDraft[guardianId], ...patch }
+      const source = currentDraft ?? base
+      if (!source) return currentDraft
+      const next = { ...source[guardianId], ...patch }
       // Leaving the enrollment takes the roles with it.
       if (!next.chosen) Object.assign(next, { financial: false, signatory: false })
-      return { ...currentDraft, [guardianId]: next }
+      return { ...source, [guardianId]: next }
     })
+  }
 
   const save = async () => {
-    if (!draft) return
+    if (!activeDraft) return
     setFailure("")
     setIsSaving(true)
     try {
-      const parties = Object.entries(draft)
+      const parties = Object.entries(activeDraft)
         .filter(([, choice]) => choice.chosen)
         .map(([guardianId, choice]) => ({
           financial: choice.financial,
@@ -138,7 +188,7 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
         }))
       await saveEnrollmentParties(enrollment.id, { parties, version: enrollment.version })
       toast.success(t("enrollments.guardians.saved"))
-      setDraft(null)
+      closeChoice()
       onChanged()
     } catch (error) {
       const code = getErrorCode(error)
@@ -152,7 +202,7 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
         setReloadToken((value) => value + 1)
       } else if (code === "ENROLLMENT_NOT_IN_PREPARATION") {
         toast.error(t("enrollments.notInPreparation"))
-        setDraft(null)
+        closeChoice()
         onChanged()
       } else {
         setFailure(toFailureMessage(t("enrollments.guardians.failed"), error))
@@ -165,8 +215,8 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
   const renderChoice = (option: EnrollmentGuardianOption) => {
     const ended = option.linkStatus === "ENDED"
 
-    if (draft) {
-      const choice = draft[option.guardianId] ?? { chosen: false, financial: false, signatory: false }
+    if (activeDraft) {
+      const choice = activeDraft[option.guardianId] ?? { chosen: false, financial: false, signatory: false }
       return (
         <FormFields>
           <Checkbox
@@ -178,6 +228,9 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
           <Checkbox
             checked={choice.financial}
             disabled={!choice.chosen || ended}
+            helperText={
+              option.financialResponsible && !ended ? t("enrollments.guardians.financialCandidate") : undefined
+            }
             label={t("enrollments.roles.financial")}
             onChange={(_event, checked) => change(option.guardianId, { financial: checked })}
           />
@@ -278,8 +331,8 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
     if (!canChoose || !options) return null
     if (!isEditing) {
       return (
-        <Button onClick={() => setDraft(saved)} size="small" variant="outlined">
-          {t("enrollments.guardians.edit")}
+        <Button onClick={openChoice} size="small" variant="outlined">
+          {hasSavedChoice ? t("enrollments.guardians.edit") : t("enrollments.guardians.chooseParticipants")}
         </Button>
       )
     }
@@ -289,7 +342,7 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
         <Button
           disabled={isSaving}
           onClick={() => {
-            setDraft(null)
+            closeChoice()
             setFailure("")
           }}
           size="small"
@@ -316,7 +369,7 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
           )}
         </Text>
 
-        {guardianPendencies.length > 0 && (
+        {guardianPendencies.length > 0 && !isEditing && (
           <AccessItems aria-label={t("enrollments.guardians.pendenciesLabel")}>
             {guardianPendencies.map((pendency) => (
               <AccessItem key={pendency.code}>
@@ -325,10 +378,36 @@ export const EnrollmentGuardians = (props: EnrollmentGuardiansProps) => {
                 </Text>
               </AccessItem>
             ))}
+            {canChoose && options && (
+              <span>
+                <Button onClick={openChoice} size="small">
+                  {t("enrollments.guardians.chooseParticipants")}
+                </Button>
+              </span>
+            )}
           </AccessItems>
         )}
 
+        {isEditing && !hasSavedChoice && (
+          <Text color="secondary" fontSize="sm" role="note">
+            {t("enrollments.guardians.suggested")}
+          </Text>
+        )}
+
         {renderOptions()}
+
+        {needsFinancial && (
+          <Text color="warning" fontSize="sm" semibold>
+            {financialCandidates.length > 1
+              ? t("enrollments.guardians.manyFinancialCandidates")
+              : t("enrollments.guardians.defineFinancial")}
+          </Text>
+        )}
+        {needsSignatory && (
+          <Text color="warning" fontSize="sm" semibold>
+            {t("enrollments.guardians.defineSignatory")}
+          </Text>
+        )}
 
         {failure && (
           <Text as="p" color="danger" fontSize="sm" role="alert">

@@ -123,7 +123,7 @@ test.describe("enrollment", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Ana Beatriz Souza" })).toBeVisible()
     await expect(page.getByText("Em preparação", { exact: true })).toBeVisible()
     const missing = page.getByRole("region", { name: "O que falta" })
-    await expect(missing).toContainText("Nenhum responsável escolhido")
+    await expect(missing).toContainText("Defina quem participa desta matrícula")
     await expect(missing).toContainText("Nenhuma turma escolhida")
     const notEvaluated = page.getByRole("region", { name: "Etapas ainda não avaliadas" })
     await expect(notEvaluated).toContainText("Documentos")
@@ -183,17 +183,24 @@ test.describe("enrollment guardians", () => {
 
     await expect(guardianItem(page, "Fernanda Souza")).toContainText("Mãe")
     await expect(guardianItem(page, "Gustavo Lima")).toContainText("Vínculo encerrado")
-    await expect(page.getByRole("list", { name: "O que falta nos responsáveis" })).toContainText(
-      "Nenhum responsável escolhido",
-    )
+    // A linked guardian isn't a participant yet: the pendency asks to define them, with the action beside it.
+    const pendencies = page.getByRole("list", { name: "O que falta nos responsáveis" })
+    await expect(pendencies).toContainText("Defina quem participa desta matrícula")
+    await pendencies.getByRole("button", { name: "Escolher participantes" }).click()
 
-    await page.getByRole("button", { name: "Alterar escolhas" }).click()
+    // The choice opens with suggestions: the current link takes part and, as the only financial guardian in
+    // Pessoas, is the financial party; nobody is suggested to sign. Nothing is saved yet.
+    await expect(page.getByRole("note")).toContainText("Confira e salve")
     const gustavo = guardianItem(page, "Gustavo Lima")
     await expect(gustavo.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeDisabled()
+    await expect(gustavo.getByRole("checkbox", { name: "Participa desta matrícula" })).not.toBeChecked()
     const fernanda = guardianItem(page, "Fernanda Souza")
-    await expect(fernanda.getByRole("checkbox", { name: "Financeiro" })).toBeDisabled()
-    await fernanda.getByRole("checkbox", { name: "Participa desta matrícula" }).check()
-    await fernanda.getByRole("checkbox", { name: "Financeiro" }).check()
+    await expect(fernanda.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeChecked()
+    await expect(fernanda.getByRole("checkbox", { name: "Financeiro" })).toBeChecked()
+    await expect(fernanda.getByRole("checkbox", { name: "Assina" })).not.toBeChecked()
+    await expect(page.getByText("Defina quem assina o contrato desta matrícula.")).toBeVisible()
+    expect(calls.some((call) => call.method === "PUT")).toBe(false)
+
     await fernanda.getByRole("checkbox", { name: "Assina" }).check()
     await page.getByRole("button", { exact: true, name: "Salvar" }).click()
 
@@ -216,17 +223,42 @@ test.describe("enrollment guardians", () => {
     await signInAndOpen(page, `${enrollmentsPath}/501`)
     await page.getByRole("tab", { name: "Responsáveis" }).click()
 
-    await page.getByRole("button", { name: "Alterar escolhas" }).click()
+    await page.getByRole("button", { name: "Escolher participantes" }).first().click()
     const fernanda = guardianItem(page, "Fernanda Souza")
-    await fernanda.getByRole("checkbox", { name: "Participa desta matrícula" }).check()
+    await fernanda.getByRole("checkbox", { name: "Assina" }).check()
     await page.getByRole("button", { exact: true, name: "Salvar" }).click()
 
     await expect(page.getByRole("alert")).toContainText("as suas escolhas foram mantidas")
-    await expect(fernanda.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeChecked()
+    await expect(fernanda.getByRole("checkbox", { name: "Assina" })).toBeChecked()
     await page.getByRole("button", { exact: true, name: "Salvar" }).click()
 
     await expect(page.getByText("Escolhas dos responsáveis salvas.")).toBeVisible()
     expect(lastCall(calls, "PUT", "/api/enrollments/501/parties")?.body).toMatchObject({ version: 1 })
+  })
+
+  test("asks which one pays when more than one guardian is financial in Pessoas", async ({ page }) => {
+    await mockEnrollmentApi(page, { secondFinancialGuardian: true })
+    await signInAndOpen(page, `${enrollmentsPath}/501`)
+
+    // The action beside the pendency on the Preparation opens the choice in this tab.
+    await page
+      .getByRole("region", { name: "O que falta" })
+      .getByRole("button", { name: "Escolher participantes" })
+      .click()
+    await expect(page.getByRole("tab", { name: "Responsáveis" })).toHaveAttribute("aria-selected", "true")
+
+    const fernanda = guardianItem(page, "Fernanda Souza")
+    const helena = guardianItem(page, "Helena Souza")
+    await expect(fernanda.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeChecked()
+    await expect(helena.getByRole("checkbox", { name: "Participa desta matrícula" })).toBeChecked()
+    // Two candidates: neither is marked financial; the screen asks for the decision.
+    await expect(fernanda.getByRole("checkbox", { name: "Financeiro" })).not.toBeChecked()
+    await expect(helena.getByRole("checkbox", { name: "Financeiro" })).not.toBeChecked()
+    await expect(helena).toContainText("Responsável financeiro no cadastro do aluno")
+    await expect(page.getByText("Mais de um responsável é financeiro no cadastro do aluno.")).toBeVisible()
+
+    await helena.getByRole("checkbox", { name: "Financeiro" }).check()
+    await expect(page.getByText("Mais de um responsável é financeiro no cadastro do aluno.")).toHaveCount(0)
   })
 
   test("shows the guardians without changing them to the Coordenação", async ({ page }) => {
@@ -236,6 +268,7 @@ test.describe("enrollment guardians", () => {
 
     await expect(guardianItem(page, "Fernanda Souza")).toContainText("Não participa desta matrícula")
     await expect(page.getByRole("button", { name: "Alterar escolhas" })).toHaveCount(0)
+    await expect(page.getByRole("button", { name: "Escolher participantes" })).toHaveCount(0)
     // The Coordenação doesn't read the kinship catalog, which is the Secretaria's.
     expect(calls.some((call) => call.path === "/api/catalogs/relationship-types")).toBe(false)
   })

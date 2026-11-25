@@ -1290,9 +1290,12 @@ export const ptPT: TranslationResource = {
     forbiddenTitle: "Não tem acesso às matrículas",
     guardians: {
       choose: "Participa nesta matrícula",
+      chooseParticipants: "Escolher participantes",
       conflict:
         "Outra pessoa alterou esta matrícula. Os dados foram recarregados e as suas escolhas mantidas: confira e guarde novamente.",
       contact: "contacto",
+      defineFinancial: "Defina quem é o responsável financeiro desta matrícula.",
+      defineSignatory: "Defina quem assina o contrato desta matrícula.",
       description:
         "Os encarregados de educação vêm do registo do aluno. Quem participa, quem é financeiro e quem assina são escolhas desta matrícula, nunca deduzidas do parentesco.",
       edit: "Alterar escolhas",
@@ -1300,6 +1303,7 @@ export const ptPT: TranslationResource = {
       errorDescription: "Não foi possível carregar os encarregados de educação. Tente novamente dentro de instantes.",
       errorTitle: "Encarregados de educação indisponíveis",
       failed: "Não foi possível guardar as escolhas agora. Tente novamente dentro de instantes.",
+      financialCandidate: "Responsável financeiro no registo do aluno",
       financialInPeople: "financeira",
       fixInPeople: "Corrigir ligações no registo do aluno",
       inPeople: "No registo: {{detail}}",
@@ -1307,6 +1311,8 @@ export const ptPT: TranslationResource = {
       linkActive: "Ligação em vigor",
       listLabel: "Encarregados de educação do aluno",
       loading: "A carregar os encarregados de educação...",
+      manyFinancialCandidates:
+        "Mais do que um responsável é financeiro no registo do aluno. Defina qual deles é o financeiro desta matrícula.",
       notChosen: "Não participa nesta matrícula",
       partyInvalid:
         "Um dos encarregados de educação escolhidos já não tem ligação ativa com o aluno ou não está ativo. A lista foi recarregada.",
@@ -1314,6 +1320,8 @@ export const ptPT: TranslationResource = {
       pendenciesLabel: "O que falta nos encarregados de educação",
       saved: "Escolhas dos encarregados de educação guardadas.",
       signs: "Assina",
+      suggested:
+        "Sugestão: os responsáveis com vínculo em vigor participam e, quando há só um financeiro no registo do aluno, vem assinalado. Confira e guarde: nada vale antes disso, e o parentesco sozinho não define quem paga nem quem assina.",
       title: "Encarregados de educação e papéis",
     },
     history: {
@@ -1359,10 +1367,10 @@ export const ptPT: TranslationResource = {
     pendencyCodes: {
       CLASS_NOT_ELIGIBLE: "A turma escolhida deixou de estar aberta para matrícula",
       NO_CLASS: "Nenhuma turma escolhida",
-      NO_FINANCIAL_PARTY: "Nenhum responsável financeiro",
-      NO_PARTY: "Nenhum encarregado de educação escolhido",
+      NO_FINANCIAL_PARTY: "Defina quem é o responsável financeiro desta matrícula",
+      NO_PARTY: "Defina quem participa desta matrícula",
       NO_SEAT: "A turma escolhida não tem vaga",
-      NO_SIGNATORY: "Ninguém escolhido para assinar",
+      NO_SIGNATORY: "Defina quem assina o contrato desta matrícula",
       OCCUPANCY_UNAVAILABLE: "Não foi possível ler as vagas da turma agora",
       PARTY_LINK_ENDED: "A ligação de um encarregado de educação escolhido foi terminada",
       STUDENT_NOT_ELIGIBLE: "O registo do aluno não está ativo",
@@ -1378,10 +1386,10 @@ export const ptPT: TranslationResource = {
       classTitle: "Turma",
       confirmation: "Confirmação",
       eligible: "O aluno pode ter a matrícula confirmada",
-      guardiansTitle: "Encarregados de educação escolhidos",
+      guardiansTitle: "Participantes da matrícula",
       linkEnded: "Ligação terminada",
       noClass: "Nenhuma turma escolhida ainda.",
-      noGuardians: "Nenhum encarregado de educação escolhido ainda.",
+      noGuardians: "Ainda ninguém foi definido para participar desta matrícula.",
       noPendencies: "Nenhuma pendência nas etapas já avaliadas.",
       notEligible: "Só um aluno ativo tem a matrícula confirmada. Ative o registo em Alunos.",
       notEvaluated: "Ainda não avaliado",
