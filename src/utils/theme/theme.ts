@@ -215,7 +215,7 @@ const pageBackgroundVariable = "--sf-page-background"
 // How much of the school's primary goes into the light gray of the pages behind the login: enough to
 // give them its hue, little enough that the white cards still stand out and the status colors still
 // read as they do on the gray.
-export const pageTintAmount = 0.03
+export const pageTintAmount = 0.05
 
 // The pages' background for a school's primary (its 500 step): the product's light gray with a touch
 // of the color, or null when it isn't a hex color.
