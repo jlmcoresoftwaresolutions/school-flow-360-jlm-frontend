@@ -6,7 +6,6 @@ import { Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import { DateInput, Input, Select } from "@/ds-components/molecules"
 import { PhoneInput } from "@/ds-components/molecules"
-import { spacing } from "@/foundation"
 import type { CatalogItem } from "@/models"
 import { getAddressByCep } from "@/services/viaCep"
 import { brazilianStates } from "@/utils/address"
@@ -20,8 +19,6 @@ import { FieldRow, PersonSection } from "./people.styles"
 import { type PersonFormValues, personLimits } from "./personForm"
 
 const stateOptions: SelectOption[] = brazilianStates.map((state) => ({ label: state, value: state }))
-
-const stateMenuMaxHeight = Number.parseFloat(spacing[192])
 
 type CepLookup = "idle" | "notFound" | "searching" | "unavailable"
 
@@ -323,7 +320,6 @@ export const PersonAddressFields = () => {
           name="state"
           render={(controller) => (
             <Select
-              maxMenuHeight={stateMenuMaxHeight}
               name={controller.field.name}
               noOptionsMessage={t("common.noOptions")}
               onBlur={controller.field.onBlur}

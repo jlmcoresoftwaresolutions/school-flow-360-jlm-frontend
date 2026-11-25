@@ -7,7 +7,7 @@ import { FieldLabel, FieldMessage, Icon } from "@/ds-components/atoms"
 import { borderRadiusLevels, type BorderRadiusLevelsType, motion, opacity } from "@/foundation"
 import { joinIds } from "@/utils/strings"
 
-import { getSelectStyles, SelectWrapper } from "./Select.styles"
+import { getMenuMaxHeight, getSelectStyles, SelectWrapper } from "./Select.styles"
 
 // react-select takes no aria-describedby prop (it sets its own on the input), so the id of the
 // message under the field reaches the custom Input below through this context instead.
@@ -137,7 +137,7 @@ export const Select = forwardRef<SelectInstance<SelectOption, false>, SelectProp
             defaultValue={defaultValue}
             inputId={selectId}
             isDisabled={isDisabled}
-            maxMenuHeight={maxMenuHeight}
+            maxMenuHeight={maxMenuHeight ?? getMenuMaxHeight(size)}
             // Portaled with a fixed position, the menu would not follow the control if an ancestor (a Modal
             // body, the page) scrolled, so scrolling outside the menu is blocked while it is open.
             menuPortalTarget={typeof document === "undefined" ? undefined : document.body}

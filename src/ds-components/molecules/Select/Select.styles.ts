@@ -9,6 +9,23 @@ export const SelectWrapper = styled.div`
   gap: ${spacing[4]};
 `
 
+// How many options the open menu shows before its list scrolls.
+export const visibleMenuOptions = 5
+
+const optionPaddingY = Number.parseFloat(spacing[8])
+const menuListPadding = Number.parseFloat(spacing[4])
+
+// The open menu's height for exactly five options of the size, from the same tokens the options use: each
+// is its line (font size times line height) plus its vertical padding, and the list adds its own padding.
+// An option whose label wraps takes more room, and the list scrolls sooner.
+export const getMenuMaxHeight = (size: "medium" | "small"): number => {
+  const fontSize = size === "small" ? typography.fontSize.sm : typography.fontSize.md
+  const lineHeight = size === "small" ? typography.lineHeight.sm : typography.lineHeight.md
+  const optionHeight = fontSize * lineHeight + optionPaddingY * 2
+
+  return visibleMenuOptions * optionHeight + menuListPadding * 2
+}
+
 export type SelectStylesConfig = {
   borderRadius: string
   elevated: boolean
@@ -86,7 +103,9 @@ export const getSelectStyles = <Option>(config: SelectStylesConfig): StylesConfi
         borderRadius,
         color: state.isSelected ? colors.neutral[0] : colors.neutral[900],
         cursor: "pointer",
-        fontSize: isSmall ? `${typography.fontSize.sm}px` : undefined,
+        // Set explicitly, so every option is as tall as getMenuMaxHeight counts.
+        fontSize: `${isSmall ? typography.fontSize.sm : typography.fontSize.md}px`,
+        lineHeight: isSmall ? typography.lineHeight.sm : typography.lineHeight.md,
         padding: `${spacing[8]} ${spacing[12]}`,
       }
     },
