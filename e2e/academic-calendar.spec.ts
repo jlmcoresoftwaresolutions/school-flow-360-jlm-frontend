@@ -19,6 +19,18 @@ const chooseContext = async (page: Page, unit: string, period: string) => {
   await page.getByRole("option", { exact: true, name: period }).click()
 }
 
+// The preparation opens on the month view; the list is the other one.
+const showList = (page: Page) => page.getByRole("button", { exact: true, name: "Lista" }).click()
+
+// Back to the period's first month (February 2026), whatever today is.
+const goToFirstMonth = async (page: Page) => {
+  const previous = page.getByRole("button", { name: "Mês anterior" })
+  while (await previous.isEnabled()) await previous.click()
+  await expect(page.getByRole("heading", { name: "fevereiro de 2026" })).toBeVisible()
+}
+
+const day = (page: Page, date: RegExp) => page.getByRole("button", { name: date })
+
 const asRole = (role: string) => ({
   ...secretariaContext,
   assignments: [{ ...secretariaContext.assignments[0], role }],
@@ -33,6 +45,7 @@ test("lists the items being prepared for a unit and period, in date order", asyn
   await chooseContext(page, "Unidade Aldeota", "Ano letivo 2026")
 
   await expect(page.getByRole("tab", { name: "Preparação" })).toHaveAttribute("aria-selected", "true")
+  await showList(page)
   await expect(page.getByRole("row").nth(1)).toContainText("Primeiras semanas")
   await expect(row(page, "Reunião de pais")).toContainText("07/02/2026")
   await expect(row(page, "Reunião de pais")).toContainText("Evento")
@@ -72,14 +85,67 @@ test("prepares a new item inside the period, without publishing it", async ({ pa
     title: "Feriado municipal",
     unitIds: [1],
   })
+  await showList(page)
   await expect(row(page, "Feriado municipal")).toContainText("20/03/2026")
   expect(lastCall(calls, "POST", "/api/academic/calendar/publish")).toBeUndefined()
+})
+
+test("shows the items on a big month and opens a new one on the day clicked", async ({ page }) => {
+  const { calls } = await mockAcademicApi(page)
+  await signInAndOpen(page, calendarPath)
+  await chooseContext(page, "Unidade Aldeota", "Ano letivo 2026")
+  await goToFirstMonth(page)
+
+  // An item shows on each of its days, in its category's color; days before the period can't be chosen.
+  await expect(day(page, /, 9 de fevereiro de 2026/)).toContainText("Recesso")
+  await expect(day(page, /, 10 de fevereiro de 2026/)).toContainText("Recesso")
+  await expect(page.getByRole("button", { name: /, 1 de fevereiro de 2026/ })).toHaveCount(0)
+
+  await day(page, /^Adicionar item em .*20 de fevereiro de 2026/).click()
+  const dialog = page.getByRole("dialog", { name: "Novo item do calendário" })
+  await expect(dialog.getByRole("textbox", { name: /^Início/ })).toHaveValue("20/02/2026")
+  await expect(dialog.getByRole("textbox", { name: /^Fim/ })).toHaveValue("")
+  await dialog.getByRole("combobox", { name: /^Tipo/ }).click()
+  await page.getByRole("option", { exact: true, name: "Evento" }).click()
+  await dialog.getByRole("textbox", { name: /^Título/ }).fill("Feira de ciências")
+  await dialog.getByRole("button", { name: "Adicionar" }).click()
+  await expect(page.getByText("Item adicionado à preparação.", { exact: false })).toBeVisible()
+  await expect(day(page, /, 20 de fevereiro de 2026/)).toContainText("Feira de ciências")
+  expect(lastCall(calls, "POST", "/api/academic/calendar/items")?.body).toMatchObject({
+    endDate: "2026-02-20",
+    startDate: "2026-02-20",
+    title: "Feira de ciências",
+  })
+})
+
+test("drags across days for a holiday of several days, and opens an item to edit", async ({ page }) => {
+  await mockAcademicApi(page)
+  await signInAndOpen(page, calendarPath)
+  await chooseContext(page, "Unidade Aldeota", "Ano letivo 2026")
+  await goToFirstMonth(page)
+
+  await day(page, /^Adicionar item em .*18 de fevereiro de 2026/).scrollIntoViewIfNeeded()
+  const from = await day(page, /^Adicionar item em .*16 de fevereiro de 2026/).boundingBox()
+  const to = await day(page, /^Adicionar item em .*18 de fevereiro de 2026/).boundingBox()
+  if (!from || !to) throw new Error("days not on screen")
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height - 8)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height - 8, { steps: 5 })
+  await page.mouse.up()
+  const dialog = page.getByRole("dialog", { name: "Novo item do calendário" })
+  await expect(dialog.getByRole("textbox", { name: /^Início/ })).toHaveValue("16/02/2026")
+  await expect(dialog.getByRole("textbox", { name: /^Fim/ })).toHaveValue("18/02/2026")
+  await dialog.getByRole("button", { name: "Cancelar" }).click()
+
+  await page.getByRole("button", { name: "Feriado: Recesso" }).first().click()
+  await expect(page.getByRole("dialog", { name: "Editar Recesso" })).toBeVisible()
 })
 
 test("takes an item out of the preparation", async ({ page }) => {
   await mockAcademicApi(page)
   await signInAndOpen(page, calendarPath)
   await chooseContext(page, "Unidade Aldeota", "Ano letivo 2026")
+  await showList(page)
 
   await page.getByRole("button", { name: "Ações de Reunião de pais" }).click()
   await page.getByRole("menuitem", { name: "Retirar da preparação" }).click()

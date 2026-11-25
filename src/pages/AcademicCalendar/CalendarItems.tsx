@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { toast } from "@/components"
@@ -6,6 +6,7 @@ import { Badge, Button, Icon, Text } from "@/ds-components/atoms"
 import type { ActionMenuItem } from "@/ds-components/molecules"
 import { ActionMenu, StateMessage } from "@/ds-components/molecules"
 import { ConfirmDialog, Table } from "@/ds-components/organisms"
+import { spacing } from "@/foundation"
 import type { AcademicCalendarItem, AcademicPeriod } from "@/models"
 import { listAcademicCalendarItems, removeAcademicCalendarItem } from "@/services/academicCalendar"
 import { getErrorCode } from "@/services/httpClient"
@@ -15,7 +16,10 @@ import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import type { AcademicUnits } from "../shared/academic/useAcademicUnits"
 import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { ListContent, PersonCell } from "../shared/userAccess/userAccess.styles"
+import { ViewToggle } from "./AcademicCalendar.styles"
 import { CalendarItemModal } from "./CalendarItemModal"
+import { CalendarMonth } from "./CalendarMonth"
+import { initialMonth, type MonthKey } from "./monthGrid"
 
 export type CalendarItemsProps = {
   // Whether the person may prepare items in this unit.
@@ -31,11 +35,18 @@ export type CalendarItemsProps = {
 
 type ItemsResult = { error: true; key: string } | { items: AcademicCalendarItem[]; key: string }
 
-type Dialog = { item: AcademicCalendarItem; kind: "edit" | "remove" } | { kind: "new" } | null
+type Dialog =
+  | { item: AcademicCalendarItem; kind: "edit" | "remove" }
+  | { kind: "new"; range?: { end: string; start: string } }
+  | null
 
-// The items being prepared for a unit and period: school days, holidays and events, in date order. Saving
-// or removing an item never touches what was published; it changes only the next publication. Removing
-// takes the item out of the preparation without deleting anything.
+type View = "list" | "month"
+
+// The items being prepared for a unit and period: school days, holidays and events. They open on a big
+// month (CalendarMonth: a day, or days dragged across, opens a new item with those dates; an item opens to
+// edit), and the list in date order is the other view. Saving or removing an item never touches what was
+// published; it changes only the next publication. Removing takes the item out of the preparation without
+// deleting anything.
 export const CalendarItems = (props: CalendarItemsProps) => {
   const { canPrepare, onChanged, period, refreshKey, unitId, units } = props
 
@@ -47,6 +58,9 @@ export const CalendarItems = (props: CalendarItemsProps) => {
   const [reloadToken, setReloadToken] = useState(0)
   const [dialog, setDialog] = useState<Dialog>(null)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [view, setView] = useState<View>("month")
+  // The month chosen on the month view, for the period it was chosen in.
+  const [chosenMonth, setChosenMonth] = useState<{ month: MonthKey; periodId: number } | null>(null)
 
   const requestKey = `${period.id}:${unitId}#${refreshKey}#${reloadToken}`
 
@@ -81,6 +95,11 @@ export const CalendarItems = (props: CalendarItemsProps) => {
 
   // Only the answer of this unit and period (never another context's).
   const current = result?.key === requestKey ? result : null
+  // While the items are read again after a change, the month keeps showing the last ones of this context.
+  const shownItems = result && "items" in result && result.key.startsWith(`${period.id}:${unitId}#`) ? result.items : []
+  const month = chosenMonth?.periodId === period.id ? chosenMonth.month : initialMonth(period.startDate, period.endDate)
+
+  const openRange = useCallback((range: { end: string; start: string }) => setDialog({ kind: "new", range }), [])
 
   const afterChange = () => {
     setDialog(null)
@@ -139,6 +158,41 @@ export const CalendarItems = (props: CalendarItemsProps) => {
     </Button>
   ) : null
 
+  // The month and the list, side by side with "Novo item".
+  const viewToggle = (
+    <span
+      style={{
+        alignItems: "center",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: spacing[8],
+        justifyContent: "space-between",
+      }}
+    >
+      <ViewToggle aria-label={t("academicCalendar.view.label")} role="group">
+        <Button
+          aria-pressed={view === "month"}
+          onClick={() => setView("month")}
+          size="small"
+          startIcon={<Icon color="inherit" name="calendar-outline" size={16} />}
+          variant={view === "month" ? "filled" : "outlined"}
+        >
+          {t("academicCalendar.view.month")}
+        </Button>
+        <Button
+          aria-pressed={view === "list"}
+          onClick={() => setView("list")}
+          size="small"
+          startIcon={<Icon color="inherit" name="fact-check-outline" size={16} />}
+          variant={view === "list" ? "filled" : "outlined"}
+        >
+          {t("academicCalendar.view.list")}
+        </Button>
+      </ViewToggle>
+      {newButton}
+    </span>
+  )
+
   const renderContent = () => {
     if (current && "error" in current) {
       return (
@@ -148,6 +202,23 @@ export const CalendarItems = (props: CalendarItemsProps) => {
           title={t("academicCalendar.itemsErrorTitle")}
           variant="error"
         />
+      )
+    }
+
+    if (view === "month") {
+      return (
+        <ListContent aria-busy={!current || undefined}>
+          {viewToggle}
+          <CalendarMonth
+            canPrepare={canPrepare}
+            items={shownItems}
+            month={month}
+            onMonthChange={(next) => setChosenMonth({ month: next, periodId: period.id })}
+            onOpenItem={(item) => setDialog({ item, kind: "edit" })}
+            onSelectRange={openRange}
+            period={period}
+          />
+        </ListContent>
       )
     }
 
@@ -164,7 +235,7 @@ export const CalendarItems = (props: CalendarItemsProps) => {
 
     return (
       <ListContent>
-        {newButton && <span style={{ alignSelf: "flex-end" }}>{newButton}</span>}
+        {viewToggle}
         <Table
           dataKey="id"
           emptyMessage={t("academicCalendar.emptyItemsTitle")}
@@ -216,6 +287,7 @@ export const CalendarItems = (props: CalendarItemsProps) => {
           onClose={() => setDialog(null)}
           onSaved={afterChange}
           period={period}
+          range={dialog.kind === "new" ? dialog.range : undefined}
           unitId={unitId}
           units={units}
         />

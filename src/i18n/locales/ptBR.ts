@@ -160,6 +160,14 @@ export const ptBR = {
     loadingItems: "Carregando os itens...",
     loadingPreview: "Carregando a prévia...",
     loadingPublished: "Carregando o calendário publicado...",
+    month: {
+      addOn: "Adicionar item em {{date}}",
+      hint: "Clique num dia, ou arraste por vários dias, para adicionar um feriado, dia letivo ou evento. Clique num item para editá-lo.",
+      more: "+{{count}} mais",
+      next: "Próximo mês",
+      previous: "Mês anterior",
+      today: "Hoje",
+    },
     new: "Novo item",
     notPublishedDescription: "Quando a escola publicar o calendário, ele aparece aqui.",
     notPublishedTitle: "Nenhum calendário publicado",
@@ -215,6 +223,11 @@ export const ptBR = {
       title: "Versões",
       version: "Versão",
       withdrawReason: "Motivo: {{reason}}",
+    },
+    view: {
+      label: "Como ver os itens",
+      list: "Lista",
+      month: "Calendário",
     },
     withdraw: {
       action: "Retirar",
