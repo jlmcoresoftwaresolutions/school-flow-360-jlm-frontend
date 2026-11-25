@@ -24,6 +24,12 @@ const renderSidebar = (overrides: Partial<SidebarProps> = {}) =>
   render(<Sidebar items={items} logoAlt="Ícone" logoSrc="/logo.svg" title="SchoolFlow360º" {...overrides} />)
 
 describe("Sidebar", () => {
+  it("gives the items their regular icon size on a wide screen", () => {
+    renderSidebar()
+
+    expect(screen.getByRole("button", { name: "Início" }).querySelector("svg")).toHaveAttribute("width", "20px")
+  })
+
   it("renders the brand title and logo", () => {
     renderSidebar()
 
@@ -350,6 +356,14 @@ describe("Sidebar on a compact screen", () => {
     // The brand stays mounted so it can animate, but is hidden (and out of the accessibility tree).
     expect(screen.getByText("SchoolFlow360º")).not.toBeVisible()
     expect(screen.queryByRole("img", { name: "Ícone" })).not.toBeInTheDocument()
+  })
+
+  it("is a narrower rail with smaller icons", () => {
+    stubCompactScreen()
+    const { container } = renderSidebar()
+
+    expect(container.querySelector("aside")).toHaveStyle({ width: "calc(48px + 8px)" })
+    expect(screen.getByRole("button", { name: "Início" }).querySelector("svg")).toHaveAttribute("width", "16px")
   })
 
   it("keeps every item reachable by its accessible name while only the icon shows", () => {

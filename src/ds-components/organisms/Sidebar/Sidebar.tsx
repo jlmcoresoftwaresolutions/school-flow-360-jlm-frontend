@@ -136,6 +136,7 @@ export const Sidebar = (props: SidebarProps) => {
     list.map((item) => (
       <SidebarItem
         collapsed={isCollapsed}
+        compact={isCompact}
         expanded={item.key === expandedGroupKey}
         item={item}
         key={item.key}

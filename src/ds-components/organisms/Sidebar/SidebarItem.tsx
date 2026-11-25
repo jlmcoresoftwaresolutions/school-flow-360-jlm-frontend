@@ -16,6 +16,8 @@ import {
 
 export type SidebarItemProps = {
   collapsed: boolean
+  // A compact screen: the item's icon is a step smaller, in the rail and in the panel opened over the page.
+  compact: boolean
   expanded: boolean
   item: SidebarNavItem
   onExpand: () => void
@@ -33,7 +35,7 @@ export type SidebarItemProps = {
 // rendered at all - clicking a group there asks the Sidebar to expand (onExpand) and opens the
 // group, since its children have nowhere to show in the rail.
 export const SidebarItem = (props: SidebarItemProps) => {
-  const { collapsed, expanded, item, onExpand, onNavigate, onToggleGroup } = props
+  const { collapsed, compact, expanded, item, onExpand, onNavigate, onToggleGroup } = props
 
   const childrenId = useId()
 
@@ -77,7 +79,7 @@ export const SidebarItem = (props: SidebarItemProps) => {
         onClick={handleClick}
         type="button"
       >
-        <Icon color={isActive ? "inherit" : "secondary"} name={item.icon} size={20} />
+        <Icon color={isActive ? "inherit" : "secondary"} name={item.icon} size={compact ? 16 : 20} />
 
         <SidebarItemLabel $active={isActive} $hidden={collapsed}>
           {item.label}

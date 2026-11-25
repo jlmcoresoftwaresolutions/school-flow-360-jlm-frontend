@@ -16,9 +16,12 @@ const insetFor = (collapsed: boolean) => (collapsed ? spacing[8] : spacing[16])
 // is the panel's right border) and slides to its expanded position as the panel widens, rather than
 // flipping between `center` and `flex-start` alignment, which can't be animated.
 const slide = `${motion.duration.normal} ${motion.easing.inOut}`
-const railInnerWidth = `(${spacing[64]} - 1px)`
+// The icon-only rail of a compact screen (56px): narrow, so a phone keeps more room for the page. Its
+// items carry a smaller icon (see SidebarItem), the one the padding below centers.
+const railWidth = `calc(${spacing[48]} + ${spacing[8]})`
+const railInnerWidth = `(${spacing[48]} + ${spacing[8]} - 1px)`
 const itemPaddingFor = (collapsed: boolean) =>
-  collapsed ? `calc((${railInnerWidth} - ${spacing[8]} * 2 - ${spacing[20]}) / 2)` : spacing[12]
+  collapsed ? `calc((${railInnerWidth} - ${spacing[8]} * 2 - ${spacing[16]}) / 2)` : spacing[12]
 const brandInsetFor = (collapsed: boolean) =>
   collapsed ? `calc((${railInnerWidth} - ${spacing[40]}) / 2)` : spacing[16]
 
@@ -48,7 +51,7 @@ export const SidebarWrapper = styled.aside<StyledSidebarWrapperProps>`
   flex-shrink: 0;
   height: 100%;
   position: relative;
-  width: ${(props) => (props.$compact ? spacing[64] : spacing[256])};
+  width: ${(props) => (props.$compact ? railWidth : spacing[256])};
 `
 
 export const SidebarPanel = styled.div<StyledSidebarPanelProps>`
@@ -72,7 +75,7 @@ export const SidebarPanel = styled.div<StyledSidebarPanelProps>`
         width ${slide},
         box-shadow ${slide},
         z-index 0s linear ${$overlay ? "0s" : motion.duration.normal};
-      width: ${$collapsed ? spacing[64] : spacing[256]};
+      width: ${$collapsed ? railWidth : spacing[256]};
       z-index: ${$overlay ? zIndex.overlay : zIndex.base};
 
       ${reducedMotion}
