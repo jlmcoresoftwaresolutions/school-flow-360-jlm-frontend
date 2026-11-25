@@ -45,3 +45,10 @@ test("offers a Professor only the areas the role opens", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Abrir Calendário letivo" })).toBeVisible()
   await expect(page.getByRole("link", { name: "Abrir Minha Organização" })).toHaveCount(0)
 })
+
+test("never asks for the photo of the screens before signing in", async ({ page }) => {
+  await signInAndOpen(page, "/home")
+
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible()
+  await expect(page.locator("link[rel='preload'][as='image']")).toHaveCount(0)
+})

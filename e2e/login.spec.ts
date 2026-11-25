@@ -52,6 +52,12 @@ test.describe("login page", () => {
     await expect(page.getByText(/cadastr|criar conta/i)).toHaveCount(0)
   })
 
+  test("asks for the background photo as soon as it opens", async ({ page }) => {
+    await page.goto("/login")
+
+    await expect(page.locator("link[rel='preload'][as='image']")).toHaveAttribute("href", /login-library/)
+  })
+
   test("shows and hides the typed password", async ({ page }) => {
     await page.goto("/login")
     await page.getByLabel(/^Senha/).fill("senha-correta")
