@@ -164,7 +164,12 @@ test.describe("academic overview", () => {
     await expect(stat(page, "Turmas")).toContainText("1")
     expect(lastCall(calls, "GET", "/api/academic/overview")?.query).toEqual({ unitId: "2" })
 
-    await page.getByRole("group", { name: "Atalhos" }).getByRole("button", { name: "Criar turma" }).click()
+    // The shortcuts sit in the filter bar, as the actions of the other lists.
+    await page
+      .getByRole("search")
+      .getByRole("group", { name: "Atalhos" })
+      .getByRole("button", { name: "Criar turma" })
+      .click()
     await expect(page).toHaveURL(/\/academic\/classes$/)
   })
 
