@@ -39,7 +39,7 @@ test.describe("login page", () => {
     await page.goto("/")
 
     await expect(page).toHaveURL(/\/login$/)
-    await expect(page.getByRole("heading", { level: 1, name: "Acesse sua jornada SchoolFlow360º" })).toBeVisible()
+    await expect(page.getByRole("heading", { level: 1, name: "Entrar" })).toBeVisible()
   })
 
   test("asks for the e-mail or nickname and the password, with no way to sign up", async ({ page }) => {

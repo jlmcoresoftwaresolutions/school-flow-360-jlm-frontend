@@ -3,10 +3,9 @@ import { useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { Link, useNavigate, useSearchParams } from "react-router-dom"
 
-import schoolFlowIcon from "@/assets/images/school-flow-icon.svg"
-import { Button, Card, Grid, Icon, type IconProps, Image, Tag, type TagProps, Text } from "@/ds-components/atoms"
+import { Button, Text } from "@/ds-components/atoms"
 import { Input } from "@/ds-components/molecules"
-import { colors, spacing } from "@/foundation"
+import { spacing } from "@/foundation"
 import { useCountdown } from "@/hooks"
 import type { AuthData, LoginRequest, SessionLimitChallenge } from "@/models"
 import { homePath, paths } from "@/routes/paths"
@@ -16,29 +15,11 @@ import { formatCountdown } from "@/utils/formats"
 import { saveSession } from "@/utils/session"
 import { isSecureStorageAvailable } from "@/utils/storage"
 
-import { SchoolIdentity } from "../shared/school/SchoolIdentity"
 import { usePublicBranding } from "../shared/school/usePublicBranding"
 import { useSchoolDocument } from "../shared/school/useSchoolDocument"
-import { LoginWrapper } from "./Login.styles"
+import { FormPanel, LoginCard, LoginWrapper } from "./Login.styles"
+import { LoginSchoolPanel } from "./LoginSchoolPanel"
 import { SessionLimitDialog } from "./SessionLimitDialog"
-
-const commonTagProps: Omit<TagProps, "children"> = {
-  color: "muted",
-  fontWeight: "bold",
-  padding: "md",
-  textColor: colors.neutral[0],
-  translucent: "high",
-  variant: "soft",
-}
-
-// Secondary text on the dark hero card. The semantic muted color is a dark gray meant for light
-// surfaces (it reaches WCAG AA there, see semanticColors.ts) and would vanish on this background.
-const onDarkSecondaryText = colors.neutral[300]
-
-const commonTagStartIconProps: Omit<IconProps, "name"> = {
-  color: "inverse",
-  size: 16,
-}
 
 // Deliberately loose: the backend is the judge of what a real address is, this only catches typos
 // such as a missing "@" or domain before a request is spent on them.
@@ -93,8 +74,9 @@ const toSessionLimitChallenge = (error: unknown): SessionLimitChallenge | null =
 // user from coming back here (see routes.tsx). Arriving with ?expired=1 says the session ended.
 // Repeated wrong passwords make the backend hold the e-mail or nickname back for a while (its 429: 1 minute on the
 // 3rd, 3 minutes on every 5th), shown as a countdown on the button. With 5 sessions already open, the
-// person picks one to end and signs in in the same step (SessionLimitDialog). The sign-in card opens
-// with the school's published logo and name (SchoolIdentity), when it has them.
+// person picks one to end and signs in in the same step (SessionLimitDialog). The page belongs to the
+// school: its logo, name and a welcome fill the left panel (LoginSchoolPanel), and the product only
+// signs it; without a published identity the product is the host. No sales copy here.
 export const Login = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -184,162 +166,102 @@ export const Login = () => {
 
   return (
     <LoginWrapper>
-      <Grid.Container>
-        <Grid.Row align="center" justify="center">
-          <Grid.Col xs={12} md={7}>
-            <Card
-              borderRadius="high"
-              translucent="high"
-              elevated
-              style={{ display: "flex", flexDirection: "column", gap: spacing[20], padding: spacing[40] }}
-            >
-              <div style={{ alignItems: "center", display: "flex", gap: spacing[12] }}>
-                <Image alt={t("login.logoAlt")} borderRadius="medium" size={64} src={schoolFlowIcon} />
+      <LoginCard>
+        <LoginSchoolPanel branding={branding} />
 
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {/* The product name is a brand term, not translated content, like "White Label" below. */}
-                  <Text as="p" color="inverse" fontSize="lg" bold>
-                    SchoolFlow360º
-                  </Text>
+        <FormPanel>
+          <div style={{ display: "flex", flexDirection: "column", gap: spacing[8] }}>
+            <Text as="h1" fontSize="3xl" bold>
+              {t("login.title")}
+            </Text>
+            <Text as="p" color="secondary">
+              {t("login.subtitle")}
+            </Text>
+          </div>
 
-                  <Text as="p" fontSize="sm" style={{ color: onDarkSecondaryText }}>
-                    {t("common.poweredBy")}
-                  </Text>
-                </div>
-              </div>
+          {!canKeepSession && (
+            <Text as="p" color="danger" fontSize="sm" role="alert" semibold>
+              {t("login.insecureAddress")}
+            </Text>
+          )}
 
-              <Text as="p" color="inverse" fontSize="7xl" bold>
-                {t("login.heroTitle")}
+          {sessionExpired && (
+            <Text as="p" color="warning" fontSize="sm" role="status" semibold>
+              {t("login.sessionExpired")}
+            </Text>
+          )}
+
+          {/* noValidate: the browser's own validation bubbles are replaced by the messages under
+              each field, which match the rest of the design system and are translated. */}
+          <form
+            onSubmit={handleSubmit(onSubmit, clearSignInError)}
+            noValidate
+            style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
+              {/* Rejected credentials don't say which field is wrong, so both are flagged and point at
+                  the one message under the form. */}
+              <Input
+                aria-describedby={credentialsRejected ? signInErrorId : undefined}
+                autoCapitalize="none"
+                autoComplete="username"
+                error={errors.login?.message}
+                placeholder={t("login.loginPlaceholder")}
+                spellCheck={false}
+                title={t("login.loginLabel")}
+                type="text"
+                invalid={credentialsRejected}
+                required
+                {...register("login", {
+                  onChange: clearSignInError,
+                  required: t("login.loginRequired"),
+                  validate: (value) => isValidLogin(value) || t("login.loginInvalid"),
+                })}
+              />
+
+              <Input
+                aria-describedby={credentialsRejected ? signInErrorId : undefined}
+                autoComplete="current-password"
+                error={errors.password?.message}
+                hidePasswordLabel={t("common.hidePassword")}
+                placeholder={t("login.passwordPlaceholder")}
+                showPasswordLabel={t("common.showPassword")}
+                title={t("login.passwordLabel")}
+                type="password"
+                invalid={credentialsRejected}
+                required
+                {...register("password", { onChange: clearSignInError, required: t("login.passwordRequired") })}
+              />
+            </div>
+
+            {isLocked && signInLock && (
+              <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
+                {t("login.tooManyAttempts", { count: signInLock.minutes })}
               </Text>
+            )}
 
-              <Text as="p" style={{ color: onDarkSecondaryText }}>
-                {t("login.heroSubtitle")}
+            {!isLocked && signInError && (
+              <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
+                {t(`login.${signInError}`)}
               </Text>
+            )}
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: spacing[8] }}>
-                <Tag {...commonTagProps} startIcon={<Icon {...commonTagStartIconProps} name="dashboard-outline" />}>
-                  {t("login.tagDashboard")}
-                </Tag>
+            <div style={{ alignItems: "center", display: "flex", flexDirection: "column", gap: spacing[16] }}>
+              {/* The countdown lives on the button, not in the alert above, so screen readers don't
+                  re-announce the message every second. */}
+              <Button disabled={isSubmitting || isLocked} type="submit" style={{ width: "100%" }}>
+                {isLocked
+                  ? t("login.retryIn", { time: formatCountdown(lockCountdown.secondsLeft) })
+                  : t("login.signIn")}
+              </Button>
 
-                <Tag {...commonTagProps} startIcon={<Icon {...commonTagStartIconProps} name="label-outline" />}>
-                  {t("login.tagWhiteLabel")}
-                </Tag>
-
-                <Tag {...commonTagProps} startIcon={<Icon {...commonTagStartIconProps} name="users-outline" />}>
-                  {t("login.tagStudents")}
-                </Tag>
-
-                <Tag {...commonTagProps} startIcon={<Icon {...commonTagStartIconProps} name="money-outline" />}>
-                  {t("login.tagFinance")}
-                </Tag>
-
-                <Tag {...commonTagProps} startIcon={<Icon {...commonTagStartIconProps} name="star-outline" />}>
-                  {t("login.tagAi")}
-                </Tag>
-              </div>
-            </Card>
-          </Grid.Col>
-
-          <Grid.Col xs={12} md={5}>
-            <Card
-              borderRadius="high"
-              color="surface"
-              elevated
-              style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[40] }}
-            >
-              <SchoolIdentity branding={branding} />
-
-              <Text as="h1" fontSize="3xl" bold>
-                {t("login.signInTitle")}
-              </Text>
-
-              {!canKeepSession && (
-                <Text as="p" color="danger" fontSize="sm" role="alert" semibold>
-                  {t("login.insecureAddress")}
-                </Text>
-              )}
-
-              {sessionExpired && (
-                <Text as="p" color="warning" fontSize="sm" role="status" semibold>
-                  {t("login.sessionExpired")}
-                </Text>
-              )}
-
-              {/* noValidate: the browser's own validation bubbles are replaced by the messages under
-                  each field, which match the rest of the design system and are translated. */}
-              <form
-                onSubmit={handleSubmit(onSubmit, clearSignInError)}
-                noValidate
-                style={{ display: "flex", flexDirection: "column", gap: spacing[24] }}
-              >
-                <div style={{ display: "flex", flexDirection: "column", gap: spacing[16] }}>
-                  {/* Rejected credentials don't say which field is wrong, so both are flagged and point at
-                      the one message under the form. */}
-                  <Input
-                    aria-describedby={credentialsRejected ? signInErrorId : undefined}
-                    autoCapitalize="none"
-                    autoComplete="username"
-                    error={errors.login?.message}
-                    placeholder={t("login.loginPlaceholder")}
-                    spellCheck={false}
-                    title={t("login.loginLabel")}
-                    type="text"
-                    invalid={credentialsRejected}
-                    required
-                    {...register("login", {
-                      onChange: clearSignInError,
-                      required: t("login.loginRequired"),
-                      validate: (value) => isValidLogin(value) || t("login.loginInvalid"),
-                    })}
-                  />
-
-                  <Input
-                    aria-describedby={credentialsRejected ? signInErrorId : undefined}
-                    autoComplete="current-password"
-                    error={errors.password?.message}
-                    hidePasswordLabel={t("common.hidePassword")}
-                    placeholder={t("login.passwordPlaceholder")}
-                    showPasswordLabel={t("common.showPassword")}
-                    title={t("login.passwordLabel")}
-                    type="password"
-                    invalid={credentialsRejected}
-                    required
-                    {...register("password", { onChange: clearSignInError, required: t("login.passwordRequired") })}
-                  />
-                </div>
-
-                {isLocked && signInLock && (
-                  <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
-                    {t("login.tooManyAttempts", { count: signInLock.minutes })}
-                  </Text>
-                )}
-
-                {!isLocked && signInError && (
-                  <Text as="p" color="danger" fontSize="sm" id={signInErrorId} role="alert">
-                    {t(`login.${signInError}`)}
-                  </Text>
-                )}
-
-                <div
-                  style={{ alignItems: "center", display: "flex", gap: spacing[16], justifyContent: "space-between" }}
-                >
-                  {/* The countdown lives on the button, not in the alert above, so screen readers don't
-                      re-announce the message every second. */}
-                  <Button disabled={isSubmitting || isLocked} type="submit">
-                    {isLocked
-                      ? t("login.retryIn", { time: formatCountdown(lockCountdown.secondsLeft) })
-                      : t("login.signIn")}
-                  </Button>
-
-                  <Button as={Link} size="small" to={paths.forgotPassword} variant="link">
-                    {t("login.forgotPassword")}
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          </Grid.Col>
-        </Grid.Row>
-      </Grid.Container>
+              <Button as={Link} size="small" to={paths.forgotPassword} variant="link">
+                {t("login.forgotPassword")}
+              </Button>
+            </div>
+          </form>
+        </FormPanel>
+      </LoginCard>
 
       {sessionLimit && (
         <SessionLimitDialog
