@@ -11,6 +11,7 @@ import { createPersonDocument } from "@/services/people"
 import { toIsoDate } from "@/utils/dates"
 
 import { FormFields } from "../../userAccess/userAccess.styles"
+import { getDocumentNumberInput, isDocumentNumberValid, toDocumentNumberPattern } from "../documentNumber"
 import { FieldRow } from "../people.styles"
 import { checkDocumentFile, documentFileAccept, documentLimits } from "./documentFile"
 import { useDocumentFailure } from "./useDocumentFailure"
@@ -24,7 +25,7 @@ export type NewDocumentModalProps = {
   onChanged: () => void
 }
 
-type FieldErrors = { documentType?: string; expiresOn?: string; file?: string }
+type FieldErrors = { documentNumber?: string; documentType?: string; expiresOn?: string; file?: string }
 
 // Registers a personal document: the type from the catalog, the number (stored masked), the issue date
 // and, for a type that has one, the expiry date. The file is optional here and goes right after the
@@ -50,6 +51,7 @@ export const NewDocumentModal = (props: NewDocumentModalProps) => {
 
   const options = documentTypes.map((type) => ({ label: type.label, value: type.code }))
   const hasExpiry = documentTypes.find((type) => type.code === documentType)?.hasExpiry ?? false
+  const numberInput = getDocumentNumberInput(documentType)
   const isBusy = isSaving || isUploading
 
   useUnsavedChanges(!isBusy && (documentType !== "" || documentNumber.trim() !== "" || file !== null))
@@ -64,6 +66,7 @@ export const NewDocumentModal = (props: NewDocumentModalProps) => {
   const validate = (): FieldErrors => {
     const found: FieldErrors = {}
     if (!documentType) found.documentType = t("personDocuments.form.typeRequired")
+    if (!isDocumentNumberValid(documentType, documentNumber)) found.documentNumber = t("people.form.documentCpfInvalid")
     if (hasExpiry && issuedOn && expiresOn && expiresOn < issuedOn) {
       found.expiresOn = t("personDocuments.form.datesInvalid")
     }
@@ -163,8 +166,16 @@ export const NewDocumentModal = (props: NewDocumentModalProps) => {
               error={errors.documentType}
               noOptionsMessage={t("common.noOptions")}
               onChange={(option) => {
-                setDocumentType(option?.value ?? "")
-                setErrors((current) => ({ ...current, documentType: undefined, expiresOn: undefined }))
+                const type = option?.value ?? ""
+                setDocumentType(type)
+                // A number typed before the type was chosen takes the new type's pattern at once.
+                setDocumentNumber((number) => toDocumentNumberPattern(type, number))
+                setErrors((current) => ({
+                  ...current,
+                  documentNumber: undefined,
+                  documentType: undefined,
+                  expiresOn: undefined,
+                }))
               }}
               options={options}
               placeholder={t("people.form.documentTypePlaceholder")}
@@ -173,10 +184,17 @@ export const NewDocumentModal = (props: NewDocumentModalProps) => {
               required
             />
             <Input
+              error={errors.documentNumber}
               helperText={t("personDocuments.form.numberHelper")}
+              inputMode={numberInput.inputMode}
+              mask={numberInput.mask}
               maxLength={documentLimits.number}
-              onChange={(event) => setDocumentNumber(event.target.value)}
-              placeholder={t("people.form.documentNumberPlaceholder")}
+              numeric={numberInput.numeric}
+              onChange={(event) => {
+                setDocumentNumber(event.target.value)
+                setErrors((current) => ({ ...current, documentNumber: undefined }))
+              }}
+              placeholder={t(`people.form.${numberInput.placeholderKey}`)}
               title={t("people.form.documentNumberLabel")}
               value={documentNumber}
             />

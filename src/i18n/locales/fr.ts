@@ -1971,6 +1971,7 @@ export const fr: TranslationResource = {
       contactEmailLabel: "E-mail de contact",
       contactEmailPlaceholder: "nom@exemple.fr",
       contactTitle: "Contact",
+      documentCpfInvalid: "CPF invalide : vérifiez les 11 chiffres.",
       documentHelper: "Facultatif. Aucun document n'est obligatoire.",
       documentInUse:
         "Ce document appartient déjà à une autre personne. Utilisez la fiche existante ou corrigez le document.",
@@ -1978,6 +1979,8 @@ export const fr: TranslationResource = {
       documentKeepHelper: "Laissez vide pour garder le document actuel ({{document}}).",
       documentNumberLabel: "Numéro du document",
       documentNumberPlaceholder: "Saisissez le numéro",
+      documentNumberPlaceholderCnh: "00000000000",
+      documentNumberPlaceholderCpf: "000.000.000-00",
       documentNumberRequired: "Indiquez le numéro du document.",
       documentTitle: "Document",
       documentTypeInvalid: "Ce type de document n'est pas accepté.",

@@ -1,5 +1,5 @@
 import { type ReactNode, useState } from "react"
-import { Controller, useFormContext } from "react-hook-form"
+import { Controller, useFormContext, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { Text } from "@/ds-components/atoms"
@@ -15,6 +15,7 @@ import { stripNonDigits } from "@/utils/formats"
 import { isValidPhone } from "@/utils/phone"
 
 import { usePhoneInputTexts } from "../phone/usePhoneInputTexts"
+import { getDocumentNumberInput, isDocumentNumberValid, toDocumentNumberPattern } from "./documentNumber"
 import { FieldRow, PersonSection } from "./people.styles"
 import { type PersonFormValues, personLimits } from "./personForm"
 
@@ -154,14 +155,26 @@ export type PersonDocumentFieldsProps = {
 }
 
 // The person's document: a type from the catalog and the number, always together (no document is
-// mandatory). Editing a person whose document is on record, a blank number keeps it.
+// mandatory). Editing a person whose document is on record, a blank number keeps it. The number follows
+// its type's pattern as it is typed: a CPF is masked (000.000.000-00) and its check digits are checked
+// before saving, a CNH takes only its digits; the other types (an RG differs by state, a passport has
+// letters) are free. The backend keeps only the letters and digits, so the mask never reaches it.
 export const PersonDocumentFields = (props: PersonDocumentFieldsProps) => {
   const { currentDocument, documentTypes } = props
 
   const { t } = useTranslation()
-  const { control, formState, getValues, register } = useFormContext<PersonFormValues>()
+  const { control, formState, getValues, register, setValue } = useFormContext<PersonFormValues>()
+  const documentType = useWatch({ control, name: "documentType" })
 
   const { errors } = formState
+  const numberInput = getDocumentNumberInput(documentType)
+
+  // A number typed before the type was chosen takes the new type's pattern at once.
+  const changeType = (type: string) => {
+    const number = getValues("documentNumber")
+    const patterned = toDocumentNumberPattern(type, number)
+    if (patterned !== number) setValue("documentNumber", patterned, { shouldDirty: true })
+  }
   const typeOptions: SelectOption[] = documentTypes.map((type) => ({ label: type.label, value: type.code }))
   const numberHelper = currentDocument
     ? t("people.form.documentKeepHelper", { document: currentDocument })
@@ -179,7 +192,10 @@ export const PersonDocumentFields = (props: PersonDocumentFieldsProps) => {
               name={controller.field.name}
               noOptionsMessage={t("common.noOptions")}
               onBlur={controller.field.onBlur}
-              onChange={(option) => controller.field.onChange(option?.value ?? "")}
+              onChange={(option) => {
+                controller.field.onChange(option?.value ?? "")
+                changeType(option?.value ?? "")
+              }}
               options={typeOptions}
               placeholder={t("people.form.documentTypePlaceholder")}
               title={t("people.form.documentTypeLabel")}
@@ -195,15 +211,23 @@ export const PersonDocumentFields = (props: PersonDocumentFieldsProps) => {
           autoComplete="off"
           error={errors.documentNumber?.message}
           helperText={numberHelper}
+          inputMode={numberInput.inputMode}
+          mask={numberInput.mask}
           maxLength={personLimits.documentNumber}
-          placeholder={t("people.form.documentNumberPlaceholder")}
+          numeric={numberInput.numeric}
+          placeholder={t(`people.form.${numberInput.placeholderKey}`)}
           title={t("people.form.documentNumberLabel")}
           {...register("documentNumber", {
-            validate: (value) =>
-              value.trim() !== "" ||
-              getValues("documentType") === "" ||
-              Boolean(currentDocument) ||
-              t("people.form.documentNumberRequired"),
+            validate: (value) => {
+              if (value.trim() === "")
+                return (
+                  getValues("documentType") === "" ||
+                  Boolean(currentDocument) ||
+                  t("people.form.documentNumberRequired")
+                )
+              if (!isDocumentNumberValid(getValues("documentType"), value)) return t("people.form.documentCpfInvalid")
+              return true
+            },
           })}
         />
       </FieldRow>
