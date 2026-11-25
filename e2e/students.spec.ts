@@ -24,6 +24,22 @@ const chooseAction = async (page: Page, name: string) => {
   await page.getByRole("menuitem", { name }).click()
 }
 
+test.describe("discard", () => {
+  test("deletes a draft nothing depends on and goes back to the list", async ({ page }) => {
+    await mockPeopleApi(page)
+    await signInAndOpen(page, `${studentsPath}/203`)
+
+    await chooseAction(page, "Descartar rascunho")
+    const dialog = page.getByRole("dialog", { name: "Descartar o rascunho de Carla Dias?" })
+    await expect(dialog).toContainText("é apagado de vez quando nada depende dele")
+    await dialog.getByRole("button", { name: "Descartar" }).click()
+
+    await expect(page.getByText("Rascunho descartado e apagado.")).toBeVisible()
+    await expect(page).toHaveURL(/\/administration\/students$/)
+    await expect(page.getByRole("row").filter({ hasText: "Carla Dias" })).toHaveCount(0)
+  })
+})
+
 test.describe("new student", () => {
   test("saves a draft and opens its profile, without creating an access", async ({ page }) => {
     const { calls } = await mockPeopleApi(page)

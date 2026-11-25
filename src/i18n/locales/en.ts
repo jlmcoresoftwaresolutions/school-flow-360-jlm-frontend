@@ -1176,6 +1176,7 @@ export const en: TranslationResource = {
         "Someone else changed this link. The current version is shown below; saving again records what is in the form.",
       failed: "Could not save. Try again.",
       gone: "The student or the link is no longer available to you.",
+      alreadyLinked: "This guardian is already linked to the student. There is nothing to invite.",
       guardianHasAccess: "This guardian already has access. Link them directly, without an invitation.",
       guardianInactive: "Inactive guardian. Reactivate them before linking.",
       invitationPending: "There is already a pending invitation for this e-mail. Resend or cancel it in Invitations.",
@@ -1997,6 +1998,7 @@ export const en: TranslationResource = {
       done_one: "{{count}} draft removed.",
       done_other: "{{count}} drafts removed.",
       failed: "Could not clean up the drafts. Try again.",
+      none: "No draft was deleted: only a draft untouched for over {{days}} days, with no link, open invitation or document, is removed.",
       title: "Clean up abandoned drafts?",
     },
     export: {
@@ -2439,7 +2441,9 @@ export const en: TranslationResource = {
       discard: {
         action: "Discard draft",
         confirm: "Discard",
-        description: "{{name}}'s draft becomes inactive and open invitations are cancelled. Nothing is deleted.",
+        deleted: "Draft discarded and deleted.",
+        description:
+          "{{name}}'s draft is deleted for good when nothing depends on it (a link, an invitation or a document). If something does, it becomes inactive instead. Either way, open invitations are cancelled.",
         done: "Draft discarded.",
         title: "Discard {{name}}'s draft?",
       },

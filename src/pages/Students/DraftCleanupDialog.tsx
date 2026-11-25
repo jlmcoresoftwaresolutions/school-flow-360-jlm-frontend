@@ -16,8 +16,8 @@ export type DraftCleanupDialogProps = {
 
 // Runs now the retention of abandoned student drafts (LGPD minimization, Admin only), which the backend
 // also runs every night: a draft untouched past the retention period, without a link, an open invitation
-// or a document, is deleted for good; any other draft stays. The period is the backend's policy, not
-// written here.
+// or a document, is deleted for good; any other draft stays. The period is the backend's policy: it is
+// told only when nothing was deleted, from the answer's retentionDays.
 export const DraftCleanupDialog = (props: DraftCleanupDialogProps) => {
   const { onClose, onDone } = props
 
@@ -31,8 +31,10 @@ export const DraftCleanupDialog = (props: DraftCleanupDialogProps) => {
     setIsRunning(true)
     setFailure("")
     try {
-      const { removedDrafts } = await cleanUpDraftStudents()
-      toast.success(t("peoplePrivacy.draftCleanup.done", { count: removedDrafts }))
+      const { removedDrafts, retentionDays } = await cleanUpDraftStudents()
+      // Nothing deleted is an answer, not a failure: it says which drafts the retention removes.
+      if (removedDrafts > 0) toast.success(t("peoplePrivacy.draftCleanup.done", { count: removedDrafts }))
+      else toast.info(t("peoplePrivacy.draftCleanup.none", { days: retentionDays }))
       onDone()
     } catch (error) {
       setIsRunning(false)

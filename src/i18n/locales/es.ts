@@ -1184,6 +1184,7 @@ export const es: TranslationResource = {
         "Otra persona cambió este vínculo. La versión actual aparece abajo; guardar de nuevo graba lo que está en el formulario.",
       failed: "No se pudo guardar. Inténtelo de nuevo.",
       gone: "El alumno o el vínculo ya no está disponible para usted.",
+      alreadyLinked: "Este responsable ya está vinculado al estudiante. No hay nada que invitar.",
       guardianHasAccess: "Este responsable ya tiene acceso. Vincúlelo directamente, sin invitación.",
       guardianInactive: "Responsable inactivo. Reactívelo antes de vincular.",
       invitationPending: "Ya hay una invitación pendiente para este correo. Reenvíela o cancélela en Invitaciones.",
@@ -2013,6 +2014,7 @@ export const es: TranslationResource = {
       done_one: "{{count}} borrador eliminado.",
       done_other: "{{count}} borradores eliminados.",
       failed: "No se pudieron limpiar los borradores. Inténtelo de nuevo.",
+      none: "No se borró ningún borrador: solo se elimina el que lleva más de {{days}} días sin cambios, sin vínculo, invitación abierta ni documento.",
       title: "¿Limpiar borradores abandonados?",
     },
     export: {
@@ -2458,8 +2460,9 @@ export const es: TranslationResource = {
       discard: {
         action: "Descartar borrador",
         confirm: "Descartar",
+        deleted: "Borrador descartado y borrado.",
         description:
-          "El borrador de {{name}} queda inactivo y las invitaciones abiertas se cancelan. No se borra nada.",
+          "El borrador de {{name}} se borra definitivamente cuando nada depende de él (vínculo, invitación o documento). Si algo depende, queda inactivo. En ambos casos, las invitaciones abiertas se cancelan.",
         done: "Borrador descartado.",
         title: "¿Descartar el borrador de {{name}}?",
       },

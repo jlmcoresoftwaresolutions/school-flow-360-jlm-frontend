@@ -732,6 +732,8 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
 
     const body = call.body as Item
     if (body.email === "fernanda@gmail.com") return route.fulfill(apiError(409, "USER_DUPLICATE"))
+    // A guardian already linked to the student: nothing to invite.
+    if (body.email === "ja.vinculado@gmail.com") return route.fulfill(apiError(409, "GUARDIAN_ALREADY_LINKED"))
     const guardianId = body.guardianId ? Number(body.guardianId) : null
     const invitation = {
       channelResult: "SENT",
@@ -807,6 +809,15 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
       const updated = { ...student, ...cleared, ...body, version: Number(student.version) + 1 }
       records.set(Number(id), updated)
       return route.fulfill(apiAnswer(updated))
+    }
+
+    // Discarding a draft that nothing depends on deletes it for good (status DELETED, then 404).
+    const hasLink = links.some((item) => (item.student as Item).id === Number(id))
+    if (action === "discard" && !hasLink) {
+      records.delete(Number(id))
+      const row = studentList.find((item) => item.id === Number(id))
+      if (row) studentList.splice(studentList.indexOf(row), 1)
+      return route.fulfill(apiAnswer({ ...student, status: "DELETED", version: Number(student.version) + 1 }))
     }
 
     const blockers = student.activationBlockers as string[]
@@ -982,7 +993,7 @@ export const mockPeopleApi = async (page: Page, options: PeopleOptions = {}) => 
     record(route.request())
     const drafts = studentList.filter((item) => item.status === "DRAFT" && item.activeGuardians === 0)
     drafts.forEach((draft) => studentList.splice(studentList.indexOf(draft), 1))
-    return route.fulfill(apiAnswer({ removedDrafts: drafts.length }))
+    return route.fulfill(apiAnswer({ removedDrafts: drafts.length, retentionDays: 30 }))
   })
 
   // The personal documents, kept like the backend keeps them (never deleted; every change bumps the

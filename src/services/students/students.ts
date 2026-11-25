@@ -10,6 +10,7 @@ import type {
   StudentPage,
   StudentSearchParams,
   StudentStateChange,
+  StudentStateResult,
   StudentUpdateRequest,
 } from "@/models"
 
@@ -70,8 +71,12 @@ export const changeStudentState = async (
   action: StudentStateAction,
   request: StudentStateChange,
   config?: RequestConfig,
-): Promise<Student> => {
-  const response = await httpClient.post<ApiResponse<Student>>(`/api/students/${studentId}/${action}`, request, config)
+): Promise<StudentStateResult> => {
+  const response = await httpClient.post<ApiResponse<StudentStateResult>>(
+    `/api/students/${studentId}/${action}`,
+    request,
+    config,
+  )
 
   return unwrapApiResponse(response)
 }
@@ -125,7 +130,8 @@ export const listGuardianInvitations = async (
 }
 
 // USED by the student profile. POST /api/students/{id}/guardian-invitations: invites a guardian by e-mail (48 hours).
-// Errors 409: INVITATION_PENDING, GUARDIAN_HAS_ACCESS (link it directly instead), USER_DUPLICATE.
+// Errors 409: INVITATION_PENDING, GUARDIAN_HAS_ACCESS (link it directly instead), GUARDIAN_ALREADY_LINKED (the guardian
+// is already linked to the student: nothing to invite), USER_DUPLICATE.
 export const inviteGuardian = async (
   studentId: number,
   request: GuardianInvitationRequest,

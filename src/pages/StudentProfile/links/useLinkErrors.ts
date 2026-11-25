@@ -38,6 +38,8 @@ export const useLinkErrors = () => {
         return field("guardian", t("guardianLinks.errors.linkDuplicate"))
       case "REUSE_TOKEN_INVALID":
         return field("guardian", t("guardianLinks.errors.reuseInvalid"))
+      case "GUARDIAN_ALREADY_LINKED":
+        return field("guardian", t("guardianLinks.errors.alreadyLinked"))
       case "GUARDIAN_HAS_ACCESS":
         return field("guardian", t("guardianLinks.errors.guardianHasAccess"))
       case "INVITATION_PENDING":

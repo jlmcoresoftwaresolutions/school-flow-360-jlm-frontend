@@ -109,6 +109,13 @@ export type StudentStateChange = {
   version: number
 }
 
+// What a status change answers: the student as it is now. Discarding a draft that nothing depends on
+// (no link, no open or confirmed invitation, no document) deletes it for good, and the answer says
+// status DELETED: the student no longer exists (404). Any other draft becomes INACTIVE and stays.
+export type StudentStateResult = Omit<Student, "status"> & {
+  status: Student["status"] | "DELETED"
+}
+
 // The student 360: the identity, each guardian with its own link (active and ended), the invitations,
 // and the sections the operator may open (a section without the right doesn't come).
 export type Student360 = {

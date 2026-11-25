@@ -1,4 +1,4 @@
-import { mockPeopleApi, unexpectedFailureName } from "./support/people.ts"
+import { mockPeopleApi, students, unexpectedFailureName } from "./support/people.ts"
 import { expect, type Page, test } from "./support/test.ts"
 import { lastCall, secretariaContext, signInAndOpen } from "./support/userAccess.ts"
 
@@ -118,6 +118,23 @@ test.describe("LGPD tools", () => {
     await expect(page.getByText("1 rascunho removido.")).toBeVisible()
     await expect(page.getByRole("row").filter({ hasText: "Carla Dias" })).toHaveCount(0)
     expect(lastCall(calls, "POST", "/api/people/maintenance/draft-cleanup")).toBeDefined()
+  })
+})
+
+test.describe("draft cleanup with nothing to remove", () => {
+  test("says which drafts the retention removes when none was deleted", async ({ page }) => {
+    await mockPeopleApi(page, { students: students.filter((item) => item.status !== "DRAFT") })
+    await signInAndOpen(page, "/administration/students")
+
+    await page.getByRole("button", { exact: true, name: "Limpar rascunhos" }).click()
+    await page
+      .getByRole("dialog", { name: "Limpar rascunhos abandonados?" })
+      .getByRole("button", { name: "Limpar rascunhos" })
+      .click()
+
+    await expect(
+      page.getByText(/Nenhum rascunho foi apagado: só sai o rascunho parado há mais de 30 dias/),
+    ).toBeVisible()
   })
 })
 

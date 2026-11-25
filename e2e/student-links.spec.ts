@@ -258,6 +258,21 @@ test.describe("guardian invitation", () => {
     )
   })
 
+  test("tells a guardian already linked to the student has nothing to be invited for", async ({ page }) => {
+    await mockPeopleApi(page)
+    await signInAndOpen(page, `${studentsPath}/203`)
+    await page.getByRole("tab", { name: "Responsáveis" }).click()
+
+    await page.getByRole("button", { name: "Convidar por e-mail" }).click()
+    const dialog = page.getByRole("dialog", { name: "Convidar responsável de Carla Dias" })
+    await dialog.getByRole("textbox", { name: /^E-mail do responsável/ }).fill("ja.vinculado@gmail.com")
+    await dialog.getByRole("textbox", { name: /^Nome do responsável/ }).fill("Paula Mendes")
+    await pick(page, /^Parentesco/, "Mãe")
+    await dialog.getByRole("button", { name: "Enviar convite" }).click()
+
+    await expect(dialog.getByText("Esse responsável já está vinculado ao aluno. Não há o que convidar.")).toBeVisible()
+  })
+
   test("confirms a guardian who accepted, which makes the link", async ({ page }) => {
     await mockPeopleApi(page, { invitations: [awaitingInvitation] })
     await signInAndOpen(page, `${studentsPath}/203`)
