@@ -326,11 +326,13 @@ export const PreviewHeader = styled.div<PreviewHeaderProps>`
   padding: ${spacing[12]} ${spacing[16]};
 `
 
+// A fixed height reserves the logo's room before the image arrives, so the preview doesn't jump.
 export const PreviewLogo = styled.img`
   flex-shrink: 0;
-  max-height: ${spacing[40]};
+  height: ${spacing[40]};
   max-width: ${spacing[128]};
   object-fit: contain;
+  width: auto;
 `
 
 export const PreviewBody = styled.div`

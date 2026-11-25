@@ -7,11 +7,15 @@ import { GlobalLoading, Toast } from "@/components"
 import { i18n } from "@/i18n"
 import { restoreSchoolColors } from "@/utils/theme"
 
+import { preloadPhotoBackdrop } from "./pages/shared/backdrop/preloadPhotoBackdrop"
 import { router } from "./routes"
 import GlobalStyle from "./styles/GlobalStyle"
 
 // The school's colors from the last visit, painted before the first frame instead of the product's.
 restoreSchoolColors()
+
+// The background photo of the screens before signing in, asked for right away when the app opens on one.
+preloadPhotoBackdrop()
 
 const app = (
   <I18nextProvider i18n={i18n}>
