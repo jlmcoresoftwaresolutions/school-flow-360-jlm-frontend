@@ -28,7 +28,7 @@ const hiddenAdminName = "Administracao"
 // The registration history of a student or a guardian (P03, Histórico tab), read only: what happened
 // (the registration, the changes, the status, the links and the invitations), when, by whom (an Admin
 // shows as "Administração" to a Secretaria) and on what. A change names only the fields, never their
-// values. It is the person's own history, kept for 12 months, not the security trail, which stays in
+// values. It is the person's own history, kept for 5 years, not the security trail, which stays in
 // the Auditoria. The page is kept with the person it was read for, so another person's history never
 // shows while a new one loads.
 export const PersonHistory = (props: PersonHistoryProps) => {

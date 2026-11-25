@@ -28,7 +28,7 @@ export type AuditEventSearchParams = {
 export type AccessAuditResult = "DENIED" | "SUCCESS"
 
 // One event of the access audit (GET /api/audit): who did it, what, on which entity, in which unit,
-// with which result and when. Kept for 12 months and never changed; it never carries a secret. The
+// with which result and when. Kept for 5 years (backend V38) and never changed; it never carries a secret. The
 // audit is the Admin's only, so the actor's name and e-mail come filled in. `details` names the fields
 // a change touched (e.g. "fields=fullName,phone"), never their values.
 export type AccessAuditEvent = {
