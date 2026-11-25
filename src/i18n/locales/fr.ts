@@ -1315,9 +1315,12 @@ export const fr: TranslationResource = {
     forbiddenTitle: "Vous n'avez pas accès aux inscriptions",
     guardians: {
       choose: "Participe à cette inscription",
+      chooseParticipants: "Choisir les participants",
       conflict:
         "Quelqu'un d'autre a modifié cette inscription. Les données ont été relues et vos choix conservés : vérifiez-les et enregistrez à nouveau.",
       contact: "contact",
+      defineFinancial: "Définissez qui est le responsable financier de cette inscription.",
+      defineSignatory: "Définissez qui signe le contrat de cette inscription.",
       description:
         "Les responsables légaux viennent de la fiche de l'élève. Qui participe, qui est financier et qui signe sont des choix de cette inscription, jamais déduits du lien de parenté.",
       edit: "Modifier les choix",
@@ -1325,6 +1328,7 @@ export const fr: TranslationResource = {
       errorDescription: "Impossible de charger les responsables légaux. Réessayez dans un instant.",
       errorTitle: "Responsables légaux indisponibles",
       failed: "Impossible d'enregistrer les choix pour le moment. Réessayez dans un instant.",
+      financialCandidate: "Responsable financier dans le dossier de l'élève",
       financialInPeople: "financière",
       fixInPeople: "Corriger les liens dans la fiche de l'élève",
       inPeople: "Dans la fiche : {{detail}}",
@@ -1332,6 +1336,8 @@ export const fr: TranslationResource = {
       linkActive: "Lien en vigueur",
       listLabel: "Responsables légaux de l'élève",
       loading: "Chargement des responsables légaux...",
+      manyFinancialCandidates:
+        "Plus d'un responsable est financier dans le dossier de l'élève. Définissez lequel est le responsable financier de cette inscription.",
       notChosen: "Ne participe pas à cette inscription",
       partyInvalid:
         "L'un des responsables légaux choisis n'a plus de lien actif avec l'élève ou n'est pas actif. La liste a été relue.",
@@ -1339,6 +1345,8 @@ export const fr: TranslationResource = {
       pendenciesLabel: "Ce qui manque côté responsables légaux",
       saved: "Choix des responsables légaux enregistrés.",
       signs: "Signe",
+      suggested:
+        "Suggestion : les responsables avec un lien en cours participent et, quand le dossier de l'élève n'a qu'un responsable financier, il est coché. Vérifiez et enregistrez : rien ne compte avant, et le lien de parenté seul ne définit ni qui paie ni qui signe.",
       title: "Responsables légaux et rôles",
     },
     history: {
@@ -1384,10 +1392,10 @@ export const fr: TranslationResource = {
     pendencyCodes: {
       CLASS_NOT_ELIGIBLE: "La classe choisie n'est plus ouverte aux inscriptions",
       NO_CLASS: "Aucune classe choisie",
-      NO_FINANCIAL_PARTY: "Aucun responsable financier",
-      NO_PARTY: "Aucun responsable légal choisi",
+      NO_FINANCIAL_PARTY: "Définissez qui est le responsable financier de cette inscription",
+      NO_PARTY: "Définissez qui participe à cette inscription",
       NO_SEAT: "La classe choisie n'a pas de place",
-      NO_SIGNATORY: "Personne n'est choisi pour signer",
+      NO_SIGNATORY: "Définissez qui signe le contrat de cette inscription",
       OCCUPANCY_UNAVAILABLE: "Les places de la classe n'ont pas pu être lues pour le moment",
       PARTY_LINK_ENDED: "Le lien d'un responsable légal choisi a pris fin",
       STUDENT_NOT_ELIGIBLE: "La fiche de l'élève n'est pas active",
@@ -1403,10 +1411,10 @@ export const fr: TranslationResource = {
       classTitle: "Classe",
       confirmation: "Confirmation",
       eligible: "L'inscription de l'élève peut être confirmée",
-      guardiansTitle: "Responsables légaux choisis",
+      guardiansTitle: "Participants de l'inscription",
       linkEnded: "Lien terminé",
       noClass: "Aucune classe choisie pour l'instant.",
-      noGuardians: "Aucun responsable légal choisi pour l'instant.",
+      noGuardians: "Personne n'a encore été défini pour participer à cette inscription.",
       noPendencies: "Aucun point en attente dans les étapes déjà évaluées.",
       notEligible: "Seule l'inscription d'un élève actif est confirmée. Activez la fiche dans Élèves.",
       notEvaluated: "Pas encore évalué",

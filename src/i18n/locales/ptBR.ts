@@ -1285,9 +1285,12 @@ export const ptBR = {
     forbiddenTitle: "Você não tem acesso às matrículas",
     guardians: {
       choose: "Participa desta matrícula",
+      chooseParticipants: "Escolher participantes",
       conflict:
         "Outra pessoa alterou esta matrícula. Os dados foram relidos e as suas escolhas foram mantidas: confira e salve de novo.",
       contact: "contato",
+      defineFinancial: "Defina quem é o responsável financeiro desta matrícula.",
+      defineSignatory: "Defina quem assina o contrato desta matrícula.",
       description:
         "Os responsáveis vêm do cadastro do aluno. Quem participa, quem é financeiro e quem assina são escolhas desta matrícula, nunca deduzidas do parentesco.",
       edit: "Alterar escolhas",
@@ -1295,6 +1298,7 @@ export const ptBR = {
       errorDescription: "Não foi possível carregar os responsáveis. Tente novamente em instantes.",
       errorTitle: "Responsáveis indisponíveis",
       failed: "Não foi possível salvar as escolhas agora. Tente novamente em instantes.",
+      financialCandidate: "Responsável financeiro no cadastro do aluno",
       financialInPeople: "financeira",
       fixInPeople: "Corrigir vínculos no cadastro do aluno",
       inPeople: "No cadastro: {{detail}}",
@@ -1302,6 +1306,8 @@ export const ptBR = {
       linkActive: "Vínculo vigente",
       listLabel: "Responsáveis do aluno",
       loading: "Carregando os responsáveis...",
+      manyFinancialCandidates:
+        "Mais de um responsável é financeiro no cadastro do aluno. Defina qual deles é o financeiro desta matrícula.",
       notChosen: "Não participa desta matrícula",
       partyInvalid:
         "Um dos responsáveis escolhidos não tem mais vínculo ativo com o aluno ou não está ativo. A lista foi relida.",
@@ -1309,6 +1315,8 @@ export const ptBR = {
       pendenciesLabel: "O que falta nos responsáveis",
       saved: "Escolhas dos responsáveis salvas.",
       signs: "Assina",
+      suggested:
+        "Sugestão: os responsáveis com vínculo vigente participam e, quando há só um financeiro no cadastro do aluno, ele vem marcado. Confira e salve: nada vale antes disso, e o parentesco sozinho não define quem paga nem quem assina.",
       title: "Responsáveis e papéis",
     },
     history: {
@@ -1354,10 +1362,10 @@ export const ptBR = {
     pendencyCodes: {
       CLASS_NOT_ELIGIBLE: "A turma escolhida deixou de estar aberta para matrícula",
       NO_CLASS: "Nenhuma turma escolhida",
-      NO_FINANCIAL_PARTY: "Nenhum responsável financeiro",
-      NO_PARTY: "Nenhum responsável escolhido",
+      NO_FINANCIAL_PARTY: "Defina quem é o responsável financeiro desta matrícula",
+      NO_PARTY: "Defina quem participa desta matrícula",
       NO_SEAT: "A turma escolhida não tem vaga",
-      NO_SIGNATORY: "Ninguém escolhido para assinar",
+      NO_SIGNATORY: "Defina quem assina o contrato desta matrícula",
       OCCUPANCY_UNAVAILABLE: "Não foi possível ler as vagas da turma agora",
       PARTY_LINK_ENDED: "O vínculo de um responsável escolhido foi encerrado",
       STUDENT_NOT_ELIGIBLE: "O cadastro do aluno não está ativo",
@@ -1373,10 +1381,10 @@ export const ptBR = {
       classTitle: "Turma",
       confirmation: "Confirmação",
       eligible: "O aluno pode ter a matrícula confirmada",
-      guardiansTitle: "Responsáveis escolhidos",
+      guardiansTitle: "Participantes da matrícula",
       linkEnded: "Vínculo encerrado",
       noClass: "Nenhuma turma escolhida ainda.",
-      noGuardians: "Nenhum responsável escolhido ainda.",
+      noGuardians: "Ninguém foi definido para participar desta matrícula ainda.",
       noPendencies: "Nenhuma pendência nas etapas já avaliadas.",
       notEligible: "Só um aluno ativo tem a matrícula confirmada. Ative o cadastro em Alunos.",
       notEvaluated: "Ainda não avaliado",

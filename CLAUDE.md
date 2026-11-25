@@ -109,6 +109,8 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com 
 - A aba **Responsáveis** (`EnrollmentGuardians`) lista todos os responsáveis vinculados ao aluno em Pessoas, com vínculo vigente ou encerrado, o parentesco e as três responsabilidades do vínculo lá.
   - O parentesco vem do catálogo, que só Admin e Secretaria leem; para os outros a tela não o pede (`useRelationshipTypes(enabled)`).
   - Quem participa, quem é financeiro e quem assina são escolhas explícitas desta matrícula, nunca deduzidas do parentesco. São editadas no lugar ("Alterar escolhas") e salvas como o conjunto inteiro, com o `version`.
+  - Ter um responsável vinculado não é ter os participantes da matrícula (decisão do Lucas, 25/11/2026): a pendência diz "Defina quem participa desta matrícula", e a ação "Escolher participantes" fica junto dela, aqui e na Preparação (que abre a escolha nesta aba).
+  - A primeira escolha abre com sugestões, que só valem depois de salvas: participam os responsáveis com vínculo vigente, e o financeiro do cadastro do aluno só vem marcado quando é o único candidato. Com mais de um, a tela pede a definição; ninguém é sugerido para assinar, e o parentesco sozinho nunca define quem paga nem quem assina.
   - Um vínculo encerrado não pode ser escolhido, e um escolhido antes de encerrar aparece assim.
   - O vínculo é criado ou corrigido no cadastro do aluno, nunca aqui.
   - Num conflito de versão a página relê a matrícula, mantendo na tela a resposta anterior enquanto relê, para o rascunho não se perder.

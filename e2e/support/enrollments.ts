@@ -21,6 +21,8 @@ export type EnrollmentOptions = {
   documents?: boolean
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
   readOnly?: boolean
+  // Ana also has her grandmother linked now, financial in Pessoas too: two candidates to pay.
+  secondFinancialGuardian?: boolean
   // Ana's preparation (501) already has her mother as financial party and signatory and the class with
   // seats: only the start date is missing before it can be confirmed.
   readyButStartDate?: boolean
@@ -58,6 +60,18 @@ const linksByStudent: Record<number, Item[]> = {
 const unitName = (unitId: number) => units.find((unit) => unit.schoolUnitId === unitId)?.unitName ?? null
 
 // The students the operator may prepare, as the search answers them.
+// Ana's grandmother, linked now and financial in Pessoas (the secondFinancialGuardian option).
+const grandmotherLink: Item = {
+  contactAuthorized: true,
+  financialResponsible: true,
+  guardianId: 303,
+  guardianName: "Helena Souza",
+  linkId: 2012,
+  linkStatus: "ACTIVE",
+  pedagogicalResponsible: false,
+  relationshipCode: "GRANDMOTHER",
+}
+
 export const enrollmentStudents = [
   { code: "ALU-000001", id: 201, name: "Ana Beatriz Souza", status: "ACTIVE", unitId: 1 },
   { code: "ALU-000002", id: 202, name: "Bruno Lima", status: "ACTIVE", unitId: 2 },
@@ -602,7 +616,11 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       return route.fulfill(apiAnswer(toPage(events.get(Number(id)) ?? [], call.query)))
     }
 
-    const links = linksByStudent[Number((current.student as Item).id)] ?? []
+    const studentId = Number((current.student as Item).id)
+    const links = [
+      ...(linksByStudent[studentId] ?? []),
+      ...(options.secondFinancialGuardian && studentId === 201 ? [grandmotherLink] : []),
+    ]
     const parties = current.parties as Item[]
 
     if (action === "classes") return route.fulfill(apiAnswer(classesByUnit[Number(current.unitId)] ?? []))
