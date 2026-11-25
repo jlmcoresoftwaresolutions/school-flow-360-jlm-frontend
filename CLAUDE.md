@@ -116,7 +116,7 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com 
   - Num conflito de versão a página relê a matrícula, mantendo na tela a resposta anterior enquanto relê, para o rascunho não se perder.
 - A aba **Turma** (`EnrollmentClass`):
   - Mostra a turma escolhida, com turno, limite, ocupação lida agora (e quando) e vagas. Uma ocupação que não pôde ser lida aparece como "indisponível", nunca zero.
-  - Lista as turmas da unidade abertas para matrícula (`listEnrollmentClasses`), lidas só quando a pessoa vai escolher.
+  - Lista as turmas da unidade abertas para matrícula (`listEnrollmentClasses`) logo abaixo da turma escolhida, antes da data de início (pedido do Lucas, 25/11/2026). Sem turma escolhida, a lista já aparece aberta e o texto pede "Selecione uma turma para realização da matrícula"; com uma escolhida, ela é lida só quando a pessoa vai trocar. Se a unidade não tem nenhuma turma aberta, nem esse texto nem a pendência "Nenhuma turma escolhida" aparecem na aba, só o aviso da lista vazia.
   - Escolher a primeira turma salva na hora. Trocar ou desfazer a escolha (`classId: null`) pede confirmação, porque as etapas que dependem dela serão revistas.
   - Escolher nunca reserva vaga, e a tela diz isso.
   - O servidor confere a turma de novo a cada mudança (`ENROLLMENT_CONTEXT_INVALID`).

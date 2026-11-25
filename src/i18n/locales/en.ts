@@ -1015,7 +1015,6 @@ export const en: TranslationResource = {
       changeDescription:
         "The stages that depend on the class will be reviewed. Choosing the class doesn't reserve a seat.",
       changeTitle: "Change to class {{name}}?",
-      choose: "Choose a class",
       chooseNamed: "Choose class {{name}}",
       chosen: "Class chosen. No seat was reserved.",
       class: "Class",
@@ -1050,6 +1049,7 @@ export const en: TranslationResource = {
       seatsUnavailable: "Seats unavailable now",
       seats_one: "{{count}} seat",
       seats_other: "{{count}} seats",
+      selectPrompt: "Select a class for the enrollment.",
       title: "Enrollment class",
     },
     contract: {
