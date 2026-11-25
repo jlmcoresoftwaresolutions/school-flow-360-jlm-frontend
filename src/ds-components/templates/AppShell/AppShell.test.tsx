@@ -91,7 +91,7 @@ describe("AppShell", () => {
       "Ajuda",
     ]
 
-    // Scoped to the sidebar: the topbar has its own "Ajuda" button.
+    // Scoped to the sidebar.
     const sidebar = within(screen.getByRole("complementary"))
 
     expect(sidebar.getByRole("button", { name: "Início" })).toBeEnabled()
@@ -177,13 +177,13 @@ describe("AppShell", () => {
     expect(screen.getByRole("button", { name: "Minha Organização" })).toHaveAttribute("aria-current", "page")
   })
 
-  it("renders the topbar with notifications and help disabled, as those features don't exist yet", () => {
+  it("leaves notifications and help out of the topbar, as those features don't exist yet", () => {
     renderAppShell("/outra")
 
     const topbar = within(screen.getByRole("banner"))
 
-    expect(topbar.getByRole("button", { name: "Notificações" })).toBeDisabled()
-    expect(topbar.getByRole("button", { name: "Ajuda" })).toBeDisabled()
+    expect(topbar.queryByRole("button", { name: "Notificações" })).not.toBeInTheDocument()
+    expect(topbar.queryByRole("button", { name: "Ajuda" })).not.toBeInTheDocument()
   })
 
   it("shows the signed-in user with their role, and a menu with only signing out", () => {
@@ -315,7 +315,7 @@ describe("AppShell", () => {
       await act(() => i18n.changeLanguage("pt-BR"))
     })
 
-    it("translates the menu, the breadcrumb and the topbar", async () => {
+    it("translates the menu and the breadcrumb", async () => {
       renderAppShell("/administration/my-organization")
 
       await act(() => i18n.changeLanguage("en"))
@@ -324,7 +324,6 @@ describe("AppShell", () => {
       expect(
         within(screen.getByRole("navigation", { name: "You are here" })).getByText("My Organization"),
       ).toHaveAttribute("aria-current", "page")
-      expect(within(screen.getByRole("banner")).getByRole("button", { name: "Notifications" })).toBeDisabled()
     })
   })
 })

@@ -2727,7 +2727,6 @@ export const ptBR = {
     breadcrumbLabel: "Você está em",
     collapseMenu: "Recolher menu",
     expandMenu: "Expandir menu",
-    help: "Ajuda",
     logoAlt: "Ícone do SchoolFlow360",
     mainNavigation: "Navegação principal",
     myProfile: "Meu perfil",
@@ -2782,7 +2781,6 @@ export const ptBR = {
       userList: "Lista de usuários",
       users: "Usuários",
     },
-    notifications: "Notificações",
     roles: {
       ADMIN: "Administrador",
       ALUNO: "Aluno",

@@ -2733,7 +2733,6 @@ export const ptPT: TranslationResource = {
     breadcrumbLabel: "Está em",
     collapseMenu: "Recolher menu",
     expandMenu: "Expandir menu",
-    help: "Ajuda",
     logoAlt: "Ícone do SchoolFlow360",
     mainNavigation: "Navegação principal",
     myProfile: "O meu perfil",
@@ -2788,7 +2787,6 @@ export const ptPT: TranslationResource = {
       userList: "Lista de utilizadores",
       users: "Utilizadores",
     },
-    notifications: "Notificações",
     roles: {
       ADMIN: "Administrador",
       ALUNO: "Aluno",

@@ -2718,7 +2718,6 @@ export const en: TranslationResource = {
     breadcrumbLabel: "You are here",
     collapseMenu: "Collapse menu",
     expandMenu: "Expand menu",
-    help: "Help",
     logoAlt: "SchoolFlow360 icon",
     mainNavigation: "Main navigation",
     myProfile: "My profile",
@@ -2773,7 +2772,6 @@ export const en: TranslationResource = {
       userList: "User list",
       users: "Users",
     },
-    notifications: "Notifications",
     roles: {
       ADMIN: "Administrator",
       ALUNO: "Student",
