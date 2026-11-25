@@ -1364,6 +1364,66 @@ export const fr: TranslationResource = {
     students: "Élèves",
     viewProfile: "Voir le profil",
   },
+  home: {
+    description: "Découvrez SchoolFlow360º et accédez directement aux espaces de votre quotidien.",
+    features: {
+      academic: {
+        description:
+          "Périodes scolaires, cycles et niveaux, matières, offres, salles et classes, avec les enseignants de chaque classe.",
+        title: "Structure pédagogique",
+      },
+      audit: {
+        description: "Qui s'est connecté, ce qui a changé et quand : la trace de sécurité de l'institution.",
+        title: "Audit des accès",
+      },
+      calendar: {
+        description: "Jours de classe, jours fériés et événements, préparés et publiés pour toute l'école.",
+        title: "Calendrier scolaire",
+      },
+      enrollments: {
+        description:
+          "Préparez l'inscription de chaque élève : responsables, classe et places, en suivant ce qui manque encore.",
+        title: "Inscriptions",
+      },
+      myUnit: {
+        description: "Les informations de l'institution, ses établissements et l'identité visuelle de l'école.",
+        title: "Mon Établissement",
+      },
+      people: {
+        description: "Fiches des élèves et des responsables, leurs liens, documents et historique.",
+        title: "Élèves et responsables",
+      },
+      users: {
+        description: "Invitez l'équipe et définissez le rôle et les établissements de chaque personne.",
+        title: "Utilisateurs et accès",
+      },
+    },
+    featuresDescription: "Des raccourcis vers les espaces que vous pouvez ouvrir.",
+    featuresTitle: "Fonctionnalités principales",
+    greeting: "Bonjour, {{name}} !",
+    greetingNoName: "Bonjour !",
+    intro:
+      "{{product}} est la plateforme de gestion de votre école. Elle réunit l'institution, les personnes, la vie scolaire et les inscriptions au même endroit, pour que l'équipe passe moins de temps sur des tableurs et plus de temps avec les élèves.",
+    open: "Ouvrir",
+    openFeature: "Ouvrir {{name}}",
+    pillars: {
+      allInOne: {
+        description:
+          "Fiches, structure pédagogique, calendrier et inscriptions fonctionnent ensemble, sans double saisie.",
+        title: "Tout au même endroit",
+      },
+      rightAccess: {
+        description:
+          "Secrétariat, Coordination, Enseignant et les autres rôles n'ouvrent que les écrans de leur travail, dans leurs établissements.",
+        title: "Chacun voit ce dont il a besoin",
+      },
+      yourSchool: {
+        description: "Le nom, le logo et les couleurs de l'institution apparaissent sur tous les écrans.",
+        title: "À l'image de votre école",
+      },
+    },
+    pillarsLabel: "Ce que propose SchoolFlow360º",
+  },
   invites: {
     acceptedAt: "Acceptée le {{date}}",
     access: "Accès",

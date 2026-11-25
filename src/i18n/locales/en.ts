@@ -1338,6 +1338,62 @@ export const en: TranslationResource = {
     students: "Students",
     viewProfile: "View profile",
   },
+  home: {
+    description: "Get to know SchoolFlow360º and go straight to the areas of your day.",
+    features: {
+      academic: {
+        description:
+          "School periods, stages and grades, subjects, offers, rooms and classes, with each class's teachers.",
+        title: "Academic structure",
+      },
+      audit: {
+        description: "Who signed in, what changed and when: the institution's security trail.",
+        title: "Access audit",
+      },
+      calendar: {
+        description: "School days, holidays and events, prepared and published for the whole school.",
+        title: "School calendar",
+      },
+      enrollments: {
+        description:
+          "Prepare each student's enrollment: guardians, class and seats, keeping track of what is still missing.",
+        title: "Enrollments",
+      },
+      myUnit: {
+        description: "The institution's details, its units and the school's visual identity.",
+        title: "My Unit",
+      },
+      people: {
+        description: "Student and guardian records, the links between them, documents and history.",
+        title: "Students and guardians",
+      },
+      users: { description: "Invite the team and set each person's role and units.", title: "Users and access" },
+    },
+    featuresDescription: "Shortcuts to the areas you can open.",
+    featuresTitle: "Main features",
+    greeting: "Hello, {{name}}!",
+    greetingNoName: "Hello!",
+    intro:
+      "{{product}} is your school's management platform. It brings the institution, its people, academic life and enrollments together in one place, so the team spends less time on spreadsheets and more time with students.",
+    open: "Open",
+    openFeature: "Open {{name}}",
+    pillars: {
+      allInOne: {
+        description: "Records, academic structure, calendar and enrollments work together, with no double work.",
+        title: "All in one place",
+      },
+      rightAccess: {
+        description:
+          "Front office, coordinators, teachers and the other roles open only the screens of their work, in their units.",
+        title: "Everyone sees what they need",
+      },
+      yourSchool: {
+        description: "The institution's name, logo and colors show on every screen.",
+        title: "Your school's look",
+      },
+    },
+    pillarsLabel: "What SchoolFlow360º offers",
+  },
   invites: {
     acceptedAt: "Accepted on {{date}}",
     access: "Access",
