@@ -2,8 +2,8 @@ import type { CSSProperties } from "react"
 import { useEffect, useId, useState } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
-import { IconButton, Image } from "@/ds-components/atoms"
-import { media } from "@/foundation"
+import { IconButton, Image, Skeleton } from "@/ds-components/atoms"
+import { media, spacing } from "@/foundation"
 import { useMediaQuery } from "@/hooks"
 
 import {
@@ -46,6 +46,9 @@ export type SidebarProps = {
   logoSrc: string
   title: string
   bottomItems?: SidebarNavItem[]
+  // The brand (logo, title and subtitle) is still being read: placeholders take its place, so a school's
+  // identity doesn't replace the product's a moment after the page shows.
+  brandLoading?: boolean
   className?: string
   collapseLabel?: string
   expandLabel?: string
@@ -64,6 +67,7 @@ const compactQuery = `not all and ${media.md}`
 export const Sidebar = (props: SidebarProps) => {
   const {
     bottomItems = [],
+    brandLoading = false,
     className,
     collapseLabel = "Recolher menu",
     expandLabel = "Expandir menu",
@@ -126,21 +130,33 @@ export const Sidebar = (props: SidebarProps) => {
 
       <SidebarPanel $collapsed={isCollapsed} $overlay={isOverlay} id={panelId}>
         <SidebarBrand $collapsed={isCollapsed}>
-          <SidebarBrandInfo $collapsed={isCollapsed}>
-            {/* Image defaults to align-self: flex-start, which would pin the logo to the top of a row that the toggle button makes taller. */}
-            <Image
-              alt={logoAlt}
-              borderRadius="low"
-              boxShadow="none"
-              size={32}
-              src={logoSrc}
-              style={{ alignSelf: "center", flexShrink: 0, objectFit: "contain" }}
-            />
+          <SidebarBrandInfo $collapsed={isCollapsed} aria-busy={brandLoading || undefined}>
+            {brandLoading ? (
+              <>
+                <Skeleton height={spacing[32]} style={{ flexShrink: 0 }} variant="rect" width={spacing[32]} />
+                <SidebarBrandText style={{ gap: spacing[4] }}>
+                  <Skeleton height={spacing[20]} width="70%" />
+                  <Skeleton height={spacing[12]} width="50%" />
+                </SidebarBrandText>
+              </>
+            ) : (
+              <>
+                {/* Image defaults to align-self: flex-start, which would pin the logo to the top of a row that the toggle button makes taller. */}
+                <Image
+                  alt={logoAlt}
+                  borderRadius="low"
+                  boxShadow="none"
+                  size={32}
+                  src={logoSrc}
+                  style={{ alignSelf: "center", flexShrink: 0, objectFit: "contain" }}
+                />
 
-            <SidebarBrandText>
-              <SidebarBrandTitle title={title}>{title}</SidebarBrandTitle>
-              {subtitle && <SidebarBrandSubtitle>{subtitle}</SidebarBrandSubtitle>}
-            </SidebarBrandText>
+                <SidebarBrandText>
+                  <SidebarBrandTitle title={title}>{title}</SidebarBrandTitle>
+                  {subtitle && <SidebarBrandSubtitle>{subtitle}</SidebarBrandSubtitle>}
+                </SidebarBrandText>
+              </>
+            )}
           </SidebarBrandInfo>
 
           {isCompact && (

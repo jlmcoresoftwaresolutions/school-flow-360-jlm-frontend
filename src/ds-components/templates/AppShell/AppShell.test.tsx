@@ -64,10 +64,10 @@ const signOut = () => {
 }
 
 describe("AppShell", () => {
-  it("renders the sidebar brand", () => {
+  it("renders the sidebar brand once the school's identity was read", async () => {
     renderAppShell("/outra")
 
-    expect(screen.getByText("SchoolFlow360º")).toBeInTheDocument()
+    expect(await screen.findByText("SchoolFlow360º")).toBeInTheDocument()
   })
 
   it("renders the routed content through the Outlet", () => {

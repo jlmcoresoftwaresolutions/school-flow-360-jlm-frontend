@@ -25,6 +25,9 @@ const toSchoolBranding = (published: PublishedBrandingResponse): SchoolBranding 
 // last 5 minutes, so nothing is kept between visits. undefined until it is first read (or while it
 // can't be), null when nothing was published (the default look).
 let current: SchoolBranding | null | undefined = undefined
+// Whether a reading has finished, whatever it gave: a failed first reading leaves the identity unknown
+// (undefined, so the colors kept from the last visit stay) but is over, and the shell stops waiting.
+let settled = false
 const listeners = new Set<() => void>()
 
 const subscribe = (listener: () => void) => {
@@ -36,6 +39,8 @@ const subscribe = (listener: () => void) => {
 
 const getSnapshot = () => current
 
+const getSettled = () => settled
+
 // Reads the published identity again (GET .../branding/published, for any signed-in user) and tells
 // every component showing it. Nothing published (404) is the default look; a failed reading keeps
 // what was known. Called once the identity is published, so the shell changes at once.
@@ -43,9 +48,9 @@ export const refreshSchoolBranding = async (): Promise<void> => {
   try {
     current = toSchoolBranding(await getPublishedBranding({ showLoading: false }))
   } catch (error) {
-    if (getErrorStatus(error) !== 404) return
-    current = null
+    if (getErrorStatus(error) === 404) current = null
   }
+  settled = true
   listeners.forEach((listener) => listener())
 }
 
@@ -62,3 +67,7 @@ export const useSchoolBranding = (): SchoolBranding | null | undefined => {
 
   return branding
 }
+
+// Whether the published identity has been read at least once (or its reading failed): until then the
+// shell shows placeholders instead of the product's look, which the school's would replace a moment later.
+export const useSchoolBrandingSettled = (): boolean => useSyncExternalStore(subscribe, getSettled, () => false)

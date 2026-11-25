@@ -12,7 +12,7 @@ import type { SidebarNavChild, SidebarNavItem } from "@/ds-components/organisms/
 import { Sidebar } from "@/ds-components/organisms/Sidebar"
 import type { TopbarAction } from "@/ds-components/organisms/Topbar"
 import { Topbar } from "@/ds-components/organisms/Topbar"
-import { useSchoolBranding, useSessionExpiry } from "@/hooks"
+import { useSchoolBranding, useSchoolBrandingSettled, useSessionExpiry } from "@/hooks"
 import type { TranslationResource } from "@/i18n/locales/ptBR"
 import type { UserContext } from "@/models"
 import { pageRoles } from "@/routes/access"
@@ -134,6 +134,7 @@ export const AppShell = () => {
   const { t } = useTranslation()
   useSessionExpiry(renewOrEndSession)
   const branding = useSchoolBranding()
+  const isBrandingSettled = useSchoolBrandingSettled()
 
   const navLabel = (key: NavKey) => t(`shell.nav.${key}`)
 
@@ -209,6 +210,9 @@ export const AppShell = () => {
     <AppShellWrapper>
       <Sidebar
         bottomItems={bottomItems}
+        // Until the identity is first read, placeholders: not the product's look, which the school's would
+        // replace a moment later.
+        brandLoading={!isBrandingSettled}
         collapseLabel={t("shell.collapseMenu")}
         expandLabel={t("shell.expandMenu")}
         items={items}
