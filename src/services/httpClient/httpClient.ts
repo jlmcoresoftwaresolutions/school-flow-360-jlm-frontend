@@ -3,7 +3,7 @@ import axios, { isAxiosError } from "axios"
 
 import type { ApiErrorCode } from "@/models"
 import { paths } from "@/routes/paths"
-import { endExpiredSession, requirePasswordChange, showSchoolNotFound } from "@/utils/authRedirect"
+import { endExpiredSession, requirePasswordChange, showSchoolInactive, showSchoolNotFound } from "@/utils/authRedirect"
 import { markBackendResponse } from "@/utils/backendActivity"
 import { startLoading, stopLoading } from "@/utils/loadingStore"
 import { getSessionState, saveSession } from "@/utils/session"
@@ -234,6 +234,16 @@ httpClient.interceptors.response.use(
     // until then, and the app goes to the change page (the routes send there too, from the context).
     if (error.response?.status === 403 && sentToken && error.response.data?.code === "PASSWORD_CHANGE_REQUIRED") {
       requirePasswordChange(paths.changePassword)
+    }
+
+    // The school was deactivated: the backend refuses every call of it, sign-in and the links of its e-mails
+    // included, so the app goes to the page that says so, whichever school's address it was opened on.
+    if (
+      error.response?.status === 403 &&
+      error.response.data?.code === "ORGANIZATION_INACTIVE" &&
+      isBackendRequest(error.config?.url)
+    ) {
+      showSchoolInactive(paths.schoolInactive)
     }
 
     // The address's school doesn't exist on the backend: the app goes to the page that says so. Only for

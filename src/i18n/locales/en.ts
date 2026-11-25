@@ -2244,6 +2244,13 @@ export const en: TranslationResource = {
     unit: "Unit",
     unitPlaceholder: "Select the unit",
   },
+  schoolInactive: {
+    description:
+      "Access to this school is suspended for now. Nobody from the school can sign in until it is reactivated.",
+    help: "If you think this is a mistake, talk to the school's management or front office.",
+    retry: "Try again",
+    title: "School deactivated",
+  },
   schoolNotFound: {
     description: "This address looks like a school's, but no school on the platform uses it:",
     help: "Check that it was typed as the school gave it. If in doubt, contact the school office.",

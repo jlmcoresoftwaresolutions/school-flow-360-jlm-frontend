@@ -2258,6 +2258,13 @@ export const ptPT: TranslationResource = {
     unit: "Unidade",
     unitPlaceholder: "Selecione a unidade",
   },
+  schoolInactive: {
+    description:
+      "O acesso a esta escola está suspenso de momento. Ninguém da escola consegue entrar até ela ser reativada.",
+    help: "Se acha que é um engano, fale com a direção ou a secretaria da escola.",
+    retry: "Tentar novamente",
+    title: "Escola desativada",
+  },
   schoolNotFound: {
     description: "Este endereço parece o de uma escola, mas nenhuma escola da plataforma o utiliza:",
     help: "Confirme se foi escrito tal como a escola indicou. Em caso de dúvida, contacte a secretaria.",

@@ -570,6 +570,14 @@ export const router = createBrowserRouter([
   {
     hydrateFallbackElement: <GlobalLoading visible />,
     lazy: async () => {
+      const { SchoolInactive } = await import("@/pages/UnknownSchool")
+      return { Component: SchoolInactive }
+    },
+    path: paths.schoolInactive,
+  },
+  {
+    hydrateFallbackElement: <GlobalLoading visible />,
+    lazy: async () => {
       const { SchoolNotFound } = await import("@/pages/UnknownSchool")
       return { Component: SchoolNotFound }
     },
