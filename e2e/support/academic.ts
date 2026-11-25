@@ -1409,5 +1409,15 @@ export const mockAcademicApi = async (page: Page, options: AcademicOptions = {})
     return route.fulfill(apiAnswer({ state: found.length > 0 ? "PUBLISHED" : "NOT_PUBLISHED", versions: found }))
   })
 
+  // The backend's paging takes a size of 1 to 100 (PageParams), and refuses more with 400. Registered last,
+  // so it is the first to see every academic call.
+  await page.route(/\/api\/academic\//, (route) => {
+    const size = new URL(route.request().url()).searchParams.get("size")
+    if (size !== null && (Number(size) < 1 || Number(size) > 100)) {
+      return route.fulfill(apiError(400, "INVALID_REQUEST"))
+    }
+    return route.fallback()
+  })
+
   return { calls }
 }

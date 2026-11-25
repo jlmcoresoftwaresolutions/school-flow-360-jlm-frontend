@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
-import { Button, Card, Text } from "@/ds-components/atoms"
+import { Button, Card, Icon, type IconName, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
 import { PageHeader, Select, StateMessage } from "@/ds-components/molecules"
 import { FilterBar } from "@/ds-components/organisms"
@@ -29,6 +29,13 @@ const shortcutPaths: Record<AcademicOverviewShortcut, string> = {
 }
 
 const shortcutOrder: AcademicOverviewShortcut[] = ["CREATE_PERIOD", "CREATE_CLASS", "LINK_TEACHER", "REVIEW_CAPACITY"]
+
+const shortcutIcons: Record<AcademicOverviewShortcut, IconName> = {
+  CREATE_CLASS: "class-outline",
+  CREATE_PERIOD: "calendar-outline",
+  LINK_TEACHER: "user-add-outline",
+  REVIEW_CAPACITY: "users-outline",
+}
 
 // The academic overview (P04-S01) of the person's scope, narrowed by unit and period: how many classes in
 // each status (each counted once, even for someone with two roles), the capacity of the active ones, the
@@ -92,13 +99,22 @@ export const AcademicOverview = () => {
     return (
       <Shortcuts aria-label={t("academicOverview.shortcutsLabel")} role="group">
         {shortcuts.map((shortcut) => (
-          <Button key={shortcut} onClick={() => navigate(shortcutPaths[shortcut])} size="small" variant="outlined">
+          <Button
+            key={shortcut}
+            onClick={() => navigate(shortcutPaths[shortcut])}
+            size="small"
+            startIcon={<Icon color="inherit" name={shortcutIcons[shortcut]} size={16} />}
+          >
             {t(`academicOverview.shortcuts.${shortcut}`)}
           </Button>
         ))}
       </Shortcuts>
     )
   }
+
+  // The shortcuts are the page's actions, in the filter bar's bottom row as on the other lists, and stay
+  // visible while the filters are hidden; only the ones the person may use, once the overview is read.
+  const shortcuts = current && !("error" in current) ? renderShortcuts(current.overview) : null
 
   const renderContent = () => {
     if (!current) {
@@ -127,11 +143,6 @@ export const AcademicOverview = () => {
     if (overview.state === "EMPTY") {
       return (
         <StateMessage
-          action={
-            overview.shortcuts.includes("CREATE_PERIOD") ? (
-              <Button onClick={() => navigate(paths.periods)}>{t("academicOverview.shortcuts.CREATE_PERIOD")}</Button>
-            ) : undefined
-          }
           description={
             overview.shortcuts.includes("CREATE_PERIOD")
               ? t("academicOverview.emptyDescription")
@@ -185,7 +196,6 @@ export const AcademicOverview = () => {
             {t("academicOverview.unavailableHelp")}
           </Text>
         )}
-        {renderShortcuts(overview)}
       </OverviewContent>
     )
   }
@@ -200,6 +210,7 @@ export const AcademicOverview = () => {
 
       <Card elevated style={{ display: "flex", flexDirection: "column", gap: spacing[24], padding: spacing[32] }}>
         <FilterBar
+          actions={shortcuts ?? undefined}
           clearLabel={t("userAccess.clearFilters")}
           collapseLabel={t("common.collapseFilters")}
           expandLabel={t("common.expandFilters")}
