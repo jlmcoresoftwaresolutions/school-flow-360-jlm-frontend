@@ -65,6 +65,8 @@ export const paths = {
   // the unsaved-changes warning like any other way out of a page.
   signOut: "/sign-out",
   // Where an address naming a school the backend doesn't have lands (404 TENANT_NOT_FOUND).
+  // Where every page of a deactivated school goes (403 ORGANIZATION_INACTIVE), outside the AppShell.
+  schoolInactive: "/school-inactive",
   schoolNotFound: "/school-not-found",
   // Where an address that serves no school lands (the domain itself, the Render one in production).
   unknownSchool: "/unknown-school",

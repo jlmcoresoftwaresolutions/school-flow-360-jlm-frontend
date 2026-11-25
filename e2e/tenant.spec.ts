@@ -70,6 +70,27 @@ test("keeps the default login when the school has published nothing", async ({ p
   await expect(page.getByText("Colégio Saber")).toHaveCount(0)
 })
 
+test("says the school is deactivated when the backend refuses its calls", async ({ page }) => {
+  await page.route("**/api/public/branding", (route) =>
+    route.fulfill({
+      body: JSON.stringify({ code: "ORGANIZATION_INACTIVE", data: null, message: "School inactive.", status: "Error" }),
+      contentType: "application/json",
+      status: 403,
+    }),
+  )
+
+  await page.goto("/login")
+
+  await expect(page).toHaveURL(/\/school-inactive$/)
+  await expect(page.getByText("Escola desativada")).toBeVisible()
+
+  await publishBranding(page)
+  await page.getByRole("link", { name: "Tentar de novo" }).click()
+
+  await expect(page).toHaveURL(/\/login$/)
+  await expect(page.getByText("Colégio Saber")).toBeVisible()
+})
+
 test("says the school wasn't found when the backend doesn't know the address's school", async ({ page }) => {
   await refuseUnknownSchool(page)
 

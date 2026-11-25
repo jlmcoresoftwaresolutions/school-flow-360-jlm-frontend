@@ -2295,6 +2295,13 @@ export const fr: TranslationResource = {
     unit: "Unité",
     unitPlaceholder: "Sélectionnez l'unité",
   },
+  schoolInactive: {
+    description:
+      "L'accès à cet établissement est suspendu pour le moment. Personne de l'établissement ne peut se connecter avant sa réactivation.",
+    help: "Si vous pensez qu'il s'agit d'une erreur, contactez la direction ou le secrétariat de l'établissement.",
+    retry: "Réessayer",
+    title: "Établissement désactivé",
+  },
   schoolNotFound: {
     description: "Cette adresse a la forme de celle d'une école, mais aucune école de la plateforme ne l'utilise :",
     help: "Vérifiez qu'elle a été saisie comme l'école l'a indiquée. En cas de doute, contactez le secrétariat.",

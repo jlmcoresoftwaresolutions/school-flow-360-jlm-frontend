@@ -2262,6 +2262,13 @@ export const es: TranslationResource = {
     unit: "Unidad",
     unitPlaceholder: "Seleccione la unidad",
   },
+  schoolInactive: {
+    description:
+      "El acceso a esta escuela está suspendido por ahora. Nadie de la escuela puede entrar hasta que se reactive.",
+    help: "Si cree que es un error, hable con la dirección o la secretaría de la escuela.",
+    retry: "Intentar de nuevo",
+    title: "Escuela desactivada",
+  },
   schoolNotFound: {
     description: "Esta dirección tiene el formato de la de una escuela, pero ninguna escuela de la plataforma la usa:",
     help: "Comprueba que se haya escrito tal como la indicó la escuela. Si tienes dudas, habla con la secretaría.",

@@ -3,7 +3,7 @@ import { AxiosError } from "axios"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { UserContext } from "@/models"
-import { endExpiredSession, requirePasswordChange, showSchoolNotFound } from "@/utils/authRedirect"
+import { endExpiredSession, requirePasswordChange, showSchoolInactive, showSchoolNotFound } from "@/utils/authRedirect"
 import { getSessionState, saveSession } from "@/utils/session"
 
 import { getErrorCorrelationId, getErrorData, getErrorMessage, getRetryAfterSeconds, httpClient } from "./httpClient"
@@ -11,6 +11,7 @@ import { getErrorCorrelationId, getErrorData, getErrorMessage, getRetryAfterSeco
 vi.mock("@/utils/authRedirect", () => ({
   endExpiredSession: vi.fn(),
   requirePasswordChange: vi.fn(),
+  showSchoolInactive: vi.fn(),
   showSchoolNotFound: vi.fn(),
 }))
 
@@ -73,6 +74,7 @@ describe("httpClient", () => {
     vi.mocked(endExpiredSession).mockClear()
     vi.mocked(requirePasswordChange).mockClear()
     vi.mocked(showSchoolNotFound).mockClear()
+    vi.mocked(showSchoolInactive).mockClear()
   })
 
   it("sends the stored access token and the tenant to the backend", async () => {
@@ -188,6 +190,22 @@ describe("httpClient", () => {
     await expect(httpClient.get("/api/invitations/validate", { tenantId: "other_school" })).rejects.toThrow()
 
     expect(showSchoolNotFound).not.toHaveBeenCalled()
+  })
+
+  it("goes to the school-inactive page when the school was deactivated", async () => {
+    handle = () => ({ data: { code: "ORGANIZATION_INACTIVE", data: null }, status: 403 })
+
+    await expect(httpClient.get("/api/public/branding")).rejects.toThrow()
+
+    expect(showSchoolInactive).toHaveBeenCalledWith("/school-inactive")
+  })
+
+  it("goes to the school-inactive page for the school of an e-mail's link too", async () => {
+    handle = () => ({ data: { code: "ORGANIZATION_INACTIVE", data: null }, status: 403 })
+
+    await expect(httpClient.get("/api/invitations/validate", { tenantId: "other_school" })).rejects.toThrow()
+
+    expect(showSchoolInactive).toHaveBeenCalledWith("/school-inactive")
   })
 
   it("leaves any other 403 to the caller", async () => {
