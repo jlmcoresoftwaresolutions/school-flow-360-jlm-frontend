@@ -1198,6 +1198,7 @@ export const fr: TranslationResource = {
         "Quelqu'un d'autre a modifié ce lien. La version actuelle est affichée ci-dessous ; enregistrer à nouveau conserve ce qui est dans le formulaire.",
       failed: "Impossible d'enregistrer. Réessayez.",
       gone: "L'élève ou le lien n'est plus disponible pour vous.",
+      alreadyLinked: "Ce responsable est déjà lié à l'élève. Il n'y a rien à inviter.",
       guardianHasAccess: "Ce responsable a déjà un accès. Liez-le directement, sans invitation.",
       guardianInactive: "Responsable inactif. Réactivez-le avant de le lier.",
       invitationPending:
@@ -2045,6 +2046,7 @@ export const fr: TranslationResource = {
       done_one: "{{count}} brouillon supprimé.",
       done_other: "{{count}} brouillons supprimés.",
       failed: "Impossible de nettoyer les brouillons. Réessayez.",
+      none: "Aucun brouillon n'a été supprimé : seul un brouillon inchangé depuis plus de {{days}} jours, sans lien, invitation ouverte ni document, est retiré.",
       title: "Nettoyer les brouillons abandonnés ?",
     },
     export: {
@@ -2492,8 +2494,9 @@ export const fr: TranslationResource = {
       discard: {
         action: "Abandonner le brouillon",
         confirm: "Abandonner",
+        deleted: "Brouillon abandonné et supprimé.",
         description:
-          "Le brouillon de {{name}} devient inactif et les invitations ouvertes sont annulées. Rien n'est supprimé.",
+          "Le brouillon de {{name}} est supprimé définitivement quand rien n'en dépend (lien, invitation ou document). Sinon, il devient inactif. Dans tous les cas, les invitations ouvertes sont annulées.",
         done: "Brouillon abandonné.",
         title: "Abandonner le brouillon de {{name}} ?",
       },

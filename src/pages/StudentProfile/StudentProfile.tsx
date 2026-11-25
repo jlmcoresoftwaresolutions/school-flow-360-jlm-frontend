@@ -293,6 +293,7 @@ export const StudentProfile = () => {
           action={dialog}
           onChanged={reload}
           onClose={() => setDialog(null)}
+          onDeleted={() => navigate(paths.students)}
           onGone={reload}
           student={student}
         />

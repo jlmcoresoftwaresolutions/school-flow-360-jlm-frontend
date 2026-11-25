@@ -18,6 +18,8 @@ export type StudentStateDialogProps = {
   onClose: () => void
   // The student changed (or was changed by someone else meanwhile): read it again.
   onChanged: () => void
+  // Discarding deleted the draft for good: the student no longer exists.
+  onDeleted: () => void
   onGone: () => void
 }
 
@@ -25,10 +27,11 @@ export type StudentStateDialogProps = {
 // student) needs the name, the birth date, an active unit and, under 18, an active guardian: anything
 // missing (the backend's `activationBlockers`) is listed and the confirmation stays off, for everyone -
 // there is no exception (DP-P03-02). A student of 18 or over is activated without a guardian, as usual.
-// Inactivating keeps everything; discarding a draft makes it inactive; both cancel its open guardian
-// invitations, and nothing is deleted.
+// Inactivating keeps everything. Discarding a draft deletes it for good when nothing depends on it (the
+// backend answers status DELETED, and the page leaves for the list), or makes it inactive otherwise. Both
+// cancel its open guardian invitations.
 export const StudentStateDialog = (props: StudentStateDialogProps) => {
-  const { action, onChanged, onClose, onGone, student } = props
+  const { action, onChanged, onClose, onDeleted, onGone, student } = props
 
   const { t } = useTranslation()
   const toFailureMessage = useFailureMessage()
@@ -60,7 +63,12 @@ export const StudentStateDialog = (props: StudentStateDialogProps) => {
     setIsSaving(true)
     setFailure("")
     try {
-      await changeStudentState(student.id, action, { version: student.version })
+      const changed = await changeStudentState(student.id, action, { version: student.version })
+      if (changed.status === "DELETED") {
+        toast.success(t("students.state.discard.deleted"))
+        onDeleted()
+        return
+      }
       toast.success(t(`students.state.${action}.done`))
       onChanged()
     } catch (error) {

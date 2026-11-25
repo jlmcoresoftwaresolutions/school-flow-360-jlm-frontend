@@ -192,3 +192,10 @@ export type PersonDocumentDownload = {
 export type AnonymizeRequest = {
   requestRef: string
 }
+
+// What POST /api/people/maintenance/draft-cleanup answers: how many drafts were deleted, and the backend's
+// retention in days (only a draft untouched for longer, with no link, open invitation or document, goes).
+export type DraftCleanupResult = {
+  removedDrafts: number
+  retentionDays: number
+}

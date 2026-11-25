@@ -1,6 +1,7 @@
 import type {
   AnonymizeRequest,
   ApiResponse,
+  DraftCleanupResult,
   DuplicateDecisionRequest,
   DuplicateReview,
   DuplicateReviewRequest,
@@ -178,8 +179,8 @@ export const exportPerson = async (personId: number, config?: RequestConfig): Pr
 
 // USED by the students page (Admin). POST /api/people/maintenance/draft-cleanup: runs now the removal of abandoned
 // student drafts (no link, open invitation or document, older than 30 days).
-export const cleanUpDraftStudents = async (config?: RequestConfig): Promise<{ removedDrafts: number }> => {
-  const response = await httpClient.post<ApiResponse<{ removedDrafts: number }>>(
+export const cleanUpDraftStudents = async (config?: RequestConfig): Promise<DraftCleanupResult> => {
+  const response = await httpClient.post<ApiResponse<DraftCleanupResult>>(
     "/api/people/maintenance/draft-cleanup",
     null,
     config,

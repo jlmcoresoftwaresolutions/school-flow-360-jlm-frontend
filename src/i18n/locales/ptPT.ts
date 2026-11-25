@@ -1182,6 +1182,7 @@ export const ptPT: TranslationResource = {
         "Outra pessoa alterou este vínculo. A versão atual aparece abaixo; salvar de novo grava o que está no formulário.",
       failed: "Não foi possível salvar. Tente de novo.",
       gone: "O aluno ou o vínculo não está mais disponível para você.",
+      alreadyLinked: "Esse responsável já está vinculado ao aluno. Não há nada para convidar.",
       guardianHasAccess: "Esse responsável já tem acesso. Vincule-o direto, sem convite.",
       guardianInactive: "Responsável inativo. Reative-o antes de vincular.",
       invitationPending: "Já há um convite pendente para esse e-mail. Reenvie ou cancele-o em Convites.",
@@ -2010,6 +2011,7 @@ export const ptPT: TranslationResource = {
       done_one: "{{count}} rascunho removido.",
       done_other: "{{count}} rascunhos removidos.",
       failed: "Não foi possível limpar os rascunhos. Tente de novo.",
+      none: "Nenhum rascunho foi apagado: só sai o rascunho parado há mais de {{days}} dias, sem vínculo, convite aberto nem documento.",
       title: "Limpar rascunhos abandonados?",
     },
     export: {
@@ -2454,7 +2456,9 @@ export const ptPT: TranslationResource = {
       discard: {
         action: "Descartar rascunho",
         confirm: "Descartar",
-        description: "O rascunho de {{name}} fica inativo e os convites abertos são cancelados. Nada é apagado.",
+        deleted: "Rascunho descartado e apagado.",
+        description:
+          "O rascunho de {{name}} é apagado de vez quando nada depende dele (vínculo, convite ou documento). Se algo depender, fica inativo. Em todo o caso, os convites abertos são cancelados.",
         done: "Rascunho descartado.",
         title: "Descartar o rascunho de {{name}}?",
       },
