@@ -85,6 +85,27 @@ test("puts the school first on the login, the product only signing it", async ({
   await expect(page.getByText("White Label")).toHaveCount(0)
 })
 
+test("writes the school's name on the login even under a wide logo that carries one", async ({ page }) => {
+  // A 4:1 logo with its own text: the published name may differ from it, so it is written anyway.
+  const wideLogo = `data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="100"><text y="60">Colégio Saber</text></svg>',
+  )}`
+  await page.route("**/api/public/branding", (route) =>
+    route.fulfill(
+      apiAnswer({
+        ...identity,
+        displayName: "Rede Colégio Saber de Ensino",
+        logo: { expiresAt: "2099-01-01T00:00:00Z", url: wideLogo },
+      }),
+    ),
+  )
+  await page.goto("/login")
+
+  await expect(page.getByRole("region", { name: "Rede Colégio Saber de Ensino" })).toContainText(
+    "Rede Colégio Saber de Ensino",
+  )
+})
+
 test("lets the product host the login when nothing was published", async ({ page }) => {
   await page.goto("/login")
 

@@ -13,25 +13,21 @@ export type LoginSchoolPanelProps = {
   branding: PublicBrandingResponse | null | undefined
 }
 
-// A logo at least this wide for its height is a wordmark: it already carries the school's name, which
-// isn't written again beside it (the image then names the school for screen readers).
-const wordmarkRatio = 2
-
 // The school's side of the login: its logo and name, large, and a welcome; the product only signs it at
 // the bottom ("Powered by SchoolFlow360º"). While the identity is read the panel shows placeholders, so
 // the product's look never flashes before the school's; without a published identity the product
-// itself is the host. A logo that can't be loaded (an expired link, storage off) is dropped.
+// itself is the host. The name is always written, even under a logo that carries one: the published
+// name may differ from the logo's text (a network's full name, say). A logo that can't be loaded (an
+// expired link, storage off) is dropped.
 export const LoginSchoolPanel = (props: LoginSchoolPanelProps) => {
   const { branding } = props
 
   const { t } = useTranslation()
 
   const [failedLogo, setFailedLogo] = useState<string | null>(null)
-  const [wordmarkLogo, setWordmarkLogo] = useState<string | null>(null)
 
   const logoUrl = branding?.logo?.url
   const showLogo = Boolean(logoUrl) && failedLogo !== logoUrl
-  const isWordmark = showLogo && wordmarkLogo === logoUrl
   const name = branding ? branding.displayName : "SchoolFlow360º"
 
   const renderIdentity = () => {
@@ -48,23 +44,13 @@ export const LoginSchoolPanel = (props: LoginSchoolPanelProps) => {
       <>
         {branding && showLogo && (
           <LogoPlate>
-            <SchoolLogo
-              alt={isWordmark ? name : ""}
-              onError={() => setFailedLogo(logoUrl ?? null)}
-              onLoad={(event) => {
-                const image = event.currentTarget
-                if (image.naturalWidth >= image.naturalHeight * wordmarkRatio) setWordmarkLogo(logoUrl ?? null)
-              }}
-              src={logoUrl}
-            />
+            <SchoolLogo alt="" onError={() => setFailedLogo(logoUrl ?? null)} src={logoUrl} />
           </LogoPlate>
         )}
         {!branding && <ProductIcon alt="" src={schoolFlowIcon} />}
-        {!isWordmark && (
-          <Text as="p" color="inverse" fontSize="3xl" bold>
-            {name}
-          </Text>
-        )}
+        <Text as="p" color="inverse" fontSize="2xl" bold>
+          {name}
+        </Text>
       </>
     )
   }
