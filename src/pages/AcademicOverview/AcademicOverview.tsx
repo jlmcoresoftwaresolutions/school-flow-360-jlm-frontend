@@ -104,7 +104,6 @@ export const AcademicOverview = () => {
             onClick={() => navigate(shortcutPaths[shortcut])}
             size="small"
             startIcon={<Icon color="inherit" name={shortcutIcons[shortcut]} size={16} />}
-            variant="outlined"
           >
             {t(`academicOverview.shortcuts.${shortcut}`)}
           </Button>
