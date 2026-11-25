@@ -2252,6 +2252,13 @@ export const ptBR = {
     unit: "Unidade",
     unitPlaceholder: "Selecione a unidade",
   },
+  schoolInactive: {
+    description:
+      "O acesso a esta escola está suspenso no momento. Ninguém da escola consegue entrar até ela ser reativada.",
+    help: "Se você acha que é um engano, fale com a direção ou a secretaria da escola.",
+    retry: "Tentar de novo",
+    title: "Escola desativada",
+  },
   schoolNotFound: {
     description: "Este endereço parece o de uma escola, mas nenhuma escola da plataforma o usa:",
     help: "Confira se ele foi digitado como a escola informou. Em caso de dúvida, fale com a secretaria.",
