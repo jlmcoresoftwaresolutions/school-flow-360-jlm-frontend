@@ -147,7 +147,7 @@ export const revokeContractAcceptance = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET (the public acceptance page). GET /api/public/contract-acceptances/{token}: the exact text
+// USED by the public contract acceptance page. GET /api/public/contract-acceptances/{token}: the exact text
 // and its hash, without a login and with the tenant of the link. Opening is never accepting.
 // Errors: 410 ACCEPTANCE_LINK_INVALID (expired, revoked, replaced, used or no longer the current one).
 export const getContractPresentation = async (token: string, config?: RequestConfig): Promise<ContractPresentation> => {
@@ -159,7 +159,7 @@ export const getContractPresentation = async (token: string, config?: RequestCon
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET (the public acceptance page). POST /api/public/contract-acceptances/{token}/accept: the
+// USED by the public contract acceptance page. POST /api/public/contract-acceptances/{token}/accept: the
 // express acceptance of the version shown. Errors: 422 ACCEPTANCE_CONFIRMATION_REQUIRED; 409
 // CONTRACT_VERSION_CHANGED; 410 ACCEPTANCE_LINK_INVALID.
 export const acceptContract = async (

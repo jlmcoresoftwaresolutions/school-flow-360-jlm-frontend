@@ -89,6 +89,16 @@ describe("httpClient", () => {
     vi.unstubAllEnvs()
   })
 
+  it("never sends the session to a call for the school of an e-mail's link", async () => {
+    await saveSession({ expiresAt: inOneHour(), refreshToken: "refresh-1", token: "token-1" })
+    handle = () => ({ status: 200 })
+
+    await httpClient.get("/api/invitations/validate", { tenantId: "other_school" })
+
+    expect(requests[0].headers.Authorization).toBeUndefined()
+    expect(requests[0].headers["X-Tenant-ID"]).toBe("other_school")
+  })
+
   it("never sends the token to a third-party API", async () => {
     await saveSession({ expiresAt: inOneHour(), refreshToken: "refresh-1", token: "token-1" })
     handle = () => ({ status: 200 })

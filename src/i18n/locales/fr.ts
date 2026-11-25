@@ -807,6 +807,30 @@ export const fr: TranslationResource = {
     slowWait: "Cela prend plus de temps que d'habitude. Patientez un instant.",
     tryAgain: "Réessayer",
   },
+  contractAcceptance: {
+    acceptedDescription:
+      "Votre acceptation a été enregistrée et l'établissement peut déjà la voir. Vous pouvez fermer cette page.",
+    acceptedTitle: "Contrat accepté",
+    code: "Code du texte : {{code}}",
+    confirmLabel: "J'ai lu le contrat ci-dessus et j'accepte les termes de cette version",
+    confirmRequired: "Cochez la confirmation pour accepter le contrat.",
+    description:
+      "{{signer}}, lisez le contrat d'inscription de {{student}} à {{unit}}. En acceptant, vous approuvez cette version du texte.",
+    failed: "Impossible d'enregistrer l'acceptation maintenant. Réessayez dans un instant.",
+    invalidDescription:
+      "Ce lien a expiré, a été remplacé par un plus récent ou a déjà été utilisé. Demandez un nouveau lien à l'établissement.",
+    invalidTitle: "Lien invalide",
+    openingIsNotAccepting:
+      "Ouvrir ce lien n'est pas accepter. L'acceptation ne vaut qu'une fois la confirmation cochée et le bouton Accepter le contrat cliqué, et elle est enregistrée avec la date, l'heure et l'adresse d'accès.",
+    submit: "Accepter le contrat",
+    textLabel: "Texte du contrat",
+    title: "Acceptation du contrat",
+    unavailableDescription: "Impossible d'ouvrir le contrat maintenant. Vérifiez votre connexion et réessayez.",
+    unavailableTitle: "Contrat indisponible",
+    validUntil: "Lien valable jusqu'au {{moment}}.",
+    versionChanged:
+      "L'établissement a généré une nouvelle version du contrat. Lisez la version ci-dessous et confirmez de nouveau.",
+  },
   contractTemplates: {
     actions: "Actions",
     actionsFor: "Actions de la version {{version}}",

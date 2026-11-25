@@ -20,6 +20,8 @@ export const paths = {
   classProfile: "/academic/classes/:classId",
   classes: "/academic/classes",
   contactSupport: "/help/contact-support",
+  // Opened from the e-mail that asks a signer to accept an enrollment contract (public, no login).
+  contractAcceptance: "/contract-acceptance",
   contractTemplates: "/administration/contract-templates",
   contracts: "/finance/contracts",
   documentRequirements: "/administration/document-requirements",
