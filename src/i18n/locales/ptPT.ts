@@ -1343,6 +1343,64 @@ export const ptPT: TranslationResource = {
     students: "Alunos",
     viewProfile: "Ver perfil",
   },
+  home: {
+    description: "Conheça o SchoolFlow360º e vá diretamente para as áreas do seu dia a dia.",
+    features: {
+      academic: {
+        description:
+          "Períodos letivos, ciclos e anos, disciplinas, ofertas, salas e turmas, com os professores de cada turma.",
+        title: "Estrutura académica",
+      },
+      audit: {
+        description: "Quem entrou, o que foi alterado e quando: o registo de segurança da instituição.",
+        title: "Auditoria de acessos",
+      },
+      calendar: {
+        description: "Dias letivos, feriados e eventos, preparados e publicados para toda a escola.",
+        title: "Calendário letivo",
+      },
+      enrollments: {
+        description: "Prepare a matrícula de cada aluno: encarregados, turma e vagas, acompanhando o que ainda falta.",
+        title: "Matrículas",
+      },
+      myUnit: {
+        description: "Os dados da instituição, as unidades e a identidade visual da escola.",
+        title: "A Minha Unidade",
+      },
+      people: {
+        description: "Registo de alunos e encarregados de educação, as ligações entre eles, documentos e histórico.",
+        title: "Alunos e encarregados",
+      },
+      users: {
+        description: "Convide a equipa e defina o perfil e as unidades de cada pessoa.",
+        title: "Utilizadores e acessos",
+      },
+    },
+    featuresDescription: "Atalhos para as áreas que pode abrir.",
+    featuresTitle: "Principais funcionalidades",
+    greeting: "Olá, {{name}}!",
+    greetingNoName: "Olá!",
+    intro:
+      "O {{product}} é a plataforma de gestão da sua escola. Reúne a instituição, as pessoas, a vida académica e as matrículas num só lugar, para a equipa passar menos tempo com folhas de cálculo e mais tempo com os alunos.",
+    open: "Abrir",
+    openFeature: "Abrir {{name}}",
+    pillars: {
+      allInOne: {
+        description: "Registos, estrutura académica, calendário e matrículas falam entre si, sem trabalho repetido.",
+        title: "Tudo num só lugar",
+      },
+      rightAccess: {
+        description:
+          "Secretaria, Coordenação, Professor e os outros perfis abrem só os ecrãs do seu trabalho, nas suas unidades.",
+        title: "Cada um vê o que precisa",
+      },
+      yourSchool: {
+        description: "O nome, o logótipo e as cores da instituição aparecem em todos os ecrãs.",
+        title: "Com a cara da sua escola",
+      },
+    },
+    pillarsLabel: "O que o SchoolFlow360º oferece",
+  },
   invites: {
     acceptedAt: "Aceite em {{date}}",
     access: "Acesso",

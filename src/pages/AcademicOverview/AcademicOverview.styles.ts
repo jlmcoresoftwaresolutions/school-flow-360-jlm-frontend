@@ -8,7 +8,7 @@ export const StatsGrid = styled.div`
   gap: ${spacing[16]};
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  ${media.md} {
+  @media ${media.md} {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 `

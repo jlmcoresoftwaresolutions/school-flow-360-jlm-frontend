@@ -10,7 +10,9 @@ import { lastCall, secretariaContext, signInAndOpen } from "./support/userAccess
 
 const studentsPath = "/administration/students"
 
-const today = () => new Date().toISOString().slice(0, 10)
+// Today as the screen fills it in: the local date of the browser (the same machine and time zone as
+// this test), not the UTC one, which is already tomorrow late in the evening in Brazil.
+const today = () => new Date().toLocaleDateString("en-CA")
 
 const openGuardians = async (page: Page, studentId: number) => {
   await page.goto(`${studentsPath}/${studentId}`)
