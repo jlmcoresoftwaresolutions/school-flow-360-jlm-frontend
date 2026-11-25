@@ -51,6 +51,7 @@ const menuGroups: NavGroup[] = [
       "rooms",
       "classes",
       "academicCalendar",
+      "myEnrollments",
       "classDiary",
       "reportCards",
     ],

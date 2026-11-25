@@ -80,14 +80,14 @@ O contrato é o `docs/P04_CONTRATO.md` do backend (conferido no `61c4178`), com 
 O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com as decisões da seção 6c do `sfback-basis.md` e as respostas do Lucas de 24/11/2026. Ele é entregue em fatias, e a tela acompanha só o que já existe:
 
 - **Prontas no backend:** base (acesso, estados, histórico), preparação com aluno e responsáveis, turma com vagas, data de início e confirmação (Fatia 3A), documentos e exceções (3B) e contrato com aceite (3C).
-- **Na tela:** tudo até a confirmação (3A), a aba de documentos e exceções e o catálogo de exigências (3B), os modelos de contrato, a aba Contrato e a página pública de aceite (3C); anexar um documento que já está em Pessoas e a "Minha matrícula" do aluno e do responsável vêm nos próximos PRs.
+- **Na tela:** tudo até a confirmação (3A), a aba de documentos e exceções e o catálogo de exigências (3B), os modelos de contrato, a aba Contrato, a página pública de aceite e as "Minhas matrículas" do aluno e do responsável (3C). Anexar um documento que já está em Pessoas ainda não está na tela.
 - **Ainda não existem no backend:** as condições financeiras, que esperam o EPIC 8.
 
 **Quem abre:**
 
 - O Admin opera na instituição inteira e a Secretaria nas unidades dela (`useEnrollmentAccess`, de `src/pages/shared/enrollments/`).
 - O Financeiro e a Coordenação só leem, nas unidades deles.
-- Professor, Aluno e Responsável não abrem (`pageRoles` de `enrollments`/`enrollmentProfile`).
+- Professor, Aluno e Responsável não abrem (`pageRoles` de `enrollments`/`enrollmentProfile`). O Aluno e o Responsável veem só o mínimo das próprias matrículas em **Minhas matrículas** (abaixo).
 - As ações de cada matrícula são só as que o backend libera em `eligibleActions`.
 - Uma matrícula fora do alcance responde 404 `ENROLLMENT_NOT_FOUND`, igual a inexistente.
 
@@ -143,10 +143,11 @@ O contrato é o `docs/P05_CONTRATO.md` do backend (conferido no `8898fc9`), com 
   - Mostra o texto exato, o código do texto e até quando o link vale. Abrir não é aceitar: o aceite é a caixa de confirmação mais "Aceitar contrato", que manda o hash da versão mostrada.
   - Se a escola gerou outra versão nesse meio-tempo (409 `CONTRACT_VERSION_CHANGED`), a página relê o texto, desmarca a caixa e pede a confirmação de novo.
   - Qualquer link morto (vencido, revogado, substituído, já usado ou de um contrato que não é mais o atual) é o mesmo 410 `ACCEPTANCE_LINK_INVALID`, e a página diz só que o link não vale e que a escola manda outro.
+- **Minhas matrículas** (`/academic/my-enrollments`, `paths.myEnrollments`, página `MyEnrollments`, no grupo Acadêmico do menu; só Aluno e Responsável), sobre o `listMyEnrollments` (`GET /api/enrollments/mine`): as matrículas do aluno e, para o responsável, as dos alunos a que está vinculado agora, agrupadas por aluno. Só o mínimo: a situação, a unidade e, depois de confirmada, o número, a turma e a data de início. Uma preparação aparece só como "Em preparação", nunca em detalhe; documentos, texto do contrato, dados financeiros, pendências e o histórico da escola nunca aparecem. O contrato é aceito pelo link do e-mail.
 - O **Histórico** (`EnrollmentHistory`) mostra o evento, o autor (sem autor, "Sistema") e os nomes do que mudou. Numa mudança de situação, mostra o antes e o depois. Não é a auditoria.
 - Salvar uma preparação nunca cria acesso, cobrança nem matrícula ativa.
 
-Coberto pelo E2E `e2e/enrollments.spec.ts`, `e2e/document-requirements.spec.ts`, `e2e/enrollment-contract.spec.ts` e `e2e/contract-acceptance.spec.ts`, com o backend simulado em `e2e/support/enrollments.ts`.
+Coberto pelo E2E `e2e/enrollments.spec.ts`, `e2e/document-requirements.spec.ts`, `e2e/enrollment-contract.spec.ts`, `e2e/contract-acceptance.spec.ts` e `e2e/my-enrollments.spec.ts`, com o backend simulado em `e2e/support/enrollments.ts`.
 
 ### `src/pages/` guarda as views roteadas, e fica propositalmente fora de `src/ds-components/`
 

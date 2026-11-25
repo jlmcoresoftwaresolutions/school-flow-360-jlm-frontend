@@ -14,6 +14,7 @@ import type {
   EnrollmentStartDateRequest,
   EnrollmentStartRequest,
   EnrollmentStudentSearchParams,
+  MyEnrollment,
   PeopleSearchPage,
 } from "@/models"
 
@@ -195,6 +196,14 @@ export const listEnrollmentHistory = async (
     `/api/enrollments/${enrollmentId}/history`,
     { ...config, params },
   )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the "Minhas matrículas" page. GET /api/enrollments/mine: the student's own enrollments, and the
+// guardian's, of the students they are linked to now; only the minimum (no abandoned preparation).
+export const listMyEnrollments = async (config?: RequestConfig): Promise<MyEnrollment[]> => {
+  const response = await httpClient.get<ApiResponse<MyEnrollment[]>>("/api/enrollments/mine", config)
 
   return unwrapApiResponse(response)
 }

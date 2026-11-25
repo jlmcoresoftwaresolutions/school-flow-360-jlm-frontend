@@ -1924,6 +1924,24 @@ export const ptBR = {
     seeSessions: "Ver minhas sessões abertas",
     title: "Meu perfil",
   },
+  myEnrollments: {
+    class: "Turma",
+    contractNote: "O contrato de matrícula é aceito pelo link que a escola manda por e-mail a quem assina.",
+    description: "As matrículas do aluno e, para o responsável, as dos alunos a que está vinculado.",
+    emptyDescription: "Quando a escola começar uma matrícula, ela aparece aqui.",
+    emptyTitle: "Nenhuma matrícula",
+    errorDescription: "Não foi possível carregar as matrículas. Tente novamente em instantes.",
+    errorTitle: "Matrículas indisponíveis",
+    inPreparation: "Em preparação",
+    inPreparationDescription:
+      "A escola está preparando esta matrícula na {{unit}}. A turma e a data de início aparecem quando ela for confirmada.",
+    loading: "Carregando as matrículas...",
+    noNumber: "Matrícula sem número ainda",
+    number: "Matrícula {{number}}",
+    startDate: "Início",
+    student: "Aluno",
+    unit: "Unidade",
+  },
   myOrganization: {
     address: {
       cep: "CEP",
@@ -2725,6 +2743,7 @@ export const ptBR = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
+      myEnrollments: "Minhas matrículas",
       myOrganization: "Minha Organização",
       notices: "Comunicados",
       notifications: "Notificações",

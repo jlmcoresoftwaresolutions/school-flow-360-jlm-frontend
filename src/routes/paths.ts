@@ -49,6 +49,7 @@ export const paths = {
   login: "/login",
   messages: "/communication/messages",
   // The signed-in user's own profile, opened from the user menu in the topbar (not in the side menu).
+  myEnrollments: "/academic/my-enrollments",
   myOrganization: "/administration/my-organization",
   myProfile: "/account/profile",
   notices: "/communication/notices",

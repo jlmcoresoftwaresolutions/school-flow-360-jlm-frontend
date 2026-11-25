@@ -1967,6 +1967,25 @@ export const fr: TranslationResource = {
     seeSessions: "Voir mes sessions ouvertes",
     title: "Mon profil",
   },
+  myEnrollments: {
+    class: "Classe",
+    contractNote:
+      "Le contrat d'inscription est accepté par le lien que l'établissement envoie par e-mail au signataire.",
+    description: "Les inscriptions de l'élève et, pour un responsable, celles des élèves auxquels il est lié.",
+    emptyDescription: "Quand l'établissement commencera une inscription, elle apparaîtra ici.",
+    emptyTitle: "Aucune inscription",
+    errorDescription: "Impossible de charger les inscriptions. Réessayez dans un instant.",
+    errorTitle: "Inscriptions indisponibles",
+    inPreparation: "En préparation",
+    inPreparationDescription:
+      "L'établissement prépare cette inscription à {{unit}}. La classe et la date de début apparaissent une fois confirmée.",
+    loading: "Chargement des inscriptions...",
+    noNumber: "Inscription sans numéro pour l'instant",
+    number: "Inscription {{number}}",
+    startDate: "Début",
+    student: "Élève",
+    unit: "Unité",
+  },
   myOrganization: {
     address: {
       cep: "Code postal (CEP)",
@@ -2778,6 +2797,7 @@ export const fr: TranslationResource = {
       integrations: "Intégrations",
       invites: "Invitations",
       messages: "Messages",
+      myEnrollments: "Mes inscriptions",
       myOrganization: "Mon Organisation",
       notices: "Annonces",
       notifications: "Notifications",

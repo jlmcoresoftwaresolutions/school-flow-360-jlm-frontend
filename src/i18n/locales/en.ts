@@ -1918,6 +1918,24 @@ export const en: TranslationResource = {
     seeSessions: "See my open sessions",
     title: "My profile",
   },
+  myEnrollments: {
+    class: "Class",
+    contractNote: "The enrollment contract is accepted by the link the school e-mails to whoever signs.",
+    description: "The student's enrollments and, for a guardian, those of the students they are linked to.",
+    emptyDescription: "Once the school starts an enrollment, it shows here.",
+    emptyTitle: "No enrollment",
+    errorDescription: "Couldn't load the enrollments. Try again in a moment.",
+    errorTitle: "Enrollments unavailable",
+    inPreparation: "In preparation",
+    inPreparationDescription:
+      "The school is preparing this enrollment at {{unit}}. The class and the start date show once it is confirmed.",
+    loading: "Loading the enrollments...",
+    noNumber: "Enrollment without a number yet",
+    number: "Enrollment {{number}}",
+    startDate: "Start",
+    student: "Student",
+    unit: "Unit",
+  },
   myOrganization: {
     address: {
       cep: "Postal code (CEP)",
@@ -2716,6 +2734,7 @@ export const en: TranslationResource = {
       integrations: "Integrations",
       invites: "Invitations",
       messages: "Messages",
+      myEnrollments: "My enrollments",
       myOrganization: "My Organization",
       notices: "Announcements",
       notifications: "Notifications",

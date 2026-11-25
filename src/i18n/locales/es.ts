@@ -1936,6 +1936,24 @@ export const es: TranslationResource = {
     seeSessions: "Ver mis sesiones abiertas",
     title: "Mi perfil",
   },
+  myEnrollments: {
+    class: "Grupo",
+    contractNote: "El contrato de matrícula se acepta por el enlace que la escuela envía por correo a quien firma.",
+    description: "Las matrículas del alumno y, para el responsable, las de los alumnos a los que está vinculado.",
+    emptyDescription: "Cuando la escuela inicie una matrícula, aparecerá aquí.",
+    emptyTitle: "Ninguna matrícula",
+    errorDescription: "No se pudieron cargar las matrículas. Inténtelo de nuevo en unos instantes.",
+    errorTitle: "Matrículas no disponibles",
+    inPreparation: "En preparación",
+    inPreparationDescription:
+      "La escuela está preparando esta matrícula en {{unit}}. El grupo y la fecha de inicio aparecen cuando se confirme.",
+    loading: "Cargando las matrículas...",
+    noNumber: "Matrícula aún sin número",
+    number: "Matrícula {{number}}",
+    startDate: "Inicio",
+    student: "Alumno",
+    unit: "Sede",
+  },
   myOrganization: {
     address: {
       cep: "Código postal (CEP)",
@@ -2736,6 +2754,7 @@ export const es: TranslationResource = {
       integrations: "Integraciones",
       invites: "Invitaciones",
       messages: "Mensajes",
+      myEnrollments: "Mis matrículas",
       myOrganization: "Mi Organización",
       notices: "Avisos",
       notifications: "Notificaciones",
