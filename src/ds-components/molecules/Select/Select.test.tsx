@@ -117,6 +117,24 @@ describe("Select", () => {
     expect(container.querySelector(".select__control")).toHaveStyle({ boxShadow: shadows.none })
   })
 
+  it("fits five options in the open menu by default, the rest scrolling", () => {
+    render(<Select options={options} />)
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    // Five options of 40px (a 16px line at 1.5 plus 8px above and below) and the list's 4px padding.
+    expect(document.querySelector(".select__menu-list")).toHaveStyle({ maxHeight: "208px" })
+  })
+
+  it("fits five options of the small size in a small field's menu", () => {
+    render(<Select options={options} size="small" />)
+
+    fireEvent.mouseDown(screen.getByRole("combobox"))
+
+    // Five options of 37px (a 14px line at 1.5 plus 8px above and below) and the list's 4px padding.
+    expect(document.querySelector(".select__menu-list")).toHaveStyle({ maxHeight: "193px" })
+  })
+
   it("limits the open menu's height with maxMenuHeight", () => {
     render(<Select maxMenuHeight={160} options={options} />)
 

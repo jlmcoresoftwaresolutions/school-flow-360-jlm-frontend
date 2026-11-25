@@ -42,7 +42,7 @@ const meta: Meta<typeof Select> = {
     maxMenuHeight: {
       control: "number",
       description:
-        "Maximum height of the open menu, in pixels, past which its options scroll. Forwarded to react-select (300 by default).",
+        "Maximum height of the open menu, in pixels, past which its options scroll. Forwarded to react-select. By default the menu fits five options of the field's size, and more scroll.",
     },
     noOptionsMessage: {
       control: "text",
@@ -122,6 +122,14 @@ export const Disabled: Story = {
 // The noOptionsMessage prop replacing the text of an open menu that has no options; open it to see it
 export const NoOptions: Story = {
   args: { noOptionsMessage: "Nenhuma unidade cadastrada", options: [], title: "Unidade" },
+}
+
+// A long list by default: the open menu fits five options and the rest scroll
+export const ManyOptions: Story = {
+  args: {
+    options: ["AC", "AL", "AM", "AP", "BA", "CE", "DF", "ES", "GO", "MA"].map((uf) => ({ label: uf, value: uf })),
+    title: "UF",
+  },
 }
 
 // The maxMenuHeight prop keeping a long list's open menu short, its options scrolling

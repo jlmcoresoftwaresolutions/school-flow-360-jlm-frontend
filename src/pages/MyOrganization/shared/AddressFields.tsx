@@ -11,7 +11,7 @@ import { brazilianStates } from "@/utils/address"
 import { getCountryOptions, isCountry } from "@/utils/countries"
 import { stripNonDigits } from "@/utils/formats"
 
-import { addressMaxLengths, addressNumberPattern, stateMenuMaxHeight } from "../MyOrganization.constants"
+import { addressMaxLengths, addressNumberPattern } from "../MyOrganization.constants"
 import { useOrganizationCountry } from "./organizationCountry"
 
 // Any form holding an address under `address` (the organization's and a unit's).
@@ -215,7 +215,6 @@ export const AddressFields = (props: AddressFieldsProps) => {
               render={(controller) => (
                 <Select
                   error={controller.fieldState.error?.message}
-                  maxMenuHeight={stateMenuMaxHeight}
                   name={controller.field.name}
                   noOptionsMessage={t("common.noOptions")}
                   onBlur={controller.field.onBlur}
