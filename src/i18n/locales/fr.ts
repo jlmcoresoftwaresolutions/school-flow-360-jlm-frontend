@@ -2721,6 +2721,7 @@ export const fr: TranslationResource = {
     filtersLabel: "Filtres des salles",
     forbiddenDescription: "Votre profil ne consulte pas les salles de cette unité.",
     forbiddenTitle: "Accès restreint",
+    inactiveUnit: "{{name}} (inactive)",
     form: {
       create: "Enregistrer la salle",
       createTitle: "Nouvelle salle",
@@ -2744,6 +2745,8 @@ export const fr: TranslationResource = {
     searchLabel: "Rechercher une salle",
     searchPlaceholder: "Nom de la salle",
     unit: "Unité",
+    unitInactive:
+      "{{unit}} est inactive : ses salles peuvent seulement être consultées, et aucune nouvelle salle n'est enregistrée.",
     unitPlaceholder: "Sélectionnez l'unité",
   },
   schoolInactive: {

@@ -45,13 +45,17 @@ export const Rooms = () => {
   const [status, setStatus] = useState<"" | AcademicCatalogStatus>("")
   const [dialog, setDialog] = useState<Dialog>(null)
 
-  const unitId = chosenUnitId || (units.units[0] ? String(units.units[0].id) : "")
+  // To begin with, the first unit the person may manage (an inactive one never takes a new room), or else
+  // the first one they know.
+  const firstUnit = units.manageableUnits[0] ?? units.units[0]
+  const unitId = chosenUnitId || (firstUnit ? String(firstUnit.id) : "")
   const params = useMemo(() => (unitId ? { unitId: Number(unitId) } : null), [unitId])
 
   const { current, reload } = usePeopleList(loadRooms, params)
 
   const unitName = units.nameOf(Number(unitId)) ?? ""
   const canCreate = units.manageableUnits.some((unit) => String(unit.id) === unitId)
+  const isUnitInactive = units.units.some((unit) => String(unit.id) === unitId && !unit.active)
   const rooms = current && "data" in current ? current.data.items : null
   const term = normalizeForSearch(search.trim())
   const shown = (rooms ?? []).filter(
@@ -59,7 +63,10 @@ export const Rooms = () => {
   )
   const hasFilters = search.trim() !== "" || status !== ""
 
-  const unitOptions: SelectOption[] = units.units.map((unit) => ({ label: unit.name, value: String(unit.id) }))
+  const unitOptions: SelectOption[] = units.units.map((unit) => ({
+    label: unit.active ? unit.name : t("rooms.inactiveUnit", { name: unit.name }),
+    value: String(unit.id),
+  }))
   const statusOptions: SelectOption[] = [
     { label: t("academic.allStatuses"), value: "" },
     ...statuses.map((value) => ({ label: catalogStatusLabel(value), value })),
@@ -220,7 +227,7 @@ export const Rooms = () => {
 
         {!canCreate && units.canManage && (
           <Text color="secondary" fontSize="sm">
-            {t("rooms.notManaged", { unit: unitName })}
+            {isUnitInactive ? t("rooms.unitInactive", { unit: unitName }) : t("rooms.notManaged", { unit: unitName })}
           </Text>
         )}
 

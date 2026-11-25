@@ -2667,6 +2667,7 @@ export const ptBR = {
     filtersLabel: "Filtros das salas",
     forbiddenDescription: "Seu perfil não consulta as salas desta unidade.",
     forbiddenTitle: "Acesso restrito",
+    inactiveUnit: "{{name}} (inativa)",
     form: {
       create: "Cadastrar sala",
       createTitle: "Nova sala",
@@ -2690,6 +2691,7 @@ export const ptBR = {
     searchLabel: "Buscar sala",
     searchPlaceholder: "Nome da sala",
     unit: "Unidade",
+    unitInactive: "{{unit}} está inativa: as salas dela só podem ser consultadas, e nenhuma sala nova é cadastrada.",
     unitPlaceholder: "Selecione a unidade",
   },
   schoolInactive: {

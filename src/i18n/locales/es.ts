@@ -2678,6 +2678,7 @@ export const es: TranslationResource = {
     filtersLabel: "Filtros de las aulas",
     forbiddenDescription: "Su perfil no consulta las aulas de esta unidad.",
     forbiddenTitle: "Acceso restringido",
+    inactiveUnit: "{{name}} (inactiva)",
     form: {
       create: "Registrar aula",
       createTitle: "Nueva aula",
@@ -2701,6 +2702,7 @@ export const es: TranslationResource = {
     searchLabel: "Buscar aula",
     searchPlaceholder: "Nombre del aula",
     unit: "Unidad",
+    unitInactive: "{{unit}} está inactiva: sus aulas solo se pueden consultar, y no se registra ninguna aula nueva.",
     unitPlaceholder: "Seleccione la unidad",
   },
   schoolInactive: {

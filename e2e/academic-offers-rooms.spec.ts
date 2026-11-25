@@ -1,8 +1,8 @@
 import type { Locator } from "@playwright/test"
 
 import { mockAcademicApi } from "./support/academic.ts"
-import { expect, type Page, test } from "./support/test.ts"
-import { lastCall, secretariaContext, signInAndOpen } from "./support/userAccess.ts"
+import { apiAnswer, expect, type Page, test } from "./support/test.ts"
+import { lastCall, secretariaContext, signInAndOpen, units } from "./support/userAccess.ts"
 
 // The offers and rooms of the P04 (phase 3): the offers of each unit and period with the subjects they
 // teach - listing and filtering, creating one (each combination once) and choosing its subjects, a
@@ -191,6 +191,24 @@ test.describe("rooms", () => {
       .click()
     await expect(page.getByText("Laboratório de Ciências: reativação concluída.")).toBeVisible()
     await expect(row(page, "Laboratório de Ciências")).toContainText("Ativo")
+  })
+
+  // An inactive unit that comes first by name (reported by Lucas on 25/11/2026) used to open the page
+  // without "Nova sala" anywhere: the page now opens on the first unit the person may manage.
+  test("opens on a unit that takes new rooms, even when an inactive one comes first", async ({ page }) => {
+    const { calls } = await mockAcademicApi(page)
+    const withInactiveFirst = [{ ...units[2], schoolUnitId: 8, unitName: "Unidade Alto da Serra" }, ...units]
+    await page.route("**/api/school-units?*", (route) =>
+      route.fulfill(apiAnswer({ content: withInactiveFirst, number: 0, size: 100, totalElements: 4, totalPages: 1 })),
+    )
+    await signInAndOpen(page, roomsPath)
+
+    await expect(page.getByRole("button", { name: "Nova sala" })).toBeVisible()
+    expect(lastCall(calls, "GET", "/api/academic/rooms")?.query).toEqual({ unitId: "1" })
+
+    await pick(page, /^Unidade/, "Unidade Alto da Serra (inativa)")
+    await expect(page.getByText("Unidade Alto da Serra está inativa")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Nova sala" })).toHaveCount(0)
   })
 
   test("tells a Secretaria she only reads the rooms of a unit she doesn't manage", async ({ page }) => {
