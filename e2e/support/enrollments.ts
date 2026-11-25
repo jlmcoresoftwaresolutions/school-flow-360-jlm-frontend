@@ -13,6 +13,9 @@ type Item = Record<string, unknown>
 export type EnrollmentOptions = {
   // Someone else changes the enrollment before the first save of the guardians: it gets 409 VERSION_CONFLICT.
   conflictOnFirstSave?: boolean
+  // The school approved a contract model (version 1), and Ana's preparation (501) is ready but for the
+  // contract: her mother signs, the class and the start date are chosen.
+  contract?: boolean
   // The school published documents for Ana's preparation (501): her identity document, her transcript
   // (with an exception the Secretaria asked for) and a proof of residence, all mandatory.
   documents?: boolean
@@ -116,7 +119,7 @@ const classesByUnit: Record<number, Item[]> = {
 }
 
 // What a preparation still lacks, worked out like the backend does.
-const pendenciesOf = (enrollment: Item, documentsOpen = false) => {
+const pendenciesOf = (enrollment: Item, documentsOpen = false, contractOpen = false) => {
   if (!preparation.includes(String(enrollment.status))) return []
   const student = enrollment.student as Item
   const parties = enrollment.parties as Item[]
@@ -137,6 +140,7 @@ const pendenciesOf = (enrollment: Item, documentsOpen = false) => {
   if (!startDate) items.push({ category: "ACADEMIC_CONTEXT", code: "START_DATE_MISSING" })
   else if (startDate < today()) items.push({ category: "ACADEMIC_CONTEXT", code: "START_DATE_INVALID" })
   if (documentsOpen) items.push({ category: "DOCUMENTS", code: "DOCUMENTS_PENDING" })
+  if (contractOpen) items.push({ category: "CONTRACT", code: "CONTRACT_PENDING" })
   return items.map((item) => ({ ...item, message: `${item.code} (backend text)` }))
 }
 
@@ -180,6 +184,37 @@ const requirement = (fields: Item): Item => ({
   validTo: null,
   validityDays: null,
   version: 0,
+  ...fields,
+})
+
+// The controlled fields a contract model may use (the backend's ContractFields).
+const contractFields = [
+  "institution.name",
+  "unit.name",
+  "student.name",
+  "student.code",
+  "signatories",
+  "class.name",
+  "class.code",
+  "stage.name",
+  "grade.name",
+  "period.name",
+  "period.start",
+  "period.end",
+  "start.date",
+]
+
+// A version of the contract model as the backend answers it.
+const template = (fields: Item): Item => ({
+  allowedFields: contractFields,
+  approvedAt: null,
+  body: "",
+  code: "ENROLLMENT_CONTRACT",
+  legalApprovalRef: null,
+  status: "DRAFT",
+  title: "",
+  version: 0,
+  versionNumber: 1,
   ...fields,
 })
 
@@ -383,6 +418,57 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
   }
   const documentsOpen = (enrollmentId: number) => checklist(enrollmentId).openCodes.length > 0
 
+  // The contract models and the contract of each enrollment.
+  const templates: Item[] = options.contract
+    ? [
+        template({
+          approvedAt: "2026-11-24T12:00:00Z",
+          body: "Contrato de matrícula de {{student.name}} na {{unit.name}}.",
+          id: 71,
+          legalApprovalRef: "Parecer 12/2026",
+          status: "APPROVED",
+          title: "Contrato de prestação de serviços educacionais",
+        }),
+      ]
+    : []
+  const contracts = new Map<number, Item>()
+  let nextTemplateId = 72
+  let nextContractId = 81
+  let nextAcceptanceId = 91
+  if (options.contract) {
+    const ana = records.get(501) as Item
+    records.set(501, {
+      ...ana,
+      classContext: classesByUnit[1][0],
+      notEvaluated: ["FINANCIAL_CONDITIONS"],
+      parties: [
+        {
+          financial: true,
+          guardianId: 301,
+          guardianName: "Fernanda Souza",
+          linkActive: true,
+          linkId: 2010,
+          relationshipCode: "MOTHER",
+          signatory: true,
+        },
+      ],
+      startDate: today(),
+    })
+  }
+  // While a model is approved, the contract is a condition: generated, current and accepted by every signer.
+  const contractOpen = (enrollment: Item) => {
+    if (!templates.some((item) => item.status === "APPROVED")) return false
+    const contract = contracts.get(enrollment.id as number)
+    if (!contract || contract.outdated) return true
+    const signers = (enrollment.parties as Item[]).filter((party) => party.signatory && party.linkActive)
+    return signers.some(
+      (party) =>
+        !(contract.acceptances as Item[]).some(
+          (entry) => entry.signerId === party.guardianId && entry.status === "ACCEPTED",
+        ),
+    )
+  }
+
   const record = (request: Request) => {
     const url = new URL(request.url())
     const raw = request.postData()
@@ -422,7 +508,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
 
   // The enrollment as the backend answers it: the pendencies read again, the actions of a preparation.
   const view = (item: Item): Item => {
-    const pendencies = pendenciesOf(item, documentsOpen(item.id as number))
+    const pendencies = pendenciesOf(item, documentsOpen(item.id as number), contractOpen(item))
     const operates = !options.readOnly && preparation.includes(String(item.status))
     const actions = operates ? ["CHOOSE_PARTIES", "CHOOSE_CONTEXT", "SET_START_DATE", "ABANDON"] : []
     if (operates && pendencies.length === 0) actions.push("CONFIRM")
@@ -618,7 +704,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         return route.fulfill(apiError(409, "ENROLLMENT_ALREADY_CONFIRMED"))
       }
       if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
-      if (pendenciesOf(current, documentsOpen(Number(id))).length > 0) {
+      if (pendenciesOf(current, documentsOpen(Number(id)), contractOpen(current)).length > 0) {
         return route.fulfill(apiError(422, "ENROLLMENT_NOT_READY"))
       }
       const changed = {
@@ -848,5 +934,149 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fulfill(apiAnswer(catalog[index]))
   })
 
-  return { calls, catalog, exceptions, records }
+  // The contract models: every version, at most one approved.
+  await page.route(/\/api\/contract-templates(\/\d+(\/(approve|retire))?)?$/, (route) => {
+    const call = record(route.request())
+    const [, id, action] = /contract-templates(?:\/(\d+)(?:\/(approve|retire))?)?$/.exec(call.path) ?? []
+    if (call.method === "GET") return route.fulfill(apiAnswer(templates))
+    if (options.readOnly) return route.fulfill(apiError(403, "ACCESS_DENIED"))
+    const body = (call.body ?? {}) as Item
+    const unknownField = (text: string) =>
+      [...text.matchAll(/\{\{\s*([a-z.]+)\s*\}\}/g)].some((match) => !contractFields.includes(match[1]))
+
+    if (!id) {
+      if (unknownField(String(body.body))) return route.fulfill(apiError(422, "CONTRACT_FIELD_UNKNOWN"))
+      const created = template({
+        body: body.body,
+        id: nextTemplateId++,
+        title: body.title,
+        versionNumber: Math.max(0, ...templates.map((item) => Number(item.versionNumber))) + 1,
+      })
+      templates.push(created)
+      return route.fulfill({ ...apiAnswer(created), status: 201 })
+    }
+
+    const index = templates.findIndex((item) => item.id === Number(id))
+    if (index < 0) return route.fulfill(apiError(404, "ENROLLMENT_NOT_FOUND"))
+    const current = templates[index]
+    if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+    const bump = (fields: Item) => {
+      templates[index] = { ...current, ...fields, version: Number(current.version) + 1 }
+      return route.fulfill(apiAnswer(templates[index]))
+    }
+
+    if (action === "approve") {
+      if (current.status !== "DRAFT") return route.fulfill(apiError(409, "CONTRACT_TEMPLATE_NOT_DRAFT"))
+      if (!String(body.legalApprovalRef ?? "").trim()) return route.fulfill(apiError(422, "LEGAL_APPROVAL_REQUIRED"))
+      templates.forEach((item, position) => {
+        if (item.status === "APPROVED") templates[position] = { ...item, status: "RETIRED" }
+      })
+      // A newer approved model leaves every contract generated before it outdated.
+      contracts.forEach((contract) => (contract.outdated = true))
+      return bump({ approvedAt: new Date().toISOString(), legalApprovalRef: body.legalApprovalRef, status: "APPROVED" })
+    }
+    if (action === "retire") {
+      if (current.status !== "APPROVED") return route.fulfill(apiError(409, "CONTRACT_TEMPLATE_NOT_APPROVED"))
+      return bump({ status: "RETIRED" })
+    }
+    if (current.status !== "DRAFT") return route.fulfill(apiError(409, "CONTRACT_TEMPLATE_NOT_DRAFT"))
+    if (unknownField(String(body.body))) return route.fulfill(apiError(422, "CONTRACT_FIELD_UNKNOWN"))
+    return bump({ body: body.body, title: body.title })
+  })
+
+  // The contract of an enrollment and the requests of acceptance (registered last, so they answer before
+  // the enrollment's own route).
+  await page.route(/\/api\/enrollments\/\d+\/contract(\/.*)?$/, (route) => {
+    const call = record(route.request())
+    const enrollmentId = Number(/\/api\/enrollments\/(\d+)\//.exec(call.path)?.[1])
+    const rest = call.path.replace(/^\/api\/enrollments\/\d+\/contract\/?/, "")
+    const current = records.get(enrollmentId) as Item
+    const contract = contracts.get(enrollmentId)
+    const signerIds = (current.parties as Item[])
+      .filter((party) => party.signatory && party.linkActive)
+      .map((party) => party.guardianId as number)
+    const withMissing = (item: Item) => {
+      const accepted = (item.acceptances as Item[]).filter((entry) => entry.status === "ACCEPTED")
+      return {
+        ...item,
+        missingSigners: signerIds.filter((id) => !accepted.some((entry) => entry.signerId === id)),
+      }
+    }
+    const bumpEnrollment = () => records.set(enrollmentId, { ...current, version: Number(current.version) + 1 })
+
+    if (!rest && call.method === "GET") {
+      if (!contract) return route.fulfill(apiError(404, "CONTRACT_NOT_FOUND"))
+      return route.fulfill(apiAnswer(withMissing(contract)))
+    }
+
+    if (!rest && call.method === "POST") {
+      const approved = templates.find((item) => item.status === "APPROVED")
+      if (!approved) return route.fulfill(apiError(409, "CONTRACT_TEMPLATE_NOT_APPROVED"))
+      if (!current.classContext || !current.startDate || signerIds.length === 0) {
+        return route.fulfill(apiError(422, "CONTRACT_NOT_READY"))
+      }
+      const generated = {
+        acceptances: [],
+        body: String(approved.body).replace("{{student.name}}", String((current.student as Item).name)),
+        contentHash: "a1b2c3d4e5f6a7b8c9d0e1f2",
+        enrollmentId,
+        generatedAt: new Date().toISOString(),
+        id: nextContractId++,
+        missingSigners: [],
+        outdated: false,
+        templateVersion: approved.versionNumber,
+        title: approved.title,
+      }
+      contracts.set(enrollmentId, generated)
+      bumpEnrollment()
+      return route.fulfill(apiAnswer(withMissing(generated)))
+    }
+
+    if (!contract) return route.fulfill(apiError(409, "CONTRACT_NOT_GENERATED"))
+    const acceptances = contract.acceptances as Item[]
+
+    if (rest === "acceptances") {
+      if (contract.outdated) return route.fulfill(apiError(409, "CONTRACT_OUTDATED"))
+      const body = (call.body ?? {}) as { signerId?: number }
+      if (body.signerId !== undefined && !signerIds.includes(body.signerId)) {
+        return route.fulfill(apiError(422, "SIGNER_INVALID"))
+      }
+      const asked = body.signerId === undefined ? signerIds : [body.signerId]
+      asked.forEach((signerId) => {
+        if (acceptances.some((entry) => entry.signerId === signerId && entry.status === "ACCEPTED")) return
+        acceptances.forEach((entry) => {
+          if (entry.signerId === signerId && entry.status === "PENDING") entry.status = "SUPERSEDED"
+        })
+        const party = (current.parties as Item[]).find((item) => item.guardianId === signerId)
+        acceptances.push({
+          acceptedAt: null,
+          acceptedContractHash: null,
+          acceptedIp: null,
+          email: "fernanda@exemplo.com",
+          expiresAt: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+          id: nextAcceptanceId++,
+          requestedAt: new Date().toISOString(),
+          sendResult: "SENT",
+          signerId,
+          signerName: party?.guardianName ?? null,
+          status: "PENDING",
+          version: 0,
+        })
+      })
+      return route.fulfill(apiAnswer(withMissing(contract)))
+    }
+
+    const revoke = /^acceptances\/(\d+)\/revoke$/.exec(rest)
+    if (revoke) {
+      const entry = acceptances.find((item) => item.id === Number(revoke[1]))
+      if (!entry) return route.fulfill(apiError(404, "ENROLLMENT_NOT_FOUND"))
+      if (entry.status !== "PENDING") return route.fulfill(apiError(409, "ACCEPTANCE_NOT_PENDING"))
+      entry.status = "REVOKED"
+      return route.fulfill(apiAnswer(withMissing(contract)))
+    }
+
+    return route.fallback()
+  })
+
+  return { calls, catalog, contracts, exceptions, records, templates }
 }

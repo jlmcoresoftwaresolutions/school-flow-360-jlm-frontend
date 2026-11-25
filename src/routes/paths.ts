@@ -20,6 +20,7 @@ export const paths = {
   classProfile: "/academic/classes/:classId",
   classes: "/academic/classes",
   contactSupport: "/help/contact-support",
+  contractTemplates: "/administration/contract-templates",
   contracts: "/finance/contracts",
   documentRequirements: "/administration/document-requirements",
   // An enrollment (a preparation or a confirmed one; not in the menu; under the enrollments page, whose
