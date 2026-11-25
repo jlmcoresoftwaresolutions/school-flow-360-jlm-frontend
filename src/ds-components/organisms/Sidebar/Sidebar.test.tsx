@@ -10,7 +10,7 @@ const items: SidebarNavItem[] = [
   { icon: "home-outline", key: "inicio", label: "Início" },
   {
     children: [
-      { key: "my-unit", label: "Minha Unidade" },
+      { key: "my-organization", label: "Minha Organização" },
       { key: "unidades", label: "Unidades" },
     ],
     icon: "gear-outline",
@@ -100,14 +100,14 @@ describe("Sidebar", () => {
     renderSidebar()
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "false")
-    expect(screen.queryByRole("button", { name: "Minha Unidade" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Minha Organização" })).not.toBeInTheDocument()
   })
 
   it("keeps a collapsed group's children mounted but hidden, so the collapse can animate", () => {
     renderSidebar()
 
     // By text, not role: a hidden element loses its accessible name, which is the point of hiding it.
-    const child = screen.getByText("Minha Unidade")
+    const child = screen.getByText("Minha Organização")
 
     expect(child).toBeInTheDocument()
     expect(child).not.toBeVisible()
@@ -118,7 +118,7 @@ describe("Sidebar", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Administração" }))
 
-    expect(screen.getByRole("button", { name: "Minha Unidade" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "Minha Organização" })).toBeVisible()
   })
 
   it("links a group header to its children through aria-controls", () => {
@@ -128,7 +128,7 @@ describe("Sidebar", () => {
       screen.getByRole("button", { name: "Administração" }).getAttribute("aria-controls") ?? "",
     )
 
-    expect(controlled).toContainElement(screen.getByText("Minha Unidade"))
+    expect(controlled).toContainElement(screen.getByText("Minha Organização"))
   })
 
   it("expands and collapses a group when its header is clicked", () => {
@@ -137,12 +137,12 @@ describe("Sidebar", () => {
     fireEvent.click(screen.getByRole("button", { name: "Administração" }))
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
-    expect(screen.getByRole("button", { name: "Minha Unidade" })).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Minha Organização" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Unidades" })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole("button", { name: "Administração" }))
 
-    expect(screen.queryByRole("button", { name: "Minha Unidade" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Minha Organização" })).not.toBeInTheDocument()
   })
 
   it("keeps only one group open: opening another closes the first", () => {
@@ -166,7 +166,7 @@ describe("Sidebar", () => {
 
     expect(screen.getByRole("button", { name: "Financeiro" })).toHaveAttribute("aria-expanded", "true")
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "false")
-    expect(screen.getByText("Minha Unidade")).not.toBeVisible()
+    expect(screen.getByText("Minha Organização")).not.toBeVisible()
     expect(screen.getByRole("button", { name: "Mensalidades" })).toBeVisible()
   })
 
@@ -174,7 +174,7 @@ describe("Sidebar", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "my-unit", label: "Minha Unidade" }],
+          children: [{ active: true, key: "my-organization", label: "Minha Organização" }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -200,7 +200,7 @@ describe("Sidebar", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "my-unit", label: "Minha Unidade" }],
+          children: [{ active: true, key: "my-organization", label: "Minha Organização" }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -209,7 +209,7 @@ describe("Sidebar", () => {
     })
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
-    expect(screen.getByRole("button", { name: "Minha Unidade" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("button", { name: "Minha Organização" })).toHaveAttribute("aria-current", "page")
   })
 
   it("calls a child's onClick when it is clicked", () => {
@@ -217,7 +217,7 @@ describe("Sidebar", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "my-unit", label: "Minha Unidade", onClick: handleClick }],
+          children: [{ active: true, key: "my-organization", label: "Minha Organização", onClick: handleClick }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -225,7 +225,7 @@ describe("Sidebar", () => {
       ],
     })
 
-    fireEvent.click(screen.getByRole("button", { name: "Minha Unidade" }))
+    fireEvent.click(screen.getByRole("button", { name: "Minha Organização" }))
 
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
@@ -350,7 +350,7 @@ describe("Sidebar on a compact screen", () => {
     stubCompactScreen()
     renderSidebar()
 
-    expect(screen.getByText("Minha Unidade")).not.toBeVisible()
+    expect(screen.getByText("Minha Organização")).not.toBeVisible()
   })
 
   it("keeps the backdrop out of the way while collapsed and shows it once expanded", () => {
@@ -424,7 +424,7 @@ describe("Sidebar on a compact screen", () => {
     renderSidebar({
       items: [
         {
-          children: [{ active: true, key: "my-unit", label: "Minha Unidade", onClick: handleClick }],
+          children: [{ active: true, key: "my-organization", label: "Minha Organização", onClick: handleClick }],
           icon: "gear-outline",
           key: "administracao",
           label: "Administração",
@@ -433,7 +433,7 @@ describe("Sidebar on a compact screen", () => {
     })
 
     fireEvent.click(screen.getByRole("button", { name: "Expandir menu" }))
-    fireEvent.click(screen.getByRole("button", { name: "Minha Unidade" }))
+    fireEvent.click(screen.getByRole("button", { name: "Minha Organização" }))
 
     expect(handleClick).toHaveBeenCalledTimes(1)
     expect(screen.getByRole("button", { name: "Expandir menu" })).toBeInTheDocument()
@@ -447,7 +447,7 @@ describe("Sidebar on a compact screen", () => {
 
     expect(screen.getByRole("button", { name: "Recolher menu" })).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
-    expect(screen.getByRole("button", { name: "Minha Unidade" })).toBeVisible()
+    expect(screen.getByRole("button", { name: "Minha Organização" })).toBeVisible()
   })
 
   it("names the expand/collapse button with expandLabel and collapseLabel", () => {

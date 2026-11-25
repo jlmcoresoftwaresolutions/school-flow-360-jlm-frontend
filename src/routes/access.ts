@@ -7,7 +7,7 @@ type PageKey = keyof PathsType
 
 // Who may open each page behind the login, by its key in paths. A page left out opens for anyone
 // signed in - only until the responsibilities matrix v2.0 (JLM-208) gives the other roles their pages.
-// What is here follows the backend and the matrix v2.0: the access audit is Admin-only; Minha Unidade
+// What is here follows the backend and the matrix v2.0: the access audit is Admin-only; Minha Organização
 // is managed by the Admin and read by the Secretaria; users and invitations are for both; the people
 // (students and guardians, P03) are for both too (PE-14: the other roles wait for their own modules).
 // The academic structure (P04, CT09) adds the Coordenação, which manages it like the Secretaria (but
@@ -31,7 +31,7 @@ export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   guardianProfile: ["ADMIN", "SECRETARIA"],
   guardians: ["ADMIN", "SECRETARIA"],
   invites: ["ADMIN", "SECRETARIA"],
-  myUnit: ["ADMIN", "SECRETARIA"],
+  myOrganization: ["ADMIN", "SECRETARIA"],
   offers: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   peopleSearch: ["ADMIN", "SECRETARIA"],
   periods: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],

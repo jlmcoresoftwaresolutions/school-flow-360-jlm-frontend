@@ -38,7 +38,7 @@ import {
   searchSchoolUnits,
 } from "../schoolUnits"
 
-// The page-facing layer of Minha Unidade: it answers in the frontend's shapes (models/organization),
+// The page-facing layer of Minha Organização: it answers in the frontend's shapes (models/organization),
 // over the API-shaped services beside this folder (organizations, branding, schoolUnits), which have
 // one function per backend endpoint in the backend's own names. Everything here is wired to the
 // backend; mapping the field names, and keeping what a later save needs, is this file's job.

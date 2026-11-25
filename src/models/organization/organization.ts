@@ -1,4 +1,4 @@
-// The frontend's own shape for Minha Unidade's data. The backend uses other names (orgInstName,
+// The frontend's own shape for Minha Organização's data. The backend uses other names (orgInstName,
 // orgAddressStreet, ...) and lacks some fields (the city, for one), so the service maps between the
 // two (the Api* types below are the backend's); what isn't wired yet answers from a mock (see
 // services/organization).

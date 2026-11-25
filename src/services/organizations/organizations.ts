@@ -12,11 +12,11 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // The organization endpoints, one function per route, in the backend's own shapes (the names and
 // types of models/organizations). services/organization is the page-facing layer: it answers in the
-// frontend's shapes for Minha Unidade, and its calls are being moved onto these one at a time. All of
+// frontend's shapes for Minha Organização, and its calls are being moved onto these one at a time. All of
 // them are ADMIN only, but for the summary, which a Secretaria may also read. Prefer the "current" ones
 // to the by-id ones: the backend itself says so.
 
-// USED: Minha Unidade for a Secretaria (through services/organization). GET
+// USED: Minha Organização for a Secretaria (through services/organization). GET
 // /api/organizations/current/summary: the read-only view of the signed-in user's organization with its
 // units - for a Secretaria, only its own units (JLM-2/128). No address nor notes. 404 when the tenant
 // has no organization yet.
@@ -26,7 +26,7 @@ export const getCurrentOrganizationSummary = async (config?: RequestConfig): Pro
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's overview (through services/organization). GET
+// USED: Minha Organização's overview (through services/organization). GET
 // /api/organizations/current/editable: the editable fields plus the `version` to send back when saving.
 // 404 ("Organization not found.") when the tenant has no organization yet: the backend asks for an
 // empty state offering to register it (createOrganization), not an error.
@@ -39,7 +39,7 @@ export const getCurrentOrganizationEditable = async (config?: RequestConfig): Pr
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's overview (through services/organization), for the institutional and display
+// USED: Minha Organização's overview (through services/organization), for the institutional and display
 // names (orgInstName, orgName), the contacts, the address and the internal notes. PUT
 // /api/organizations/current: saves the organization's registration and address and answers the new
 // state with the new `version`. It REPLACES every editable field with what the body brings: a field

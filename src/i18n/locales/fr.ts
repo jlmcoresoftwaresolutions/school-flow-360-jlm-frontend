@@ -1385,9 +1385,9 @@ export const fr: TranslationResource = {
           "Préparez l'inscription de chaque élève : responsables, classe et places, en suivant ce qui manque encore.",
         title: "Inscriptions",
       },
-      myUnit: {
+      myOrganization: {
         description: "Les informations de l'institution, ses établissements et l'identité visuelle de l'école.",
-        title: "Mon Établissement",
+        title: "Mon Organisation",
       },
       people: {
         description: "Fiches des élèves et des responsables, leurs liens, documents et historique.",
@@ -1537,7 +1537,7 @@ export const fr: TranslationResource = {
     seeSessions: "Voir mes sessions ouvertes",
     title: "Mon profil",
   },
-  myUnit: {
+  myOrganization: {
     address: {
       cep: "Code postal (CEP)",
       cepHelper: "Saisissez le code postal pour remplir l'adresse.",
@@ -1675,7 +1675,7 @@ export const fr: TranslationResource = {
       overview: "Vue d'ensemble",
       units: "Établissements",
     },
-    title: "Mon Établissement",
+    title: "Mon Organisation",
     units: {
       actions: "Actions",
       actionsFor: "Actions pour {{name}}",
@@ -2335,7 +2335,7 @@ export const fr: TranslationResource = {
       integrations: "Intégrations",
       invites: "Invitations",
       messages: "Messages",
-      myUnit: "Mon Établissement",
+      myOrganization: "Mon Organisation",
       notices: "Annonces",
       notifications: "Notifications",
       offers: "Offres",

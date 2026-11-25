@@ -10,7 +10,7 @@ import { createAcademicPeriod, getAcademicPeriod, updateAcademicPeriod } from "@
 import { getErrorCode, getErrorMessage, getErrorStatus } from "@/services/httpClient"
 import { toIsoDate } from "@/utils/dates"
 
-import { ConflictNotice } from "../MyUnit/shared/ConflictNotice"
+import { ConflictNotice } from "../MyOrganization/shared/ConflictNotice"
 import { readDependencyMessage } from "../shared/academic/academicBlockers"
 import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import type { AcademicUnits } from "../shared/academic/useAcademicUnits"

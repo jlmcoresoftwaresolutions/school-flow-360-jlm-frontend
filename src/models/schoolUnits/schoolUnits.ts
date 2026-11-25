@@ -1,6 +1,6 @@
 import type { ApiOrganization } from "../organizations/organizations"
 
-// The backend's school-unit models. The frontend's own shape for a unit (what Minha Unidade works
+// The backend's school-unit models. The frontend's own shape for a unit (what Minha Organização works
 // with) lives in models/organization.
 
 export type ApiSchoolUnitStatus = "ACTIVE" | "INACTIVE"

@@ -4,7 +4,7 @@ import { apiAnswer, expect, type Page, signedInUser, test } from "./support/test
 // it is sent, so a test can hand out a session that ends a few seconds later.
 const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
   const lengths = [...sessionLengthsMs]
-  // Minha Unidade reads the visual identity from the backend; nothing saved yet is enough here.
+  // Minha Organização reads the visual identity from the backend; nothing saved yet is enough here.
   await page.route("**/api/organizations/current/branding", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -16,7 +16,7 @@ const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
       contentType: "application/json",
     }),
   )
-  // Minha Unidade reads the organization from the backend.
+  // Minha Organização reads the organization from the backend.
   await page.route("**/api/organizations/current/editable", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -46,7 +46,7 @@ const mockLogin = async (page: Page, sessionLengthsMs: number[]) => {
       contentType: "application/json",
     }),
   )
-  // Minha Unidade lists the units from the backend; an empty list is enough here.
+  // Minha Organização lists the units from the backend; an empty list is enough here.
   await page.route("**/api/school-units?*", (route) =>
     route.fulfill({
       body: JSON.stringify({
@@ -94,26 +94,26 @@ const signOut = async (page: Page) => {
 
 const oneHour = 60 * 60 * 1000
 const expiredNotice = "Sua sessão expirou. Entre novamente para continuar."
-const myUnitHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Unidade" })
+const myOrganizationHeading = (page: Page) => page.getByRole("heading", { level: 1, name: "Minha Organização" })
 
 test("ends the session when it expires, even on an idle page, and brings the user back after signing in", async ({
   page,
 }) => {
   await mockLogin(page, [4000, oneHour])
-  await page.goto("/administration/my-unit")
+  await page.goto("/administration/my-organization")
   await signIn(page)
-  await expect(myUnitHeading(page)).toBeVisible()
+  await expect(myOrganizationHeading(page)).toBeVisible()
 
   // Nothing is clicked: the expiry alone ends the session and the page's data leaves the screen.
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit&expired=1$/, { timeout: 15_000 })
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-organization&expired=1$/, { timeout: 15_000 })
   await expect(page.getByRole("status").filter({ hasText: expiredNotice })).toBeVisible()
-  await expect(myUnitHeading(page)).toHaveCount(0)
+  await expect(myOrganizationHeading(page)).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem("sf360.session"))).toBeNull()
 
   await signIn(page)
 
-  await expect(page).toHaveURL(/\/administration\/my-unit$/)
-  await expect(myUnitHeading(page)).toBeVisible()
+  await expect(page).toHaveURL(/\/administration\/my-organization$/)
+  await expect(myOrganizationHeading(page)).toBeVisible()
 })
 
 test("renews the session when its access token expires, keeping the user on the page", async ({ page }) => {
@@ -135,17 +135,17 @@ test("renews the session when its access token expires, keeping the user on the 
     return route.fulfill(apiAnswer(signedInUser))
   })
 
-  await page.goto("/administration/my-unit")
+  await page.goto("/administration/my-organization")
   await signIn(page)
-  await expect(myUnitHeading(page)).toBeVisible()
+  await expect(myOrganizationHeading(page)).toBeVisible()
 
   // The expiry passes on an idle page: the session is renewed instead of ending.
   await expect.poll(() => refreshBodies, { timeout: 15_000 }).toEqual([{ refreshToken: "refresh-token" }])
-  await expect(page).toHaveURL(/\/administration\/my-unit$/)
+  await expect(page).toHaveURL(/\/administration\/my-organization$/)
 
   // A new visit goes on with the renewed token.
   await page.reload()
-  await expect(myUnitHeading(page)).toBeVisible()
+  await expect(myOrganizationHeading(page)).toBeVisible()
   await expect.poll(() => meAuthorizations.at(-1)).toBe("Bearer access-token-2")
 })
 
@@ -168,9 +168,9 @@ test("shows who signed in, and keeps a role away from the pages it doesn't open"
 
   // Typing the address of a page the role doesn't open lands on a page that says so, telling nothing
   // about the page asked for, with a way back home.
-  await page.goto("/administration/my-unit")
+  await page.goto("/administration/my-organization")
   await expect(page).toHaveURL(/\/access-denied$/)
-  await expect(myUnitHeading(page)).toHaveCount(0)
+  await expect(myOrganizationHeading(page)).toHaveCount(0)
   await expect(page.getByText("Você não tem acesso a esta página")).toBeVisible()
   await page.getByRole("link", { name: "Ir para o início" }).click()
   await expect(page).toHaveURL(/\/home$/)
@@ -178,14 +178,14 @@ test("shows who signed in, and keeps a role away from the pages it doesn't open"
 
 test("brings a visitor back to the page they opened, without saying a session expired", async ({ page }) => {
   await mockLogin(page, [oneHour])
-  await page.goto("/administration/my-unit")
+  await page.goto("/administration/my-organization")
 
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit$/)
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-organization$/)
   await expect(page.getByText(expiredNotice)).toHaveCount(0)
 
   await signIn(page)
 
-  await expect(page).toHaveURL(/\/administration\/my-unit$/)
+  await expect(page).toHaveURL(/\/administration\/my-organization$/)
 })
 
 test("signs out from the header, ending the session here and on the backend", async ({ page }) => {
@@ -210,8 +210,8 @@ test("signs out from the header, ending the session here and on the backend", as
   expect(await page.evaluate(() => localStorage.getItem("sf360.session"))).toBeNull()
 
   // The inner pages are closed again.
-  await page.goto("/administration/my-unit")
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit$/)
+  await page.goto("/administration/my-organization")
+  await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-organization$/)
 })
 
 test("signs out at once even when the backend doesn't answer", async ({ page }) => {

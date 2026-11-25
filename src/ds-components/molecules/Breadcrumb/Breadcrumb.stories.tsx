@@ -6,7 +6,7 @@ const meta: Meta<typeof Breadcrumb> = {
   args: {
     items: [
       { key: "administracao", label: "Administração" },
-      { href: "#my-unit", key: "my-unit", label: "Minha Unidade" },
+      { href: "#my-organization", key: "my-organization", label: "Minha Organização" },
       { key: "unidades", label: "Unidades" },
     ],
     label: "Você está em",
@@ -40,7 +40,7 @@ export const WithIcon: Story = {
   args: {
     items: [
       { icon: "gear-outline", key: "administracao", label: "Administração" },
-      { key: "my-unit", label: "Minha Unidade" },
+      { key: "my-organization", label: "Minha Organização" },
     ],
   },
 }
@@ -51,7 +51,7 @@ export const WithButtons: Story = {
     items: [
       { key: "inicio", label: "Início", onClick: () => undefined },
       { key: "administracao", label: "Administração", onClick: () => undefined },
-      { key: "my-unit", label: "Minha Unidade" },
+      { key: "my-organization", label: "Minha Organização" },
     ],
   },
 }

@@ -13,7 +13,7 @@ import {
 } from "@/services/academicCalendar"
 import { fromIsoDate, toIsoDate } from "@/utils/dates"
 
-import { ConflictNotice } from "../MyUnit/shared/ConflictNotice"
+import { ConflictNotice } from "../MyOrganization/shared/ConflictNotice"
 import { academicLimits } from "../shared/academic/academicLimits"
 import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import type { AcademicUnits } from "../shared/academic/useAcademicUnits"

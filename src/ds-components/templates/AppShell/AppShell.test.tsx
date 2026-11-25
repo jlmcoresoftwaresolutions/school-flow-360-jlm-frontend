@@ -41,7 +41,7 @@ const renderAppShell = (initialEntry: string, user: UserContext | null = admin) 
           {
             children: [
               { element: <div>Outra página</div>, path: "/outra" },
-              { element: <div>Página Minha Unidade</div>, path: "/administration/my-unit" },
+              { element: <div>Página Minha Organização</div>, path: "/administration/my-organization" },
               { element: <div>Página Início</div>, path: "/home" },
               { element: <div>Página Mensalidades</div>, path: "/finance/tuition" },
               { element: <div>Perfil do aluno</div>, path: "/administration/students/:studentId" },
@@ -157,24 +157,24 @@ describe("AppShell", () => {
     renderAppShell("/outra")
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "false")
-    expect(screen.queryByRole("button", { name: "Minha Unidade" })).not.toBeInTheDocument()
+    expect(screen.queryByRole("button", { name: "Minha Organização" })).not.toBeInTheDocument()
   })
 
-  it("opens the Administração group and marks Minha Unidade as the current page on its route", () => {
-    renderAppShell("/administration/my-unit")
+  it("opens the Administração group and marks Minha Organização as the current page on its route", () => {
+    renderAppShell("/administration/my-organization")
 
     expect(screen.getByRole("button", { name: "Administração" })).toHaveAttribute("aria-expanded", "true")
-    expect(screen.getByRole("button", { name: "Minha Unidade" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByRole("button", { name: "Minha Organização" })).toHaveAttribute("aria-current", "page")
   })
 
-  it("navigates to Minha Unidade after expanding the group and clicking its item", () => {
+  it("navigates to Minha Organização after expanding the group and clicking its item", () => {
     renderAppShell("/outra")
 
     fireEvent.click(screen.getByRole("button", { name: "Administração" }))
-    fireEvent.click(screen.getByRole("button", { name: "Minha Unidade" }))
+    fireEvent.click(screen.getByRole("button", { name: "Minha Organização" }))
 
-    expect(screen.getByText("Página Minha Unidade")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Minha Unidade" })).toHaveAttribute("aria-current", "page")
+    expect(screen.getByText("Página Minha Organização")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Minha Organização" })).toHaveAttribute("aria-current", "page")
   })
 
   it("renders the topbar with notifications and help disabled, as those features don't exist yet", () => {
@@ -235,12 +235,12 @@ describe("AppShell", () => {
     expect(sidebar.queryByRole("button", { name: "Auditoria" })).not.toBeInTheDocument()
   })
 
-  it("shows a Secretaria Minha Unidade (to read) and the users' pages, but not the audit", () => {
+  it("shows a Secretaria Minha Organização (to read) and the users' pages, but not the audit", () => {
     renderAppShell("/outra", signedInAs("Maria Souza", ["SECRETARIA"]))
 
     const sidebar = within(screen.getByRole("complementary"))
     fireEvent.click(sidebar.getByRole("button", { name: "Administração" }))
-    expect(sidebar.getByRole("button", { name: "Minha Unidade" })).toBeInTheDocument()
+    expect(sidebar.getByRole("button", { name: "Minha Organização" })).toBeInTheDocument()
 
     fireEvent.click(sidebar.getByRole("button", { name: "Logs de Acesso" }))
     expect(sidebar.queryByRole("button", { name: "Auditoria" })).not.toBeInTheDocument()
@@ -270,13 +270,13 @@ describe("AppShell", () => {
     expect(screen.queryByText("Saindo da conta")).not.toBeInTheDocument()
   })
 
-  it("shows the breadcrumb for Minha Unidade, with the current page marked", () => {
-    renderAppShell("/administration/my-unit")
+  it("shows the breadcrumb for Minha Organização, with the current page marked", () => {
+    renderAppShell("/administration/my-organization")
 
     const breadcrumb = screen.getByRole("navigation", { name: "Você está em" })
 
     expect(within(breadcrumb).getByText("Administração")).toBeInTheDocument()
-    expect(within(breadcrumb).getByText("Minha Unidade")).toHaveAttribute("aria-current", "page")
+    expect(within(breadcrumb).getByText("Minha Organização")).toHaveAttribute("aria-current", "page")
   })
 
   it("keeps the menu entry and breadcrumb of the page a record belongs to", () => {
@@ -316,15 +316,14 @@ describe("AppShell", () => {
     })
 
     it("translates the menu, the breadcrumb and the topbar", async () => {
-      renderAppShell("/administration/my-unit")
+      renderAppShell("/administration/my-organization")
 
       await act(() => i18n.changeLanguage("en"))
 
       expect(await screen.findByRole("button", { name: "Administration" })).toBeInTheDocument()
-      expect(within(screen.getByRole("navigation", { name: "You are here" })).getByText("My Unit")).toHaveAttribute(
-        "aria-current",
-        "page",
-      )
+      expect(
+        within(screen.getByRole("navigation", { name: "You are here" })).getByText("My Organization"),
+      ).toHaveAttribute("aria-current", "page")
       expect(within(screen.getByRole("banner")).getByRole("button", { name: "Notifications" })).toBeDisabled()
     })
   })
