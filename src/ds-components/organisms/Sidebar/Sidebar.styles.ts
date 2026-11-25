@@ -145,15 +145,20 @@ export const SidebarBrandText = styled.div`
   min-width: 0;
 `
 
-export const SidebarBrandTitle = styled.p`
+// The brand's name wraps onto a second line instead of being cut (a school's name is often long), a
+// step smaller when it is long; only past two lines it ends in an ellipsis, and then the whole name shows
+// on hover.
+export const SidebarBrandTitle = styled.p<{ $long: boolean }>`
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   color: ${colors.primary[900]};
-  font-size: ${typography.fontSize.lg}px;
+  display: -webkit-box;
+  font-size: ${(props) => (props.$long ? typography.fontSize.md : typography.fontSize.lg)}px;
   font-weight: ${typography.fontWeight.bold};
-  line-height: ${typography.lineHeight.lg};
+  line-height: ${(props) => (props.$long ? typography.lineHeight.sm : typography.lineHeight.lg)};
   margin: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 `
 
 // A discreet line under the title (the product's "Powered by" when the title is a school's).

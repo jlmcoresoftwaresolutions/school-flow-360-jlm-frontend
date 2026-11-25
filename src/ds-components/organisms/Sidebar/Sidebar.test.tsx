@@ -55,13 +55,43 @@ describe("Sidebar", () => {
     expect(container.querySelector("[aria-busy]")).not.toBeInTheDocument()
   })
 
-  it("keeps the whole title available on hover when a long one is cut", () => {
+  // The title is measured by a ResizeObserver; here it answers at once, and the title is taller than its box.
+  const stubCutTitle = (cut: boolean) => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        callback: () => void
+        constructor(callback: () => void) {
+          this.callback = callback
+        }
+        disconnect() {}
+        observe() {
+          this.callback()
+        }
+      },
+    )
+    vi.spyOn(HTMLElement.prototype, "scrollHeight", "get").mockReturnValue(cut ? 72 : 48)
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(48)
+  }
+
+  it("shows the whole title on hover when even two lines can't hold it", () => {
+    stubCutTitle(true)
+    renderSidebar({ title: "Rede Colégio Horizonte de Educação Integral e Profissional do Ceará" })
+
+    fireEvent.mouseEnter(screen.getByText("Rede Colégio Horizonte de Educação Integral e Profissional do Ceará"))
+    expect(screen.getByRole("tooltip")).toHaveTextContent(
+      "Rede Colégio Horizonte de Educação Integral e Profissional do Ceará",
+    )
+    vi.restoreAllMocks()
+  })
+
+  it("shows no tooltip when the title fits", () => {
+    stubCutTitle(false)
     renderSidebar({ title: "Colégio Horizonte de Educação Integral" })
 
-    expect(screen.getByText("Colégio Horizonte de Educação Integral")).toHaveAttribute(
-      "title",
-      "Colégio Horizonte de Educação Integral",
-    )
+    fireEvent.mouseEnter(screen.getByText("Colégio Horizonte de Educação Integral"))
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument()
+    vi.restoreAllMocks()
   })
 
   it("renders a button for every top-level item", () => {

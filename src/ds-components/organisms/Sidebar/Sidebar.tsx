@@ -1,8 +1,8 @@
 import type { CSSProperties } from "react"
-import { useEffect, useId, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 
 import type { IconName } from "@/ds-components/atoms"
-import { IconButton, Image, Skeleton } from "@/ds-components/atoms"
+import { IconButton, Image, Skeleton, useTooltip } from "@/ds-components/atoms"
 import { media, spacing } from "@/foundation"
 import { useMediaQuery } from "@/hooks"
 
@@ -62,6 +62,9 @@ export type SidebarProps = {
 // is that breakpoint's own media token, negated, so the two can't drift apart.
 const compactQuery = `not all and ${media.md}`
 
+// A title longer than this is set a step smaller, so a school's long name fits in two lines.
+const longTitleLength = 20
+
 // On compact screens the sidebar is an icon-only rail with a button that opens it over the content;
 // on wider screens it is always fully expanded and that button doesn't exist.
 export const Sidebar = (props: SidebarProps) => {
@@ -80,9 +83,16 @@ export const Sidebar = (props: SidebarProps) => {
     title,
   } = props
 
+  const titleRef = useRef<HTMLParagraphElement>(null)
+
   const panelId = useId()
 
   const isCompact = useMediaQuery(compactQuery)
+
+  // Whether the title is still cut after two lines: only then the whole name shows on hover.
+  const [isTitleCut, setIsTitleCut] = useState(false)
+
+  const { tooltipElement, tooltipHandlers } = useTooltip(isTitleCut ? title : undefined)
 
   const [isOpen, setIsOpen] = useState(false)
   // Which group is open. undefined means "not chosen by the user yet" - the group holding the current
@@ -95,6 +105,17 @@ export const Sidebar = (props: SidebarProps) => {
 
   const activeGroupKey = [...items, ...bottomItems].find((item) => item.children?.some((child) => child.active))?.key
   const expandedGroupKey = openGroupKey === undefined ? activeGroupKey : openGroupKey
+
+  // The title is measured again whenever it changes size (another name, a narrower panel).
+  useEffect(() => {
+    const element = titleRef.current
+    if (!element || typeof ResizeObserver === "undefined") return
+
+    const observer = new ResizeObserver(() => setIsTitleCut(element.scrollHeight > element.clientHeight + 1))
+    observer.observe(element)
+
+    return () => observer.disconnect()
+  }, [title, brandLoading])
 
   useEffect(() => {
     if (!isOverlay) return
@@ -152,7 +173,15 @@ export const Sidebar = (props: SidebarProps) => {
                 />
 
                 <SidebarBrandText>
-                  <SidebarBrandTitle title={title}>{title}</SidebarBrandTitle>
+                  <SidebarBrandTitle
+                    ref={titleRef}
+                    $long={title.length > longTitleLength}
+                    tabIndex={isTitleCut ? 0 : undefined}
+                    {...tooltipHandlers}
+                  >
+                    {title}
+                  </SidebarBrandTitle>
+                  {tooltipElement}
                   {subtitle && <SidebarBrandSubtitle>{subtitle}</SidebarBrandSubtitle>}
                 </SidebarBrandText>
               </>
