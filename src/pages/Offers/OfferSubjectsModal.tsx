@@ -8,7 +8,7 @@ import { Modal } from "@/ds-components/organisms"
 import type { AcademicOffer, AcademicSubject } from "@/models"
 import { getAcademicOffer, setAcademicOfferSubjects } from "@/services/academicCatalog"
 
-import { ConflictNotice } from "../MyUnit/shared/ConflictNotice"
+import { ConflictNotice } from "../MyOrganization/shared/ConflictNotice"
 import { useCatalogSave } from "../shared/academic/useCatalogSave"
 import { FormFields } from "../shared/userAccess/userAccess.styles"
 

@@ -18,7 +18,7 @@ import type {
 import { listAcademicOffers, listAcademicRooms } from "@/services/academicCatalog"
 import { createAcademicClass, getAcademicClass, updateAcademicClass } from "@/services/academicClasses"
 
-import { ConflictNotice } from "../MyUnit/shared/ConflictNotice"
+import { ConflictNotice } from "../MyOrganization/shared/ConflictNotice"
 import { academicLimits } from "../shared/academic/academicLimits"
 import { useAcademicLabels } from "../shared/academic/useAcademicLabels"
 import type { AcademicUnits } from "../shared/academic/useAcademicUnits"

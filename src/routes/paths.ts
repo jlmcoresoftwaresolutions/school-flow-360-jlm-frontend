@@ -39,11 +39,14 @@ export const paths = {
   home: "/home",
   integrations: "/settings/integrations",
   invites: "/users/invites",
+  // The address Minha Organização had while it was called Minha Unidade (until 2026-11-24): it only
+  // redirects to the page's own, so old links and bookmarks still work. Not a page, not in the menu.
+  legacyMyUnit: "/administration/my-unit",
   login: "/login",
   messages: "/communication/messages",
   // The signed-in user's own profile, opened from the user menu in the topbar (not in the side menu).
+  myOrganization: "/administration/my-organization",
   myProfile: "/account/profile",
-  myUnit: "/administration/my-unit",
   notices: "/communication/notices",
   notifications: "/communication/notifications",
   offers: "/academic/offers",

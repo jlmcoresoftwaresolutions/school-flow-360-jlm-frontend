@@ -1367,7 +1367,7 @@ export const es: TranslationResource = {
           "Prepare la matrícula de cada estudiante: responsables, grupo y vacantes, siguiendo lo que aún falta.",
         title: "Matrículas",
       },
-      myUnit: {
+      myOrganization: {
         description: "Los datos de la institución, las sedes y la identidad visual de la escuela.",
         title: "Mi Organización",
       },
@@ -1515,7 +1515,7 @@ export const es: TranslationResource = {
     seeSessions: "Ver mis sesiones abiertas",
     title: "Mi perfil",
   },
-  myUnit: {
+  myOrganization: {
     address: {
       cep: "Código postal (CEP)",
       cepHelper: "Escribe el código postal para completar la dirección.",
@@ -2302,7 +2302,7 @@ export const es: TranslationResource = {
       integrations: "Integraciones",
       invites: "Invitaciones",
       messages: "Mensajes",
-      myUnit: "Mi Organización",
+      myOrganization: "Mi Organización",
       notices: "Avisos",
       notifications: "Notificaciones",
       offers: "Ofertas",

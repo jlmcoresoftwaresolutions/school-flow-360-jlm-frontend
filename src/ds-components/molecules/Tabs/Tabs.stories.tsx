@@ -34,7 +34,7 @@ const items: TabsProps["items"] = [
 const meta: Meta<typeof Tabs> = {
   args: {
     items,
-    label: "Seções de Minha Unidade",
+    label: "Seções de Minha Organização",
     value: "visao-geral",
   },
   argTypes: {

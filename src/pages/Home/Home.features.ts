@@ -6,12 +6,12 @@ import type { PathsType } from "@/routes/paths"
 // home.features.<key> in the locales.
 export type HomeFeature = {
   icon: IconName
-  key: "academic" | "audit" | "calendar" | "enrollments" | "myUnit" | "people" | "users"
+  key: "academic" | "audit" | "calendar" | "enrollments" | "myOrganization" | "people" | "users"
   page: keyof PathsType
 }
 
 export const homeFeatures: HomeFeature[] = [
-  { icon: "building-outline", key: "myUnit", page: "myUnit" },
+  { icon: "building-outline", key: "myOrganization", page: "myOrganization" },
   { icon: "school-outline", key: "people", page: "students" },
   { icon: "contract-outline", key: "enrollments", page: "enrollments" },
   { icon: "class-outline", key: "academic", page: "academicOverview" },

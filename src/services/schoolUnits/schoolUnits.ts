@@ -17,11 +17,11 @@ import { httpClient, unwrapApiResponse } from "../httpClient"
 
 // The school-unit endpoints, one function per route, in the backend's own shapes (models/schoolUnits).
 // All of them are ADMIN only, and a unit that does not exist or is out of the user's scope answers 404
-// either way. services/organization is the page-facing layer for Minha Unidade: it maps these to the
+// either way. services/organization is the page-facing layer for Minha Organização: it maps these to the
 // frontend's SchoolUnit. Units are never deleted, only deactivated, which keeps their history. The
 // 409s carry a stable `code` in the envelope (see ApiErrorCode), read with getErrorCode.
 
-// USED: Minha Unidade's list (through services/organization). GET /api/school-units: the tenant's
+// USED: Minha Organização's list (through services/organization). GET /api/school-units: the tenant's
 // units, with a name search, a status filter, sorting and paging, answered as a Spring page of full
 // units in the by-id detail's shape (with their `version` and `organizationId`). The sort is stable, so consecutive pages neither repeat nor skip an
 // item. 400 for page < 0, size outside 1..100, a sortBy other than unitName or operationalStatus, a
@@ -64,7 +64,7 @@ export const getSchoolUnitById = async (id: number, config?: RequestConfig): Pro
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's "new unit" (through services/organization). POST /api/school-units: creates a
+// USED: Minha Organização's "new unit" (through services/organization). POST /api/school-units: creates a
 // unit of the tenant's organization (201), which starts ACTIVE, and answers its detail. 409
 // UNIT_NAME_DUPLICATE when the name is taken (ignoring case and the spaces around it), 409
 // ORGANIZATION_REQUIRED when the tenant does not have exactly one organization. 400 for a missing or
@@ -78,7 +78,7 @@ export const addSchoolUnit = async (
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's unit edit (through services/organization). PUT /api/school-units/{id}: replaces
+// USED: Minha Organização's unit edit (through services/organization). PUT /api/school-units/{id}: replaces
 // the name, address, e-mail, phone and notes, and answers the new detail with the new `version`. It
 // does not change the organization or the status. 409 VERSION_CONFLICT when the `version` is stale
 // (reload the unit), 409 UNIT_NAME_DUPLICATE when the name is taken by another unit. 400 for a missing
@@ -100,7 +100,7 @@ export const removeSchoolUnit = async (id: number, config?: RequestConfig): Prom
   await httpClient.delete<ApiResponse<null>>(`/api/school-units/${id}`, config)
 }
 
-// USED: Minha Unidade's inactivation dialog (through services/organization). GET
+// USED: Minha Organização's inactivation dialog (through services/organization). GET
 // /api/school-units/{id}/deactivation-check: read-only, to call BEFORE deactivating to show what would
 // be affected (the users tied to the unit) and to get the `version` to send.
 export const checkSchoolUnitDeactivation = async (
@@ -115,7 +115,7 @@ export const checkSchoolUnitDeactivation = async (
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's inactivation (through services/organization). POST
+// USED: Minha Organização's inactivation (through services/organization). POST
 // /api/school-units/{id}/deactivate: marks the unit INACTIVE, with when and (optionally) why, without
 // deleting any data, link or audit record (it records a DEACTIVATE event), and does not change or
 // block its users. Flow: checkSchoolUnitDeactivation, show the impacts, then call this with the

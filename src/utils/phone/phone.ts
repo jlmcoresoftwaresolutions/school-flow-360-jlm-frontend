@@ -16,7 +16,7 @@ import { stripNonDigits } from "../formats"
 // Phone numbers of any country, on libphonenumber-js (Google's libphonenumber rules) with the "max"
 // metadata, the one that checks a number really exists in its country's plan (the smaller ones only
 // check its length). A number without "+" is read as one of `defaultCountry`'s; with "+" and a country
-// code, as that country's (the organization's country, in Minha Unidade). On screen a number of the
+// code, as that country's (the organization's country, in Minha Organização). On screen a number of the
 // default country is shown in its national format, any other in the international one; what is saved
 // is always the international format.
 

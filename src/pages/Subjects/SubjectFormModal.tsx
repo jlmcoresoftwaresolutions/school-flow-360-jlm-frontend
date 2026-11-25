@@ -8,7 +8,7 @@ import { Modal } from "@/ds-components/organisms"
 import type { AcademicSubject } from "@/models"
 import { createAcademicSubject, getAcademicSubject, updateAcademicSubject } from "@/services/academicCatalog"
 
-import { ConflictNotice } from "../MyUnit/shared/ConflictNotice"
+import { ConflictNotice } from "../MyOrganization/shared/ConflictNotice"
 import { academicLimits } from "../shared/academic/academicLimits"
 import { CatalogSimilar } from "../shared/academic/CatalogSimilar"
 import { useCatalogSave } from "../shared/academic/useCatalogSave"

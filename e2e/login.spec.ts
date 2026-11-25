@@ -225,9 +225,9 @@ test.describe("login page", () => {
 
 test.describe("access control", () => {
   test("sends a visitor without a session from an inner page to the login", async ({ page }) => {
-    await page.goto("/administration/my-unit")
+    await page.goto("/administration/my-organization")
 
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-unit$/)
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fadministration%2Fmy-organization$/)
   })
 
   test("sends an unknown address to the login", async ({ page }) => {

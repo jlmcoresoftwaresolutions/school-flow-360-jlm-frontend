@@ -1,6 +1,6 @@
 import type { ApiSchoolUnitStatus } from "../schoolUnits/schoolUnits"
 
-// The backend's organization models. The frontend's own shape for the same data (what Minha Unidade
+// The backend's organization models. The frontend's own shape for the same data (what Minha Organização
 // works with) lives in models/organization; this is the API's, with its own names (orgInstName, ...).
 
 export type ApiOrganizationType = "PRIVATE" | "PUBLIC"

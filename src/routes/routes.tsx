@@ -12,7 +12,7 @@ import { getPageKey, pageRoles } from "./access"
 import { homePath, paths, shellRouteId } from "./paths"
 
 // Every page (and the AppShell layout) is loaded on demand through `lazy`, so each one becomes its own
-// chunk: opening /login doesn't download Minha Unidade's date/color pickers, and vice versa. They are
+// chunk: opening /login doesn't download Minha Organização's date/color pickers, and vice versa. They are
 // imported from their own folders rather than the @/pages barrel, which would pull every page into
 // whichever chunk imported it. hydrateFallbackElement covers the first load, while the matched
 // route's loader runs and its chunk is still on its way; later navigations keep the current page up
@@ -229,10 +229,10 @@ export const router = createBrowserRouter([
     children: [
       {
         lazy: async () => {
-          const { MyUnit } = await import("@/pages/MyUnit")
-          return { Component: MyUnit }
+          const { MyOrganization } = await import("@/pages/MyOrganization")
+          return { Component: MyOrganization }
         },
-        path: paths.myUnit,
+        path: paths.myOrganization,
       },
       {
         lazy: async () => {
@@ -585,5 +585,6 @@ export const router = createBrowserRouter([
     loader: leaveUnknownSchool,
     path: paths.unknownSchool,
   },
+  { loader: () => redirect(paths.myOrganization), path: paths.legacyMyUnit },
   { element: <Navigate to={paths.login} replace />, path: "*" },
 ])

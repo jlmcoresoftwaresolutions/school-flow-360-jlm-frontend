@@ -1363,7 +1363,7 @@ export const ptPT: TranslationResource = {
         description: "Prepare a matrícula de cada aluno: encarregados, turma e vagas, acompanhando o que ainda falta.",
         title: "Matrículas",
       },
-      myUnit: {
+      myOrganization: {
         description: "Os dados da instituição, as unidades e a identidade visual da escola.",
         title: "A Minha Organização",
       },
@@ -1511,7 +1511,7 @@ export const ptPT: TranslationResource = {
     seeSessions: "Ver as minhas sessões abertas",
     title: "O meu perfil",
   },
-  myUnit: {
+  myOrganization: {
     address: {
       cep: "CEP",
       cepHelper: "Introduza o CEP para preencher a morada.",
@@ -2298,7 +2298,7 @@ export const ptPT: TranslationResource = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      myUnit: "A Minha Organização",
+      myOrganization: "A Minha Organização",
       notices: "Comunicados",
       notifications: "Notificações",
       offers: "Ofertas",

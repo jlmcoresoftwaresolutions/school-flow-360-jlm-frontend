@@ -1359,7 +1359,7 @@ export const en: TranslationResource = {
           "Prepare each student's enrollment: guardians, class and seats, keeping track of what is still missing.",
         title: "Enrollments",
       },
-      myUnit: {
+      myOrganization: {
         description: "The institution's details, its units and the school's visual identity.",
         title: "My Organization",
       },
@@ -1499,7 +1499,7 @@ export const en: TranslationResource = {
     seeSessions: "See my open sessions",
     title: "My profile",
   },
-  myUnit: {
+  myOrganization: {
     address: {
       cep: "Postal code (CEP)",
       cepHelper: "Enter the postal code to fill in the address.",
@@ -2284,7 +2284,7 @@ export const en: TranslationResource = {
       integrations: "Integrations",
       invites: "Invitations",
       messages: "Messages",
-      myUnit: "My Organization",
+      myOrganization: "My Organization",
       notices: "Announcements",
       notifications: "Notifications",
       offers: "Offerings",

@@ -1358,7 +1358,7 @@ export const ptBR = {
         description: "Prepare a matrícula de cada aluno: responsáveis, turma e vagas, acompanhando o que ainda falta.",
         title: "Matrículas",
       },
-      myUnit: {
+      myOrganization: {
         description: "Os dados da instituição, as unidades e a identidade visual da escola.",
         title: "Minha Organização",
       },
@@ -1504,7 +1504,7 @@ export const ptBR = {
     seeSessions: "Ver minhas sessões abertas",
     title: "Meu perfil",
   },
-  myUnit: {
+  myOrganization: {
     address: {
       cep: "CEP",
       cepHelper: "Digite o CEP para preencher o endereço.",
@@ -2292,7 +2292,7 @@ export const ptBR = {
       integrations: "Integrações",
       invites: "Convites",
       messages: "Mensagens",
-      myUnit: "Minha Organização",
+      myOrganization: "Minha Organização",
       notices: "Comunicados",
       notifications: "Notificações",
       offers: "Ofertas",

@@ -75,7 +75,7 @@ const items: SidebarNavItem[] = [
     label: "Relatórios",
   },
   {
-    children: childrenOf("Minha Unidade", "Unidades"),
+    children: childrenOf("Minha Organização", "Unidades"),
     icon: "gear-outline",
     key: "administracao",
     label: "Administração",
@@ -165,9 +165,9 @@ export default meta
 
 type Story = StoryObj<typeof Sidebar>
 
-// Default rendering: clicking a leaf or a child moves the active highlight, and clicking a group header expands it (Minha Unidade starts active, so Administração starts open)
+// Default rendering: clicking a leaf or a child moves the active highlight, and clicking a group header expands it (Minha Organização starts active, so Administração starts open)
 export const Default: Story = {
-  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
 }
 
 // A school's own identity: its name as the title (a long one is cut with an ellipsis) and the product's discreet "Powered by" under it
@@ -176,13 +176,13 @@ export const WithSubtitle: Story = {
     subtitle: "Powered by SchoolFlow360º",
     title: "Colégio Horizonte de Educação Integral",
   },
-  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
 }
 
 // Below the md breakpoint (768px) the sidebar is an icon-only rail with a button that opens it over the content - the viewport is set to a phone here, and the toolbar can resize it
 export const Mobile: Story = {
   globals: { viewport: { value: "mobile2" } },
-  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Unidade" />,
+  render: (args) => <StatefulSidebar {...args} initialActive="administracao/Minha Organização" />,
 }
 
 // With no active child every group starts collapsed; opening one group closes whichever other was open, so only one is ever open

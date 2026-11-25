@@ -33,7 +33,7 @@ test("offers an Admin every main area, each opening its page", async ({ page }) 
 
   await page.getByRole("link", { name: "Abrir Minha Organização" }).click()
 
-  await expect(page).toHaveURL(/\/administration\/my-unit$/)
+  await expect(page).toHaveURL(/\/administration\/my-organization$/)
 })
 
 test("offers a Professor only the areas the role opens", async ({ page }) => {

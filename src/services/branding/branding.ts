@@ -16,7 +16,7 @@ import { httpClient, toFileFormData, unwrapApiResponse } from "../httpClient"
 // getPublishedBranding is ADMIN only. services/organization is the page-facing layer for Minha
 // Unidade: it reads the draft and saves, uploads the logo and publishes in one go.
 
-// USED: Minha Unidade's visual identity (through services/organization). GET
+// USED: Minha Organização's visual identity (through services/organization). GET
 // /api/organizations/current/branding: the draft and its publication state (`configured` false when
 // nothing was saved yet).
 export const getBrandingDraft = async (config?: RequestConfig): Promise<BrandingResponse> => {
@@ -25,7 +25,7 @@ export const getBrandingDraft = async (config?: RequestConfig): Promise<Branding
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's visual identity (through services/organization). PUT
+// USED: Minha Organização's visual identity (through services/organization). PUT
 // /api/organizations/current/branding: creates or updates the draft (nothing changes
 // for the users until it is published). Leave `version` out the first time. 400 for an empty or too
 // long displayName or a color outside #RRGGBB, 409 when the `version` is stale, 428 when the branding
@@ -43,7 +43,7 @@ export const saveBrandingDraft = async (
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's visual identity (through services/organization). POST
+// USED: Minha Organização's visual identity (through services/organization). POST
 // /api/organizations/current/branding/publish: makes the draft the branding in force
 // (name, colors and logo are copied to the published version) and records an audit event. It needs the
 // primary color (422 without it), 409 when the draft changed since the admin saw it (or was never
@@ -61,7 +61,7 @@ export const publishBranding = async (
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's visual identity (through services/organization). POST
+// USED: Minha Organização's visual identity (through services/organization). POST
 // /api/organizations/current/branding/logo: uploads the draft's logo (201), replacing
 // the previous one, and answers the updated branding. The draft must already be saved (409 otherwise).
 // PNG or JPEG up to 2 MB, 64 to 2048 px a side, ratio up to 4:1, and the real content is checked, not
@@ -90,7 +90,7 @@ export const removeBrandingLogo = async (config?: RequestConfig): Promise<Brandi
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade's visual identity (through services/organization). POST
+// USED: Minha Organização's visual identity (through services/organization). POST
 // /api/organizations/current/branding/favicon: uploads the draft's favicon (201), replacing the
 // previous one, and answers the updated branding. The draft must already be saved (409 otherwise).
 // PNG or JPEG (no .ico, no SVG) up to 512 KB, SQUARE (width equal to height), 16 to 512 px a side, and
@@ -119,7 +119,7 @@ export const removeBrandingFavicon = async (config?: RequestConfig): Promise<Bra
   return unwrapApiResponse(response)
 }
 
-// USED: Minha Unidade for a Secretaria (through services/organization). GET
+// USED: Minha Organização for a Secretaria (through services/organization). GET
 // /api/organizations/current/branding/published: the branding every screen should apply, open to ANY
 // signed-in user of the tenant, not just an ADMIN. A 404 means nothing was published yet: use the
 // default look. The app could theme itself from it after login.
