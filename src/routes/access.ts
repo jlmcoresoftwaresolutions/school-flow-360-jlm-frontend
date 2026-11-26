@@ -35,6 +35,7 @@ export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   guardianProfile: ["ADMIN", "SECRETARIA"],
   guardians: ["ADMIN", "SECRETARIA"],
   invites: ["ADMIN", "SECRETARIA"],
+  lifecycleEvent: ["ADMIN", "SECRETARIA", "FINANCEIRO", "COORDENACAO"],
   myEnrollments: ["ALUNO", "RESPONSAVEL"],
   myOrganization: ["ADMIN", "SECRETARIA"],
   offers: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],

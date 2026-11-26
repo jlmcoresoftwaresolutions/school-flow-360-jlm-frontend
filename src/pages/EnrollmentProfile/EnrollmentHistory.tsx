@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { generatePath, Link } from "react-router-dom"
 
 import { Button, Text } from "@/ds-components/atoms"
 import { Pagination, StateMessage } from "@/ds-components/molecules"
 import { Table } from "@/ds-components/organisms"
 import type { EnrollmentHistoryEvent, EnrollmentHistoryPage, EnrollmentStatus } from "@/models"
+import { paths } from "@/routes/paths"
 import { listEnrollmentHistory } from "@/services/enrollments"
 
 import { enrollmentStatuses, useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
+import { eventTypeOfAction, useLifecycleLabels } from "../shared/enrollments/useLifecycleLabels"
 import { PersonBlock } from "../shared/people/PersonBlock"
 import { PersonCell } from "../shared/userAccess/userAccess.styles"
 
@@ -37,6 +40,7 @@ export const EnrollmentHistory = (props: EnrollmentHistoryProps) => {
 
   const { t } = useTranslation()
   const { eventLabel, formatMoment, statusLabel } = useEnrollmentLabels()
+  const { reasonLabel } = useLifecycleLabels()
 
   const [page, setPage] = useState(1)
   const [result, setResult] = useState<LoadResult | null>(null)
@@ -84,6 +88,32 @@ export const EnrollmentHistory = (props: EnrollmentHistoryProps) => {
           {item.reason && (
             <Text color="secondary" fontSize="sm">
               {t("enrollments.history.reason", { reason: item.reason })}
+            </Text>
+          )}
+        </PersonCell>
+      )
+    }
+
+    // A lifecycle event prepared or given up on this enrollment: its reason (a code, never free text) and
+    // the way to the event (its id, in the after value).
+    if (item.category === "LIFECYCLE") {
+      const type = eventTypeOfAction(item.action)
+      return (
+        <PersonCell>
+          {item.reason && (
+            <Text fontSize="sm">
+              {t("enrollments.history.reason", { reason: type ? reasonLabel(type, item.reason) : item.reason })}
+            </Text>
+          )}
+          {item.afterValue && /^\d+$/.test(item.afterValue) && (
+            <Text
+              as={Link}
+              color="brand"
+              fontSize="sm"
+              to={generatePath(paths.lifecycleEvent, { eventId: item.afterValue })}
+              semibold
+            >
+              {t("lifecycle.openEvent")}
             </Text>
           )}
         </PersonCell>

@@ -273,6 +273,13 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { LifecycleEventProfile } = await import("@/pages/LifecycleEventProfile")
+          return { Component: LifecycleEventProfile }
+        },
+        path: paths.lifecycleEvent,
+      },
+      {
+        lazy: async () => {
           const { DocumentRequirements } = await import("@/pages/DocumentRequirements")
           return { Component: DocumentRequirements }
         },

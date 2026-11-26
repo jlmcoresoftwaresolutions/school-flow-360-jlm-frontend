@@ -19,6 +19,8 @@ export type EnrollmentOptions = {
   // The school published documents for Ana's preparation (501): her identity document, her transcript
   // (with an exception the Secretaria asked for) and a proof of residence, all mandatory.
   documents?: boolean
+  // The first lifecycle event prepared gets no answer (the connection drops), though it was created.
+  losePrepareAnswer?: boolean
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
   readOnly?: boolean
   // Ana also has her grandmother linked now, financial in Pessoas too: two candidates to pay.
@@ -308,6 +310,30 @@ const toPage = (items: Item[], query: Record<string, string>) => {
     totalPages: Math.ceil(items.length / size),
   }
 }
+
+// The reasons of the lifecycle events, catalog version 1 (as the backend seeds them).
+const lifecycleReasons = (
+  [
+    ["TRANSFER", "FAMILY_REQUEST", "Solicitação da família ou do aluno adulto", false],
+    ["TRANSFER", "ADDRESS_CHANGE", "Mudança de endereço", false],
+    ["TRANSFER", "PEDAGOGICAL_NEED", "Necessidade pedagógica", false],
+    ["TRANSFER", "OTHER", "Outro", true],
+    ["CANCELLATION", "LEGITIMATED_REQUEST", "Solicitação do legitimado", false],
+    ["CANCELLATION", "LEFT_INSTITUTION", "Saída da instituição", false],
+    ["CANCELLATION", "INSTITUTIONAL_DECISION", "Decisão institucional fundamentada", true],
+    ["CANCELLATION", "OTHER", "Outro", true],
+    ["REENROLLMENT", "CONTINUITY", "Continuidade no novo período", false],
+    ["LOCK", "LEGITIMATED_REQUEST", "Solicitação do legitimado", false],
+    ["LOCK", "TEMPORARY_IMPEDIMENT", "Impedimento temporário", false],
+    ["LOCK", "OTHER", "Outro", true],
+  ] as const
+).map(([eventType, code, label, requiresJustification]) => ({
+  catalogVersion: 1,
+  code,
+  eventType,
+  label,
+  requiresJustification,
+}))
 
 export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions = {}) => {
   const calls: RecordedCall[] = []
@@ -1096,5 +1122,231 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fallback()
   })
 
-  return { calls, catalog, contracts, exceptions, records, templates }
+  // The lifecycle events (EPIC 7, foundation): prepared, read, given up and recovered by intent, never
+  // confirmed. A transfer or a re-enrollment opens its destination preparation, kept with the enrollments.
+  const lifecycle = new Map<number, Item>()
+  let nextLifecycleId = 41
+  let losePending = Boolean(options.losePrepareAnswer)
+
+  const isEligibleOrigin = (origin: Item, type: string) =>
+    origin.status === "ACTIVE" || (type === "REENROLLMENT" && origin.status === "COMPLETED")
+
+  const blockersOf = (event: Item) => {
+    const codes: string[] = []
+    const type = String(event.eventType)
+    if (!isEligibleOrigin(records.get(event.originEnrollmentId as number) as Item, type)) {
+      codes.push("ORIGIN_NOT_ELIGIBLE")
+    }
+    if (event.destinationEnrollmentId) {
+      const destination = records.get(event.destinationEnrollmentId as number) as Item
+      if (destination.status === "ABANDONED") codes.push("DESTINATION_ABANDONED")
+      else if (!destination.classContext) codes.push("DESTINATION_CLASS_MISSING")
+    }
+    if ((type === "TRANSFER" || type === "REENROLLMENT") && !templates.some((item) => item.status === "APPROVED")) {
+      codes.push("CONTRACT_MODEL_NOT_APPROVED")
+    }
+    if (type === "LOCK") codes.push("LOCK_POLICY_UNDEFINED")
+    codes.push("FINANCIAL_POLICY_PENDING", "INTEGRATION_NOT_PROVEN")
+    return codes.map((code) => ({ code, message: `${code} (backend text)` }))
+  }
+
+  const lifecycleView = (event: Item): Item => {
+    const prepared = event.status === "PREPARED"
+    return {
+      ...event,
+      blockers: prepared ? blockersOf(event) : [],
+      confirmationAvailable: false,
+      eligibleActions: prepared && !options.readOnly ? ["ABANDON", "CONFIRM"] : [],
+    }
+  }
+
+  const prepareEvent = (body: Item, origin: Item, content: string) => {
+    const type = String(body.eventType)
+    let destinationUnitId: number | null = null
+    if (type === "TRANSFER") destinationUnitId = Number(body.destinationUnitId)
+    if (type === "REENROLLMENT") destinationUnitId = Number(body.destinationUnitId ?? origin.unitId)
+
+    const now = new Date().toISOString()
+    let destinationEnrollmentId: number | null = null
+    if (destinationUnitId !== null) {
+      destinationEnrollmentId = nextId++
+      records.set(
+        destinationEnrollmentId,
+        enrollment({
+          createdAt: now,
+          id: destinationEnrollmentId,
+          kind: type,
+          status: "DRAFT",
+          student: studentRef(Number((origin.student as Item).id)),
+          unitId: destinationUnitId,
+          unitName: unitName(destinationUnitId),
+          updatedAt: now,
+        }),
+      )
+      addEvent(destinationEnrollmentId, { action: "PREPARATION_STARTED", category: "PREPARATION" })
+    }
+
+    const consumers: [string, boolean][] = [
+      ["SEAT", true],
+      ["FINANCIAL", true],
+    ]
+    if (destinationUnitId !== null) consumers.push(["CONTRACT", true])
+    consumers.push(["DIARY", false], ["NOTIFICATION", false])
+
+    const id = nextLifecycleId++
+    const created: Item = {
+      abandonedAt: null,
+      abandonedBy: null,
+      abandonReason: null,
+      confirmedAt: null,
+      consequences: consumers.map(([consumer, mandatory]) => ({
+        attempts: 0,
+        consumer,
+        lastErrorCode: null,
+        mandatory,
+        status: "PENDING",
+      })),
+      content,
+      destinationEnrollmentId,
+      destinationUnitId,
+      eventType: type,
+      id,
+      intent: body.intent,
+      justification: body.justification ?? null,
+      originEnrollmentId: origin.id,
+      originUnitId: origin.unitId,
+      preparedAt: now,
+      preparedBy: 1,
+      reasonCatalogVersion: 1,
+      reasonCode: body.reasonCode,
+      status: "PREPARED",
+      studentId: (origin.student as Item).id,
+      version: 0,
+    }
+    lifecycle.set(id, created)
+    addEvent(Number(origin.id), {
+      action: `PREPARED_${type}`,
+      afterValue: String(id),
+      category: "LIFECYCLE",
+      changedFields: "lifecycleEvent",
+      reason: body.reasonCode,
+    })
+    return created
+  }
+
+  const abandonEvent = (current: Item, reason: string) => {
+    const now = new Date().toISOString()
+    const destination = current.destinationEnrollmentId
+      ? records.get(current.destinationEnrollmentId as number)
+      : undefined
+    if (destination && preparation.includes(String(destination.status))) {
+      records.set(destination.id as number, {
+        ...destination,
+        abandonReason: `Lifecycle event ${current.id} given up`,
+        status: "ABANDONED",
+        updatedAt: now,
+        version: Number(destination.version) + 1,
+      })
+    }
+    const changed = {
+      ...current,
+      abandonedAt: now,
+      abandonedBy: 1,
+      abandonReason: reason,
+      status: "ABANDONED",
+      version: Number(current.version) + 1,
+    }
+    lifecycle.set(current.id as number, changed)
+    addEvent(Number(current.originEnrollmentId), {
+      action: `ABANDONED_${String(current.eventType)}`,
+      afterValue: String(current.id),
+      category: "LIFECYCLE",
+      changedFields: "lifecycleEvent",
+      reason: current.reasonCode,
+    })
+    return changed
+  }
+
+  await page.route(/\/api\/lifecycle-events(\/.*)?(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const rest = call.path.replace(/^\/api\/lifecycle-events\/?/, "")
+
+    if (rest === "reasons") {
+      return route.fulfill(apiAnswer(lifecycleReasons.filter((item) => item.eventType === call.query.type)))
+    }
+
+    if (!rest && call.method === "GET") {
+      const { status, studentId, type } = call.query
+      const found = [...lifecycle.values()]
+        .filter((item) => !status || item.status === status)
+        .filter((item) => !type || item.eventType === type)
+        .filter((item) => !studentId || String(item.studentId) === studentId)
+        .map(lifecycleView)
+      return route.fulfill(apiAnswer(toPage(found, call.query)))
+    }
+
+    if (!rest && call.method === "POST") {
+      if (options.readOnly) return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+      const body = call.body as Item
+      const type = String(body.eventType)
+      const content = JSON.stringify([
+        type,
+        body.originEnrollmentId,
+        body.reasonCode,
+        body.justification ?? "",
+        body.destinationUnitId ?? null,
+      ])
+      const same = [...lifecycle.values()].find((item) => item.intent === body.intent)
+      if (same && same.content !== content) return route.fulfill(apiError(409, "LIFECYCLE_INTENT_REUSED"))
+      if (same) return route.fulfill({ ...apiAnswer(lifecycleView(same)), status: 201 })
+
+      const origin = records.get(Number(body.originEnrollmentId))
+      if (!origin) return route.fulfill(apiError(404, "ENROLLMENT_NOT_FOUND"))
+      if (!isEligibleOrigin(origin, type)) return route.fulfill(apiError(422, "LIFECYCLE_ORIGIN_NOT_ELIGIBLE"))
+      const reason = lifecycleReasons.find((item) => item.eventType === type && item.code === body.reasonCode)
+      if (!reason || (reason.requiresJustification && !String(body.justification ?? "").trim())) {
+        return route.fulfill(apiError(422, "LIFECYCLE_REASON_INVALID"))
+      }
+      if (type === "TRANSFER" && (!body.destinationUnitId || body.destinationUnitId === origin.unitId)) {
+        return route.fulfill(apiError(422, "LIFECYCLE_DESTINATION_INVALID"))
+      }
+      const open = [...lifecycle.values()].some(
+        (item) => item.originEnrollmentId === origin.id && item.status === "PREPARED",
+      )
+      if (open) return route.fulfill(apiError(409, "LIFECYCLE_EVENT_OPEN"))
+
+      const created = prepareEvent(body, origin, content)
+      if (losePending) {
+        losePending = false
+        return route.abort("connectionreset")
+      }
+      return route.fulfill({ ...apiAnswer(lifecycleView(created)), status: 201 })
+    }
+
+    const byIntent = /^by-intent\/(.+)$/.exec(rest)
+    if (byIntent) {
+      const found = [...lifecycle.values()].find((item) => item.intent === decodeURIComponent(byIntent[1]))
+      if (!found) return route.fulfill(apiError(404, "LIFECYCLE_EVENT_NOT_FOUND"))
+      return route.fulfill(apiAnswer(lifecycleView(found)))
+    }
+
+    const [, id, action] = /^(\d+)(?:\/([a-z]+))?$/.exec(rest) ?? []
+    const current = lifecycle.get(Number(id))
+    if (!current) return route.fulfill(apiError(404, "LIFECYCLE_EVENT_NOT_FOUND"))
+
+    if (!action && call.method === "GET") return route.fulfill(apiAnswer(lifecycleView(current)))
+
+    if (action === "abandon") {
+      const body = call.body as Item
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      if (current.status !== "PREPARED") return route.fulfill(apiError(409, "LIFECYCLE_EVENT_NOT_PREPARED"))
+      return route.fulfill(apiAnswer(lifecycleView(abandonEvent(current, String(body.reason)))))
+    }
+
+    if (action === "confirm") return route.fulfill(apiError(422, "LIFECYCLE_CONFIRMATION_BLOCKED"))
+
+    return route.fallback()
+  })
+
+  return { calls, catalog, contracts, exceptions, lifecycle, records, templates }
 }
