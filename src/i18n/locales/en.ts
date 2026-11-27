@@ -899,6 +899,72 @@ export const en: TranslationResource = {
     viewTitle: "{{title}} (v{{version}})",
   },
   documentRequirements: {
+    tabs: {
+      label: "Required documents sections",
+      policies: "Policy per unit",
+      requirements: "Requirements",
+    },
+    policies: {
+      actionsFor: "Actions for {{stage}} · {{kind}}",
+      changedMeanwhile: "The policy was changed by someone else. The list was read again.",
+      declaration: "Declaration",
+      description:
+        "Each unit declares, per stage and kind of enrollment, whether it uses the catalog's requirements or has no requirement that blocks the enrollment. Without a declaration the policy is pending, and transfers and re-enrollments are not confirmed. The new enrollment doesn't change.",
+      errorDescription: "We couldn't read this unit's policy. Try again.",
+      errorTitle: "Policy unavailable",
+      failed: "We couldn't save the policy.",
+      inactiveUnit: "{{name}} (inactive)",
+      invalid: {
+        NO_BLOCKING_REQUIREMENTS:
+          "A mandatory requirement is published for this unit, stage and kind. Withdraw it or declare that the unit uses the catalog.",
+        USE_CATALOG:
+          "The catalog has no requirement published for this unit, stage and kind. Publish one or declare that there is no blocking requirement.",
+      },
+      kind: "Kind of enrollment",
+      loading: "Loading the policy...",
+      mode: "Declaration",
+      modeHelpers: {
+        NO_BLOCKING_REQUIREMENTS: "The unit expressly declares that no document blocks the enrollment in this case.",
+        USE_CATALOG: "The requirements published in the Requirements tab for this unit, stage and kind apply.",
+      },
+      modePlaceholder: "Choose the declaration",
+      modeRequired: "Choose the declaration.",
+      modes: {
+        NO_BLOCKING_REQUIREMENTS: "No blocking requirement",
+        USE_CATALOG: "Uses the catalog's requirements",
+      },
+      noStagesDescription: "Activate the stages in Academic > Stages and grades to publish the policy.",
+      noStagesTitle: "No active stage",
+      noUnitsDescription: "You don't have access to any unit.",
+      noUnitsTitle: "No unit",
+      note: "Note",
+      noteHelper: "Optional. For example, the rule or decision behind the declaration.",
+      notePlaceholder: "Type a note",
+      nothingPublished: "Nothing published",
+      publish: "Publish",
+      publishAgain: "Publish again",
+      publishDescription:
+        "From now on, the declaration applies to the transfers and re-enrollments of this unit, stage and kind.",
+      publishTitle: "Publish the document policy",
+      published: "Policy published.",
+      readOnly: "You can view the policy. Only the Admin publishes and withdraws it.",
+      stage: "Stage",
+      state: "Status",
+      states: {
+        INCONSISTENT: "Outdated",
+        NO_BLOCKING: "No blocking requirement",
+        PENDING: "Pending",
+        USE_CATALOG: "Uses the catalog",
+      },
+      unit: "Unit",
+      unitPlaceholder: "Choose the unit",
+      withdraw: "Withdraw",
+      withdrawDescription:
+        "The case is pending again, and its transfers and re-enrollments stop being confirmed until a new publication. Nothing is deleted.",
+      withdrawTitle: "Withdraw the document policy?",
+      withdrawn: "Policy withdrawn.",
+      withdrawnLabel: "Withdrawn",
+    },
     actions: "Actions",
     actionsFor: "Actions for {{name}}",
     allStages: "All stages",
@@ -919,6 +985,7 @@ export const en: TranslationResource = {
     forbiddenDescription: "Only the Administration and the front office see the document requirements.",
     forbiddenTitle: "No access to the requirements",
     form: {
+      neverWaivedHelper: "The identification of who signs and the proof of representation can never be waived.",
       acceptedTypes: "Accepted document types",
       bornWithdrawn: "The requirement is born withdrawn: no preparation asks for it until you publish it.",
       code: "Code",
@@ -1068,6 +1135,13 @@ export const en: TranslationResource = {
       title: "Enrollment class",
     },
     contract: {
+      roles: {
+        both: "Contracting party and payer",
+        contracting: "Contracting party",
+        payer: "Payer",
+      },
+      rolesMissing:
+        "This enrollment has a financial guardian, and the approved contract model doesn't say who pays. The Admin must approve a model that uses the payer field (payers).",
       acceptanceDescriptions: {
         ACCEPTED: "Accepted",
         EXPIRED: "The link expired without an acceptance.",
@@ -1886,6 +1960,34 @@ export const en: TranslationResource = {
     validity: "Validity",
   },
   lifecycle: {
+    capacity: {
+      authorize: "Authorize an extra seat",
+      authorizeDescription:
+        "It applies only to this event and this class, for 24 hours, and is used once by the confirmation. The class never goes more than one seat above the limit.",
+      authorizeTitle: "Authorize a seat above the limit?",
+      authorized: "Extra seat authorized for 24 hours.",
+      authorizedAt: "Authorized on",
+      ceiling: "The destination class is already one seat above the limit. No authorization opens another.",
+      changedMeanwhile: "The event changed meanwhile. The page was read again.",
+      expiredHelp: "An expired authorization isn't renewed: give the event up and prepare a new one.",
+      expiresAt: "Valid until",
+      failed: "We couldn't authorize the seat.",
+      fullDescription:
+        "The destination class is full. An Admin may authorize a seat above the limit for this event only.",
+      notEnabled:
+        "The destination unit hasn't enabled the capacity exception for transfers and re-enrollments. The Admin enables it in My Organization, Units tab.",
+      notNeeded: "The destination class has a seat again and needs no authorization.",
+      reason: "Reason",
+      reasonPlaceholder: "Type the reason for the authorization",
+      reasonRequired: "Enter the reason.",
+      status: "Status",
+      statuses: {
+        AVAILABLE: "Available",
+        CONSUMED: "Used",
+        EXPIRED: "Expired",
+      },
+      title: "Seat above the limit",
+    },
     abandon: {
       action: "Give up event",
       confirm: "Give up",
@@ -1901,6 +2003,20 @@ export const en: TranslationResource = {
         "The event and the destination preparation stay in the history as given up. The current enrollment doesn't change.",
     },
     blockers: {
+      CAPACITY_EXCEPTION_EXPIRED:
+        "The authorization for a seat above the limit expired. To ask for another, give the event up and prepare a new one.",
+      CONTRACT_ACCEPTANCE_PENDING: "The destination contract still lacks the acceptance of whoever signs or pays.",
+      CONTRACT_MODEL_ROLES_MISSING:
+        "The approved contract model doesn't identify who pays, and the destination preparation has a financial guardian.",
+      CONTRACT_NOT_GENERATED: "Generate the contract in the destination preparation.",
+      CONTRACT_OUTDATED: "The contract of the destination preparation is outdated. Generate it again.",
+      DOCUMENT_CHECKLIST_OPEN: "Mandatory documents are missing in the destination preparation.",
+      DOCUMENT_POLICY_INCONSISTENT:
+        "The document policy of the destination unit is outdated and must be published again.",
+      DOCUMENT_POLICY_PENDING:
+        "The destination unit hasn't published its document policy for this stage and kind of enrollment.",
+      INSTITUTION_INACTIVE: "The institution is inactive.",
+      ORIGIN_UNIT_INACTIVE: "The origin unit is inactive.",
       CONTRACT_MODEL_NOT_APPROVED: "There is no approved contract model, and this event needs a new contract.",
       DESTINATION_ABANDONED: "The destination preparation was given up.",
       DESTINATION_CLASS_MISSING: "Choose the class in the destination preparation.",
@@ -2292,6 +2408,21 @@ export const en: TranslationResource = {
     },
     title: "My Organization",
     units: {
+      capacityPolicy: {
+        action: "Capacity exception",
+        changedMeanwhile: "The policy was changed by someone else and was read again.",
+        description:
+          "When enabled, an Admin may authorize, event by event, one seat above the limit on a transfer or re-enrollment into a full class of this unit. Each authorization lasts 24 hours and is used once, and the class never goes more than one seat above the limit. The new enrollment's exception doesn't change here.",
+        disabled: "Capacity exception disabled.",
+        enabled: "Capacity exception enabled.",
+        failed: "We couldn't save.",
+        label: "Enable the capacity exception for transfers and re-enrollments",
+        loadFailed: "We couldn't read this unit's policy. Close and try again.",
+        loading: "Loading...",
+        neverPublished: "Never published: the exception is disabled.",
+        publishedHelper: "Saving publishes the choice for this unit.",
+        title: "Capacity exception · {{name}}",
+      },
       actions: "Actions",
       actionsFor: "Actions for {{name}}",
       address: "Address",

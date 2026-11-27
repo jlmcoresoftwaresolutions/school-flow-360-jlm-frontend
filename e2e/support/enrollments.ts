@@ -19,6 +19,11 @@ export type EnrollmentOptions = {
   // The school published documents for Ana's preparation (501): her identity document, her transcript
   // (with an exception the Secretaria asked for) and a proof of residence, all mandatory.
   documents?: boolean
+  // Units that published the capacity exception for the lifecycle events, enabled.
+  capacityEnabledUnits?: number[]
+  // The destination class of a transfer or a re-enrollment is full: the event shows DESTINATION_FULL until
+  // an Admin authorizes a seat above the limit, in a unit that enabled the capacity exception.
+  destinationFull?: boolean
   // The first lifecycle event prepared gets no answer (the connection drops), though it was created.
   losePrepareAnswer?: boolean
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
@@ -218,6 +223,8 @@ const contractFields = [
   "period.start",
   "period.end",
   "start.date",
+  "today",
+  "payers",
 ]
 
 // A version of the contract model as the backend answers it.
@@ -978,6 +985,115 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fulfill(apiAnswer(catalog[index]))
   })
 
+  // The document policy of each unit (EPIC 7, Fatia A): per unit, stage and kind, the catalog applies or
+  // the unit has no blocking requirement. Nothing published is PENDING; a declaration that no longer
+  // agrees with the catalog is INCONSISTENT.
+  const policies: Item[] = []
+  let nextPolicyId = 70
+
+  const applicableRequirements = (unitId: number, stageId: number, kind: string) =>
+    catalog.filter(
+      (item) =>
+        item.active &&
+        (item.unitId === null || item.unitId === unitId) &&
+        (item.stageId === null || item.stageId === stageId) &&
+        (item.enrollmentKind === "ALL" || item.enrollmentKind === kind),
+    )
+
+  const policyState = (unitId: number, stageId: number, kind: string) => {
+    const policy = policies.find(
+      (item) => item.unitId === unitId && item.stageId === stageId && item.enrollmentKind === kind,
+    )
+    if (!policy || !policy.active) return "PENDING"
+    const applicable = applicableRequirements(unitId, stageId, kind)
+    if (policy.mode === "NO_BLOCKING_REQUIREMENTS") {
+      return applicable.some((item) => item.mandatory) ? "INCONSISTENT" : "NO_BLOCKING"
+    }
+    return applicable.length === 0 ? "INCONSISTENT" : "USE_CATALOG"
+  }
+
+  await page.route(/\/api\/document-policies(\/.*)?(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const rest = call.path.replace(/^\/api\/document-policies\/?/, "")
+    // The Secretaria reads the policies of its units; only the Admin writes.
+    if (options.readOnly && call.method !== "GET") return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+
+    if (rest === "state") {
+      const { kind, stageId, unitId } = call.query
+      const state = policyState(Number(unitId), Number(stageId), String(kind))
+      return route.fulfill(
+        apiAnswer({
+          enrollmentKind: kind,
+          message: `${state} (backend text)`,
+          stageId: Number(stageId),
+          state,
+          unitId: Number(unitId),
+        }),
+      )
+    }
+
+    if (!rest && call.method === "GET") {
+      const unitId = call.query.unitId
+      return route.fulfill(apiAnswer(policies.filter((item) => !unitId || String(item.unitId) === unitId)))
+    }
+
+    if (!rest && call.method === "PUT") {
+      const body = call.body as Item
+      const applicable = applicableRequirements(Number(body.unitId), Number(body.stageId), String(body.enrollmentKind))
+      if (body.mode === "NO_BLOCKING_REQUIREMENTS" && applicable.some((item) => item.mandatory)) {
+        return route.fulfill(apiError(422, "DOCUMENT_POLICY_INVALID"))
+      }
+      if (body.mode === "USE_CATALOG" && applicable.length === 0) {
+        return route.fulfill(apiError(422, "DOCUMENT_POLICY_INVALID"))
+      }
+      const index = policies.findIndex(
+        (item) =>
+          item.unitId === body.unitId && item.stageId === body.stageId && item.enrollmentKind === body.enrollmentKind,
+      )
+      const now = new Date().toISOString()
+      if (index < 0) {
+        const created = {
+          active: true,
+          enrollmentKind: body.enrollmentKind,
+          id: nextPolicyId++,
+          mode: body.mode,
+          note: body.note ?? null,
+          publishedAt: now,
+          publishedBy: 1,
+          stageId: body.stageId,
+          unitId: body.unitId,
+          version: 0,
+        }
+        policies.push(created)
+        return route.fulfill(apiAnswer(created))
+      }
+      const current = policies[index]
+      if (body.version === undefined) return route.fulfill(apiError(428, "VERSION_REQUIRED"))
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      policies[index] = {
+        ...current,
+        active: true,
+        mode: body.mode,
+        note: body.note ?? null,
+        publishedAt: now,
+        version: Number(current.version) + 1,
+      }
+      return route.fulfill(apiAnswer(policies[index]))
+    }
+
+    const withdraw = /^(\d+)\/withdraw$/.exec(rest)
+    if (withdraw && call.method === "POST") {
+      const index = policies.findIndex((item) => item.id === Number(withdraw[1]))
+      if (index < 0) return route.fulfill(apiError(404, "DOCUMENT_POLICY_NOT_FOUND"))
+      const current = policies[index]
+      if ((call.body as Item).version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      policies[index] = { ...current, active: false, version: Number(current.version) + 1 }
+      return route.fulfill(apiAnswer(policies[index]))
+    }
+
+    return route.fallback()
+  })
+
   // The contract models: every version, at most one approved.
   await page.route(/\/api\/contract-templates(\/\d+(\/(approve|retire))?)?$/, (route) => {
     const call = record(route.request())
@@ -1100,6 +1216,8 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
           expiresAt: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
           id: nextAcceptanceId++,
           requestedAt: new Date().toISOString(),
+          // A new enrollment asks only who contracts; the payer accepts only on a transfer or a re-enrollment.
+          roles: "CONTRACTING",
           sendResult: "SENT",
           signerId,
           signerName: party?.guardianName ?? null,
@@ -1126,6 +1244,14 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
   // confirmed. A transfer or a re-enrollment opens its destination preparation, kept with the enrollments.
   const lifecycle = new Map<number, Item>()
   let nextLifecycleId = 41
+  // The capacity exception (Fatia C): the units that published it, and each event's one authorization.
+  const capacityPolicies = new Map<number, Item>(
+    (options.capacityEnabledUnits ?? []).map((unitId) => [
+      unitId,
+      { enabled: true, publishedAt: "2026-11-26T12:00:00Z", unitId, version: 0 },
+    ]),
+  )
+  const capacityAuthorizations = new Map<number, Item>()
   let losePending = Boolean(options.losePrepareAnswer)
 
   const isEligibleOrigin = (origin: Item, type: string) =>
@@ -1141,6 +1267,10 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       const destination = records.get(event.destinationEnrollmentId as number) as Item
       if (destination.status === "ABANDONED") codes.push("DESTINATION_ABANDONED")
       else if (!destination.classContext) codes.push("DESTINATION_CLASS_MISSING")
+      // A full destination class: an available authorization lifts it.
+      const authorization = capacityAuthorizations.get(Number(event.id))
+      if (options.destinationFull && authorization?.status !== "AVAILABLE") codes.push("DESTINATION_FULL")
+      if (authorization?.status === "EXPIRED") codes.push("CAPACITY_EXCEPTION_EXPIRED")
     }
     if ((type === "TRANSFER" || type === "REENROLLMENT") && !templates.some((item) => item.status === "APPROVED")) {
       codes.push("CONTRACT_MODEL_NOT_APPROVED")
@@ -1275,6 +1405,29 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       return route.fulfill(apiAnswer(lifecycleReasons.filter((item) => item.eventType === call.query.type)))
     }
 
+    if (rest === "capacity-policy") {
+      if (call.method === "GET") {
+        const unitId = Number(call.query.unitId)
+        return route.fulfill(
+          apiAnswer(capacityPolicies.get(unitId) ?? { enabled: false, publishedAt: null, unitId, version: null }),
+        )
+      }
+      if (options.readOnly) return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+      const body = call.body as Item
+      const unitId = Number(body.unitId)
+      const current = capacityPolicies.get(unitId)
+      if (current && body.version === undefined) return route.fulfill(apiError(428, "VERSION_REQUIRED"))
+      if (current && body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      const published = {
+        enabled: Boolean(body.enabled),
+        publishedAt: new Date().toISOString(),
+        unitId,
+        version: current ? Number(current.version) + 1 : 0,
+      }
+      capacityPolicies.set(unitId, published)
+      return route.fulfill(apiAnswer(published))
+    }
+
     if (!rest && call.method === "GET") {
       const { status, studentId, type } = call.query
       const found = [...lifecycle.values()]
@@ -1330,7 +1483,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       return route.fulfill(apiAnswer(lifecycleView(found)))
     }
 
-    const [, id, action] = /^(\d+)(?:\/([a-z]+))?$/.exec(rest) ?? []
+    const [, id, action] = /^(\d+)(?:\/([a-z-]+))?$/.exec(rest) ?? []
     const current = lifecycle.get(Number(id))
     if (!current) return route.fulfill(apiError(404, "LIFECYCLE_EVENT_NOT_FOUND"))
 
@@ -1345,8 +1498,37 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
 
     if (action === "confirm") return route.fulfill(apiError(422, "LIFECYCLE_CONFIRMATION_BLOCKED"))
 
+    if (action === "capacity-exception") {
+      const authorization = capacityAuthorizations.get(Number(id))
+      if (call.method === "GET") {
+        if (!authorization) return route.fulfill(apiError(404, "CAPACITY_EXCEPTION_NOT_FOUND"))
+        return route.fulfill(apiAnswer(authorization))
+      }
+      if (options.readOnly) return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+      if (current.status !== "PREPARED") return route.fulfill(apiError(409, "LIFECYCLE_EVENT_NOT_PREPARED"))
+      if (!current.destinationUnitId) return route.fulfill(apiError(422, "CAPACITY_EXCEPTION_NOT_APPLICABLE"))
+      if (!capacityPolicies.get(Number(current.destinationUnitId))?.enabled) {
+        return route.fulfill(apiError(409, "CAPACITY_EXCEPTION_NOT_PUBLISHED"))
+      }
+      if (!options.destinationFull) return route.fulfill(apiError(422, "CAPACITY_EXCEPTION_NOT_NEEDED"))
+      if (authorization) return route.fulfill(apiError(409, "CAPACITY_EXCEPTION_EXISTS"))
+      const now = Date.now()
+      const created = {
+        authorizedAt: new Date(now).toISOString(),
+        authorizedBy: 1,
+        classId: 0,
+        eventId: current.id,
+        expiresAt: new Date(now + 24 * 60 * 60 * 1000).toISOString(),
+        id: 90,
+        reason: (call.body as Item).reason,
+        status: "AVAILABLE",
+      }
+      capacityAuthorizations.set(Number(id), created)
+      return route.fulfill({ ...apiAnswer(created), status: 201 })
+    }
+
     return route.fallback()
   })
 
-  return { calls, catalog, contracts, exceptions, lifecycle, records, templates }
+  return { calls, capacityPolicies, catalog, contracts, exceptions, lifecycle, policies, records, templates }
 }

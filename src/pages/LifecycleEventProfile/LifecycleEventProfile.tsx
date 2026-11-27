@@ -21,6 +21,7 @@ import { PersonSections, ProfileBar, ProfileBarInfo } from "../shared/people/peo
 import { PersonBlock } from "../shared/people/PersonBlock"
 import { AccessItem, AccessItems } from "../shared/userAccess/userAccess.styles"
 import { AbandonLifecycleEventDialog } from "./AbandonLifecycleEventDialog"
+import { EventCapacity } from "./EventCapacity"
 
 type LoadResult = { error: "failed" | "gone"; key: string } | { event: LifecycleEvent; key: string }
 
@@ -294,6 +295,8 @@ export const LifecycleEventProfile = () => {
       <Card elevated style={{ padding: spacing[32] }}>
         <PersonSections>
           <PersonBlock title={t("lifecycle.profile.confirmationTitle")}>{renderConfirmation()}</PersonBlock>
+
+          <EventCapacity event={event} onChanged={reload} refreshKey={requestKey} />
 
           <PersonBlock title={t("lifecycle.profile.eventTitle")}>
             <DescriptionList

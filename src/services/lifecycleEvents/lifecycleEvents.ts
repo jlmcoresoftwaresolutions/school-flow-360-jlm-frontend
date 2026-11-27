@@ -1,5 +1,8 @@
 import type {
   ApiResponse,
+  LifecycleCapacityAuthorization,
+  LifecycleCapacityPolicy,
+  LifecycleCapacityPolicyWrite,
   LifecycleEvent,
   LifecycleEventAbandonRequest,
   LifecycleEventConfirmRequest,
@@ -108,6 +111,69 @@ export const confirmLifecycleEvent = async (
   const response = await httpClient.post<ApiResponse<LifecycleEvent>>(
     `/api/lifecycle-events/${eventId}/confirm`,
     request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the units tab of Minha Organização and the event page. GET /api/lifecycle-events/capacity-policy?unitId=:
+// whether the unit enabled the capacity exception for transfers and re-enrollments (Admin and Secretaria
+// of the unit). Errors: 404 for a unit out of reach.
+export const getLifecycleCapacityPolicy = async (
+  unitId: number,
+  config?: RequestConfig,
+): Promise<LifecycleCapacityPolicy> => {
+  const response = await httpClient.get<ApiResponse<LifecycleCapacityPolicy>>("/api/lifecycle-events/capacity-policy", {
+    ...config,
+    params: { unitId },
+  })
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the units tab of Minha Organização. PUT /api/lifecycle-events/capacity-policy: the Admin publishes it
+// per unit. Errors: 403, 428 VERSION_REQUIRED, 409 VERSION_CONFLICT.
+export const publishLifecycleCapacityPolicy = async (
+  request: LifecycleCapacityPolicyWrite,
+  config?: RequestConfig,
+): Promise<LifecycleCapacityPolicy> => {
+  const response = await httpClient.put<ApiResponse<LifecycleCapacityPolicy>>(
+    "/api/lifecycle-events/capacity-policy",
+    request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. POST /api/lifecycle-events/{id}/capacity-exception (201): the Admin authorizes one
+// seat above the destination class's limit for this event (reason 1 to 500 characters). Errors: 403; 422
+// CAPACITY_EXCEPTION_NOT_APPLICABLE, CAPACITY_EXCEPTION_DESTINATION_MISSING, CAPACITY_EXCEPTION_NOT_NEEDED,
+// CAPACITY_EXCEPTION_CEILING; 409 CAPACITY_EXCEPTION_NOT_PUBLISHED, CAPACITY_EXCEPTION_DISABLED,
+// CAPACITY_EXCEPTION_EXISTS, LIFECYCLE_EVENT_NOT_PREPARED.
+export const authorizeLifecycleCapacity = async (
+  eventId: number,
+  reason: string,
+  config?: RequestConfig,
+): Promise<LifecycleCapacityAuthorization> => {
+  const response = await httpClient.post<ApiResponse<LifecycleCapacityAuthorization>>(
+    `/api/lifecycle-events/${eventId}/capacity-exception`,
+    { reason },
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. GET /api/lifecycle-events/{id}/capacity-exception: the event's authorization and its
+// status. Errors: 404 CAPACITY_EXCEPTION_NOT_FOUND (none was given), LIFECYCLE_EVENT_NOT_FOUND.
+export const getLifecycleCapacityAuthorization = async (
+  eventId: number,
+  config?: RequestConfig,
+): Promise<LifecycleCapacityAuthorization> => {
+  const response = await httpClient.get<ApiResponse<LifecycleCapacityAuthorization>>(
+    `/api/lifecycle-events/${eventId}/capacity-exception`,
     config,
   )
 

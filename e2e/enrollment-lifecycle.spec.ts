@@ -190,6 +190,45 @@ test.describe("enrollment lifecycle events", () => {
     expect(lifecycle.size).toBe(1)
   })
 
+  test("authorizes a seat above the limit of a full destination class, in a unit that enabled it", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page, { capacityEnabledUnits: [1], destinationFull: true })
+    await signInAndOpen(page, brunoPath)
+    await prepareTransfer(page)
+    await expect(page).toHaveURL(/\/events\/41$/)
+
+    const blockers = page.getByRole("list", { name: "O que impede a confirmação" })
+    await expect(blockers).toContainText("A turma de destino não tem vaga.")
+    const capacity = page.getByRole("region", { name: "Vaga acima do limite" })
+    await expect(capacity).toContainText("A turma de destino está cheia.")
+
+    await capacity.getByRole("button", { name: "Autorizar vaga extra" }).click()
+    const dialog = page.getByRole("dialog", { name: "Autorizar uma vaga acima do limite?" })
+    await expect(dialog).toContainText("por 24 horas")
+    await dialog.getByRole("button", { name: "Autorizar vaga extra" }).click()
+    await expect(dialog.getByRole("textbox", { name: /^Motivo/ })).toHaveAccessibleDescription("Informe o motivo.")
+    await dialog.getByRole("textbox", { name: /^Motivo/ }).fill("Irmão já estuda na turma")
+    await dialog.getByRole("button", { name: "Autorizar vaga extra" }).click()
+
+    await expect(page.getByText("Vaga extra autorizada por 24 horas.")).toBeVisible()
+    await expect(capacity).toContainText("Disponível")
+    await expect(capacity).toContainText("Irmão já estuda na turma")
+    await expect(capacity.getByRole("button", { name: "Autorizar vaga extra" })).toHaveCount(0)
+    await expect(blockers).not.toContainText("A turma de destino não tem vaga.")
+    expect(lastCall(calls, "POST", "/api/lifecycle-events/41/capacity-exception")?.body).toEqual({
+      reason: "Irmão já estuda na turma",
+    })
+  })
+
+  test("offers no extra seat where the destination unit didn't enable the exception", async ({ page }) => {
+    await mockEnrollmentApi(page, { destinationFull: true })
+    await signInAndOpen(page, brunoPath)
+    await prepareTransfer(page)
+
+    const capacity = page.getByRole("region", { name: "Vaga acima do limite" })
+    await expect(capacity).toContainText("A unidade de destino não habilitou a exceção de lotação")
+    await expect(capacity.getByRole("button", { name: "Autorizar vaga extra" })).toHaveCount(0)
+  })
+
   test("offers no event to whoever only reads", async ({ page }) => {
     await mockEnrollmentApi(page, { readOnly: true })
     await signInAndOpen(page, brunoPath, withRole("COORDENACAO"))

@@ -96,6 +96,8 @@ test.describe("enrollment contract", () => {
     await expect(page.getByText("Aceite pedido por e-mail.")).toBeVisible()
     await expect(fernanda).toContainText("Aguardando aceite")
     await expect(fernanda).toContainText("fernanda@exemplo.com · Link válido até")
+    // A new enrollment asks only who contracts.
+    await expect(fernanda).toContainText("Contratante · fernanda@exemplo.com")
     expect(lastCall(calls, "POST", "/api/enrollments/501/contract/acceptances")?.body).toEqual({})
 
     await fernanda.getByRole("button", { name: "Revogar" }).click()

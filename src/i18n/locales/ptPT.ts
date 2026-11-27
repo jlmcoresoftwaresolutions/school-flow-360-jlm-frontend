@@ -904,6 +904,72 @@ export const ptPT: TranslationResource = {
     viewTitle: "{{title}} (v{{version}})",
   },
   documentRequirements: {
+    tabs: {
+      label: "Seções dos documentos exigidos",
+      policies: "Política por unidade",
+      requirements: "Exigências",
+    },
+    policies: {
+      actionsFor: "Ações de {{stage}} · {{kind}}",
+      changedMeanwhile: "A política foi alterada por outra pessoa. A lista foi relida.",
+      declaration: "Declaração",
+      description:
+        "Cada unidade declara, por etapa e tipo de matrícula, se usa as exigências do catálogo ou se não tem exigência que impeça a matrícula. Sem declaração, a política fica pendente, e a transferência e a rematrícula não são confirmadas. A matrícula nova não muda.",
+      errorDescription: "Não foi possível ler a política desta unidade. Tente novamente.",
+      errorTitle: "Política indisponível",
+      failed: "Não foi possível salvar a política.",
+      inactiveUnit: "{{name}} (inativa)",
+      invalid: {
+        NO_BLOCKING_REQUIREMENTS:
+          "Há exigência obrigatória publicada para esta unidade, etapa e tipo. Retire-a ou declare que a unidade usa o catálogo.",
+        USE_CATALOG:
+          "O catálogo não tem exigência publicada para esta unidade, etapa e tipo. Publique uma ou declare que não há exigência impeditiva.",
+      },
+      kind: "Tipo de matrícula",
+      loading: "A carregar a política...",
+      mode: "Declaração",
+      modeHelpers: {
+        NO_BLOCKING_REQUIREMENTS: "A unidade declara expressamente que nenhum documento impede a matrícula neste caso.",
+        USE_CATALOG: "Valem as exigências publicadas na aba Exigências para esta unidade, etapa e tipo.",
+      },
+      modePlaceholder: "Escolha a declaração",
+      modeRequired: "Escolha a declaração.",
+      modes: {
+        NO_BLOCKING_REQUIREMENTS: "Sem exigência impeditiva",
+        USE_CATALOG: "Usa as exigências do catálogo",
+      },
+      noStagesDescription: "Ative as etapas em Académico > Etapas e séries para publicar a política.",
+      noStagesTitle: "Nenhuma etapa ativa",
+      noUnitsDescription: "Não tem acesso a nenhuma unidade.",
+      noUnitsTitle: "Nenhuma unidade",
+      note: "Observação",
+      noteHelper: "Opcional. Por exemplo, a norma ou a decisão que justifica a declaração.",
+      notePlaceholder: "Escreva uma observação",
+      nothingPublished: "Nada publicado",
+      publish: "Publicar",
+      publishAgain: "Publicar novamente",
+      publishDescription:
+        "A declaração vale a partir de agora para as transferências e rematrículas desta unidade, etapa e tipo.",
+      publishTitle: "Publicar a política de documentos",
+      published: "Política publicada.",
+      readOnly: "Pode consultar a política. Só o Admin publica e retira.",
+      stage: "Etapa",
+      state: "Situação",
+      states: {
+        INCONSISTENT: "Desatualizada",
+        NO_BLOCKING: "Sem exigência impeditiva",
+        PENDING: "Pendente",
+        USE_CATALOG: "Usa o catálogo",
+      },
+      unit: "Unidade",
+      unitPlaceholder: "Escolha a unidade",
+      withdraw: "Retirar",
+      withdrawDescription:
+        "O caso volta a ficar pendente, e as transferências e rematrículas dele param de ser confirmadas até uma nova publicação. Nada é apagado.",
+      withdrawTitle: "Retirar a política de documentos?",
+      withdrawn: "Política retirada.",
+      withdrawnLabel: "Retirada",
+    },
     actions: "Ações",
     actionsFor: "Ações de {{name}}",
     allStages: "Todas as etapas",
@@ -924,6 +990,7 @@ export const ptPT: TranslationResource = {
     forbiddenDescription: "Só a Administração e a Secretaria veem as exigências de documentos.",
     forbiddenTitle: "Sem acesso às exigências",
     form: {
+      neverWaivedHelper: "A identificação de quem assina e a comprovação de representação nunca podem ser dispensadas.",
       acceptedTypes: "Tipos de documento aceitos",
       bornWithdrawn: "A exigência nasce retirada: nenhuma preparação a pede até a publicar.",
       code: "Código",
@@ -1073,6 +1140,13 @@ export const ptPT: TranslationResource = {
       title: "Turma da matrícula",
     },
     contract: {
+      roles: {
+        both: "Contratante e pagador",
+        contracting: "Contratante",
+        payer: "Pagador",
+      },
+      rolesMissing:
+        "Esta matrícula tem um responsável financeiro, e o modelo de contrato aprovado não diz quem paga. O Admin precisa aprovar um modelo que use o campo de quem paga (payers).",
       acceptanceDescriptions: {
         ACCEPTED: "Aceito",
         EXPIRED: "O link venceu sem aceite.",
@@ -1898,6 +1972,34 @@ export const ptPT: TranslationResource = {
     validity: "Validade",
   },
   lifecycle: {
+    capacity: {
+      authorize: "Autorizar vaga extra",
+      authorizeDescription:
+        "Vale só para este evento e esta turma, por 24 horas, e é usada uma vez na confirmação. A turma nunca passa de uma vaga acima do limite.",
+      authorizeTitle: "Autorizar uma vaga acima do limite?",
+      authorized: "Vaga extra autorizada por 24 horas.",
+      authorizedAt: "Autorizada em",
+      ceiling: "A turma de destino já está uma vaga acima do limite. Nenhuma autorização libera outra.",
+      changedMeanwhile: "O evento mudou enquanto isso. A página foi relida.",
+      expiredHelp: "Uma autorização vencida não é renovada: abandone o evento e prepare um novo.",
+      expiresAt: "Vale até",
+      failed: "Não foi possível autorizar a vaga.",
+      fullDescription:
+        "A turma de destino está cheia. Um Admin pode autorizar uma vaga acima do limite só para este evento.",
+      notEnabled:
+        "A unidade de destino não ativou a exceção de lotação em transferências e rematrículas. O Admin a ativa em Minha Organização, na aba Unidades.",
+      notNeeded: "A turma de destino tem vaga novamente e não precisa de autorização.",
+      reason: "Motivo",
+      reasonPlaceholder: "Escreva o motivo da autorização",
+      reasonRequired: "Informe o motivo.",
+      status: "Situação",
+      statuses: {
+        AVAILABLE: "Disponível",
+        CONSUMED: "Usada",
+        EXPIRED: "Vencida",
+      },
+      title: "Vaga acima do limite",
+    },
     abandon: {
       action: "Abandonar evento",
       confirm: "Abandonar",
@@ -1913,6 +2015,20 @@ export const ptPT: TranslationResource = {
         "O evento e a preparação de destino ficam no histórico como abandonados. A matrícula atual não muda.",
     },
     blockers: {
+      CAPACITY_EXCEPTION_EXPIRED:
+        "A autorização de vaga acima do limite venceu. Para pedir outra, abandone o evento e prepare um novo.",
+      CONTRACT_ACCEPTANCE_PENDING: "Falta o aceite do contrato de destino por quem assina ou paga.",
+      CONTRACT_MODEL_ROLES_MISSING:
+        "O modelo de contrato aprovado não identifica quem paga, e a preparação de destino tem um responsável financeiro.",
+      CONTRACT_NOT_GENERATED: "Gere o contrato na preparação de destino.",
+      CONTRACT_OUTDATED: "O contrato da preparação de destino está desatualizado. Gere-o novamente.",
+      DOCUMENT_CHECKLIST_OPEN: "Faltam documentos obrigatórios na preparação de destino.",
+      DOCUMENT_POLICY_INCONSISTENT:
+        "A política de documentos da unidade de destino ficou desatualizada e precisa ser publicada novamente.",
+      DOCUMENT_POLICY_PENDING:
+        "A unidade de destino ainda não publicou a política de documentos desta etapa e tipo de matrícula.",
+      INSTITUTION_INACTIVE: "A instituição está inativa.",
+      ORIGIN_UNIT_INACTIVE: "A unidade de origem está inativa.",
       CONTRACT_MODEL_NOT_APPROVED: "Não há modelo de contrato aprovado, e este evento pede um contrato novo.",
       DESTINATION_ABANDONED: "A preparação de destino foi abandonada.",
       DESTINATION_CLASS_MISSING: "Escolha a turma na preparação de destino.",
@@ -2306,6 +2422,21 @@ export const ptPT: TranslationResource = {
     },
     title: "A Minha Organização",
     units: {
+      capacityPolicy: {
+        action: "Exceção de lotação",
+        changedMeanwhile: "A política foi alterada por outra pessoa e foi relida.",
+        description:
+          "Ativada, um Admin pode autorizar, evento a evento, uma vaga acima do limite numa transferência ou rematrícula para uma turma cheia desta unidade. Cada autorização vale 24 horas e é usada uma vez, e a turma nunca passa de uma vaga acima do limite. A exceção da matrícula nova não muda aqui.",
+        disabled: "Exceção de lotação desativada.",
+        enabled: "Exceção de lotação ativada.",
+        failed: "Não foi possível salvar.",
+        label: "Ativar a exceção de lotação em transferências e rematrículas",
+        loadFailed: "Não foi possível ler a política desta unidade. Feche e tente novamente.",
+        loading: "A carregar...",
+        neverPublished: "Nunca publicada: a exceção está desativada.",
+        publishedHelper: "Salvar publica a escolha para esta unidade.",
+        title: "Exceção de lotação · {{name}}",
+      },
       actions: "Ações",
       actionsFor: "Ações de {{name}}",
       address: "Morada",

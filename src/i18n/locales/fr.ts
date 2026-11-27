@@ -919,6 +919,73 @@ export const fr: TranslationResource = {
     viewTitle: "{{title}} (v{{version}})",
   },
   documentRequirements: {
+    tabs: {
+      label: "Sections des documents exigés",
+      policies: "Politique par unité",
+      requirements: "Exigences",
+    },
+    policies: {
+      actionsFor: "Actions pour {{stage}} · {{kind}}",
+      changedMeanwhile: "Quelqu'un d'autre a modifié la politique. La liste a été relue.",
+      declaration: "Déclaration",
+      description:
+        "Chaque unité déclare, par cycle et type d'inscription, si elle utilise les exigences du catalogue ou si aucune exigence n'empêche l'inscription. Sans déclaration, la politique est en attente, et le transfert et la réinscription ne sont pas confirmés. La nouvelle inscription ne change pas.",
+      errorDescription: "Impossible de lire la politique de cette unité. Réessayez.",
+      errorTitle: "Politique indisponible",
+      failed: "Impossible d'enregistrer la politique.",
+      inactiveUnit: "{{name}} (inactive)",
+      invalid: {
+        NO_BLOCKING_REQUIREMENTS:
+          "Une exigence obligatoire est publiée pour cette unité, ce cycle et ce type. Retirez-la ou déclarez que l'unité utilise le catalogue.",
+        USE_CATALOG:
+          "Le catalogue n'a aucune exigence publiée pour cette unité, ce cycle et ce type. Publiez-en une ou déclarez qu'aucune exigence n'est bloquante.",
+      },
+      kind: "Type d'inscription",
+      loading: "Chargement de la politique...",
+      mode: "Déclaration",
+      modeHelpers: {
+        NO_BLOCKING_REQUIREMENTS: "L'unité déclare expressément qu'aucun document n'empêche l'inscription dans ce cas.",
+        USE_CATALOG:
+          "Les exigences publiées dans l'onglet Exigences pour cette unité, ce cycle et ce type s'appliquent.",
+      },
+      modePlaceholder: "Choisissez la déclaration",
+      modeRequired: "Choisissez la déclaration.",
+      modes: {
+        NO_BLOCKING_REQUIREMENTS: "Aucune exigence bloquante",
+        USE_CATALOG: "Utilise les exigences du catalogue",
+      },
+      noStagesDescription: "Activez les cycles dans Scolarité > Cycles et niveaux pour publier la politique.",
+      noStagesTitle: "Aucun cycle actif",
+      noUnitsDescription: "Vous n'avez accès à aucune unité.",
+      noUnitsTitle: "Aucune unité",
+      note: "Observation",
+      noteHelper: "Facultatif. Par exemple, la règle ou la décision qui justifie la déclaration.",
+      notePlaceholder: "Saisissez une observation",
+      nothingPublished: "Rien de publié",
+      publish: "Publier",
+      publishAgain: "Publier à nouveau",
+      publishDescription:
+        "Désormais, la déclaration s'applique aux transferts et réinscriptions de cette unité, ce cycle et ce type.",
+      publishTitle: "Publier la politique de documents",
+      published: "Politique publiée.",
+      readOnly: "Vous pouvez consulter la politique. Seul l'Admin la publie et la retire.",
+      stage: "Cycle",
+      state: "Situation",
+      states: {
+        INCONSISTENT: "Obsolète",
+        NO_BLOCKING: "Aucune exigence bloquante",
+        PENDING: "En attente",
+        USE_CATALOG: "Utilise le catalogue",
+      },
+      unit: "Unité",
+      unitPlaceholder: "Choisissez l'unité",
+      withdraw: "Retirer",
+      withdrawDescription:
+        "Le cas repasse en attente, et ses transferts et réinscriptions ne sont plus confirmés jusqu'à une nouvelle publication. Rien n'est supprimé.",
+      withdrawTitle: "Retirer la politique de documents ?",
+      withdrawn: "Politique retirée.",
+      withdrawnLabel: "Retirée",
+    },
     actions: "Actions",
     actionsFor: "Actions pour {{name}}",
     allStages: "Tous les cycles",
@@ -939,6 +1006,8 @@ export const fr: TranslationResource = {
     forbiddenDescription: "Seuls l'Administration et le secrétariat voient les exigences de documents.",
     forbiddenTitle: "Pas d'accès aux exigences",
     form: {
+      neverWaivedHelper:
+        "L'identification de qui signe et la preuve de représentation ne peuvent jamais faire l'objet d'une dispense.",
       acceptedTypes: "Types de document acceptés",
       bornWithdrawn: "L'exigence naît retirée : aucune préparation ne la demande avant que vous la publiiez.",
       code: "Code",
@@ -1093,6 +1162,13 @@ export const fr: TranslationResource = {
       title: "Classe de l'inscription",
     },
     contract: {
+      roles: {
+        both: "Contractant et payeur",
+        contracting: "Contractant",
+        payer: "Payeur",
+      },
+      rolesMissing:
+        "Cette inscription a un responsable financier, et le modèle de contrat approuvé n'indique pas qui paie. L'Admin doit approuver un modèle qui utilise le champ du payeur (payers).",
       acceptanceDescriptions: {
         ACCEPTED: "Accepté",
         EXPIRED: "Le lien a expiré sans acceptation.",
@@ -1931,6 +2007,35 @@ export const fr: TranslationResource = {
     validity: "Validité",
   },
   lifecycle: {
+    capacity: {
+      authorize: "Autoriser une place en plus",
+      authorizeDescription:
+        "Elle vaut seulement pour cet événement et cette classe, pendant 24 heures, et sert une fois à la confirmation. La classe ne dépasse jamais la limite de plus d'une place.",
+      authorizeTitle: "Autoriser une place au-delà de la limite ?",
+      authorized: "Place en plus autorisée pour 24 heures.",
+      authorizedAt: "Autorisée le",
+      ceiling:
+        "La classe de destination est déjà une place au-delà de la limite. Aucune autorisation n'en ouvre une autre.",
+      changedMeanwhile: "L'événement a changé entre-temps. La page a été relue.",
+      expiredHelp: "Une autorisation expirée n'est pas renouvelée : abandonnez l'événement et préparez-en un nouveau.",
+      expiresAt: "Valable jusqu'au",
+      failed: "Impossible d'autoriser la place.",
+      fullDescription:
+        "La classe de destination est complète. Un Admin peut autoriser une place au-delà de la limite pour cet événement seulement.",
+      notEnabled:
+        "L'unité de destination n'a pas activé l'exception de capacité pour les transferts et réinscriptions. L'Admin l'active dans Mon organisation, onglet Établissements.",
+      notNeeded: "La classe de destination a de nouveau une place et n'a pas besoin d'autorisation.",
+      reason: "Motif",
+      reasonPlaceholder: "Saisissez le motif de l'autorisation",
+      reasonRequired: "Indiquez le motif.",
+      status: "Situation",
+      statuses: {
+        AVAILABLE: "Disponible",
+        CONSUMED: "Utilisée",
+        EXPIRED: "Expirée",
+      },
+      title: "Place au-delà de la limite",
+    },
     abandon: {
       action: "Abandonner l'événement",
       confirm: "Abandonner",
@@ -1946,6 +2051,20 @@ export const fr: TranslationResource = {
         "L'événement et la préparation de destination restent dans l'historique comme abandonnés. L'inscription actuelle ne change pas.",
     },
     blockers: {
+      CAPACITY_EXCEPTION_EXPIRED:
+        "L'autorisation de place au-delà de la limite a expiré. Pour en demander une autre, abandonnez l'événement et préparez-en un nouveau.",
+      CONTRACT_ACCEPTANCE_PENDING: "Il manque l'acceptation du contrat de destination par qui signe ou paie.",
+      CONTRACT_MODEL_ROLES_MISSING:
+        "Le modèle de contrat approuvé n'identifie pas qui paie, et la préparation de destination a un responsable financier.",
+      CONTRACT_NOT_GENERATED: "Générez le contrat dans la préparation de destination.",
+      CONTRACT_OUTDATED: "Le contrat de la préparation de destination est obsolète. Générez-le à nouveau.",
+      DOCUMENT_CHECKLIST_OPEN: "Des documents obligatoires manquent dans la préparation de destination.",
+      DOCUMENT_POLICY_INCONSISTENT:
+        "La politique de documents de l'unité de destination est obsolète et doit être publiée à nouveau.",
+      DOCUMENT_POLICY_PENDING:
+        "L'unité de destination n'a pas encore publié sa politique de documents pour ce cycle et ce type d'inscription.",
+      INSTITUTION_INACTIVE: "L'établissement est inactif.",
+      ORIGIN_UNIT_INACTIVE: "L'unité d'origine est inactive.",
       CONTRACT_MODEL_NOT_APPROVED:
         "Aucun modèle de contrat n'est approuvé, et cet événement demande un nouveau contrat.",
       DESTINATION_ABANDONED: "La préparation de destination a été abandonnée.",
@@ -2349,6 +2468,21 @@ export const fr: TranslationResource = {
     },
     title: "Mon Organisation",
     units: {
+      capacityPolicy: {
+        action: "Exception de capacité",
+        changedMeanwhile: "Quelqu'un d'autre a modifié la politique, qui a été relue.",
+        description:
+          "Activée, un Admin peut autoriser, événement par événement, une place au-delà de la limite lors d'un transfert ou d'une réinscription vers une classe complète de cette unité. Chaque autorisation vaut 24 heures et sert une fois, et la classe ne dépasse jamais la limite de plus d'une place. L'exception de la nouvelle inscription ne change pas ici.",
+        disabled: "Exception de capacité désactivée.",
+        enabled: "Exception de capacité activée.",
+        failed: "Impossible d'enregistrer.",
+        label: "Activer l'exception de capacité pour les transferts et réinscriptions",
+        loadFailed: "Impossible de lire la politique de cette unité. Fermez et réessayez.",
+        loading: "Chargement...",
+        neverPublished: "Jamais publiée : l'exception est désactivée.",
+        publishedHelper: "Enregistrer publie le choix pour cette unité.",
+        title: "Exception de capacité · {{name}}",
+      },
       actions: "Actions",
       actionsFor: "Actions pour {{name}}",
       address: "Adresse",

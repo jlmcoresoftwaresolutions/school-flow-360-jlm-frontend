@@ -906,6 +906,72 @@ export const es: TranslationResource = {
     viewTitle: "{{title}} (v{{version}})",
   },
   documentRequirements: {
+    tabs: {
+      label: "Secciones de los documentos exigidos",
+      policies: "Política por sede",
+      requirements: "Exigencias",
+    },
+    policies: {
+      actionsFor: "Acciones de {{stage}} · {{kind}}",
+      changedMeanwhile: "Otra persona cambió la política. Se volvió a leer la lista.",
+      declaration: "Declaración",
+      description:
+        "Cada sede declara, por etapa y tipo de matrícula, si usa las exigencias del catálogo o si no tiene ninguna exigencia que impida la matrícula. Sin declaración, la política queda pendiente y la transferencia y la rematrícula no se confirman. La matrícula nueva no cambia.",
+      errorDescription: "No se pudo leer la política de esta sede. Inténtelo de nuevo.",
+      errorTitle: "Política no disponible",
+      failed: "No se pudo guardar la política.",
+      inactiveUnit: "{{name}} (inactiva)",
+      invalid: {
+        NO_BLOCKING_REQUIREMENTS:
+          "Hay una exigencia obligatoria publicada para esta sede, etapa y tipo. Retírela o declare que la sede usa el catálogo.",
+        USE_CATALOG:
+          "El catálogo no tiene exigencias publicadas para esta sede, etapa y tipo. Publique una o declare que no hay exigencia que impida.",
+      },
+      kind: "Tipo de matrícula",
+      loading: "Cargando la política...",
+      mode: "Declaración",
+      modeHelpers: {
+        NO_BLOCKING_REQUIREMENTS: "La sede declara expresamente que ningún documento impide la matrícula en este caso.",
+        USE_CATALOG: "Valen las exigencias publicadas en la pestaña Exigencias para esta sede, etapa y tipo.",
+      },
+      modePlaceholder: "Elija la declaración",
+      modeRequired: "Elija la declaración.",
+      modes: {
+        NO_BLOCKING_REQUIREMENTS: "Sin exigencia que impida",
+        USE_CATALOG: "Usa las exigencias del catálogo",
+      },
+      noStagesDescription: "Active las etapas en Académico > Etapas y grados para publicar la política.",
+      noStagesTitle: "Ninguna etapa activa",
+      noUnitsDescription: "No tiene acceso a ninguna sede.",
+      noUnitsTitle: "Ninguna sede",
+      note: "Observación",
+      noteHelper: "Opcional. Por ejemplo, la norma o la decisión que justifica la declaración.",
+      notePlaceholder: "Escriba una observación",
+      nothingPublished: "Nada publicado",
+      publish: "Publicar",
+      publishAgain: "Publicar de nuevo",
+      publishDescription:
+        "Desde ahora, la declaración vale para las transferencias y rematrículas de esta sede, etapa y tipo.",
+      publishTitle: "Publicar la política de documentos",
+      published: "Política publicada.",
+      readOnly: "Puede consultar la política. Solo el Admin la publica y la retira.",
+      stage: "Etapa",
+      state: "Situación",
+      states: {
+        INCONSISTENT: "Desactualizada",
+        NO_BLOCKING: "Sin exigencia que impida",
+        PENDING: "Pendiente",
+        USE_CATALOG: "Usa el catálogo",
+      },
+      unit: "Sede",
+      unitPlaceholder: "Elija la sede",
+      withdraw: "Retirar",
+      withdrawDescription:
+        "El caso vuelve a quedar pendiente, y sus transferencias y rematrículas dejan de confirmarse hasta una nueva publicación. No se borra nada.",
+      withdrawTitle: "¿Retirar la política de documentos?",
+      withdrawn: "Política retirada.",
+      withdrawnLabel: "Retirada",
+    },
     actions: "Acciones",
     actionsFor: "Acciones de {{name}}",
     allStages: "Todas las etapas",
@@ -926,6 +992,7 @@ export const es: TranslationResource = {
     forbiddenDescription: "Solo la Administración y la Secretaría ven las exigencias de documentos.",
     forbiddenTitle: "Sin acceso a las exigencias",
     form: {
+      neverWaivedHelper: "La identificación de quien firma y la prueba de representación nunca pueden dispensarse.",
       acceptedTypes: "Tipos de documento aceptados",
       bornWithdrawn: "La exigencia nace retirada: ninguna preparación la pide hasta que usted la publique.",
       code: "Código",
@@ -1075,6 +1142,13 @@ export const es: TranslationResource = {
       title: "Grupo de la matrícula",
     },
     contract: {
+      roles: {
+        both: "Contratante y pagador",
+        contracting: "Contratante",
+        payer: "Pagador",
+      },
+      rolesMissing:
+        "Esta matrícula tiene un responsable financiero y el modelo de contrato aprobado no dice quién paga. El Admin debe aprobar un modelo que use el campo de quien paga (payers).",
       acceptanceDescriptions: {
         ACCEPTED: "Aceptado",
         EXPIRED: "El enlace venció sin aceptación.",
@@ -1903,6 +1977,34 @@ export const es: TranslationResource = {
     validity: "Validez",
   },
   lifecycle: {
+    capacity: {
+      authorize: "Autorizar plaza extra",
+      authorizeDescription:
+        "Vale solo para este evento y este grupo, por 24 horas, y se usa una vez en la confirmación. El grupo nunca pasa de una plaza por encima del límite.",
+      authorizeTitle: "¿Autorizar una plaza por encima del límite?",
+      authorized: "Plaza extra autorizada por 24 horas.",
+      authorizedAt: "Autorizada el",
+      ceiling: "El grupo de destino ya está una plaza por encima del límite. Ninguna autorización libera otra.",
+      changedMeanwhile: "El evento cambió mientras tanto. Se volvió a leer la página.",
+      expiredHelp: "Una autorización vencida no se renueva: abandone el evento y prepare uno nuevo.",
+      expiresAt: "Vale hasta",
+      failed: "No se pudo autorizar la plaza.",
+      fullDescription:
+        "El grupo de destino está lleno. Un Admin puede autorizar una plaza por encima del límite solo para este evento.",
+      notEnabled:
+        "La sede de destino no habilitó la excepción de cupo en transferencias y rematrículas. El Admin la habilita en Mi Organización, pestaña Sedes.",
+      notNeeded: "El grupo de destino vuelve a tener plaza y no necesita autorización.",
+      reason: "Motivo",
+      reasonPlaceholder: "Escriba el motivo de la autorización",
+      reasonRequired: "Indique el motivo.",
+      status: "Situación",
+      statuses: {
+        AVAILABLE: "Disponible",
+        CONSUMED: "Usada",
+        EXPIRED: "Vencida",
+      },
+      title: "Plaza por encima del límite",
+    },
     abandon: {
       action: "Abandonar evento",
       confirm: "Abandonar",
@@ -1918,6 +2020,20 @@ export const es: TranslationResource = {
         "El evento y la preparación de destino quedan en el historial como abandonados. La matrícula actual no cambia.",
     },
     blockers: {
+      CAPACITY_EXCEPTION_EXPIRED:
+        "La autorización de plaza por encima del límite venció. Para pedir otra, abandone el evento y prepare uno nuevo.",
+      CONTRACT_ACCEPTANCE_PENDING: "Falta la aceptación del contrato de destino por quien firma o paga.",
+      CONTRACT_MODEL_ROLES_MISSING:
+        "El modelo de contrato aprobado no identifica quién paga, y la preparación de destino tiene un responsable financiero.",
+      CONTRACT_NOT_GENERATED: "Genere el contrato en la preparación de destino.",
+      CONTRACT_OUTDATED: "El contrato de la preparación de destino está desactualizado. Genérelo de nuevo.",
+      DOCUMENT_CHECKLIST_OPEN: "Faltan documentos obligatorios en la preparación de destino.",
+      DOCUMENT_POLICY_INCONSISTENT:
+        "La política de documentos de la sede de destino quedó desactualizada y debe publicarse de nuevo.",
+      DOCUMENT_POLICY_PENDING:
+        "La sede de destino aún no publicó la política de documentos de esta etapa y tipo de matrícula.",
+      INSTITUTION_INACTIVE: "La institución está inactiva.",
+      ORIGIN_UNIT_INACTIVE: "La sede de origen está inactiva.",
       CONTRACT_MODEL_NOT_APPROVED: "No hay un modelo de contrato aprobado, y este evento pide un contrato nuevo.",
       DESTINATION_ABANDONED: "La preparación de destino fue abandonada.",
       DESTINATION_CLASS_MISSING: "Elija el grupo en la preparación de destino.",
@@ -2310,6 +2426,21 @@ export const es: TranslationResource = {
     },
     title: "Mi Organización",
     units: {
+      capacityPolicy: {
+        action: "Excepción de cupo",
+        changedMeanwhile: "Otra persona cambió la política y se volvió a leer.",
+        description:
+          "Habilitada, un Admin puede autorizar, evento por evento, una plaza por encima del límite en una transferencia o rematrícula a un grupo lleno de esta sede. Cada autorización vale 24 horas y se usa una vez, y el grupo nunca pasa de una plaza por encima del límite. La excepción de la matrícula nueva no cambia aquí.",
+        disabled: "Excepción de cupo deshabilitada.",
+        enabled: "Excepción de cupo habilitada.",
+        failed: "No se pudo guardar.",
+        label: "Habilitar la excepción de cupo en transferencias y rematrículas",
+        loadFailed: "No se pudo leer la política de esta sede. Cierre e inténtelo de nuevo.",
+        loading: "Cargando...",
+        neverPublished: "Nunca publicada: la excepción está deshabilitada.",
+        publishedHelper: "Guardar publica la elección para esta sede.",
+        title: "Excepción de cupo · {{name}}",
+      },
       actions: "Acciones",
       actionsFor: "Acciones de {{name}}",
       address: "Dirección",

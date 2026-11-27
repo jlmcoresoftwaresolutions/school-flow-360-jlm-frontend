@@ -46,6 +46,9 @@ export type ContractAcceptance = {
   expiresAt: string | null
   id: number
   requestedAt: string | null
+  // What this acceptance covers (P06, V46): CONTRACTING (who contracts), PAYER (who assumes the payment) or
+  // both, "CONTRACTING,PAYER", when the same person holds the two roles. Frozen with the evidence.
+  roles: string | null
   sendResult: "FAILED" | "SENT" | null
   signerId: number
   signerName: string | null

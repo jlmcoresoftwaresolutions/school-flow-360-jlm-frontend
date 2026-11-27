@@ -30,17 +30,27 @@ const consequenceTones: Record<LifecycleConsequenceStatus, BadgeTone> = {
 // The blockers and the reasons the screen knows; anything else shows as it came (an unknown reason with
 // the catalog's own label).
 const knownBlockers = [
+  "CAPACITY_EXCEPTION_EXPIRED",
+  "CONTRACT_ACCEPTANCE_PENDING",
   "CONTRACT_MODEL_NOT_APPROVED",
+  "CONTRACT_MODEL_ROLES_MISSING",
+  "CONTRACT_NOT_GENERATED",
+  "CONTRACT_OUTDATED",
   "DESTINATION_ABANDONED",
   "DESTINATION_CLASS_MISSING",
   "DESTINATION_CLASS_NOT_OPEN",
   "DESTINATION_FULL",
   "DESTINATION_NOT_COMPATIBLE",
   "DESTINATION_UNIT_INACTIVE",
+  "DOCUMENT_CHECKLIST_OPEN",
+  "DOCUMENT_POLICY_INCONSISTENT",
+  "DOCUMENT_POLICY_PENDING",
   "FINANCIAL_POLICY_PENDING",
+  "INSTITUTION_INACTIVE",
   "INTEGRATION_NOT_PROVEN",
   "LOCK_POLICY_UNDEFINED",
   "ORIGIN_NOT_ELIGIBLE",
+  "ORIGIN_UNIT_INACTIVE",
 ] as const
 
 // The translation key of each reason of the catalog version 1, by "TYPE.CODE".

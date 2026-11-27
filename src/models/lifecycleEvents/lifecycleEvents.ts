@@ -111,3 +111,36 @@ export type LifecycleEventConfirmRequest = {
   intent: string
   version: number
 }
+
+// Whether a unit lets the lifecycle events use the capacity exception (Fatia C, V47). `enabled` is false
+// also when nothing was published; `version` and `publishedAt` are null then.
+export type LifecycleCapacityPolicy = {
+  enabled: boolean
+  publishedAt: string | null
+  unitId: number
+  version: number | null
+}
+
+// Body of PUT /api/lifecycle-events/capacity-policy (Admin). `version` is required once the unit published.
+export type LifecycleCapacityPolicyWrite = {
+  enabled: boolean
+  unitId: number
+  version?: number
+}
+
+// AVAILABLE until used or 24 hours after the approval; CONSUMED once the confirmation takes the seat.
+export type LifecycleCapacityAuthorizationStatus = "AVAILABLE" | "CONSUMED" | "EXPIRED"
+
+// The one authorization of an event for a seat above the destination class's capacity (Admin, with a
+// reason): tied to the event (its intent) and to the destination class, valid 24 hours, used once, and the
+// class never goes above capacity + 1. Renewing it is preparing a new event.
+export type LifecycleCapacityAuthorization = {
+  authorizedAt: string
+  authorizedBy: number | null
+  classId: number
+  eventId: number
+  expiresAt: string
+  id: number
+  reason: string
+  status: LifecycleCapacityAuthorizationStatus
+}

@@ -13,6 +13,10 @@ const requirementsPath = "/administration/document-requirements"
 
 const rowOf = (page: Page, text: string) => page.getByRole("row").filter({ hasText: text })
 
+// The row of a unit policy's scope: a stage and a kind of enrollment.
+const policyRow = (page: Page, stage: string, kind: string) =>
+  page.getByRole("row").filter({ hasText: stage }).filter({ hasText: kind })
+
 // Picks an option of a select inside `scope` (the page or a dialog); the options open in a portal.
 const pick = async (page: Page, scope: Locator | Page, label: RegExp, option: string) => {
   await scope.getByRole("combobox", { name: label }).click()
@@ -113,7 +117,7 @@ test.describe("document requirements", () => {
     await expect(dialog.getByRole("textbox", { name: /^Código/ })).toHaveAttribute("aria-invalid", "true")
   })
 
-  test("lets the Secretaria read the catalog, without changing it", async ({ page }) => {
+  test("lets the Secretaria read the catalog and the unit policies, without changing them", async ({ page }) => {
     await mockEnrollmentApi(page, { readOnly: true })
     await signInAndOpen(page, requirementsPath, secretariaContext)
 
@@ -121,5 +125,85 @@ test.describe("document requirements", () => {
     await expect(page.getByText("Só a Administração altera as exigências.")).toBeVisible()
     await expect(page.getByRole("button", { name: "Nova exigência" })).toHaveCount(0)
     await expect(page.getByRole("button", { name: /^Ações de/ })).toHaveCount(0)
+
+    await page.getByRole("tab", { name: "Política por unidade" }).click()
+    await expect(policyRow(page, "Educação Infantil", "Transferência")).toContainText("Pendente")
+    await expect(page.getByText("Você pode consultar a política. Só o Admin publica e retira.")).toBeVisible()
+    await expect(page.getByRole("button", { name: /^Ações de/ })).toHaveCount(0)
+  })
+
+  test("never lets the identity of who signs be waived", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
+    await signInAndOpen(page, requirementsPath)
+
+    await page.getByRole("button", { name: "Nova exigência" }).click()
+    const dialog = page.getByRole("dialog", { name: "Nova exigência" })
+    const exemptable = dialog.getByRole("checkbox", { name: "Pode ter exceção" })
+    await expect(exemptable).toBeChecked()
+    await dialog.getByRole("textbox", { name: /^Código/ }).fill("signatory_id")
+    await expect(exemptable).toBeDisabled()
+    await expect(exemptable).not.toBeChecked()
+    await expect(dialog).toContainText(
+      "A identificação de quem assina e a comprovação de representação nunca podem ser dispensadas.",
+    )
+    await dialog.getByRole("textbox", { name: /^Nome/ }).fill("Identificação de quem assina")
+    await dialog.getByRole("checkbox", { name: "RG" }).check()
+    await dialog.getByRole("button", { name: "Cadastrar" }).click()
+
+    await expect(page.getByText("Exigência cadastrada, ainda retirada.")).toBeVisible()
+    expect(lastCall(calls, "POST", "/api/enrollment-documents/requirements")?.body).toMatchObject({
+      code: "SIGNATORY_ID",
+      exemptable: false,
+    })
+  })
+
+  test("publishes a unit's document policy, refusing a declaration the catalog contradicts", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
+    await signInAndOpen(page, requirementsPath)
+
+    await page.getByRole("tab", { name: "Política por unidade" }).click()
+    const row = policyRow(page, "Educação Infantil", "Transferência")
+    await expect(row).toContainText("Pendente")
+    await expect(row).toContainText("Nada publicado")
+
+    await page.getByRole("button", { name: "Ações de Educação Infantil · Transferência" }).click()
+    await page.getByRole("menuitem", { name: "Publicar" }).click()
+    const dialog = page.getByRole("dialog", { name: "Publicar a política de documentos" })
+    await expect(dialog).toContainText("Unidade Aldeota")
+    await dialog.getByRole("button", { name: "Publicar" }).click()
+    await expect(dialog.getByText("Escolha a declaração.")).toBeVisible()
+
+    // The student's identity is mandatory everywhere: the unit can't say nothing blocks.
+    await pick(page, dialog, /^Declaração/, "Sem exigência impeditiva")
+    await dialog.getByRole("button", { name: "Publicar" }).click()
+    await expect(dialog.getByText(/Há exigência obrigatória publicada para esta unidade/)).toBeVisible()
+
+    await pick(page, dialog, /^Declaração/, "Usa as exigências do catálogo")
+    await dialog.getByRole("textbox", { name: /^Observação/ }).fill("Regra da rede")
+    await dialog.getByRole("button", { name: "Publicar" }).click()
+
+    await expect(page.getByText("Política publicada.")).toBeVisible()
+    await expect(row).toContainText("Usa o catálogo")
+    await expect(row).toContainText("Regra da rede")
+    expect(lastCall(calls, "PUT", "/api/document-policies")?.body).toEqual({
+      enrollmentKind: "TRANSFER",
+      mode: "USE_CATALOG",
+      note: "Regra da rede",
+      stageId: 1,
+      unitId: 1,
+    })
+    // The other scopes stay pending.
+    await expect(policyRow(page, "Educação Infantil", "Rematrícula")).toContainText("Pendente")
+
+    await page.getByRole("button", { name: "Ações de Educação Infantil · Transferência" }).click()
+    await page.getByRole("menuitem", { name: "Retirar" }).click()
+    await page
+      .getByRole("dialog", { name: "Retirar a política de documentos?" })
+      .getByRole("button", { name: "Retirar" })
+      .click()
+    await expect(page.getByText("Política retirada.")).toBeVisible()
+    await expect(row).toContainText("Pendente")
+    await expect(row).toContainText("Retirada")
+    expect(lastCall(calls, "POST", "/api/document-policies/70/withdraw")?.body).toEqual({ version: 0 })
   })
 })
