@@ -17,6 +17,7 @@ import { useCanManageMyOrganization } from "../shared/myOrganizationAccess"
 import { TabCard } from "../shared/TabCard"
 import { usePhoneFormatter } from "../shared/usePhoneFormatter"
 import { useStatusLabels } from "../shared/useStatusLabels"
+import { CapacityPolicyDialog } from "./CapacityPolicyDialog"
 import { InactivateUnitDialog } from "./InactivateUnitDialog"
 import { UnitDetailsModal } from "./UnitDetailsModal"
 import { UnitFormModal } from "./UnitFormModal"
@@ -26,6 +27,7 @@ type StatusFilter = "all" | SchoolUnitStatus
 
 // Which dialog is open, if any, and for which unit.
 type UnitDialog =
+  | { kind: "capacityPolicy"; unit: SchoolUnit }
   | { kind: "details"; unit: SchoolUnit }
   | { kind: "edit"; unit: SchoolUnit }
   | { kind: "inactivate"; unit: SchoolUnit }
@@ -133,6 +135,13 @@ export const UnitsTab = (props: UnitsTabProps) => {
             key: "edit",
             label: t("common.edit"),
             onClick: () => setDialog({ kind: "edit", unit }),
+          },
+          {
+            disabled: !isActive,
+            icon: "users-outline",
+            key: "capacityPolicy",
+            label: t("myOrganization.units.capacityPolicy.action"),
+            onClick: () => setDialog({ kind: "capacityPolicy", unit }),
           },
           {
             disabled: !isActive,
@@ -283,6 +292,7 @@ export const UnitsTab = (props: UnitsTabProps) => {
         />
       )}
 
+      {dialog?.kind === "capacityPolicy" && <CapacityPolicyDialog onClose={closeDialog} unit={dialog.unit} />}
       {dialog?.kind === "inactivate" && (
         <InactivateUnitDialog
           onClose={closeDialog}

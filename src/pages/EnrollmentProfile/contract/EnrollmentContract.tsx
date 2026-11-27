@@ -125,6 +125,9 @@ export const EnrollmentContract = (props: EnrollmentContractProps) => {
         case "SIGNER_WITHOUT_EMAIL":
           setFailure(t("enrollments.contract.signerWithoutEmail"))
           break
+        case "CONTRACT_MODEL_ROLES_MISSING":
+          setFailure(t("enrollments.contract.rolesMissing"))
+          break
         case "CONTRACT_OUTDATED":
         case "CONTRACT_NOT_GENERATED":
         case "ACCEPTANCE_NOT_PENDING":
@@ -182,9 +185,21 @@ export const EnrollmentContract = (props: EnrollmentContractProps) => {
     }
   }
 
+  // What an acceptance covers (P06): who contracts, who pays, or both when the same person holds the roles.
+  const rolesLabel = (roles: string | null) => {
+    const list = (roles ?? "").split(",").map((role) => role.trim())
+    const contracts = list.includes("CONTRACTING")
+    const pays = list.includes("PAYER")
+    if (contracts && pays) return t("enrollments.contract.roles.both")
+    if (pays) return t("enrollments.contract.roles.payer")
+    if (contracts) return t("enrollments.contract.roles.contracting")
+    return ""
+  }
+
   const renderSigner = (signer: Signer, contract: Contract) => {
     const acceptance = signer.acceptance
     const canAsk = canOperate && !contract.outdated && signer.missing
+    const roles = rolesLabel(acceptance?.roles ?? null)
 
     return (
       <AccessItem key={signer.id}>
@@ -201,7 +216,7 @@ export const EnrollmentContract = (props: EnrollmentContractProps) => {
           )}
         </CandidateHeader>
         <Text color="secondary" fontSize="sm">
-          {[acceptance?.email, describe(acceptance)].filter(Boolean).join(" · ")}
+          {[roles, acceptance?.email, describe(acceptance)].filter(Boolean).join(" · ")}
         </Text>
         {acceptance?.status === "PENDING" && acceptance.sendResult === "FAILED" && (
           <Text color="danger" fontSize="sm">

@@ -46,6 +46,10 @@ export const paths = {
   // The address Minha Organização had while it was called Minha Unidade (until 2026-11-24): it only
   // redirects to the page's own, so old links and bookmarks still work. Not a page, not in the menu.
   legacyMyUnit: "/administration/my-unit",
+  // A lifecycle event of an enrollment (transfer, re-enrollment, cancellation, lock; not in the menu; under the
+  // enrollments page, whose access rule it follows). Built with generatePath (react-router-dom).
+  lifecycleEvent: "/administration/enrollments/events/:eventId",
+  lifecyclePolicies: "/administration/lifecycle-policies",
   login: "/login",
   messages: "/communication/messages",
   // The signed-in user's own profile, opened from the user menu in the topbar (not in the side menu).

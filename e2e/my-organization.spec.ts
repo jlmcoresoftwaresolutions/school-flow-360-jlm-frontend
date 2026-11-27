@@ -1323,6 +1323,36 @@ test.describe("units", () => {
     expect(organizationMock.unitCalls.map((call) => (call.body as { version: number }).version)).toEqual([0, 1])
   })
 
+  test("lets the Admin enable the capacity exception of a unit's transfers and re-enrollments", async ({ page }) => {
+    await signInAndOpen(page)
+    const sent: unknown[] = []
+    await page.route("**/api/lifecycle-events/capacity-policy*", (route) => {
+      const request = route.request()
+      if (request.method() === "GET") {
+        return route.fulfill(apiAnswer({ enabled: false, publishedAt: null, unitId: 1, version: null }))
+      }
+      sent.push(request.postDataJSON())
+      return route.fulfill(apiAnswer({ enabled: true, publishedAt: "2026-11-27T12:00:00Z", unitId: 1, version: 0 }))
+    })
+    await tab(page, "Unidades").click()
+
+    await page.getByRole("button", { name: "Ações de Unidade Aldeota" }).click()
+    await page.getByRole("menuitem", { name: "Exceção de lotação" }).click()
+    const dialog = page.getByRole("dialog", { name: "Exceção de lotação · Unidade Aldeota" })
+    const toggle = dialog.getByRole("switch", {
+      name: "Habilitar a exceção de lotação em transferências e rematrículas",
+    })
+    await expect(toggle).not.toBeChecked()
+    await expect(dialog).toContainText("Nunca publicada: a exceção está desabilitada.")
+    await expect(dialog.getByRole("button", { name: "Salvar" })).toBeDisabled()
+
+    await toggle.check()
+    await dialog.getByRole("button", { name: "Salvar" }).click()
+    await expect(page.getByText("Exceção de lotação habilitada.")).toBeVisible()
+    await expect(dialog).toHaveCount(0)
+    expect(sent).toEqual([{ enabled: true, unitId: expect.any(Number) as unknown }])
+  })
+
   test("reads the impact again when the unit changed before the inactivation was confirmed", async ({ page }) => {
     const organizationMock = await signInAndOpen(page, "unit-conflict")
     await tab(page, "Unidades").click()

@@ -2,19 +2,22 @@ import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 
+import type { IconName } from "@/ds-components/atoms"
 import { Badge, Button, Card, Text } from "@/ds-components/atoms"
 import type { ActionMenuItem, TabsItem } from "@/ds-components/molecules"
 import { ActionMenu, PageHeader, StateMessage, Tabs } from "@/ds-components/molecules"
 import { spacing } from "@/foundation"
 import { useSignedInUser } from "@/hooks"
-import type { Enrollment } from "@/models"
+import type { Enrollment, LifecycleEventType } from "@/models"
 import { paths } from "@/routes/paths"
 import { getEnrollment } from "@/services/enrollments"
 import { getErrorStatus } from "@/services/httpClient"
 import { hasAnyRole } from "@/utils/access"
 import { formatDate } from "@/utils/dates"
 
+import { useEnrollmentAccess } from "../shared/enrollments/useEnrollmentAccess"
 import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
+import { lifecycleEventTypes } from "../shared/enrollments/useLifecycleLabels"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
 import { ConfirmEnrollmentDialog } from "./ConfirmEnrollmentDialog"
@@ -24,8 +27,22 @@ import { EnrollmentClass } from "./EnrollmentClass"
 import { EnrollmentGuardians } from "./EnrollmentGuardians"
 import { EnrollmentHistory } from "./EnrollmentHistory"
 import { EnrollmentPreparation } from "./EnrollmentPreparation"
+import { LifecycleEventNotice } from "./lifecycle/LifecycleEventNotice"
+import { PrepareLifecycleEventModal } from "./lifecycle/PrepareLifecycleEventModal"
+import { useOpenLifecycleEvent } from "./lifecycle/useOpenLifecycleEvent"
 
 type LoadResult = { error: "failed" | "gone"; key: string } | { enrollment: Enrollment; key: string }
+
+const lifecycleIcons: Record<LifecycleEventType, IconName> = {
+  CANCELLATION: "x-circle-outline",
+  LOCK: "lock-outline",
+  REENROLLMENT: "event-note-outline",
+  TRANSFER: "compare-outline",
+}
+
+// The enrollment statuses each lifecycle event starts from: a re-enrollment also from a completed one.
+const isLifecycleOrigin = (type: LifecycleEventType, enrollment: Enrollment) =>
+  enrollment.status === "ACTIVE" || (type === "REENROLLMENT" && enrollment.status === "COMPLETED")
 
 // An enrollment (JLM-339, 375 and 381 in part): the student, the unit and the status in the header, and
 // the sections in tabs - the preparation (what was chosen, what is still missing and the stages not
@@ -40,6 +57,7 @@ export const EnrollmentProfile = () => {
   const navigate = useNavigate()
   const { formatMoment, statusLabel, statusTone } = useEnrollmentLabels()
   const signedIn = useSignedInUser()
+  const { operableUnits } = useEnrollmentAccess()
 
   const [result, setResult] = useState<LoadResult | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
@@ -48,11 +66,13 @@ export const EnrollmentProfile = () => {
   const [chooseRequest, setChooseRequest] = useState(0)
   const [isAbandoning, setIsAbandoning] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
+  const [preparing, setPreparing] = useState<LifecycleEventType | null>(null)
 
   const requestKey = `${enrollmentId}#${reloadToken}`
   // While the same enrollment is read again its last answer stays on screen, so a choice being made in a
   // tab isn't lost; another enrollment's answer is never shown.
   const current = result?.key.startsWith(`${enrollmentId}#`) ? result : null
+  const openEvent = useOpenLifecycleEvent(current && "enrollment" in current ? current.enrollment : null, reloadToken)
 
   useEffect(() => {
     let isStale = false
@@ -76,6 +96,7 @@ export const EnrollmentProfile = () => {
   const reload = () => {
     setIsAbandoning(false)
     setIsConfirming(false)
+    setPreparing(null)
     setReloadToken((value) => value + 1)
   }
 
@@ -119,6 +140,23 @@ export const EnrollmentProfile = () => {
       onClick: () => setIsAbandoning(true),
       tone: "danger",
     })
+  }
+
+  // The lifecycle events (EPIC 7) start from a confirmed enrollment the person operates, once the events it
+  // is part of were read and none is prepared on it (the backend checks everything again).
+  const operatesUnit = operableUnits.some((unit) => unit.id === enrollment.unitId)
+  if (operatesUnit && openEvent === null) {
+    lifecycleEventTypes
+      .filter((type) => isLifecycleOrigin(type, enrollment))
+      .forEach((type) =>
+        actions.push({
+          icon: lifecycleIcons[type],
+          key: type,
+          label: t(`lifecycle.prepare.actions.${type}`),
+          onClick: () => setPreparing(type),
+          tone: type === "CANCELLATION" ? "danger" : "default",
+        }),
+      )
   }
 
   const canConfirm = enrollment.eligibleActions.includes("CONFIRM")
@@ -242,6 +280,8 @@ export const EnrollmentProfile = () => {
         </span>
       </ProfileBar>
 
+      {openEvent && <LifecycleEventNotice open={openEvent} />}
+
       <Tabs
         items={tabs}
         label={t("enrollments.profile.sectionsLabel")}
@@ -256,6 +296,16 @@ export const EnrollmentProfile = () => {
           onChanged={reload}
           onClose={() => setIsConfirming(false)}
           onGone={reload}
+        />
+      )}
+
+      {preparing && (
+        <PrepareLifecycleEventModal
+          enrollment={enrollment}
+          eventType={preparing}
+          onChanged={reload}
+          onClose={() => setPreparing(null)}
+          operableUnits={operableUnits}
         />
       )}
 

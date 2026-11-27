@@ -135,6 +135,9 @@ export const EnrollmentClass = (props: EnrollmentClassProps) => {
       } else if (code === "VERSION_CONFLICT") {
         setFailure(t("enrollments.class.conflict"))
         onChanged()
+      } else if (code === "ENROLLMENT_PERIOD_CONFLICT") {
+        // The student already has a live enrollment in the class's period and stage (here or in another unit).
+        setFailure(t("enrollments.class.periodConflict"))
       } else if (code === "ENROLLMENT_CONTEXT_INVALID") {
         setFailure(t("enrollments.class.invalid"))
         setReloadToken((value) => value + 1)

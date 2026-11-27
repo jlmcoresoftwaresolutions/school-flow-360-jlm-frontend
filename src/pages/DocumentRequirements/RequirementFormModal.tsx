@@ -16,7 +16,7 @@ import { FieldRow } from "../shared/people/people.styles"
 import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { FormFields } from "../shared/userAccess/userAccess.styles"
-import { enrollmentKinds, parties, requirementLimits } from "./documentRequirements.constants"
+import { enrollmentKinds, neverWaivedCodes, parties, requirementLimits } from "./documentRequirements.constants"
 
 export type RequirementFormModalProps = {
   onClose: () => void
@@ -91,6 +91,8 @@ export const RequirementFormModal = (props: RequirementFormModalProps) => {
   const [isSaving, setIsSaving] = useState(false)
 
   const isEdit = Boolean(requirement)
+  // The identity of who signs and the proof of representation are never waived (the backend forces it).
+  const neverWaived = neverWaivedCodes.includes((requirement?.code ?? values.code).trim().toUpperCase())
   const isChanged = comparable(values) !== comparable(original)
   const allUnits = { label: t("documentRequirements.allUnits"), value: "" }
   const allStages = { label: t("documentRequirements.allStages"), value: "" }
@@ -144,7 +146,7 @@ export const RequirementFormModal = (props: RequirementFormModalProps) => {
       acceptedTypes: values.acceptedTypes,
       code: requirement?.code ?? values.code.trim().toUpperCase(),
       enrollmentKind: values.enrollmentKind,
-      exemptable: values.exemptable,
+      exemptable: values.exemptable && !neverWaived,
       label: values.label.trim(),
       mandatory: values.mandatory,
       party: requirement?.party ?? values.party,
@@ -328,8 +330,13 @@ export const RequirementFormModal = (props: RequirementFormModalProps) => {
             onChange={(_event, checked) => set({ mandatory: checked })}
           />
           <Checkbox
-            checked={values.exemptable}
-            helperText={t("documentRequirements.form.exemptableHelper")}
+            checked={values.exemptable && !neverWaived}
+            disabled={neverWaived}
+            helperText={
+              neverWaived
+                ? t("documentRequirements.form.neverWaivedHelper")
+                : t("documentRequirements.form.exemptableHelper")
+            }
             label={t("documentRequirements.form.exemptable")}
             onChange={(_event, checked) => set({ exemptable: checked })}
           />

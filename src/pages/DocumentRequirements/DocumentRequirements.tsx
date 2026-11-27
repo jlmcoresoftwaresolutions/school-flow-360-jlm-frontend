@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { Badge, Button, Card, Icon, Text } from "@/ds-components/atoms"
 import type { ActionMenuItem, SelectOption } from "@/ds-components/molecules"
-import { ActionMenu, PageHeader, Select, StateMessage } from "@/ds-components/molecules"
+import { ActionMenu, PageHeader, Select, StateMessage, Tabs } from "@/ds-components/molecules"
 import { FilterBar, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
 import { useSignedInUser } from "@/hooks"
@@ -21,6 +21,7 @@ import { useDocumentTypes } from "../shared/people/useDocumentTypes"
 import { ListContent } from "../shared/userAccess/userAccess.styles"
 import { RequirementFormModal } from "./RequirementFormModal"
 import { RequirementStatusDialog } from "./RequirementStatusDialog"
+import { UnitPoliciesTab } from "./UnitPoliciesTab"
 
 type Dialog = { kind: "edit" | "status"; requirement: DocumentRequirement } | { kind: "new" } | null
 
@@ -32,7 +33,8 @@ type StatusFilter = "" | "ACTIVE" | "INACTIVE"
 // preparation asks for, by whom (the student or each signatory), where (a unit and a stage, or all) and
 // for which kind of enrollment. Nothing is universal: a requirement is born withdrawn and is asked for
 // only once the Admin publishes it; the initial catalog comes withdrawn too. Only the Admin writes; the
-// Secretaria reads. Nothing is deleted: a requirement is withdrawn.
+// Secretaria reads. Nothing is deleted: a requirement is withdrawn. A second tab holds each unit's document
+// policy (EPIC 7), which says whether the catalog applies there or the unit has no blocking requirement.
 export const DocumentRequirements = () => {
   const { t } = useTranslation()
   const signedIn = useSignedInUser()
@@ -45,6 +47,7 @@ export const DocumentRequirements = () => {
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState<StatusFilter>("")
   const [dialog, setDialog] = useState<Dialog>(null)
+  const [tab, setTab] = useState("requirements")
 
   const current = result?.key === reloadToken ? result : null
   const isAdmin = hasAnyRole(signedIn, ["ADMIN"])
@@ -255,55 +258,80 @@ export const DocumentRequirements = () => {
         title={t("shell.nav.documentRequirements")}
       />
 
-      <Card elevated style={{ padding: spacing[32] }}>
-        <ListContent>
-          <FilterBar
-            actions={
-              isAdmin ? (
-                <Button
-                  onClick={() => setDialog({ kind: "new" })}
-                  size="small"
-                  startIcon={<Icon color="inherit" name="plus" size={16} />}
-                >
-                  {t("documentRequirements.new")}
-                </Button>
-              ) : undefined
-            }
-            clearLabel={t("userAccess.clearFilters")}
-            collapseLabel={t("common.collapseFilters")}
-            expandLabel={t("common.expandFilters")}
-            hasActiveFilters={hasFilters}
-            label={t("documentRequirements.filtersLabel")}
-            onClear={() => {
-              setSearch("")
-              setStatus("")
-            }}
-            onSearchChange={setSearch}
-            searchLabel={t("documentRequirements.searchLabel")}
-            searchPlaceholder={t("documentRequirements.searchPlaceholder")}
-            searchValue={search}
-            title={t("common.filters")}
-          >
-            <Select
-              noOptionsMessage={t("common.noOptions")}
-              onChange={(option) => setStatus((option?.value as StatusFilter | undefined) ?? "")}
-              options={statusOptions}
-              placeholder={t("documentRequirements.allStatuses")}
-              size="small"
-              title={t("documentRequirements.status")}
-              value={statusOptions.find((option) => option.value === status) ?? null}
-            />
-          </FilterBar>
+      <Tabs
+        items={[
+          {
+            content: (
+              <Card elevated style={{ padding: spacing[32] }}>
+                <ListContent>
+                  <FilterBar
+                    actions={
+                      isAdmin ? (
+                        <Button
+                          onClick={() => setDialog({ kind: "new" })}
+                          size="small"
+                          startIcon={<Icon color="inherit" name="plus" size={16} />}
+                        >
+                          {t("documentRequirements.new")}
+                        </Button>
+                      ) : undefined
+                    }
+                    clearLabel={t("userAccess.clearFilters")}
+                    collapseLabel={t("common.collapseFilters")}
+                    expandLabel={t("common.expandFilters")}
+                    hasActiveFilters={hasFilters}
+                    label={t("documentRequirements.filtersLabel")}
+                    onClear={() => {
+                      setSearch("")
+                      setStatus("")
+                    }}
+                    onSearchChange={setSearch}
+                    searchLabel={t("documentRequirements.searchLabel")}
+                    searchPlaceholder={t("documentRequirements.searchPlaceholder")}
+                    searchValue={search}
+                    title={t("common.filters")}
+                  >
+                    <Select
+                      noOptionsMessage={t("common.noOptions")}
+                      onChange={(option) => setStatus((option?.value as StatusFilter | undefined) ?? "")}
+                      options={statusOptions}
+                      placeholder={t("documentRequirements.allStatuses")}
+                      size="small"
+                      title={t("documentRequirements.status")}
+                      value={statusOptions.find((option) => option.value === status) ?? null}
+                    />
+                  </FilterBar>
 
-          {!isAdmin && (
-            <Text color="secondary" fontSize="sm">
-              {t("documentRequirements.readOnly")}
-            </Text>
-          )}
+                  {!isAdmin && (
+                    <Text color="secondary" fontSize="sm">
+                      {t("documentRequirements.readOnly")}
+                    </Text>
+                  )}
 
-          {renderList()}
-        </ListContent>
-      </Card>
+                  {renderList()}
+                </ListContent>
+              </Card>
+            ),
+            icon: "file-outline",
+            key: "requirements",
+            label: t("documentRequirements.tabs.requirements"),
+          },
+          {
+            content: (
+              <Card elevated style={{ padding: spacing[32] }}>
+                <UnitPoliciesTab catalogKey={reloadToken} isAdmin={isAdmin} stages={stages.items} units={units} />
+              </Card>
+            ),
+            icon: "building-outline",
+            key: "policies",
+            label: t("documentRequirements.tabs.policies"),
+          },
+        ]}
+        label={t("documentRequirements.tabs.label")}
+        onChange={setTab}
+        value={tab}
+        attached
+      />
 
       {dialog?.kind === "new" && (
         <RequirementFormModal

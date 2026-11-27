@@ -4,7 +4,8 @@ export const templateLimits = { body: 60000, legalApprovalRef: 200, title: 160 }
 
 // The controlled fields a model may use as {{field}} (the backend's ContractFields). A new model is
 // written against these; an existing one comes with its own `allowedFields`. No financial field exists
-// yet: a model that asks for one is refused.
+// yet: a model that asks for one is refused. `payers` names who assumes the payment: with a payer on a
+// transfer or a re-enrollment the approved model must use it (P06), or no acceptance is asked.
 export const contractFields = [
   "institution.name",
   "unit.name",
@@ -19,4 +20,6 @@ export const contractFields = [
   "period.start",
   "period.end",
   "start.date",
+  "today",
+  "payers",
 ]
