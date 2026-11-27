@@ -3,6 +3,100 @@ import type { TranslationResource } from "./ptBR"
 // French, used for every French-speaking browser (fr-FR, fr-CA, fr-BE...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const fr: TranslationResource = {
+  lifecyclePolicies: {
+    actionsFor: "Actions pour {{name}}",
+    changedMeanwhile: "Quelqu'un d'autre a modifié la politique. Les données ont été relues.",
+    description:
+      "Les règles que l'école publie pour le transfert, la réinscription, l'annulation et la suspension : la durée maximale d'une suspension, quand un événement n'a pas d'effet financier et le texte des avis.",
+    errorDescription: "Impossible de lire les politiques. Réessayez.",
+    errorTitle: "Politiques indisponibles",
+    failed: "Impossible d'enregistrer.",
+    forbiddenDescription: "Vous n'avez pas accès à ces politiques.",
+    forbiddenTitle: "Pas d'accès",
+    loading: "Chargement...",
+    lock: {
+      blocked: "Aucune limite publiée : la suspension reste bloquée",
+      description:
+        "Combien de jours calendaires une suspension peut durer dans chaque cycle de l'unité. Sans limite publiée, aucune suspension n'y est confirmée.",
+      maxDays: "Limite de jours",
+      maxDaysHelper: "De 1 à {{max}} jours calendaires.",
+      maxDaysInvalid: "Indiquez de {{min}} à {{max}} jours.",
+      maxDaysPlaceholder: "Ex. : 30",
+      publishDescription: "Désormais, la limite s'applique aux suspensions de cette unité et de ce cycle.",
+      publishTitle: "Publier la limite de suspension",
+      withdrawDescription:
+        "Sans limite, aucune suspension de cette unité et de ce cycle n'est confirmée. Rien n'est supprimé.",
+      withdrawTitle: "Retirer la limite de suspension ?",
+    },
+    noEffect: {
+      description:
+        "Tant que le module financier n'existe pas, un événement n'est confirmé que là où l'école a publié, avec la référence et la preuve, que ce type d'événement ne change aucune obligation, aucun paiement ni aucune facturation. La règle vaut pour une offre de l'unité ou pour toute l'unité.",
+      emptyDescription: "Sans règle publiée, les événements de cette unité restent bloqués par le financier.",
+      emptyTitle: "Aucune règle publiée",
+      eventType: "Événement",
+      eventTypePlaceholder: "Choisissez l'événement",
+      eventTypeRequired: "Choisissez l'événement.",
+      evidence: "Preuve",
+      evidenceHelper: "Pourquoi l'événement ne change aucune obligation, aucun paiement ni aucune facturation.",
+      evidencePlaceholder: "Saisissez la preuve",
+      evidenceRequired: "Indiquez la preuve.",
+      exists: "Une règle de cet événement pour cette portée existe déjà. Publiez-la à nouveau depuis sa ligne.",
+      invalid: "La règle n'a pas été acceptée. Vérifiez l'offre, la référence et la preuve.",
+      new: "Nouvelle règle",
+      offerNumber: "Offre n° {{id}}",
+      publishDescription: "La règle libère désormais le financier des événements de ce type, dans la portée choisie.",
+      publishTitle: "Publier une règle sans effet financier",
+      ruleRef: "Référence de la règle",
+      ruleRefHelper: "Où la règle institutionnelle peut être vérifiée (acte, procès-verbal, document).",
+      ruleRefPlaceholder: "Ex. : Note interne 12/2026",
+      ruleRefRequired: "Indiquez la référence de la règle.",
+      scope: "Portée",
+      scopeHelper:
+        "Une règle d'une offre n'en libère jamais une autre. Pour toute l'unité, utilisez-la seulement en homologation ou dans une unité sans offre facturable.",
+      scopePlaceholder: "Choisissez la portée",
+      wholeUnit: "Toute l'unité",
+      withdrawDescription:
+        "Les événements de ce type et de cette portée sont de nouveau bloqués par le financier. Rien n'est supprimé.",
+      withdrawTitle: "Retirer la règle ?",
+    },
+    publish: "Publier",
+    publishAgain: "Publier à nouveau",
+    published: "Politique publiée.",
+    readOnly: "Vous pouvez consulter les politiques. Seul l'Admin les publie et les retire.",
+    statuses: {
+      none: "Rien de publié",
+      published: "Publiée",
+      withdrawn: "Retirée",
+    },
+    tabs: {
+      label: "Sections des politiques des événements",
+      lock: "Suspension",
+      noEffect: "Sans effet financier",
+      templates: "Textes des avis",
+    },
+    templates: {
+      body: "Texte",
+      bodyHelper: "Champs que le système remplit : {{fields}}.",
+      bodyPlaceholder: "Saisissez le texte de l'avis",
+      bodyRequired: "Indiquez le texte.",
+      description:
+        "Le texte des avis qu'un événement confirmé envoie à qui signe et paie. Le système apporte une proposition, et le texte final est celui de l'école.",
+      editFor: "Modifier le texte de {{name}}",
+      editTitle: "Texte de l'avis · {{name}}",
+      empty: "Aucun texte.",
+      invalid: "Le texte utilise un champ qui n'existe pas ou dépasse la limite.",
+      lockReturn: "Retour de suspension",
+      notification: "Avis",
+      saved: "Texte enregistré.",
+      subject: "Objet",
+      subjectPlaceholder: "Saisissez l'objet",
+      subjectRequired: "Indiquez l'objet.",
+      text: "Objet et texte",
+      updatedAt: "Modifié le",
+    },
+    withdraw: "Retirer",
+    withdrawn: "Politique retirée.",
+  },
   academic: {
     actions: "Actions",
     allStatuses: "Tous les statuts",
@@ -1334,6 +1428,15 @@ export const fr: TranslationResource = {
       validUntil: "valable jusqu'au {{date}}",
     },
     events: {
+      CAPACITY_EXCEPTION_AUTHORIZED: "Place au-delà de la limite autorisée",
+      CONFIRMED_CANCELLATION: "Annulation confirmée",
+      CONFIRMED_LOCK: "Suspension confirmée",
+      CONFIRMED_REENROLLMENT: "Réinscription confirmée",
+      CONFIRMED_TRANSFER: "Transfert confirmé",
+      LOCK_RETURNED: "Suspension reprise",
+      RECTIFIED_JUSTIFICATION: "Justification de l'événement corrigée",
+      RECTIFIED_REASON: "Motif de l'événement corrigé",
+      STATUS_CHANGED: "Situation modifiée",
       ABANDONED: "Préparation abandonnée",
       CONTEXT_CHANGED: "Classe modifiée",
       PARTIES_CHANGED: "Responsables légaux modifiés",
@@ -2007,6 +2110,113 @@ export const fr: TranslationResource = {
     validity: "Validité",
   },
   lifecycle: {
+    confirm: {
+      action: "Confirmer",
+      after:
+        "Après la confirmation, les avis à qui signe et paie et la projection dans le cahier de textes partent ensuite et restent visibles sur cette page.",
+      blocked: "Quelque chose empêche encore la confirmation. Rien n'a été modifié, et la page a été relue.",
+      changedMeanwhile: "L'événement a changé entre-temps. La page a été relue.",
+      descriptions: {
+        CANCELLATION:
+          "L'inscription est annulée et la place est libérée. L'élève, en tant que personne, reste actif. Cela ne peut pas être défait.",
+        LOCK: "L'inscription est suspendue pendant les jours demandés, et la place reste occupée. Le retour est fait ensuite par la Coordination de l'unité.",
+        REENROLLMENT:
+          "L'inscription de la nouvelle période devient active, avec son propre numéro, et l'actuelle reste active.",
+        TRANSFER:
+          "L'inscription actuelle est transférée, et celle de destination devient active avec un nouveau numéro et la place échangée, en une fois.",
+      },
+      done: "{{type}} confirmé(e).",
+      effectiveToday: "Le jour de la confirmation",
+      failed: "Impossible de confirmer.",
+      forbidden:
+        "Vous ne pouvez pas confirmer cet événement. Une suspension et une annulation par décision institutionnelle ne sont confirmées que par l'Admin.",
+      noAnswer:
+        "Aucune réponse n'est arrivée et l'événement n'apparaît pas encore confirmé. Réessayez : la même confirmation n'est jamais faite deux fois.",
+      open: "Confirmer : {{type}}",
+      title: "Confirmer : {{type}} ?",
+    },
+    evidence: {
+      action: "Exporter la preuve",
+      done: "Preuve téléchargée.",
+      failed: "Impossible d'exporter la preuve.",
+    },
+    outbox: {
+      actions: "Actions",
+      attempts: "Tentatives",
+      attemptsCount_one: "{{count}} tentative",
+      attemptsCount_other: "{{count}} tentatives",
+      description:
+        "Les avis à qui signe et paie et la projection dans le cahier de textes partent après la confirmation. Renvoyer un avis ne crée pas d'autre événement.",
+      diary: "Cahier de textes",
+      diaryPending: "Reste en attente jusqu'à ce que le cahier de textes existe.",
+      empty: "Rien à envoyer.",
+      errors: {
+        DELIVERY_FAILED: "L'envoi a échoué.",
+        EMAIL_MISSING: "Aucun e-mail enregistré.",
+        TEMPLATE_MISSING: "Le texte de l'avis manque.",
+      },
+      failed: "Impossible de renvoyer.",
+      kinds: {
+        CONFIRMATION: "Confirmation",
+        LOCK_RETURN: "Retour de suspension",
+      },
+      limit: "Cet avis a atteint 3 tentatives. L'Admin peut le retraiter.",
+      loadFailed: "Impossible de lire ce qui vient après la confirmation.",
+      loading: "Chargement...",
+      noEmail: "Aucun e-mail",
+      reprocess: "Retraiter",
+      reprocessed: "Ce qui manquait a été appliqué à nouveau.",
+      resend: "Renvoyer",
+      resent: "Avis renvoyé.",
+      status: "Situation",
+      statuses: {
+        APPLIED: "Fait",
+        FAILED: "Échec",
+        PENDING: "En attente",
+      },
+      title: "Après la confirmation",
+      to: "Pour",
+      tooSoon: "Attendez 10 minutes entre les tentatives.",
+      what: "Quoi",
+    },
+    rectify: {
+      action: "Corriger le motif ou la justification",
+      after: "Après",
+      before: "Avant",
+      confirm: "Corriger",
+      currentReason: "Motif actuel : {{reason}}",
+      description:
+        "La correction est enregistrée comme un fait nouveau, et l'événement garde la valeur d'origine. La situation, la place, le numéro et le financier ne sont jamais corrigés.",
+      done: "Correction enregistrée.",
+      failed: "Impossible d'enregistrer la correction.",
+      field: "Que corriger",
+      fieldPlaceholder: "Choisissez quoi corriger",
+      fields: {
+        JUSTIFICATION: "Justification",
+        REASON: "Motif",
+      },
+      listDescription: "Chaque correction est un fait nouveau. L'événement garde les valeurs d'origine.",
+      listTitle: "Corrections",
+      newJustification: "Nouvelle justification",
+      newJustificationRequired: "Indiquez la nouvelle justification.",
+      newReason: "Nouveau motif",
+      newReasonPlaceholder: "Choisissez le nouveau motif",
+      newReasonRequired: "Choisissez le nouveau motif.",
+      reason: "Pourquoi corriger",
+      reasonInvalid: "Ce motif n'est plus dans le catalogue de l'événement.",
+      reasonPlaceholder: "Saisissez pourquoi la correction est faite",
+      reasonRequired: "Indiquez pourquoi corriger.",
+      title: "Corriger l'événement",
+      when: "Quand",
+    },
+    return: {
+      action: "Reprendre",
+      description: "L'inscription redevient active. La famille est prévenue par le canal indiqué par l'école.",
+      done: "Inscription reprise.",
+      forbidden: "Seule la Coordination de l'unité ou l'Admin reprennent une suspension.",
+      open: "Reprendre l'inscription",
+      title: "Reprendre l'inscription suspendue ?",
+    },
     capacity: {
       authorize: "Autoriser une place en plus",
       authorizeDescription:
@@ -2051,6 +2261,11 @@ export const fr: TranslationResource = {
         "L'événement et la préparation de destination restent dans l'historique comme abandonnés. L'inscription actuelle ne change pas.",
     },
     blockers: {
+      DESTINATION_START_DATE_MISSING: "Choisissez la date de début dans la préparation de destination.",
+      DESTINATION_START_DATE_PAST:
+        "La date de début de la préparation de destination est passée. Choisissez-en une autre.",
+      LOCK_DAYS_ABOVE_POLICY:
+        "Les jours demandés dépassent la limite de suspension que l'unité a publiée pour ce cycle.",
       CAPACITY_EXCEPTION_EXPIRED:
         "L'autorisation de place au-delà de la limite a expiré. Pour en demander une autre, abandonnez l'événement et préparez-en un nouveau.",
       CONTRACT_ACCEPTANCE_PENDING: "Il manque l'acceptation du contrat de destination par qui signe ou paie.",
@@ -2074,11 +2289,9 @@ export const fr: TranslationResource = {
       DESTINATION_NOT_COMPATIBLE:
         "La classe de destination ne convient pas : le transfert demande la même période et le même niveau, et la réinscription une autre période.",
       DESTINATION_UNIT_INACTIVE: "L'unité de destination est inactive.",
-      FINANCIAL_POLICY_PENDING: "La partie financière de cet événement n'est pas encore disponible.",
-      INTEGRATION_NOT_PROVEN:
-        "Le changement de place et les autres conséquences de cet événement sont encore en préparation.",
-      LOCK_POLICY_UNDEFINED:
-        "Les règles de la suspension (place, durée, facturation et retour) sont encore en cours de définition.",
+      FINANCIAL_POLICY_PENDING:
+        "L'école n'a pas encore publié la partie financière de cet événement pour cette unité (la règle sans effet financier, tant que le module financier n'existe pas).",
+      LOCK_POLICY_UNDEFINED: "L'unité n'a pas encore publié la limite de suspension pour ce cycle.",
       ORIGIN_NOT_ELIGIBLE: "L'inscription actuelle n'est plus dans une situation qui accepte cet événement.",
     },
     consequenceStatuses: {
@@ -2104,6 +2317,15 @@ export const fr: TranslationResource = {
     },
     openEvent: "Ouvrir l'événement",
     prepare: {
+      effectiveDate: "Date d'effet",
+      effectiveDateHelper:
+        "La coupure que compte le financier. Jusqu'à {{days}} jours avant ou après aujourd'hui ; vide, le jour de la confirmation.",
+      effectiveDateInvalid: "Choisissez une date jusqu'à {{days}} jours avant ou après aujourd'hui.",
+      lockDays: "Jours de suspension",
+      lockDaysHelper:
+        "Jours calendaires. L'unité publie la limite par cycle ; au-delà, l'événement n'est pas confirmé.",
+      lockDaysInvalid: "Indiquez de {{min}} à {{max}} jours.",
+      lockDaysPlaceholder: "Ex. : 30",
       actions: {
         CANCELLATION: "Annuler l'inscription",
         LOCK: "Suspendre l'inscription",
@@ -2160,6 +2382,17 @@ export const fr: TranslationResource = {
       tryAgain: "L'envoi a échoué. Réessayez.",
     },
     profile: {
+      adminConfirms: "Rien n'empêche la confirmation, mais cet événement n'est confirmé que par l'Admin.",
+      confirmedAtLabel: "Confirmé le",
+      days_one: "{{count}} jour",
+      days_other: "{{count}} jours",
+      destinationStartDate: "Début à destination",
+      effectiveDate: "Date d'effet",
+      effectiveOnConfirmation: "Le jour de la confirmation",
+      lockDays: "Jours de suspension",
+      notReturned: "Pas encore reprise",
+      ready: "Rien n'empêche la confirmation.",
+      returnedAt: "Reprise le",
       abandonReason: "Motif de l'abandon",
       abandonedAt: "Abandonné le",
       actions: "Actions de l'événement",
@@ -3128,6 +3361,7 @@ export const fr: TranslationResource = {
     mainNavigation: "Navigation principale",
     myProfile: "Mon profil",
     nav: {
+      lifecyclePolicies: "Politiques des événements",
       academic: "Scolarité",
       academicCalendar: "Calendrier",
       academicOverview: "Vue d'ensemble",

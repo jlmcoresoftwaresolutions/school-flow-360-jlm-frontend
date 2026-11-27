@@ -69,6 +69,7 @@ const menuGroups: NavGroup[] = [
       "enrollments",
       "documentRequirements",
       "contractTemplates",
+      "lifecyclePolicies",
     ],
     icon: "briefcase-outline",
     key: "administration",

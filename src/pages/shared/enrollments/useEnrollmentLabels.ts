@@ -20,9 +20,18 @@ const statusTones: Record<EnrollmentStatus, BadgeTone> = {
 // Every status an enrollment may have.
 export const enrollmentStatuses = Object.keys(statusTones) as EnrollmentStatus[]
 
-// The statuses the list filters by: the preparation, the confirmed enrollment and the abandoned one
-// (the abandoned only come when asked for). The others come with later slices.
-export const enrollmentFilterStatuses: EnrollmentStatus[] = ["DRAFT", "PENDING", "BLOCKED", "ACTIVE", "ABANDONED"]
+// The statuses the list filters by: the preparation, the confirmed enrollment, the ones a lifecycle event
+// closed (cancelled, transferred, locked) and the abandoned one (the abandoned only come when asked for).
+export const enrollmentFilterStatuses: EnrollmentStatus[] = [
+  "DRAFT",
+  "PENDING",
+  "BLOCKED",
+  "ACTIVE",
+  "LOCKED",
+  "TRANSFERRED",
+  "CANCELLED",
+  "ABANDONED",
+]
 
 // The statuses of a preparation: an enrollment not confirmed yet.
 export const preparationStatuses: EnrollmentStatus[] = ["DRAFT", "PENDING", "BLOCKED"]
@@ -53,7 +62,12 @@ const knownEvents = [
   "ACCEPTANCE_REQUESTED",
   "ACCEPTANCE_RESENT",
   "ACCEPTANCE_REVOKED",
+  "CAPACITY_EXCEPTION_AUTHORIZED",
   "CONFIRMED",
+  "CONFIRMED_CANCELLATION",
+  "CONFIRMED_LOCK",
+  "CONFIRMED_REENROLLMENT",
+  "CONFIRMED_TRANSFER",
   "CONTEXT_CHANGED",
   "CONTRACT_ACCEPTED",
   "CONTRACT_GENERATED",
@@ -63,13 +77,17 @@ const knownEvents = [
   "EXCEPTION_APPROVED",
   "EXCEPTION_DENIED",
   "EXCEPTION_REQUESTED",
+  "LOCK_RETURNED",
   "PARTIES_CHANGED",
   "PREPARATION_STARTED",
   "PREPARED_CANCELLATION",
   "PREPARED_LOCK",
   "PREPARED_REENROLLMENT",
   "PREPARED_TRANSFER",
+  "RECTIFIED_JUSTIFICATION",
+  "RECTIFIED_REASON",
   "START_DATE_CHANGED",
+  "STATUS_CHANGED",
 ] as const
 
 type KnownPendency = (typeof knownPendencies)[number]

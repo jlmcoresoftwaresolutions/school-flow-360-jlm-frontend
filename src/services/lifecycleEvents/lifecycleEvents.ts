@@ -10,7 +10,11 @@ import type {
   LifecycleEventPrepareRequest,
   LifecycleEventSearchParams,
   LifecycleEventType,
+  LifecycleEvidence,
+  LifecycleOutboxItem,
   LifecycleReason,
+  LifecycleRectification,
+  LifecycleRectifyRequest,
 } from "@/models"
 
 import type { RequestConfig } from "../httpClient"
@@ -100,9 +104,11 @@ export const abandonLifecycleEvent = async (
   return unwrapApiResponse(response)
 }
 
-// NOT USED YET: no event can be confirmed until its financial part, policies and integrations exist (the
-// screen shows the blockers instead). POST /api/lifecycle-events/{id}/confirm answers 422
-// LIFECYCLE_CONFIRMATION_BLOCKED for now, changing nothing.
+// USED by the event page. POST /api/lifecycle-events/{id}/confirm: confirms the event in one local transaction
+// (origin, destination, seat, number and the mandatory consequences together). Errors: 422
+// LIFECYCLE_CONFIRMATION_BLOCKED (something still blocks it; nothing changed), 409 VERSION_CONFLICT,
+// LIFECYCLE_EVENT_NOT_PREPARED, LIFECYCLE_INTENT_REUSED, 403 (a lock or an institutional cancellation by
+// someone other than the Admin).
 export const confirmLifecycleEvent = async (
   eventId: number,
   request: LifecycleEventConfirmRequest,
@@ -174,6 +180,108 @@ export const getLifecycleCapacityAuthorization = async (
 ): Promise<LifecycleCapacityAuthorization> => {
   const response = await httpClient.get<ApiResponse<LifecycleCapacityAuthorization>>(
     `/api/lifecycle-events/${eventId}/capacity-exception`,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. POST /api/lifecycle-events/{id}/return: returns a confirmed lock (the enrollment is
+// active again), validated by the Coordenação of the unit or the Admin. Errors: 409
+// LIFECYCLE_LOCK_NOT_RETURNABLE, VERSION_CONFLICT, LIFECYCLE_INTENT_REUSED; 422
+// LIFECYCLE_CONFIRMATION_BLOCKED (institution or unit inactive); 403.
+export const returnLifecycleLock = async (
+  eventId: number,
+  request: LifecycleEventConfirmRequest,
+  config?: RequestConfig,
+): Promise<LifecycleEvent> => {
+  const response = await httpClient.post<ApiResponse<LifecycleEvent>>(
+    `/api/lifecycle-events/${eventId}/return`,
+    request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. GET /api/lifecycle-events/{id}/outbox: the diary projection and the notifications of
+// a confirmed event (Secretaria and Admin of the units; others get 403).
+export const listLifecycleOutbox = async (eventId: number, config?: RequestConfig): Promise<LifecycleOutboxItem[]> => {
+  const response = await httpClient.get<ApiResponse<LifecycleOutboxItem[]>>(
+    `/api/lifecycle-events/${eventId}/outbox`,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. POST /api/lifecycle-events/{id}/outbox/{outboxId}/resend: sends one notification
+// again, with no new event (Secretaria or Admin; up to 3 attempts, 10 minutes apart). Errors: 409
+// NOTIFICATION_RESEND_LIMIT, NOTIFICATION_RESEND_TOO_SOON; 422 OUTBOX_NOT_RESENDABLE.
+export const resendLifecycleNotification = async (
+  eventId: number,
+  outboxId: number,
+  config?: RequestConfig,
+): Promise<LifecycleOutboxItem> => {
+  const response = await httpClient.post<ApiResponse<LifecycleOutboxItem>>(
+    `/api/lifecycle-events/${eventId}/outbox/${outboxId}/resend`,
+    {},
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. POST /api/lifecycle-events/{id}/reprocess: the Admin applies again everything not
+// applied, with no limit and creating nothing new.
+export const reprocessLifecycleEvent = async (
+  eventId: number,
+  config?: RequestConfig,
+): Promise<LifecycleOutboxItem[]> => {
+  const response = await httpClient.post<ApiResponse<LifecycleOutboxItem[]>>(
+    `/api/lifecycle-events/${eventId}/reprocess`,
+    {},
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. POST /api/lifecycle-events/{id}/rectify: the Admin corrects the reason or the
+// justification, as a new related fact. Errors: 422 LIFECYCLE_REASON_INVALID, 409 LIFECYCLE_EVENT_NOT_PREPARED
+// (an abandoned event), 400 for an empty value or reason.
+export const rectifyLifecycleEvent = async (
+  eventId: number,
+  request: LifecycleRectifyRequest,
+  config?: RequestConfig,
+): Promise<LifecycleRectification> => {
+  const response = await httpClient.post<ApiResponse<LifecycleRectification>>(
+    `/api/lifecycle-events/${eventId}/rectify`,
+    request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. GET /api/lifecycle-events/{id}/rectifications: the corrections of the event.
+export const listLifecycleRectifications = async (
+  eventId: number,
+  config?: RequestConfig,
+): Promise<LifecycleRectification[]> => {
+  const response = await httpClient.get<ApiResponse<LifecycleRectification[]>>(
+    `/api/lifecycle-events/${eventId}/rectifications`,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the event page. GET /api/lifecycle-events/{id}/evidence: what proves the event, exported by the
+// Admin (audited) and downloaded as JSON on the spot.
+export const getLifecycleEvidence = async (eventId: number, config?: RequestConfig): Promise<LifecycleEvidence> => {
+  const response = await httpClient.get<ApiResponse<LifecycleEvidence>>(
+    `/api/lifecycle-events/${eventId}/evidence`,
     config,
   )
 

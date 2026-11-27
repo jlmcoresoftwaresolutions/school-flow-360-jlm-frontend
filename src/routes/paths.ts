@@ -49,6 +49,7 @@ export const paths = {
   // A lifecycle event of an enrollment (transfer, re-enrollment, cancellation, lock; not in the menu; under the
   // enrollments page, whose access rule it follows). Built with generatePath (react-router-dom).
   lifecycleEvent: "/administration/enrollments/events/:eventId",
+  lifecyclePolicies: "/administration/lifecycle-policies",
   login: "/login",
   messages: "/communication/messages",
   // The signed-in user's own profile, opened from the user menu in the topbar (not in the side menu).

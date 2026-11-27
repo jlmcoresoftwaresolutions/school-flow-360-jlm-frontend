@@ -41,13 +41,15 @@ const knownBlockers = [
   "DESTINATION_CLASS_NOT_OPEN",
   "DESTINATION_FULL",
   "DESTINATION_NOT_COMPATIBLE",
+  "DESTINATION_START_DATE_MISSING",
+  "DESTINATION_START_DATE_PAST",
   "DESTINATION_UNIT_INACTIVE",
   "DOCUMENT_CHECKLIST_OPEN",
   "DOCUMENT_POLICY_INCONSISTENT",
   "DOCUMENT_POLICY_PENDING",
   "FINANCIAL_POLICY_PENDING",
   "INSTITUTION_INACTIVE",
-  "INTEGRATION_NOT_PROVEN",
+  "LOCK_DAYS_ABOVE_POLICY",
   "LOCK_POLICY_UNDEFINED",
   "ORIGIN_NOT_ELIGIBLE",
   "ORIGIN_UNIT_INACTIVE",
@@ -69,7 +71,15 @@ const reasonKeys = {
   "TRANSFER.PEDAGOGICAL_NEED": "lifecycle.reasons.TRANSFER.PEDAGOGICAL_NEED",
 } as const
 
+// The delivery failures of the outbox the screen knows; anything else shows as it came.
+const knownDeliveryErrors = ["DELIVERY_FAILED", "EMAIL_MISSING", "TEMPLATE_MISSING"] as const
+
 type KnownBlocker = (typeof knownBlockers)[number]
+
+type KnownDeliveryError = (typeof knownDeliveryErrors)[number]
+
+const isKnownDeliveryError = (code: string): code is KnownDeliveryError =>
+  (knownDeliveryErrors as readonly string[]).includes(code)
 
 const isKnownBlocker = (code: string): code is KnownBlocker => (knownBlockers as readonly string[]).includes(code)
 
@@ -92,11 +102,20 @@ export const useLifecycleLabels = () => {
     return reasons?.find((reason) => reason.code === code)?.label ?? code
   }
 
+  // A reason's label when the event type isn't known (a correction in the enrollment's history): the first
+  // type whose catalog has the code.
+  const anyReasonLabel = (code: string) => {
+    const type = lifecycleEventTypes.find((item) => `${item}.${code}` in reasonKeys)
+    return type ? reasonLabel(type, code) : code
+  }
+
   return {
+    anyReasonLabel,
     blockerLabel: (code: string) => (isKnownBlocker(code) ? t(`lifecycle.blockers.${code}`) : code),
     consequenceStatusLabel: (status: LifecycleConsequenceStatus) => t(`lifecycle.consequenceStatuses.${status}`),
     consequenceStatusTone: (status: LifecycleConsequenceStatus) => consequenceTones[status] ?? "neutral",
     consumerLabel: (consumer: LifecycleConsumer) => t(`lifecycle.consumers.${consumer}`),
+    deliveryErrorLabel: (code: string) => (isKnownDeliveryError(code) ? t(`lifecycle.outbox.errors.${code}`) : code),
     reasonLabel,
     statusLabel: (status: LifecycleEventStatus) => t(`lifecycle.statuses.${status}`),
     statusTone: (status: LifecycleEventStatus) => statusTones[status] ?? "neutral",

@@ -71,7 +71,7 @@ test.describe("enrollment lifecycle events", () => {
 
     const blockers = page.getByRole("list", { name: "O que impede a confirmação" })
     await expect(blockers).toContainText("Escolha a turma na preparação de destino.")
-    await expect(blockers).toContainText("A parte financeira deste evento ainda não está disponível.")
+    await expect(blockers).toContainText("A escola ainda não publicou a parte financeira deste evento")
     await expect(blockers).not.toContainText("backend text")
 
     const origin = page.getByRole("region", { name: "Matrícula atual" })
@@ -134,18 +134,172 @@ test.describe("enrollment lifecycle events", () => {
     })
   })
 
-  test("shows a lock as blocked by its undefined rules", async ({ page }) => {
-    await mockEnrollmentApi(page)
+  test("asks a lock's days and shows it blocked while the unit has no lock limit", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
     await signInAndOpen(page, brunoPath)
 
     await chooseAction(page, "Trancar matrícula")
     const dialog = page.getByRole("dialog", { name: "Trancar a matrícula de Bruno Lima" })
     await pick(page, dialog, /^Motivo/, "Impedimento temporário")
     await dialog.getByRole("button", { name: "Preparar" }).click()
+    await expect(dialog.getByRole("textbox", { name: /^Dias de trancamento/ })).toHaveAccessibleDescription(
+      "Informe de 1 a 366 dias.",
+    )
+    await dialog.getByRole("textbox", { name: /^Dias de trancamento/ }).fill("20")
+    await dialog.getByRole("button", { name: "Preparar" }).click()
 
     await expect(page.getByRole("list", { name: "O que impede a confirmação" })).toContainText(
-      "As regras do trancamento (vaga, prazo, cobrança e retorno) ainda estão sendo definidas.",
+      "A unidade ainda não publicou o limite de trancamento desta etapa.",
     )
+    await expect(page.getByRole("region", { name: "Evento" })).toContainText("20 dias")
+    expect(lastCall(calls, "POST", "/api/lifecycle-events")?.body).toMatchObject({ eventType: "LOCK", lockDays: 20 })
+  })
+
+  test("confirms a cancellation once nothing blocks it, with what comes after", async ({ page }) => {
+    const { calls, records } = await mockEnrollmentApi(page, { noEffectUnits: [2] })
+    await signInAndOpen(page, brunoPath)
+
+    await chooseAction(page, "Cancelar matrícula")
+    const prepare = page.getByRole("dialog", { name: "Cancelar a matrícula de Bruno Lima" })
+    await expect(prepare.getByRole("textbox", { name: /^Data efetiva/ })).toBeVisible()
+    await pick(page, prepare, /^Motivo/, "Saída da instituição")
+    await prepare.getByRole("button", { name: "Preparar" }).click()
+
+    await expect(page.getByText("Nada impede a confirmação.")).toBeVisible()
+    await expect(page.getByRole("region", { name: "Evento" })).toContainText("O dia da confirmação")
+    await page.getByRole("button", { name: "Confirmar Cancelamento" }).click()
+    const dialog = page.getByRole("dialog", { name: "Confirmar Cancelamento?" })
+    await expect(dialog).toContainText("A matrícula fica cancelada e a vaga é liberada.")
+    await dialog.getByRole("button", { name: "Confirmar" }).click()
+
+    await expect(page.getByText("Cancelamento confirmada.")).toBeVisible()
+    await expect(page.getByText("Confirmado", { exact: true })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Confirmar Cancelamento" })).toHaveCount(0)
+    const sent = lastCall(calls, "POST", "/api/lifecycle-events/41/confirm")?.body as Record<string, unknown>
+    expect(sent.version).toBe(0)
+    expect(String(sent.intent)).not.toHaveLength(0)
+    expect(records.get(502)?.status).toBe("CANCELLED")
+
+    // The diary waits for its module; one notice went out, the other had no e-mail and is sent again.
+    const after = page.getByRole("region", { name: "Depois da confirmação" })
+    await expect(after.getByRole("row").filter({ hasText: "Diário de classe" })).toContainText("Pendente")
+    const failed = after.getByRole("row").filter({ hasText: "Sem e-mail cadastrado." })
+    await expect(failed).toContainText("Falhou")
+    await failed.getByRole("button", { name: "Reenviar" }).click()
+    await expect(page.getByText("Aviso reenviado.")).toBeVisible()
+    await expect(failed).toContainText("2 tentativas")
+
+    // The Admin reprocesses what isn't done.
+    await after.getByRole("button", { name: "Reprocessar" }).click()
+    await expect(page.getByText("O que faltava foi aplicado de novo.")).toBeVisible()
+    expect(calls.some((call) => call.path === "/api/lifecycle-events/41/reprocess")).toBe(true)
+
+    // The enrollment shows the confirmation in its history.
+    await page.goto(brunoPath)
+    await expect(page.getByText("Cancelada", { exact: true }).first()).toBeVisible()
+    await page.getByRole("tab", { name: "Histórico" }).click()
+    await expect(page.getByRole("row").filter({ hasText: "Cancelamento confirmado" })).toContainText(
+      "Motivo: Saída da instituição",
+    )
+  })
+
+  test("corrects an event's reason as a new fact and exports its evidence", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page)
+    await signInAndOpen(page, brunoPath)
+    await prepareTransfer(page)
+    await expect(page).toHaveURL(/\/events\/41$/)
+
+    await page.getByRole("button", { name: "Ações do evento" }).click()
+    await page.getByRole("menuitem", { name: "Corrigir motivo ou justificativa" }).click()
+    const dialog = page.getByRole("dialog", { name: "Corrigir o evento" })
+    await expect(dialog).toContainText("Motivo atual: Mudança de endereço")
+    await dialog.getByRole("button", { name: "Corrigir" }).click()
+    await expect(dialog.getByText("Escolha o novo motivo.")).toBeVisible()
+    await pick(page, dialog, /^Novo motivo/, "Necessidade pedagógica")
+    await dialog.getByRole("textbox", { name: /^Por que corrigir/ }).fill("Motivo registrado errado")
+    await dialog.getByRole("button", { name: "Corrigir" }).click()
+
+    await expect(page.getByText("Correção registrada.")).toBeVisible()
+    const corrections = page.getByRole("region", { name: "Correções" })
+    await expect(corrections).toContainText("Mudança de endereço")
+    await expect(corrections).toContainText("Necessidade pedagógica")
+    await expect(corrections).toContainText("Motivo registrado errado")
+    expect(lastCall(calls, "POST", "/api/lifecycle-events/41/rectify")?.body).toEqual({
+      field: "REASON",
+      newValue: "PEDAGOGICAL_NEED",
+      reason: "Motivo registrado errado",
+    })
+
+    const download = page.waitForEvent("download")
+    await page.getByRole("button", { name: "Ações do evento" }).click()
+    await page.getByRole("menuitem", { name: "Exportar evidência" }).click()
+    expect((await download).suggestedFilename()).toBe("evidencia-evento-41.json")
+  })
+
+  test("confirms a lock within the unit's limit and returns it later", async ({ page }) => {
+    const { records } = await mockEnrollmentApi(page, { lockPolicyUnits: { 2: 30 }, noEffectUnits: [2] })
+    await signInAndOpen(page, brunoPath)
+
+    await chooseAction(page, "Trancar matrícula")
+    const prepare = page.getByRole("dialog", { name: "Trancar a matrícula de Bruno Lima" })
+    await pick(page, prepare, /^Motivo/, "Impedimento temporário")
+    await prepare.getByRole("textbox", { name: /^Dias de trancamento/ }).fill("45")
+    await prepare.getByRole("button", { name: "Preparar" }).click()
+    await expect(page.getByRole("list", { name: "O que impede a confirmação" })).toContainText(
+      "Os dias pedidos passam do limite de trancamento",
+    )
+    await expect(page.getByRole("button", { name: "Confirmar Trancamento" })).toBeDisabled()
+
+    // Given up and prepared again within the limit.
+    await page.getByRole("button", { name: "Ações do evento" }).click()
+    await page.getByRole("menuitem", { name: "Abandonar evento" }).click()
+    const abandon = page.getByRole("dialog", { name: /^Abandonar o evento/ })
+    await abandon.getByRole("textbox", { name: /^Motivo/ }).fill("Dias errados")
+    await abandon.getByRole("button", { name: "Abandonar" }).click()
+    await expect(page.getByText("Abandonado", { exact: true })).toBeVisible()
+    await page.goto(brunoPath)
+    await chooseAction(page, "Trancar matrícula")
+    const again = page.getByRole("dialog", { name: "Trancar a matrícula de Bruno Lima" })
+    await pick(page, again, /^Motivo/, "Impedimento temporário")
+    await again.getByRole("textbox", { name: /^Dias de trancamento/ }).fill("20")
+    await again.getByRole("button", { name: "Preparar" }).click()
+
+    await page.getByRole("button", { name: "Confirmar Trancamento" }).click()
+    await page
+      .getByRole("dialog", { name: "Confirmar Trancamento?" })
+      .getByRole("button", { name: "Confirmar" })
+      .click()
+    await expect(page.getByText("Trancamento confirmada.")).toBeVisible()
+    expect(records.get(502)?.status).toBe("LOCKED")
+    await expect(page.getByRole("region", { exact: true, name: "Confirmação" })).toContainText("Ainda não retomado")
+
+    await page.getByRole("button", { name: "Retomar matrícula" }).click()
+    await page
+      .getByRole("dialog", { name: "Retomar a matrícula trancada?" })
+      .getByRole("button", { name: "Retomar" })
+      .click()
+    await expect(page.getByText("Matrícula retomada.")).toBeVisible()
+    expect(records.get(502)?.status).toBe("ACTIVE")
+    await expect(page.getByRole("button", { name: "Retomar matrícula" })).toHaveCount(0)
+  })
+
+  test("leaves a lock's confirmation to the Admin", async ({ page }) => {
+    await mockEnrollmentApi(page, { lockPolicyUnits: { 2: 30 }, noEffectUnits: [2] })
+    // A Secretaria of Unidade Caucaia, Bruno's unit: she prepares the lock, but doesn't confirm it.
+    const caucaia = {
+      ...secretariaContext,
+      assignments: [{ ...secretariaContext.assignments[0], unitId: 2, unitName: "Unidade Caucaia" }],
+    }
+    await signInAndOpen(page, brunoPath, caucaia)
+
+    await chooseAction(page, "Trancar matrícula")
+    const prepare = page.getByRole("dialog", { name: "Trancar a matrícula de Bruno Lima" })
+    await pick(page, prepare, /^Motivo/, "Impedimento temporário")
+    await prepare.getByRole("textbox", { name: /^Dias de trancamento/ }).fill("20")
+    await prepare.getByRole("button", { name: "Preparar" }).click()
+
+    await expect(page.getByText("Nada impede a confirmação, mas este evento é confirmado só pelo Admin.")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Confirmar Trancamento" })).toHaveCount(0)
   })
 
   test("gives an event up with its destination preparation, leaving the enrollment as it was", async ({ page }) => {
@@ -164,8 +318,15 @@ test.describe("enrollment lifecycle events", () => {
     await dialog.getByRole("button", { name: "Abandonar" }).click()
 
     await expect(page.getByText("Abandonado", { exact: true })).toBeVisible()
-    await expect(page.getByRole("region", { name: "Confirmação" })).toContainText("A família desistiu da mudança")
-    await expect(page.getByRole("button", { name: "Ações do evento" })).toHaveCount(0)
+    await expect(page.getByRole("region", { exact: true, name: "Confirmação" })).toContainText(
+      "A família desistiu da mudança",
+    )
+    // Only the Admin's evidence is left: an abandoned event is neither given up again nor corrected.
+    await page.getByRole("button", { name: "Ações do evento" }).click()
+    await expect(page.getByRole("menuitem", { name: "Exportar evidência" })).toBeVisible()
+    await expect(page.getByRole("menuitem", { name: "Abandonar evento" })).toHaveCount(0)
+    await expect(page.getByRole("menuitem", { name: "Corrigir motivo ou justificativa" })).toHaveCount(0)
+    await page.keyboard.press("Escape")
     expect(lastCall(calls, "POST", "/api/lifecycle-events/41/abandon")?.body).toEqual({
       reason: "A família desistiu da mudança",
       version: 0,

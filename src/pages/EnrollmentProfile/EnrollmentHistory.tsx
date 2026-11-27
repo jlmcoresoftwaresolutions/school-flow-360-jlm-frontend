@@ -40,7 +40,7 @@ export const EnrollmentHistory = (props: EnrollmentHistoryProps) => {
 
   const { t } = useTranslation()
   const { eventLabel, formatMoment, statusLabel } = useEnrollmentLabels()
-  const { reasonLabel } = useLifecycleLabels()
+  const { anyReasonLabel, reasonLabel } = useLifecycleLabels()
 
   const [page, setPage] = useState(1)
   const [result, setResult] = useState<LoadResult | null>(null)
@@ -87,7 +87,7 @@ export const EnrollmentHistory = (props: EnrollmentHistoryProps) => {
           </Text>
           {item.reason && (
             <Text color="secondary" fontSize="sm">
-              {t("enrollments.history.reason", { reason: item.reason })}
+              {t("enrollments.history.reason", { reason: anyReasonLabel(item.reason) })}
             </Text>
           )}
         </PersonCell>
@@ -102,7 +102,9 @@ export const EnrollmentHistory = (props: EnrollmentHistoryProps) => {
         <PersonCell>
           {item.reason && (
             <Text fontSize="sm">
-              {t("enrollments.history.reason", { reason: type ? reasonLabel(type, item.reason) : item.reason })}
+              {t("enrollments.history.reason", {
+                reason: type ? reasonLabel(type, item.reason) : anyReasonLabel(item.reason),
+              })}
             </Text>
           )}
           {item.afterValue && /^\d+$/.test(item.afterValue) && (

@@ -5,7 +5,7 @@ import { generatePath, useNavigate } from "react-router-dom"
 import { toast, useUnsavedChanges } from "@/components"
 import { Button, Text } from "@/ds-components/atoms"
 import type { SelectOption } from "@/ds-components/molecules"
-import { Select, Textarea } from "@/ds-components/molecules"
+import { DateInput, Input, Select, Textarea } from "@/ds-components/molecules"
 import { Modal } from "@/ds-components/organisms"
 import type { Enrollment, LifecycleEvent, LifecycleEventType, LifecycleReason } from "@/models"
 import { paths } from "@/routes/paths"
@@ -16,6 +16,8 @@ import {
   listLifecycleReasons,
   prepareLifecycleEvent,
 } from "@/services/lifecycleEvents"
+import { toIsoDate } from "@/utils/dates"
+import { stripNonDigits } from "@/utils/formats"
 
 import { useLifecycleLabels } from "../../shared/enrollments/useLifecycleLabels"
 import { useFailureMessage } from "../../shared/people/useFailureMessage"
@@ -34,13 +36,33 @@ export type PrepareLifecycleEventModalProps = {
 
 type Reasons = { error: true } | { items: LifecycleReason[] }
 
-type FieldErrors = { destination?: string; justification?: string; reason?: string }
+type FieldErrors = {
+  destination?: string
+  effectiveDate?: string
+  justification?: string
+  lockDays?: string
+  reason?: string
+}
 
 const justificationMax = 500
 
+// The window of a cancellation's effective date around today, and the length a lock may be asked for (the
+// backend's limits; the unit's lock policy may allow less, which the event then shows as a blocker).
+const effectiveWindowDays = 30
+const lockDaysLimits = { max: 366, min: 1 }
+
+const shiftDays = (days: number) => {
+  const date = new Date()
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + days)
+  return date
+}
+
 // Prepares a lifecycle event on an enrollment (EPIC 7): the reason from the event's catalog (a short
-// justification only where the reason asks, never sensitive data) and, for a transfer, the destination
-// unit (another one where the person operates; a re-enrollment may stay in the same unit). Preparing never
+// justification only where the reason asks, never sensitive data), for a transfer the destination unit
+// (another one where the person operates; a re-enrollment may stay in the same unit), for a cancellation
+// its effective date (the cut the finance counts: up to 30 days before or after today, empty = the day it
+// is confirmed) and for a lock how many days it is asked for. Preparing never
 // changes the current enrollment nor holds a seat, and nothing is confirmed here: a transfer or a
 // re-enrollment opens the destination preparation, where the class is chosen in the normal flow. One
 // `intent` per content sent: sending the same again (no answer, a second click) gives the same event back,
@@ -64,6 +86,8 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
   const [reasonCode, setReasonCode] = useState("")
   const [justification, setJustification] = useState("")
   const [destinationUnitId, setDestinationUnitId] = useState(startsInOrigin ? String(enrollment.unitId) : "")
+  const [effectiveDate, setEffectiveDate] = useState<Date | null>(null)
+  const [lockDays, setLockDays] = useState("")
   // The intent of the content last sent: the same content keeps it, other content gets a new one.
   const [attempt, setAttempt] = useState<{ content: string; intent: string } | null>(null)
   const [errors, setErrors] = useState<FieldErrors>({})
@@ -82,7 +106,9 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
   }))
   const unitOptions: SelectOption[] = destinationUnits.map((unit) => ({ label: unit.name, value: String(unit.id) }))
   const noDestination = eventType === "TRANSFER" && destinationUnits.length === 0
-  const isDirty = reasonCode !== "" || justification.trim() !== ""
+  const isDirty = reasonCode !== "" || justification.trim() !== "" || effectiveDate !== null || lockDays !== ""
+  const earliestEffective = shiftDays(-effectiveWindowDays)
+  const latestEffective = shiftDays(effectiveWindowDays)
 
   useUnsavedChanges(isDirty && !isSaving)
 
@@ -161,6 +187,9 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
     } else if (status === 404) {
       toast.error(t("lifecycle.prepare.originGone"))
       onChanged()
+    } else if (status === 400 && eventType === "CANCELLATION" && effectiveDate) {
+      // The window is the backend's term: a date it refuses is pointed out on the field.
+      setErrors({ effectiveDate: t("lifecycle.prepare.effectiveDateInvalid", { days: effectiveWindowDays }) })
     } else if (status === 403) {
       setFailure(t("lifecycle.prepare.outOfReach"))
     } else if (status === undefined) {
@@ -176,6 +205,13 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
     if (!chosenCode) found.reason = t("lifecycle.prepare.reasonRequired")
     if (asksJustification && !text) found.justification = t("lifecycle.prepare.justificationRequired")
     if (eventType === "TRANSFER" && !destinationUnitId) found.destination = t("lifecycle.prepare.destinationRequired")
+    const days = Number(lockDays)
+    if (eventType === "LOCK" && (!Number.isInteger(days) || days < lockDaysLimits.min || days > lockDaysLimits.max)) {
+      found.lockDays = t("lifecycle.prepare.lockDaysInvalid", lockDaysLimits)
+    }
+    if (effectiveDate && (effectiveDate < earliestEffective || effectiveDate > latestEffective)) {
+      found.effectiveDate = t("lifecycle.prepare.effectiveDateInvalid", { days: effectiveWindowDays })
+    }
     setErrors(found)
     setFailure("")
     setOpenEventId(null)
@@ -183,8 +219,10 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
 
     const request = {
       destinationUnitId: hasDestination && destinationUnitId ? Number(destinationUnitId) : undefined,
+      effectiveDate: eventType === "CANCELLATION" && effectiveDate ? toIsoDate(effectiveDate) : undefined,
       eventType,
       justification: asksJustification ? text : undefined,
+      lockDays: eventType === "LOCK" ? days : undefined,
       originEnrollmentId: enrollment.id,
       reasonCode: chosenCode,
     }
@@ -281,6 +319,40 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
               placeholder={t("lifecycle.prepare.justificationPlaceholder")}
               title={t("lifecycle.prepare.justification")}
               value={justification}
+              required
+            />
+          )}
+
+          {eventType === "CANCELLATION" && (
+            <DateInput
+              clearLabel={t("people.form.clearDate")}
+              error={errors.effectiveDate}
+              helperText={t("lifecycle.prepare.effectiveDateHelper", { days: effectiveWindowDays })}
+              maxDate={latestEffective}
+              minDate={earliestEffective}
+              onChange={(value) => {
+                setEffectiveDate(value)
+                setErrors((current) => ({ ...current, effectiveDate: undefined }))
+              }}
+              placeholder={t("common.datePlaceholder")}
+              title={t("lifecycle.prepare.effectiveDate")}
+              value={effectiveDate}
+            />
+          )}
+
+          {eventType === "LOCK" && (
+            <Input
+              error={errors.lockDays}
+              helperText={t("lifecycle.prepare.lockDaysHelper")}
+              inputMode="numeric"
+              maxLength={3}
+              onChange={(event) => {
+                setLockDays(stripNonDigits(event.target.value))
+                setErrors((current) => ({ ...current, lockDays: undefined }))
+              }}
+              placeholder={t("lifecycle.prepare.lockDaysPlaceholder")}
+              title={t("lifecycle.prepare.lockDays")}
+              value={lockDays}
               required
             />
           )}

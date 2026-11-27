@@ -294,6 +294,13 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { LifecyclePolicies } = await import("@/pages/LifecyclePolicies")
+          return { Component: LifecyclePolicies }
+        },
+        path: paths.lifecyclePolicies,
+      },
+      {
+        lazy: async () => {
           const { MyEnrollments } = await import("@/pages/MyEnrollments")
           return { Component: MyEnrollments }
         },

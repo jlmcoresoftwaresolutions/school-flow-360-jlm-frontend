@@ -24,8 +24,12 @@ export type EnrollmentOptions = {
   // The destination class of a transfer or a re-enrollment is full: the event shows DESTINATION_FULL until
   // an Admin authorizes a seat above the limit, in a unit that enabled the capacity exception.
   destinationFull?: boolean
+  // Units with a published lock policy (the maximum days, for every stage).
+  lockPolicyUnits?: Record<number, number>
   // The first lifecycle event prepared gets no answer (the connection drops), though it was created.
   losePrepareAnswer?: boolean
+  // Units with a published "no financial effect" rule for every event type, for the whole unit.
+  noEffectUnits?: number[]
   // The person only reads (a Financeiro, a Coordenação): no enrollment offers an action.
   readOnly?: boolean
   // Ana also has her grandmother linked now, financial in Pessoas too: two candidates to pay.
@@ -1252,6 +1256,178 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     ]),
   )
   const capacityAuthorizations = new Map<number, Item>()
+  // What comes after a confirmation (the diary and the notifications), the corrections and the policies.
+  const outbox = new Map<number, Item[]>()
+  const rectifications = new Map<number, Item[]>()
+  let nextOutboxId = 800
+  const lockPolicies: Item[] = Object.entries(options.lockPolicyUnits ?? {}).map(([unitId, maxDays], index) => ({
+    active: true,
+    id: 60 + index,
+    maxDays,
+    note: null,
+    publishedAt: "2026-11-27T12:00:00Z",
+    stageId: 2,
+    unitId: Number(unitId),
+    version: 0,
+  }))
+  const noEffectRules: Item[] = (options.noEffectUnits ?? []).flatMap((unitId, index) =>
+    ["TRANSFER", "REENROLLMENT", "CANCELLATION", "LOCK"].map((eventType, typeIndex) => ({
+      active: true,
+      eventType,
+      evidence: "Oferta sem cobrança (homologação)",
+      id: 200 + index * 10 + typeIndex,
+      offerId: null,
+      publishedAt: "2026-11-27T12:00:00Z",
+      ruleRef: "Ata 1/2026",
+      unitId,
+      version: 0,
+    })),
+  )
+  let nextPolicyRowId = 300
+  const templatesByType = new Map<string, Item>(
+    ["TRANSFER", "REENROLLMENT", "CANCELLATION", "LOCK", "LOCK_RETURN"].map((eventType) => [
+      eventType,
+      {
+        body: `Olá. A matrícula de {{student.name}} mudou em {{event.date}}.`,
+        eventType,
+        subject: `Aviso da escola (${eventType})`,
+        updatedAt: null,
+        version: 0,
+      },
+    ]),
+  )
+  let nextNumber = 77
+
+  const queueAfterCommit = (event: Item, kind: string) => {
+    const items = outbox.get(Number(event.id)) ?? []
+    const now = new Date().toISOString()
+    if (kind === "CONFIRMATION") {
+      items.push({
+        appliedAt: null,
+        attempts: 0,
+        consumer: "DIARY",
+        id: nextOutboxId++,
+        kind,
+        lastAttemptAt: null,
+        lastErrorCode: null,
+        recipientEmail: null,
+        recipientId: null,
+        status: "PENDING",
+      })
+    }
+    items.push(
+      {
+        appliedAt: now,
+        attempts: 1,
+        consumer: "NOTIFICATION",
+        id: nextOutboxId++,
+        kind,
+        lastAttemptAt: now,
+        lastErrorCode: null,
+        recipientEmail: "f*****@exemplo.com",
+        recipientId: 301,
+        status: "APPLIED",
+      },
+      {
+        appliedAt: null,
+        attempts: 1,
+        consumer: "NOTIFICATION",
+        id: nextOutboxId++,
+        kind,
+        // Long ago, so it may be sent again.
+        lastAttemptAt: "2026-11-27T08:00:00Z",
+        lastErrorCode: "EMAIL_MISSING",
+        recipientEmail: null,
+        recipientId: 302,
+        status: "FAILED",
+      },
+    )
+    outbox.set(Number(event.id), items)
+  }
+
+  const confirmEvent = (current: Item, intent: string) => {
+    const now = new Date().toISOString()
+    const type = String(current.eventType)
+    const origin = records.get(Number(current.originEnrollmentId)) as Item
+    const before = String(origin.status)
+    const originStatus: Record<string, string> = { CANCELLATION: "CANCELLED", LOCK: "LOCKED", TRANSFER: "TRANSFERRED" }
+    if (originStatus[type]) {
+      records.set(Number(origin.id), {
+        ...origin,
+        status: originStatus[type],
+        updatedAt: now,
+        version: Number(origin.version) + 1,
+      })
+      addEvent(Number(origin.id), {
+        action: "STATUS_CHANGED",
+        afterValue: originStatus[type],
+        beforeValue: before,
+        category: "STATUS",
+        changedFields: "status",
+        reason: current.reasonCode,
+      })
+    }
+    let destinationStartDate: string | null = null
+    if (current.destinationEnrollmentId) {
+      const destination = records.get(Number(current.destinationEnrollmentId)) as Item
+      destinationStartDate = (destination.startDate as string | null) ?? null
+      records.set(Number(destination.id), {
+        ...destination,
+        confirmedAt: now,
+        enrollmentNumber: `2027-0000${nextNumber++}`,
+        status: "ACTIVE",
+        updatedAt: now,
+        version: Number(destination.version) + 1,
+      })
+      addEvent(Number(destination.id), {
+        action: `CONFIRMED_${type}`,
+        afterValue: String(current.id),
+        category: "LIFECYCLE",
+        changedFields: "lifecycleEvent",
+        reason: current.reasonCode,
+      })
+    }
+    addEvent(Number(origin.id), {
+      action: `CONFIRMED_${type}`,
+      afterValue: String(current.id),
+      category: "LIFECYCLE",
+      changedFields: "lifecycleEvent",
+      reason: current.reasonCode,
+    })
+    const confirmed = {
+      ...current,
+      confirmationIntent: intent,
+      confirmedAt: now,
+      confirmedBy: 1,
+      consequences: (current.consequences as Item[]).map((item) =>
+        item.mandatory ? { ...item, attempts: 1, status: "APPLIED" } : item,
+      ),
+      destinationStartDate,
+      status: "CONFIRMED",
+      version: Number(current.version) + 1,
+    }
+    lifecycle.set(Number(current.id), confirmed)
+    queueAfterCommit(confirmed, "CONFIRMATION")
+    return confirmed
+  }
+
+  const returnLock = (current: Item, intent: string) => {
+    const now = new Date().toISOString()
+    const origin = records.get(Number(current.originEnrollmentId)) as Item
+    records.set(Number(origin.id), { ...origin, status: "ACTIVE", updatedAt: now, version: Number(origin.version) + 1 })
+    addEvent(Number(origin.id), {
+      action: "LOCK_RETURNED",
+      afterValue: "ACTIVE",
+      beforeValue: "LOCKED",
+      category: "STATUS",
+      changedFields: "status",
+      reason: current.reasonCode,
+    })
+    const returned = { ...current, returnIntent: intent, returnedAt: now, version: Number(current.version) + 1 }
+    lifecycle.set(Number(current.id), returned)
+    queueAfterCommit(returned, "LOCK_RETURN")
+    return returned
+  }
   let losePending = Boolean(options.losePrepareAnswer)
 
   const isEligibleOrigin = (origin: Item, type: string) =>
@@ -1275,18 +1451,31 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     if ((type === "TRANSFER" || type === "REENROLLMENT") && !templates.some((item) => item.status === "APPROVED")) {
       codes.push("CONTRACT_MODEL_NOT_APPROVED")
     }
-    if (type === "LOCK") codes.push("LOCK_POLICY_UNDEFINED")
-    codes.push("FINANCIAL_POLICY_PENDING", "INTEGRATION_NOT_PROVEN")
+    if (type === "LOCK") {
+      const limit = lockPolicies.find((item) => item.active && item.unitId === event.originUnitId)
+      if (!limit) codes.push("LOCK_POLICY_UNDEFINED")
+      else if (Number(event.lockDays) > Number(limit.maxDays)) codes.push("LOCK_DAYS_ABOVE_POLICY")
+    }
+    const financialUnit = event.destinationUnitId ?? event.originUnitId
+    const released = noEffectRules.some(
+      (item) => item.active && item.unitId === financialUnit && item.eventType === type,
+    )
+    if (!released) codes.push("FINANCIAL_POLICY_PENDING")
     return codes.map((code) => ({ code, message: `${code} (backend text)` }))
   }
 
   const lifecycleView = (event: Item): Item => {
     const prepared = event.status === "PREPARED"
+    const blockers = prepared ? blockersOf(event) : []
+    let eligibleActions: string[] = []
+    if (prepared && !options.readOnly) eligibleActions = ["ABANDON", "CONFIRM"]
+    const returnable = event.status === "CONFIRMED" && event.eventType === "LOCK" && !event.returnedAt
+    if (returnable && !options.readOnly) eligibleActions = ["RETURN"]
     return {
       ...event,
-      blockers: prepared ? blockersOf(event) : [],
-      confirmationAvailable: false,
-      eligibleActions: prepared && !options.readOnly ? ["ABANDON", "CONFIRM"] : [],
+      blockers,
+      confirmationAvailable: prepared && blockers.length === 0,
+      eligibleActions,
     }
   }
 
@@ -1342,13 +1531,18 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       eventType: type,
       id,
       intent: body.intent,
+      confirmedBy: null,
+      destinationStartDate: null,
+      effectiveDate: body.effectiveDate ?? null,
       justification: body.justification ?? null,
+      lockDays: body.lockDays ?? null,
       originEnrollmentId: origin.id,
       originUnitId: origin.unitId,
       preparedAt: now,
       preparedBy: 1,
       reasonCatalogVersion: 1,
       reasonCode: body.reasonCode,
+      returnedAt: null,
       status: "PREPARED",
       studentId: (origin.student as Item).id,
       version: 0,
@@ -1448,6 +1642,8 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         body.reasonCode,
         body.justification ?? "",
         body.destinationUnitId ?? null,
+        body.lockDays ?? null,
+        body.effectiveDate ?? null,
       ])
       const same = [...lifecycle.values()].find((item) => item.intent === body.intent)
       if (same && same.content !== content) return route.fulfill(apiError(409, "LIFECYCLE_INTENT_REUSED"))
@@ -1483,6 +1679,18 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       return route.fulfill(apiAnswer(lifecycleView(found)))
     }
 
+    const resend = /^(\d+)\/outbox\/(\d+)\/resend$/.exec(rest)
+    if (resend) {
+      const items = outbox.get(Number(resend[1])) ?? []
+      const index = items.findIndex((item) => item.id === Number(resend[2]))
+      if (index < 0) return route.fulfill(apiError(404, "OUTBOX_ITEM_NOT_FOUND"))
+      const item = items[index]
+      if (Number(item.attempts) >= 3) return route.fulfill(apiError(409, "NOTIFICATION_RESEND_LIMIT"))
+      const now = new Date().toISOString()
+      items[index] = { ...item, attempts: Number(item.attempts) + 1, lastAttemptAt: now }
+      return route.fulfill(apiAnswer(items[index]))
+    }
+
     const [, id, action] = /^(\d+)(?:\/([a-z-]+))?$/.exec(rest) ?? []
     const current = lifecycle.get(Number(id))
     if (!current) return route.fulfill(apiError(404, "LIFECYCLE_EVENT_NOT_FOUND"))
@@ -1496,7 +1704,86 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       return route.fulfill(apiAnswer(lifecycleView(abandonEvent(current, String(body.reason)))))
     }
 
-    if (action === "confirm") return route.fulfill(apiError(422, "LIFECYCLE_CONFIRMATION_BLOCKED"))
+    if (action === "confirm") {
+      const body = call.body as Item
+      if (options.readOnly) return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+      if (current.status === "CONFIRMED") {
+        if (current.confirmationIntent === body.intent) return route.fulfill(apiAnswer(lifecycleView(current)))
+        return route.fulfill(apiError(409, "LIFECYCLE_EVENT_NOT_PREPARED"))
+      }
+      if (current.status !== "PREPARED") return route.fulfill(apiError(409, "LIFECYCLE_EVENT_NOT_PREPARED"))
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      if (blockersOf(current).length > 0) return route.fulfill(apiError(422, "LIFECYCLE_CONFIRMATION_BLOCKED"))
+      return route.fulfill(apiAnswer(lifecycleView(confirmEvent(current, String(body.intent)))))
+    }
+
+    if (action === "return") {
+      const body = call.body as Item
+      if (current.eventType !== "LOCK" || current.status !== "CONFIRMED" || current.returnedAt) {
+        if (current.returnIntent === body.intent) return route.fulfill(apiAnswer(lifecycleView(current)))
+        return route.fulfill(apiError(409, "LIFECYCLE_LOCK_NOT_RETURNABLE"))
+      }
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      return route.fulfill(apiAnswer(lifecycleView(returnLock(current, String(body.intent)))))
+    }
+
+    if (action === "outbox" && call.method === "GET") {
+      if (options.readOnly) return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+      return route.fulfill(apiAnswer(outbox.get(Number(id)) ?? []))
+    }
+
+    if (action === "reprocess") {
+      const items = (outbox.get(Number(id)) ?? []).map((item) =>
+        item.status === "APPLIED" || item.consumer === "DIARY"
+          ? item
+          : {
+              ...item,
+              appliedAt: new Date().toISOString(),
+              attempts: Number(item.attempts) + 1,
+              lastErrorCode: null,
+              status: "APPLIED",
+            },
+      )
+      outbox.set(Number(id), items)
+      return route.fulfill(apiAnswer(items))
+    }
+
+    if (action === "rectify") {
+      const body = call.body as Item
+      const list = rectifications.get(Number(id)) ?? []
+      const oldValue = body.field === "REASON" ? current.reasonCode : current.justification
+      const item = {
+        field: body.field,
+        id: 900 + list.length,
+        newValue: body.newValue,
+        oldValue: oldValue ?? null,
+        reason: body.reason,
+        rectifiedAt: new Date().toISOString(),
+        rectifiedBy: 1,
+      }
+      rectifications.set(Number(id), [...list, item])
+      addEvent(Number(current.originEnrollmentId), {
+        action: `RECTIFIED_${String(body.field)}`,
+        afterValue: String(current.id),
+        category: "LIFECYCLE",
+        changedFields: "lifecycleEvent",
+        reason: body.field === "REASON" ? body.newValue : current.reasonCode,
+      })
+      return route.fulfill({ ...apiAnswer(item), status: 201 })
+    }
+
+    if (action === "rectifications") return route.fulfill(apiAnswer(rectifications.get(Number(id)) ?? []))
+
+    if (action === "evidence") {
+      return route.fulfill(
+        apiAnswer({
+          event: lifecycleView(current),
+          exportedAt: new Date().toISOString(),
+          outbox: outbox.get(Number(id)) ?? [],
+          rectifications: rectifications.get(Number(id)) ?? [],
+        }),
+      )
+    }
 
     if (action === "capacity-exception") {
       const authorization = capacityAuthorizations.get(Number(id))
@@ -1530,5 +1817,136 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return route.fallback()
   })
 
-  return { calls, capacityPolicies, catalog, contracts, exceptions, lifecycle, policies, records, templates }
+  // The policies the lifecycle events read (Fatia H): the lock's maximum, the "no financial effect" rule and
+  // the notifications' text. Only the Admin writes.
+  const publishRow = (rows: Item[], matches: (item: Item) => boolean, body: Item, fields: Item) => {
+    const index = rows.findIndex(matches)
+    const now = new Date().toISOString()
+    if (index < 0) {
+      const created = { active: true, id: nextPolicyRowId++, publishedAt: now, version: 0, ...fields }
+      rows.push(created)
+      return { row: created }
+    }
+    const current = rows[index]
+    if (body.version === undefined) return { error: apiError(428, "VERSION_REQUIRED") }
+    if (body.version !== current.version) return { error: apiError(409, "VERSION_CONFLICT") }
+    rows[index] = { ...current, ...fields, active: true, publishedAt: now, version: Number(current.version) + 1 }
+    return { row: rows[index] }
+  }
+
+  await page.route(/\/api\/lifecycle-policies(\/.*)?(\?.*)?$/, (route) => {
+    const call = record(route.request())
+    const rest = call.path.replace(/^\/api\/lifecycle-policies\/?/, "")
+    const body = (call.body ?? {}) as Item
+    if (options.readOnly && call.method !== "GET") return route.fulfill(apiError(403, "ENROLLMENT_ACCESS_DENIED"))
+    const byUnit = (rows: Item[]) =>
+      rows.filter((item) => !call.query.unitId || String(item.unitId) === call.query.unitId)
+
+    if (rest === "lock" && call.method === "GET") return route.fulfill(apiAnswer(byUnit(lockPolicies)))
+    if (rest === "lock" && call.method === "PUT") {
+      const result = publishRow(
+        lockPolicies,
+        (item) => item.unitId === body.unitId && item.stageId === body.stageId,
+        body,
+        { maxDays: body.maxDays, note: body.note ?? null, stageId: body.stageId, unitId: body.unitId },
+      )
+      return route.fulfill(result.error ?? apiAnswer(result.row))
+    }
+    if (rest === "financial-no-effect" && call.method === "GET") return route.fulfill(apiAnswer(byUnit(noEffectRules)))
+    if (rest === "financial-no-effect" && call.method === "PUT") {
+      const result = publishRow(
+        noEffectRules,
+        (item) =>
+          item.unitId === body.unitId && item.eventType === body.eventType && item.offerId === (body.offerId ?? null),
+        body,
+        {
+          eventType: body.eventType,
+          evidence: body.evidence,
+          offerId: body.offerId ?? null,
+          ruleRef: body.ruleRef,
+          unitId: body.unitId,
+        },
+      )
+      return route.fulfill(result.error ?? apiAnswer(result.row))
+    }
+    const withdraw = /^(lock|financial-no-effect)\/(\d+)\/withdraw$/.exec(rest)
+    if (withdraw) {
+      const rows = withdraw[1] === "lock" ? lockPolicies : noEffectRules
+      const index = rows.findIndex((item) => item.id === Number(withdraw[2]))
+      if (index < 0) return route.fulfill(apiError(404, "LOCK_POLICY_NOT_FOUND"))
+      if (body.version !== rows[index].version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      rows[index] = { ...rows[index], active: false, version: Number(rows[index].version) + 1 }
+      return route.fulfill(apiAnswer(rows[index]))
+    }
+    if (rest === "notification-templates") return route.fulfill(apiAnswer([...templatesByType.values()]))
+    const template = /^notification-templates\/([A-Z_]+)$/.exec(rest)
+    if (template && call.method === "PUT") {
+      const current = templatesByType.get(template[1])
+      if (!current) return route.fulfill(apiError(404, "TEMPLATE_NOT_FOUND"))
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      if (
+        /\{\{(?!student\.name|institution\.name|unit\.name|event\.date|enrollment\.number)[^}]*\}\}/.test(
+          String(body.body),
+        )
+      ) {
+        return route.fulfill(apiError(400, "INVALID_REQUEST"))
+      }
+      const saved = {
+        ...current,
+        body: body.body,
+        subject: body.subject,
+        updatedAt: new Date().toISOString(),
+        version: Number(current.version) + 1,
+      }
+      templatesByType.set(template[1], saved)
+      return route.fulfill(apiAnswer(saved))
+    }
+    return route.fallback()
+  })
+
+  // The grades and periods that name an offer, and the offers of a unit, for the scope of a "no financial
+  // effect" rule.
+  const pageOf = (items: Item[]) => ({ items, page: 0, size: 100, totalElements: items.length, totalPages: 1 })
+  await page.route(/\/api\/academic\/grades(\?.*)?$/, (route) =>
+    route.fulfill(
+      apiAnswer(
+        pageOf([
+          { eligibleActions: [], id: 11, name: "1º ano", sortOrder: 1, stageId: 2, status: "ACTIVE", version: 0 },
+        ]),
+      ),
+    ),
+  )
+  await page.route(/\/api\/academic\/periods(\?.*)?$/, (route) =>
+    route.fulfill(apiAnswer(pageOf([{ id: 5, name: "Ano letivo 2027", status: "ACTIVE" }]))),
+  )
+  await page.route(/\/api\/academic\/offers(\?.*)?$/, (route) => {
+    const items = [
+      {
+        eligibleActions: [],
+        gradeId: 11,
+        id: 31,
+        periodId: 5,
+        status: "ACTIVE",
+        subjectIds: [],
+        unitId: 2,
+        version: 0,
+      },
+    ]
+    return route.fulfill(apiAnswer({ items, page: 0, size: 100, totalElements: items.length, totalPages: 1 }))
+  })
+
+  return {
+    calls,
+    capacityPolicies,
+    catalog,
+    contracts,
+    exceptions,
+    lifecycle,
+    lockPolicies,
+    noEffectRules,
+    outbox,
+    policies,
+    records,
+    templates,
+  }
 }
