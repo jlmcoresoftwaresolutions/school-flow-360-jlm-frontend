@@ -74,9 +74,15 @@ test.describe("lifecycle policies", () => {
     await expect(dialog.getByText("Informe a referência da regra.")).toBeVisible()
 
     await pick(page, dialog, /^Evento/, "Cancelamento")
-    await pick(page, dialog, /^Alcance/, "1º ano · Ano letivo 2027")
     await dialog.getByRole("textbox", { name: /^Referência da regra/ }).fill("Ata 3/2026")
     await dialog.getByRole("textbox", { name: /^Evidência/ }).fill("Oferta gratuita, sem mensalidade")
+    await dialog.getByRole("button", { name: "Publicar" }).click()
+    await expect(dialog.getByText("Escolha a oferta.")).toBeVisible()
+    // In production a rule for the whole unit is refused: the offer is mandatory.
+    await pick(page, dialog, /^Alcance/, "Toda a unidade (só homologação)")
+    await dialog.getByRole("button", { name: "Publicar" }).click()
+    await expect(dialog.getByText("Em produção, a regra precisa indicar a oferta")).toBeVisible()
+    await pick(page, dialog, /^Alcance/, "1º ano · Ano letivo 2027")
     await dialog.getByRole("button", { name: "Publicar" }).click()
 
     await expect(page.getByText("Política publicada.")).toBeVisible()
@@ -93,7 +99,7 @@ test.describe("lifecycle policies", () => {
     })
   })
 
-  test("edits a notification's text, refusing a field that doesn't exist", async ({ page }) => {
+  test("edits a notification's text, refusing a field that doesn't exist, and publishes it", async ({ page }) => {
     const { calls } = await mockEnrollmentApi(page)
     await signInAndOpen(page, policiesPath)
 
@@ -108,8 +114,23 @@ test.describe("lifecycle policies", () => {
 
     await text.fill("A matrícula de {{student.name}} foi cancelada em {{event.date}}.")
     await dialog.getByRole("button", { name: "Salvar" }).click()
-    await expect(page.getByText("Texto salvo.")).toBeVisible()
-    await expect(rowOf(page, "Cancelamento")).toContainText("foi cancelada em")
+    await expect(page.getByText("Texto salvo como rascunho. Publique-o para valer.")).toBeVisible()
+    const row = rowOf(page, "foi cancelada em")
+    await expect(row).toContainText("Rascunho")
+
+    await page.getByRole("button", { name: "Publicar o texto de Cancelamento" }).click()
+    await page
+      .getByRole("dialog", { name: "Publicar o texto · Cancelamento?" })
+      .getByRole("button", { name: "Publicar" })
+      .click()
+    await expect(page.getByText("Texto publicado.")).toBeVisible()
+    await expect(row).toContainText("Publicado")
+    await expect(page.getByRole("button", { name: "Publicar o texto de Cancelamento" })).toHaveCount(0)
+    expect(
+      lastCall(calls, "POST", "/api/lifecycle-policies/notification-templates/CANCELLATION/publish")?.body,
+    ).toEqual({
+      version: 1,
+    })
     expect(lastCall(calls, "PUT", "/api/lifecycle-policies/notification-templates/CANCELLATION")?.body).toMatchObject({
       body: "A matrícula de {{student.name}} foi cancelada em {{event.date}}.",
       version: 0,

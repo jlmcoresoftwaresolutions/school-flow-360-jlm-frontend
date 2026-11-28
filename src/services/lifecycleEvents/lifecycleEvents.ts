@@ -15,6 +15,7 @@ import type {
   LifecycleReason,
   LifecycleRectification,
   LifecycleRectifyRequest,
+  LifecycleReturnRequest,
 } from "@/models"
 
 import type { RequestConfig } from "../httpClient"
@@ -187,12 +188,13 @@ export const getLifecycleCapacityAuthorization = async (
 }
 
 // USED by the event page. POST /api/lifecycle-events/{id}/return: returns a confirmed lock (the enrollment is
-// active again), validated by the Coordenação of the unit or the Admin. Errors: 409
+// active again), validated by the Coordenação of the unit or the Admin, recording when the family asked and
+// the attendance's reference. Errors: 400 (no request day, a future one, no reference), 409
 // LIFECYCLE_LOCK_NOT_RETURNABLE, VERSION_CONFLICT, LIFECYCLE_INTENT_REUSED; 422
-// LIFECYCLE_CONFIRMATION_BLOCKED (institution or unit inactive); 403.
+// LIFECYCLE_CONFIRMATION_BLOCKED (institution or unit inactive, the return's text not published); 403.
 export const returnLifecycleLock = async (
   eventId: number,
-  request: LifecycleEventConfirmRequest,
+  request: LifecycleReturnRequest,
   config?: RequestConfig,
 ): Promise<LifecycleEvent> => {
   const response = await httpClient.post<ApiResponse<LifecycleEvent>>(
@@ -232,15 +234,16 @@ export const resendLifecycleNotification = async (
   return unwrapApiResponse(response)
 }
 
-// USED by the event page. POST /api/lifecycle-events/{id}/reprocess: the Admin applies again everything not
-// applied, with no limit and creating nothing new.
+// USED by the event page. POST /api/lifecycle-events/{id}/reprocess: the Admin applies again only what failed,
+// after treating the cause, with the reason (3 to 300, audited); creates nothing new. Errors: 400, 403.
 export const reprocessLifecycleEvent = async (
   eventId: number,
+  reason: string,
   config?: RequestConfig,
 ): Promise<LifecycleOutboxItem[]> => {
   const response = await httpClient.post<ApiResponse<LifecycleOutboxItem[]>>(
     `/api/lifecycle-events/${eventId}/reprocess`,
-    {},
+    { reason },
     config,
   )
 

@@ -26,6 +26,10 @@ export type EnrollmentOptions = {
   destinationFull?: boolean
   // Units with a published lock policy (the maximum days, for every stage).
   lockPolicyUnits?: Record<number, number>
+  // The Admin already published the five notification texts (none is published by default, as the backend).
+  publishedTexts?: boolean
+  // Homologation: a "no financial effect" rule for the whole unit is accepted (production asks for the offer).
+  unitWideRules?: boolean
   // The first lifecycle event prepared gets no answer (the connection drops), though it was created.
   losePrepareAnswer?: boolean
   // Units with a published "no financial effect" rule for every event type, for the whole unit.
@@ -1290,6 +1294,8 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       {
         body: `Olá. A matrícula de {{student.name}} mudou em {{event.date}}.`,
         eventType,
+        published: Boolean(options.publishedTexts),
+        publishedAt: options.publishedTexts ? "2026-11-27T12:00:00Z" : null,
         subject: `Aviso da escola (${eventType})`,
         updatedAt: null,
         version: 0,
@@ -1411,7 +1417,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     return confirmed
   }
 
-  const returnLock = (current: Item, intent: string) => {
+  const returnLock = (current: Item, intent: string, body: Item) => {
     const now = new Date().toISOString()
     const origin = records.get(Number(current.originEnrollmentId)) as Item
     records.set(Number(origin.id), { ...origin, status: "ACTIVE", updatedAt: now, version: Number(origin.version) + 1 })
@@ -1423,7 +1429,14 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       changedFields: "status",
       reason: current.reasonCode,
     })
-    const returned = { ...current, returnIntent: intent, returnedAt: now, version: Number(current.version) + 1 }
+    const returned = {
+      ...current,
+      returnAttendanceRef: body.attendanceRef,
+      returnedAt: now,
+      returnIntent: intent,
+      returnRequestedOn: body.requestedOn,
+      version: Number(current.version) + 1,
+    }
     lifecycle.set(Number(current.id), returned)
     queueAfterCommit(returned, "LOCK_RETURN")
     return returned
@@ -1461,11 +1474,21 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       (item) => item.active && item.unitId === financialUnit && item.eventType === type,
     )
     if (!released) codes.push("FINANCIAL_POLICY_PENDING")
+    // A cancellation is confirmed on its effective day; a future one waits for it.
+    if (type === "CANCELLATION" && event.effectiveDate) {
+      if (String(event.effectiveDate) > today()) codes.push("EFFECTIVE_DATE_NOT_REACHED")
+      else if (String(event.effectiveDate) < today()) codes.push("EFFECTIVE_DATE_PASSED")
+    }
+    if (!templatesByType.get(type)?.published) codes.push("NOTIFICATION_TEXT_NOT_PUBLISHED")
     return codes.map((code) => ({ code, message: `${code} (backend text)` }))
   }
 
   const lifecycleView = (event: Item): Item => {
     const prepared = event.status === "PREPARED"
+    let effectiveDateOnConfirmation: string | null = null
+    if (event.eventType === "CANCELLATION") {
+      effectiveDateOnConfirmation = (event.effectiveDate as string | null) ?? (prepared ? today() : null)
+    }
     const blockers = prepared ? blockersOf(event) : []
     let eligibleActions: string[] = []
     if (prepared && !options.readOnly) eligibleActions = ["ABANDON", "CONFIRM"]
@@ -1475,6 +1498,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       ...event,
       blockers,
       confirmationAvailable: prepared && blockers.length === 0,
+      effectiveDateOnConfirmation,
       eligibleActions,
     }
   }
@@ -1542,7 +1566,9 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       preparedBy: 1,
       reasonCatalogVersion: 1,
       reasonCode: body.reasonCode,
+      returnAttendanceRef: null,
       returnedAt: null,
+      returnRequestedOn: null,
       status: "PREPARED",
       studentId: (origin.student as Item).id,
       version: 0,
@@ -1724,7 +1750,14 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
         return route.fulfill(apiError(409, "LIFECYCLE_LOCK_NOT_RETURNABLE"))
       }
       if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
-      return route.fulfill(apiAnswer(lifecycleView(returnLock(current, String(body.intent)))))
+      const requestedOn = String(body.requestedOn ?? "")
+      if (!requestedOn || requestedOn > today() || !String(body.attendanceRef ?? "").trim()) {
+        return route.fulfill(apiError(400, "INVALID_REQUEST"))
+      }
+      if (!templatesByType.get("LOCK_RETURN")?.published) {
+        return route.fulfill(apiError(422, "LIFECYCLE_CONFIRMATION_BLOCKED"))
+      }
+      return route.fulfill(apiAnswer(lifecycleView(returnLock(current, String(body.intent), body))))
     }
 
     if (action === "outbox" && call.method === "GET") {
@@ -1733,8 +1766,11 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     }
 
     if (action === "reprocess") {
+      const reason = String((call.body as Item)?.reason ?? "").trim()
+      if (reason.length < 3 || reason.length > 300) return route.fulfill(apiError(400, "INVALID_REQUEST"))
+      // Only what failed is applied again.
       const items = (outbox.get(Number(id)) ?? []).map((item) =>
-        item.status === "APPLIED" || item.consumer === "DIARY"
+        item.status !== "FAILED"
           ? item
           : {
               ...item,
@@ -1854,6 +1890,7 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     }
     if (rest === "financial-no-effect" && call.method === "GET") return route.fulfill(apiAnswer(byUnit(noEffectRules)))
     if (rest === "financial-no-effect" && call.method === "PUT") {
+      if (!body.offerId && !options.unitWideRules) return route.fulfill(apiError(422, "OFFER_REQUIRED"))
       const result = publishRow(
         noEffectRules,
         (item) =>
@@ -1879,6 +1916,20 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       return route.fulfill(apiAnswer(rows[index]))
     }
     if (rest === "notification-templates") return route.fulfill(apiAnswer([...templatesByType.values()]))
+    const publishText = /^notification-templates\/([A-Z_]+)\/publish$/.exec(rest)
+    if (publishText && call.method === "POST") {
+      const current = templatesByType.get(publishText[1])
+      if (!current) return route.fulfill(apiError(404, "TEMPLATE_NOT_FOUND"))
+      if (body.version !== current.version) return route.fulfill(apiError(409, "VERSION_CONFLICT"))
+      const published = {
+        ...current,
+        published: true,
+        publishedAt: new Date().toISOString(),
+        version: Number(current.version) + 1,
+      }
+      templatesByType.set(publishText[1], published)
+      return route.fulfill(apiAnswer(published))
+    }
     const template = /^notification-templates\/([A-Z_]+)$/.exec(rest)
     if (template && call.method === "PUT") {
       const current = templatesByType.get(template[1])
@@ -1891,9 +1942,12 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       ) {
         return route.fulfill(apiError(400, "INVALID_REQUEST"))
       }
+      // Editing a text makes it a draft again.
       const saved = {
         ...current,
         body: body.body,
+        published: false,
+        publishedAt: null,
         subject: body.subject,
         updatedAt: new Date().toISOString(),
         version: Number(current.version) + 1,

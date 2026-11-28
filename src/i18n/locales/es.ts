@@ -28,6 +28,9 @@ export const es: TranslationResource = {
       withdrawTitle: "¿Retirar el límite de suspensión?",
     },
     noEffect: {
+      wholeUnitOption: "Toda la sede (solo homologación)",
+      scopeRequired: "Elija la oferta.",
+      offerRequired: "En producción, la regla debe indicar la oferta (sede, período y grado).",
       description:
         "Mientras no exista el módulo financiero, un evento solo se confirma donde la escuela publicó, con la referencia y la evidencia, que ese tipo de evento no cambia obligaciones, pagos ni cobros. La regla vale para una oferta de la sede o para toda la sede.",
       emptyDescription: "Sin regla publicada, los eventos de esta sede quedan bloqueados por lo financiero.",
@@ -51,7 +54,7 @@ export const es: TranslationResource = {
       ruleRefRequired: "Indique la referencia de la regla.",
       scope: "Alcance",
       scopeHelper:
-        "Una regla de una oferta nunca libera otra. Para toda la sede, úsela solo en homologación o en una sede sin oferta facturable.",
+        "La oferta (sede, período y grado) es obligatoria en producción. Una regla de una oferta nunca libera otra.",
       scopePlaceholder: "Elija el alcance",
       wholeUnit: "Toda la sede",
       withdrawDescription:
@@ -74,12 +77,20 @@ export const es: TranslationResource = {
       templates: "Textos de los avisos",
     },
     templates: {
+      statusPublished: "Publicado",
+      statusDraft: "Borrador",
+      savedDraft: "Texto guardado como borrador. Publíquelo para que valga.",
+      publishedDone: "Texto publicado.",
+      publishTitle: "¿Publicar el texto · {{name}}?",
+      publishFor: "Publicar el texto de {{name}}",
+      publishDescription:
+        "Pasa a ser la versión de la escuela, enviada en los avisos. Editar el texto después lo vuelve a borrador.",
       body: "Texto",
       bodyHelper: "Campos que el sistema completa: {{fields}}.",
       bodyPlaceholder: "Escriba el texto del aviso",
       bodyRequired: "Indique el texto.",
       description:
-        "El texto de los avisos que un evento confirmado envía a quien firma y paga. El sistema trae una propuesta, y el texto final es de la escuela.",
+        "El texto de los avisos que un evento confirmado envía a quien firma y paga. Producto aprobó el texto base; el Admin lo ajusta y publica la versión de la escuela. Mientras un texto no esté publicado, los eventos de ese tipo no se confirman.",
       editFor: "Editar el texto de {{name}}",
       editTitle: "Texto del aviso · {{name}}",
       empty: "Ningún texto.",
@@ -2109,6 +2120,12 @@ export const es: TranslationResource = {
       failed: "No se pudo exportar la evidencia.",
     },
     outbox: {
+      reprocessTitle: "¿Reprocesar lo que falló?",
+      reprocessReasonRequired: "Indique el motivo (al menos {{min}} caracteres).",
+      reprocessReasonPlaceholder: "Ej.: correo del responsable corregido en el registro",
+      reprocessReason: "Motivo",
+      reprocessDescription:
+        "Envía de nuevo solo lo que falló, una vez tratada la causa. Lo hecho y lo que aún espera no cambian, y no se crea nada nuevo.",
       actions: "Acciones",
       attempts: "Intentos",
       attemptsCount_one: "{{count}} intento",
@@ -2133,7 +2150,7 @@ export const es: TranslationResource = {
       loading: "Cargando...",
       noEmail: "Sin correo",
       reprocess: "Reprocesar",
-      reprocessed: "Lo que faltaba se aplicó de nuevo.",
+      reprocessed: "Lo que falló se envió de nuevo.",
       resend: "Reenviar",
       resent: "Aviso reenviado.",
       status: "Situación",
@@ -2178,9 +2195,18 @@ export const es: TranslationResource = {
       when: "Cuándo",
     },
     return: {
+      requestedOnRequired: "Indique la fecha del pedido.",
+      requestedOnHelper: "El día en que la familia pidió el regreso.",
+      requestedOnFuture: "La fecha del pedido no puede ser futura.",
+      requestedOn: "Fecha del pedido",
+      invalid: "El regreso no fue aceptado. Revise la fecha del pedido y la referencia de la atención.",
+      attendanceRefRequired: "Indique la referencia de la atención.",
+      attendanceRefPlaceholder: "Ej.: Atención 2026-1234",
+      attendanceRefHelper: "El protocolo o la referencia del pedido en el canal de la escuela.",
+      attendanceRef: "Referencia de la atención",
       action: "Reanudar",
       description:
-        "La matrícula vuelve a estar activa. La familia recibe el aviso por el canal que la escuela informó.",
+        "La matrícula vuelve a estar activa. Registre cuándo la familia pidió el regreso y la referencia de la atención; la familia recibe el aviso por el canal que la escuela informó.",
       done: "Matrícula reanudada.",
       forbidden: "Solo la Coordinación de la sede o el Admin reanudan una suspensión.",
       open: "Reanudar matrícula",
@@ -2229,6 +2255,14 @@ export const es: TranslationResource = {
         "El evento y la preparación de destino quedan en el historial como abandonados. La matrícula actual no cambia.",
     },
     blockers: {
+      NOTIFICATION_TEXT_NOT_PUBLISHED:
+        "El Admin aún no publicó el texto del aviso de este tipo de evento, en Políticas de eventos.",
+      FINANCIAL_DECISION_PENDING: "Finanzas todavía debe decidir sobre las cuotas de este evento.",
+      FINANCIAL_CONDITION_PENDING: "Elija la condición financiera (el plan de pago) en la preparación de destino.",
+      EFFECTIVE_DATE_PASSED: "La fecha efectiva pasó sin la confirmación. Abandone el evento y prepare otro.",
+      EFFECTIVE_DATE_NOT_REACHED: "La cancelación solo se confirma el día de la fecha efectiva. Vuelva ese día.",
+      DESTINATION_START_DATE_NOT_REACHED:
+        "El traslado solo se confirma el día de inicio en el destino. Vuelva ese día.",
       DESTINATION_START_DATE_MISSING: "Elija la fecha de inicio en la preparación de destino.",
       DESTINATION_START_DATE_PAST: "La fecha de inicio de la preparación de destino ya pasó. Elija otra.",
       LOCK_DAYS_ABOVE_POLICY: "Los días pedidos superan el límite de suspensión que la sede publicó para esta etapa.",
@@ -2284,8 +2318,8 @@ export const es: TranslationResource = {
     prepare: {
       effectiveDate: "Fecha efectiva",
       effectiveDateHelper:
-        "El corte que cuenta lo financiero. Hasta {{days}} días antes o después de hoy; en blanco, vale el día de la confirmación.",
-      effectiveDateInvalid: "Elija una fecha hasta {{days}} días antes o después de hoy.",
+        "El corte que cuenta lo financiero. Hoy o hasta {{days}} días adelante; la cancelación se confirma ese día. En blanco, vale el día de la confirmación.",
+      effectiveDateInvalid: "Elija hoy o una fecha hasta {{days}} días adelante.",
       lockDays: "Días de suspensión",
       lockDaysHelper: "Días corridos. La sede publica el límite por etapa; por encima de él, el evento no se confirma.",
       lockDaysInvalid: "Indique de {{min}} a {{max}} días.",
@@ -2345,6 +2379,7 @@ export const es: TranslationResource = {
       tryAgain: "No se pudo enviar. Inténtelo de nuevo.",
     },
     profile: {
+      effectiveOnConfirmationDate: "El día de la confirmación ({{date}}, si se confirma hoy)",
       adminConfirms: "Nada impide la confirmación, pero este evento solo lo confirma el Admin.",
       confirmedAtLabel: "Confirmado el",
       days_one: "{{count}} día",

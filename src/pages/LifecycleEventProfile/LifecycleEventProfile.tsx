@@ -327,6 +327,20 @@ export const LifecycleEventProfile = () => {
                     label: t("lifecycle.profile.returnedAt"),
                     value: event.returnedAt ? formatMoment(event.returnedAt) : t("lifecycle.profile.notReturned"),
                   },
+                  ...(event.returnedAt
+                    ? [
+                        {
+                          key: "returnRequestedOn",
+                          label: t("lifecycle.return.requestedOn"),
+                          value: event.returnRequestedOn ? formatDate(event.returnRequestedOn) : "",
+                        },
+                        {
+                          key: "returnAttendanceRef",
+                          label: t("lifecycle.return.attendanceRef"),
+                          value: event.returnAttendanceRef ?? "",
+                        },
+                      ]
+                    : []),
                 ]
               : []),
           ]}
@@ -421,7 +435,11 @@ export const LifecycleEventProfile = () => {
                         label: t("lifecycle.profile.effectiveDate"),
                         value: event.effectiveDate
                           ? formatDate(event.effectiveDate)
-                          : t("lifecycle.profile.effectiveOnConfirmation"),
+                          : t("lifecycle.profile.effectiveOnConfirmationDate", {
+                              date: event.effectiveDateOnConfirmation
+                                ? formatDate(event.effectiveDateOnConfirmation)
+                                : "",
+                            }),
                       },
                     ]
                   : []),

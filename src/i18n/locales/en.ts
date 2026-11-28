@@ -28,6 +28,9 @@ export const en: TranslationResource = {
       withdrawTitle: "Withdraw the suspension limit?",
     },
     noEffect: {
+      wholeUnitOption: "The whole unit (homologation only)",
+      scopeRequired: "Choose the offer.",
+      offerRequired: "In production, the rule must name the offer (unit, period and grade).",
       description:
         "Until the financial module exists, an event is confirmed only where the school published, with the reference and the evidence, that that kind of event changes no obligation, payment or charge. The rule applies to one offer of the unit or to the whole unit.",
       emptyDescription: "Without a published rule, this unit's events stay blocked by the finance.",
@@ -51,7 +54,7 @@ export const en: TranslationResource = {
       ruleRefRequired: "Enter the rule reference.",
       scope: "Scope",
       scopeHelper:
-        "A rule of one offer never releases another. For the whole unit, use it only in homologation or in a unit with no billable offer.",
+        "The offer (unit, period and grade) is mandatory in production. A rule of one offer never releases another.",
       scopePlaceholder: "Choose the scope",
       wholeUnit: "The whole unit",
       withdrawDescription: "The events of this kind and scope are blocked by the finance again. Nothing is deleted.",
@@ -73,12 +76,20 @@ export const en: TranslationResource = {
       templates: "Notice texts",
     },
     templates: {
+      statusPublished: "Published",
+      statusDraft: "Draft",
+      savedDraft: "Text saved as a draft. Publish it for it to apply.",
+      publishedDone: "Text published.",
+      publishTitle: "Publish the text · {{name}}?",
+      publishFor: "Publish the text of {{name}}",
+      publishDescription:
+        "This becomes the school's version, sent in the notices. Editing the text later makes it a draft again.",
       body: "Text",
       bodyHelper: "Fields the system fills in: {{fields}}.",
       bodyPlaceholder: "Type the notice's text",
       bodyRequired: "Enter the text.",
       description:
-        "The text of the notices a confirmed event sends to those who sign and pay. The system brings a proposal, and the final text is the school's.",
+        "The text of the notices a confirmed event sends to those who sign and pay. Product approved the base text; the Admin adjusts it and publishes the school's version. While a text isn't published, events of that kind aren't confirmed.",
       editFor: "Edit the text of {{name}}",
       editTitle: "Notice text · {{name}}",
       empty: "No text.",
@@ -2092,6 +2103,12 @@ export const en: TranslationResource = {
       failed: "We couldn't export the evidence.",
     },
     outbox: {
+      reprocessTitle: "Reprocess what failed?",
+      reprocessReasonRequired: "Enter the reason (at least {{min}} characters).",
+      reprocessReasonPlaceholder: "E.g.: the guardian's e-mail was fixed in the record",
+      reprocessReason: "Reason",
+      reprocessDescription:
+        "Sends again only what failed, once the cause was treated. What was done and what still waits don't change, and nothing new is created.",
       actions: "Actions",
       attempts: "Attempts",
       attemptsCount_one: "{{count}} attempt",
@@ -2116,7 +2133,7 @@ export const en: TranslationResource = {
       loading: "Loading...",
       noEmail: "No e-mail",
       reprocess: "Reprocess",
-      reprocessed: "What was missing was applied again.",
+      reprocessed: "What failed was sent again.",
       resend: "Resend",
       resent: "Notice resent.",
       status: "Status",
@@ -2161,8 +2178,18 @@ export const en: TranslationResource = {
       when: "When",
     },
     return: {
+      requestedOnRequired: "Enter the request date.",
+      requestedOnHelper: "The day the family asked for the return.",
+      requestedOnFuture: "The request date can't be in the future.",
+      requestedOn: "Request date",
+      invalid: "The return wasn't accepted. Check the request date and the attendance reference.",
+      attendanceRefRequired: "Enter the attendance reference.",
+      attendanceRefPlaceholder: "E.g.: Attendance 2026-1234",
+      attendanceRefHelper: "The protocol or reference of the request in the school's channel.",
+      attendanceRef: "Attendance reference",
       action: "Return",
-      description: "The enrollment is active again. The family is told through the channel the school gave.",
+      description:
+        "The enrollment is active again. Record when the family asked for the return and the attendance reference; the family is told through the channel the school gave.",
       done: "Enrollment returned.",
       forbidden: "Only the unit's Coordination or the Admin return a suspension.",
       open: "Return enrollment",
@@ -2211,6 +2238,15 @@ export const en: TranslationResource = {
         "The event and the destination preparation stay in the history as given up. The current enrollment doesn't change.",
     },
     blockers: {
+      NOTIFICATION_TEXT_NOT_PUBLISHED:
+        "The Admin hasn't published the notice text for this kind of event yet, in Event policies.",
+      FINANCIAL_DECISION_PENDING: "The Finance team still has to decide about this event's installments.",
+      FINANCIAL_CONDITION_PENDING: "Choose the financial condition (the payment plan) in the destination preparation.",
+      EFFECTIVE_DATE_PASSED:
+        "The effective date passed without the confirmation. Give the event up and prepare another.",
+      EFFECTIVE_DATE_NOT_REACHED: "The cancellation is confirmed only on its effective date. Come back that day.",
+      DESTINATION_START_DATE_NOT_REACHED:
+        "The transfer is confirmed only on the destination's start date. Come back that day.",
       DESTINATION_START_DATE_MISSING: "Choose the start date in the destination preparation.",
       DESTINATION_START_DATE_PAST: "The destination preparation's start date has passed. Choose another.",
       LOCK_DAYS_ABOVE_POLICY: "The days asked go beyond the suspension limit the unit published for this stage.",
@@ -2266,8 +2302,8 @@ export const en: TranslationResource = {
     prepare: {
       effectiveDate: "Effective date",
       effectiveDateHelper:
-        "The cut the finance counts. Up to {{days}} days before or after today; empty, the day of the confirmation.",
-      effectiveDateInvalid: "Choose a date up to {{days}} days before or after today.",
+        "The cut the finance counts. Today or up to {{days}} days ahead; the cancellation is confirmed on that day. Empty, the day of the confirmation.",
+      effectiveDateInvalid: "Choose today or a date up to {{days}} days ahead.",
       lockDays: "Suspension days",
       lockDaysHelper: "Calendar days. The unit publishes the limit per stage; above it, the event isn't confirmed.",
       lockDaysInvalid: "Enter {{min}} to {{max}} days.",
@@ -2327,6 +2363,7 @@ export const en: TranslationResource = {
       tryAgain: "It could not be sent. Try again.",
     },
     profile: {
+      effectiveOnConfirmationDate: "The day of the confirmation ({{date}}, if confirmed today)",
       adminConfirms: "Nothing blocks the confirmation, but this event is confirmed only by the Admin.",
       confirmedAtLabel: "Confirmed on",
       days_one: "{{count}} day",

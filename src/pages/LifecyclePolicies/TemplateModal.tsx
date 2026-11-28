@@ -59,7 +59,7 @@ export const TemplateModal = (props: TemplateModalProps) => {
         subject: subject.trim(),
         version: template.version,
       })
-      toast.success(t("lifecyclePolicies.templates.saved"))
+      toast.success(t("lifecyclePolicies.templates.savedDraft"))
       onSaved()
     } catch (error) {
       setIsSaving(false)

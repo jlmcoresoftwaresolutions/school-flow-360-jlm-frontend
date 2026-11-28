@@ -156,7 +156,7 @@ test.describe("enrollment lifecycle events", () => {
   })
 
   test("confirms a cancellation once nothing blocks it, with what comes after", async ({ page }) => {
-    const { calls, records } = await mockEnrollmentApi(page, { noEffectUnits: [2] })
+    const { calls, records } = await mockEnrollmentApi(page, { noEffectUnits: [2], publishedTexts: true })
     await signInAndOpen(page, brunoPath)
 
     await chooseAction(page, "Cancelar matrícula")
@@ -166,7 +166,9 @@ test.describe("enrollment lifecycle events", () => {
     await prepare.getByRole("button", { name: "Preparar" }).click()
 
     await expect(page.getByText("Nada impede a confirmação.")).toBeVisible()
-    await expect(page.getByRole("region", { name: "Evento" })).toContainText("O dia da confirmação")
+    await expect(page.getByRole("region", { name: "Evento" })).toContainText(
+      `O dia da confirmação (${new Date().toLocaleDateString("pt-BR")}, se confirmado hoje)`,
+    )
     await page.getByRole("button", { name: "Confirmar Cancelamento" }).click()
     const dialog = page.getByRole("dialog", { name: "Confirmar Cancelamento?" })
     await expect(dialog).toContainText("A matrícula fica cancelada e a vaga é liberada.")
@@ -189,10 +191,17 @@ test.describe("enrollment lifecycle events", () => {
     await expect(page.getByText("Aviso reenviado.")).toBeVisible()
     await expect(failed).toContainText("2 tentativas")
 
-    // The Admin reprocesses what isn't done.
+    // The Admin reprocesses only what failed, saying why.
     await after.getByRole("button", { name: "Reprocessar" }).click()
-    await expect(page.getByText("O que faltava foi aplicado de novo.")).toBeVisible()
-    expect(calls.some((call) => call.path === "/api/lifecycle-events/41/reprocess")).toBe(true)
+    const reprocess = page.getByRole("dialog", { name: "Reprocessar o que falhou?" })
+    await reprocess.getByRole("button", { name: "Reprocessar" }).click()
+    await expect(reprocess.getByText("Informe o motivo (pelo menos 3 caracteres).")).toBeVisible()
+    await reprocess.getByRole("textbox", { name: /^Motivo/ }).fill("E-mail do responsável corrigido")
+    await reprocess.getByRole("button", { name: "Reprocessar" }).click()
+    await expect(page.getByText("O que falhou foi enviado de novo.")).toBeVisible()
+    expect(lastCall(calls, "POST", "/api/lifecycle-events/41/reprocess")?.body).toEqual({
+      reason: "E-mail do responsável corrigido",
+    })
 
     // The enrollment shows the confirmation in its history.
     await page.goto(brunoPath)
@@ -201,6 +210,28 @@ test.describe("enrollment lifecycle events", () => {
     await expect(page.getByRole("row").filter({ hasText: "Cancelamento confirmado" })).toContainText(
       "Motivo: Saída da instituição",
     )
+  })
+
+  test("prepares a cancellation for a later day, confirmed only on that day", async ({ page }) => {
+    const { calls } = await mockEnrollmentApi(page, { noEffectUnits: [2] })
+    await signInAndOpen(page, brunoPath)
+
+    await chooseAction(page, "Cancelar matrícula")
+    const prepare = page.getByRole("dialog", { name: "Cancelar a matrícula de Bruno Lima" })
+    await pick(page, prepare, /^Motivo/, "Saída da instituição")
+    const later = new Date()
+    later.setDate(later.getDate() + 5)
+    await prepare.getByRole("textbox", { name: /^Data efetiva/ }).fill(later.toLocaleDateString("pt-BR"))
+    await prepare.getByRole("button", { name: "Preparar" }).click()
+
+    const blockers = page.getByRole("list", { name: "O que impede a confirmação" })
+    await expect(blockers).toContainText("O cancelamento só é confirmado no dia da data efetiva.")
+    // The school hasn't published the notice's text yet either.
+    await expect(blockers).toContainText("O Admin ainda não publicou o texto do aviso deste tipo de evento")
+    await expect(page.getByRole("button", { name: "Confirmar Cancelamento" })).toBeDisabled()
+    expect(lastCall(calls, "POST", "/api/lifecycle-events")?.body).toMatchObject({
+      effectiveDate: later.toLocaleDateString("en-CA"),
+    })
   })
 
   test("corrects an event's reason as a new fact and exports its evidence", async ({ page }) => {
@@ -237,7 +268,11 @@ test.describe("enrollment lifecycle events", () => {
   })
 
   test("confirms a lock within the unit's limit and returns it later", async ({ page }) => {
-    const { records } = await mockEnrollmentApi(page, { lockPolicyUnits: { 2: 30 }, noEffectUnits: [2] })
+    const { calls, records } = await mockEnrollmentApi(page, {
+      lockPolicyUnits: { 2: 30 },
+      noEffectUnits: [2],
+      publishedTexts: true,
+    })
     await signInAndOpen(page, brunoPath)
 
     await chooseAction(page, "Trancar matrícula")
@@ -273,19 +308,29 @@ test.describe("enrollment lifecycle events", () => {
     expect(records.get(502)?.status).toBe("LOCKED")
     await expect(page.getByRole("region", { exact: true, name: "Confirmação" })).toContainText("Ainda não retomado")
 
+    // The return records when the family asked and the attendance's reference.
     await page.getByRole("button", { name: "Retomar matrícula" }).click()
-    await page
-      .getByRole("dialog", { name: "Retomar a matrícula trancada?" })
-      .getByRole("button", { name: "Retomar" })
-      .click()
+    const giveBack = page.getByRole("dialog", { name: "Retomar a matrícula trancada?" })
+    await giveBack.getByRole("button", { name: "Retomar" }).click()
+    await expect(giveBack.getByText("Informe a data do pedido.")).toBeVisible()
+    await expect(giveBack.getByText("Informe a referência do atendimento.")).toBeVisible()
+    const asked = new Date().toLocaleDateString("pt-BR")
+    await giveBack.getByRole("textbox", { name: /^Data do pedido/ }).fill(asked)
+    await giveBack.getByRole("textbox", { name: /^Referência do atendimento/ }).fill("Atendimento 2026-77")
+    await giveBack.getByRole("button", { name: "Retomar" }).click()
     await expect(page.getByText("Matrícula retomada.")).toBeVisible()
+    expect(lastCall(calls, "POST", "/api/lifecycle-events/42/return")?.body).toMatchObject({
+      attendanceRef: "Atendimento 2026-77",
+      requestedOn: new Date().toLocaleDateString("en-CA"),
+    })
+    await expect(page.getByRole("region", { exact: true, name: "Confirmação" })).toContainText("Atendimento 2026-77")
     expect(records.get(502)?.status).toBe("ACTIVE")
     await expect(page.getByRole("button", { name: "Retomar matrícula" })).toHaveCount(0)
   })
 
   test("leaves a lock's confirmation to the Admin", async ({ page }) => {
-    await mockEnrollmentApi(page, { lockPolicyUnits: { 2: 30 }, noEffectUnits: [2] })
-    // A Secretaria of Unidade Caucaia, Bruno's unit: she prepares the lock, but doesn't confirm it.
+    await mockEnrollmentApi(page, { lockPolicyUnits: { 2: 30 }, noEffectUnits: [2], publishedTexts: true })
+    // A Secretaria of Unidade Caucaia, Bruno's unit, who prepares the lock but doesn't confirm it.
     const caucaia = {
       ...secretariaContext,
       assignments: [{ ...secretariaContext.assignments[0], unitId: 2, unitName: "Unidade Caucaia" }],

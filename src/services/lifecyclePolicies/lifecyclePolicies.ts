@@ -69,8 +69,9 @@ export const listNoEffectRules = async (unitId?: number, config?: RequestConfig)
 }
 
 // USED by the lifecycle policies page. PUT /api/lifecycle-policies/financial-no-effect: the Admin publishes
-// (or publishes again) the rule of a unit, offer and event type. Errors: 400 (an offer of another unit, an
-// empty reference or evidence), 428 VERSION_REQUIRED, 409 VERSION_CONFLICT.
+// (or publishes again) the rule of a unit, offer and event type. Errors: 422 OFFER_REQUIRED (a rule for the
+// whole unit, refused outside homologation), 400 (an offer of another unit, an empty reference or evidence),
+// 428 VERSION_REQUIRED, 409 VERSION_CONFLICT.
 export const publishNoEffectRule = async (
   request: LifecycleNoEffectRuleWrite,
   config?: RequestConfig,
@@ -122,6 +123,23 @@ export const updateNotificationTemplate = async (
   const response = await httpClient.put<ApiResponse<LifecycleNotificationTemplate>>(
     `/api/lifecycle-policies/notification-templates/${eventType}`,
     request,
+    config,
+  )
+
+  return unwrapApiResponse(response)
+}
+
+// USED by the lifecycle policies page. POST /api/lifecycle-policies/notification-templates/{eventType}/publish:
+// the Admin publishes the institutional text; only then is the flow it belongs to confirmed. Errors: 409
+// VERSION_CONFLICT, 428 VERSION_REQUIRED, 404 TEMPLATE_NOT_FOUND.
+export const publishNotificationTemplate = async (
+  eventType: LifecycleTemplateType,
+  version: number,
+  config?: RequestConfig,
+): Promise<LifecycleNotificationTemplate> => {
+  const response = await httpClient.post<ApiResponse<LifecycleNotificationTemplate>>(
+    `/api/lifecycle-policies/notification-templates/${eventType}/publish`,
+    { version },
     config,
   )
 

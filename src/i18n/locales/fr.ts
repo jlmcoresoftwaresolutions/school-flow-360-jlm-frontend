@@ -29,6 +29,9 @@ export const fr: TranslationResource = {
       withdrawTitle: "Retirer la limite de suspension ?",
     },
     noEffect: {
+      wholeUnitOption: "Toute l'unité (homologation seulement)",
+      scopeRequired: "Choisissez l'offre.",
+      offerRequired: "En production, la règle doit indiquer l'offre (unité, période et niveau).",
       description:
         "Tant que le module financier n'existe pas, un événement n'est confirmé que là où l'école a publié, avec la référence et la preuve, que ce type d'événement ne change aucune obligation, aucun paiement ni aucune facturation. La règle vaut pour une offre de l'unité ou pour toute l'unité.",
       emptyDescription: "Sans règle publiée, les événements de cette unité restent bloqués par le financier.",
@@ -52,7 +55,7 @@ export const fr: TranslationResource = {
       ruleRefRequired: "Indiquez la référence de la règle.",
       scope: "Portée",
       scopeHelper:
-        "Une règle d'une offre n'en libère jamais une autre. Pour toute l'unité, utilisez-la seulement en homologation ou dans une unité sans offre facturable.",
+        "L'offre (unité, période et niveau) est obligatoire en production. Une règle d'une offre n'en libère jamais une autre.",
       scopePlaceholder: "Choisissez la portée",
       wholeUnit: "Toute l'unité",
       withdrawDescription:
@@ -75,12 +78,20 @@ export const fr: TranslationResource = {
       templates: "Textes des avis",
     },
     templates: {
+      statusPublished: "Publié",
+      statusDraft: "Brouillon",
+      savedDraft: "Texte enregistré comme brouillon. Publiez-le pour qu'il s'applique.",
+      publishedDone: "Texte publié.",
+      publishTitle: "Publier le texte · {{name}} ?",
+      publishFor: "Publier le texte de {{name}}",
+      publishDescription:
+        "Cela devient la version de l'école, envoyée dans les avis. Modifier le texte ensuite le remet en brouillon.",
       body: "Texte",
       bodyHelper: "Champs que le système remplit : {{fields}}.",
       bodyPlaceholder: "Saisissez le texte de l'avis",
       bodyRequired: "Indiquez le texte.",
       description:
-        "Le texte des avis qu'un événement confirmé envoie à qui signe et paie. Le système apporte une proposition, et le texte final est celui de l'école.",
+        "Le texte des avis qu'un événement confirmé envoie à qui signe et paie. Le Produit a approuvé le texte de base ; l'Admin l'ajuste et publie la version de l'école. Tant qu'un texte n'est pas publié, les événements de ce type ne sont pas confirmés.",
       editFor: "Modifier le texte de {{name}}",
       editTitle: "Texte de l'avis · {{name}}",
       empty: "Aucun texte.",
@@ -2141,6 +2152,12 @@ export const fr: TranslationResource = {
       failed: "Impossible d'exporter la preuve.",
     },
     outbox: {
+      reprocessTitle: "Retraiter ce qui a échoué ?",
+      reprocessReasonRequired: "Indiquez le motif (au moins {{min}} caractères).",
+      reprocessReasonPlaceholder: "Ex. : e-mail du responsable corrigé dans le dossier",
+      reprocessReason: "Motif",
+      reprocessDescription:
+        "Renvoie seulement ce qui a échoué, une fois la cause traitée. Ce qui est fait et ce qui attend encore ne changent pas, et rien de nouveau n'est créé.",
       actions: "Actions",
       attempts: "Tentatives",
       attemptsCount_one: "{{count}} tentative",
@@ -2165,7 +2182,7 @@ export const fr: TranslationResource = {
       loading: "Chargement...",
       noEmail: "Aucun e-mail",
       reprocess: "Retraiter",
-      reprocessed: "Ce qui manquait a été appliqué à nouveau.",
+      reprocessed: "Ce qui a échoué a été renvoyé.",
       resend: "Renvoyer",
       resent: "Avis renvoyé.",
       status: "Situation",
@@ -2210,8 +2227,18 @@ export const fr: TranslationResource = {
       when: "Quand",
     },
     return: {
+      requestedOnRequired: "Indiquez la date de la demande.",
+      requestedOnHelper: "Le jour où la famille a demandé la reprise.",
+      requestedOnFuture: "La date de la demande ne peut pas être dans le futur.",
+      requestedOn: "Date de la demande",
+      invalid: "La reprise n'a pas été acceptée. Vérifiez la date de la demande et la référence.",
+      attendanceRefRequired: "Indiquez la référence de la prise en charge.",
+      attendanceRefPlaceholder: "Ex. : Dossier 2026-1234",
+      attendanceRefHelper: "Le protocole ou la référence de la demande dans le canal de l'école.",
+      attendanceRef: "Référence de la prise en charge",
       action: "Reprendre",
-      description: "L'inscription redevient active. La famille est prévenue par le canal indiqué par l'école.",
+      description:
+        "L'inscription redevient active. Enregistrez quand la famille a demandé la reprise et la référence de la prise en charge ; la famille est prévenue par le canal indiqué par l'école.",
       done: "Inscription reprise.",
       forbidden: "Seule la Coordination de l'unité ou l'Admin reprennent une suspension.",
       open: "Reprendre l'inscription",
@@ -2261,6 +2288,16 @@ export const fr: TranslationResource = {
         "L'événement et la préparation de destination restent dans l'historique comme abandonnés. L'inscription actuelle ne change pas.",
     },
     blockers: {
+      NOTIFICATION_TEXT_NOT_PUBLISHED:
+        "L'Admin n'a pas encore publié le texte de l'avis de ce type d'événement, dans Politiques des événements.",
+      FINANCIAL_DECISION_PENDING: "Le service financier doit encore décider des échéances de cet événement.",
+      FINANCIAL_CONDITION_PENDING:
+        "Choisissez la condition financière (le plan de paiement) dans la préparation de destination.",
+      EFFECTIVE_DATE_PASSED:
+        "La date d'effet est passée sans confirmation. Abandonnez l'événement et préparez-en un autre.",
+      EFFECTIVE_DATE_NOT_REACHED: "L'annulation n'est confirmée que le jour de sa date d'effet. Revenez ce jour-là.",
+      DESTINATION_START_DATE_NOT_REACHED:
+        "Le transfert n'est confirmé que le jour du début à destination. Revenez ce jour-là.",
       DESTINATION_START_DATE_MISSING: "Choisissez la date de début dans la préparation de destination.",
       DESTINATION_START_DATE_PAST:
         "La date de début de la préparation de destination est passée. Choisissez-en une autre.",
@@ -2319,8 +2356,8 @@ export const fr: TranslationResource = {
     prepare: {
       effectiveDate: "Date d'effet",
       effectiveDateHelper:
-        "La coupure que compte le financier. Jusqu'à {{days}} jours avant ou après aujourd'hui ; vide, le jour de la confirmation.",
-      effectiveDateInvalid: "Choisissez une date jusqu'à {{days}} jours avant ou après aujourd'hui.",
+        "La coupure que compte le financier. Aujourd'hui ou jusqu'à {{days}} jours plus tard ; l'annulation est confirmée ce jour-là. Vide, le jour de la confirmation.",
+      effectiveDateInvalid: "Choisissez aujourd'hui ou une date jusqu'à {{days}} jours plus tard.",
       lockDays: "Jours de suspension",
       lockDaysHelper:
         "Jours calendaires. L'unité publie la limite par cycle ; au-delà, l'événement n'est pas confirmé.",
@@ -2382,6 +2419,7 @@ export const fr: TranslationResource = {
       tryAgain: "L'envoi a échoué. Réessayez.",
     },
     profile: {
+      effectiveOnConfirmationDate: "Le jour de la confirmation ({{date}}, si confirmé aujourd'hui)",
       adminConfirms: "Rien n'empêche la confirmation, mais cet événement n'est confirmé que par l'Admin.",
       confirmedAtLabel: "Confirmé le",
       days_one: "{{count}} jour",

@@ -46,9 +46,10 @@ type FieldErrors = {
 
 const justificationMax = 500
 
-// The window of a cancellation's effective date around today, and the length a lock may be asked for (the
-// backend's limits; the unit's lock policy may allow less, which the event then shows as a blocker).
-const effectiveWindowDays = 30
+// How far ahead a cancellation's effective date may be (it is confirmed on that day; a past date is refused,
+// Lucas's answer 1 of 27/11/2026), and the length a lock may be asked for (the backend's limits; the unit's
+// lock policy may allow less, which the event then shows as a blocker).
+const effectiveMaxFutureDays = 30
 const lockDaysLimits = { max: 366, min: 1 }
 
 const shiftDays = (days: number) => {
@@ -61,8 +62,8 @@ const shiftDays = (days: number) => {
 // Prepares a lifecycle event on an enrollment (EPIC 7): the reason from the event's catalog (a short
 // justification only where the reason asks, never sensitive data), for a transfer the destination unit
 // (another one where the person operates; a re-enrollment may stay in the same unit), for a cancellation
-// its effective date (the cut the finance counts: up to 30 days before or after today, empty = the day it
-// is confirmed) and for a lock how many days it is asked for. Preparing never
+// its effective date (the cut the finance counts: today or up to 30 days ahead, when it is then confirmed;
+// empty = the day it is confirmed) and for a lock how many days it is asked for. Preparing never
 // changes the current enrollment nor holds a seat, and nothing is confirmed here: a transfer or a
 // re-enrollment opens the destination preparation, where the class is chosen in the normal flow. One
 // `intent` per content sent: sending the same again (no answer, a second click) gives the same event back,
@@ -107,8 +108,8 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
   const unitOptions: SelectOption[] = destinationUnits.map((unit) => ({ label: unit.name, value: String(unit.id) }))
   const noDestination = eventType === "TRANSFER" && destinationUnits.length === 0
   const isDirty = reasonCode !== "" || justification.trim() !== "" || effectiveDate !== null || lockDays !== ""
-  const earliestEffective = shiftDays(-effectiveWindowDays)
-  const latestEffective = shiftDays(effectiveWindowDays)
+  const earliestEffective = shiftDays(0)
+  const latestEffective = shiftDays(effectiveMaxFutureDays)
 
   useUnsavedChanges(isDirty && !isSaving)
 
@@ -189,7 +190,7 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
       onChanged()
     } else if (status === 400 && eventType === "CANCELLATION" && effectiveDate) {
       // The window is the backend's term: a date it refuses is pointed out on the field.
-      setErrors({ effectiveDate: t("lifecycle.prepare.effectiveDateInvalid", { days: effectiveWindowDays }) })
+      setErrors({ effectiveDate: t("lifecycle.prepare.effectiveDateInvalid", { days: effectiveMaxFutureDays }) })
     } else if (status === 403) {
       setFailure(t("lifecycle.prepare.outOfReach"))
     } else if (status === undefined) {
@@ -210,7 +211,7 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
       found.lockDays = t("lifecycle.prepare.lockDaysInvalid", lockDaysLimits)
     }
     if (effectiveDate && (effectiveDate < earliestEffective || effectiveDate > latestEffective)) {
-      found.effectiveDate = t("lifecycle.prepare.effectiveDateInvalid", { days: effectiveWindowDays })
+      found.effectiveDate = t("lifecycle.prepare.effectiveDateInvalid", { days: effectiveMaxFutureDays })
     }
     setErrors(found)
     setFailure("")
@@ -327,7 +328,7 @@ export const PrepareLifecycleEventModal = (props: PrepareLifecycleEventModalProp
             <DateInput
               clearLabel={t("people.form.clearDate")}
               error={errors.effectiveDate}
-              helperText={t("lifecycle.prepare.effectiveDateHelper", { days: effectiveWindowDays })}
+              helperText={t("lifecycle.prepare.effectiveDateHelper", { days: effectiveMaxFutureDays })}
               maxDate={latestEffective}
               minDate={earliestEffective}
               onChange={(value) => {

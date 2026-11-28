@@ -27,14 +27,16 @@ export type NoEffectRuleDialogProps = {
   unitName: string
 }
 
-type Errors = { evidence?: string; eventType?: string; ruleRef?: string }
+type Errors = { evidence?: string; eventType?: string; ruleRef?: string; scope?: string }
 
-const wholeUnit = ""
+// The "whole unit" scope, valid only in homologation (in production the backend asks for the offer).
+const wholeUnit = "UNIT"
 
 // Publishes the institutional rule that an event type changes no obligation, payment or instrument (Lucas's
 // answers of 26 and 27/11/2026): for one offer of the unit (a rule of another offer never releases a
-// billable one) or for the whole unit (homologation, a unit with no billable offer), with the reference
-// a person can check and the evidence. It is what lets an event of that type be confirmed until the
+// billable one), with the reference a person can check and the evidence. In production the offer is
+// mandatory; a rule for the whole unit is accepted only in homologation (the backend refuses it elsewhere
+// with OFFER_REQUIRED, shown on the field). It is what lets an event of that type be confirmed until the
 // financial module exists. Withdrawing blocks those events again. The event type and the scope of a
 // published rule never change: another one is a new rule.
 export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
@@ -45,7 +47,10 @@ export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
   const toFailureMessage = useFailureMessage()
 
   const [eventType, setEventType] = useState<LifecycleEventType | "">(rule?.eventType ?? "")
-  const [offerId, setOfferId] = useState(rule?.offerId ? String(rule.offerId) : wholeUnit)
+  const [scope, setScope] = useState(() => {
+    if (!rule) return ""
+    return rule.offerId ? String(rule.offerId) : wholeUnit
+  })
   const [ruleRef, setRuleRef] = useState(rule?.active ? rule.ruleRef : "")
   const [evidence, setEvidence] = useState(rule?.active ? rule.evidence : "")
   const [errors, setErrors] = useState<Errors>({})
@@ -56,10 +61,10 @@ export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
   const isNew = rule === null
   const typeOptions: SelectOption[] = lifecycleEventTypes.map((value) => ({ label: typeLabel(value), value }))
   const scopeOptions: SelectOption[] = [
-    { label: t("lifecyclePolicies.noEffect.wholeUnit"), value: wholeUnit },
     ...offerOptions,
+    { label: t("lifecyclePolicies.noEffect.wholeUnitOption"), value: wholeUnit },
   ]
-  const scopeLabel = scopeOptions.find((option) => option.value === offerId)?.label ?? ""
+  const scopeLabel = scopeOptions.find((option) => option.value === scope)?.label ?? ""
 
   useUnsavedChanges(
     isPublish &&
@@ -71,6 +76,7 @@ export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
     const found: Errors = {}
     if (isPublish) {
       if (!eventType) found.eventType = t("lifecyclePolicies.noEffect.eventTypeRequired")
+      if (!scope) found.scope = t("lifecyclePolicies.noEffect.scopeRequired")
       if (!ruleRef.trim()) found.ruleRef = t("lifecyclePolicies.noEffect.ruleRefRequired")
       if (!evidence.trim()) found.evidence = t("lifecyclePolicies.noEffect.evidenceRequired")
     }
@@ -84,7 +90,7 @@ export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
         await publishNoEffectRule({
           eventType,
           evidence: evidence.trim(),
-          ...(offerId ? { offerId: Number(offerId) } : {}),
+          ...(scope !== wholeUnit ? { offerId: Number(scope) } : {}),
           ruleRef: ruleRef.trim(),
           unitId,
           ...(rule ? { version: rule.version } : {}),
@@ -98,7 +104,9 @@ export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
     } catch (error) {
       setIsSaving(false)
       const code = getErrorCode(error)
-      if (code === "VERSION_CONFLICT" || code === "NO_EFFECT_RULE_NOT_FOUND") {
+      if (code === "OFFER_REQUIRED") {
+        setErrors({ scope: t("lifecyclePolicies.noEffect.offerRequired") })
+      } else if (code === "VERSION_CONFLICT" || code === "NO_EFFECT_RULE_NOT_FOUND") {
         toast.error(t("lifecyclePolicies.changedMeanwhile"))
         onChanged()
       } else if (code === "VERSION_REQUIRED") {
@@ -161,13 +169,18 @@ export const NoEffectRuleDialog = (props: NoEffectRuleDialogProps) => {
             required
           />
           <Select
+            error={errors.scope}
             helperText={t("lifecyclePolicies.noEffect.scopeHelper")}
             noOptionsMessage={t("common.noOptions")}
-            onChange={(option) => setOfferId(option?.value ?? wholeUnit)}
+            onChange={(option) => {
+              setScope(option?.value ?? "")
+              setErrors((current) => ({ ...current, scope: undefined }))
+            }}
             options={scopeOptions}
             placeholder={t("lifecyclePolicies.noEffect.scopePlaceholder")}
             title={t("lifecyclePolicies.noEffect.scope")}
-            value={scopeOptions.find((option) => option.value === offerId) ?? null}
+            value={scopeOptions.find((option) => option.value === scope) ?? null}
+            required
           />
         </>
       )}
