@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useNavigate, useParams } from "react-router-dom"
+import { createSearchParams, useNavigate, useParams } from "react-router-dom"
 
 import type { IconName } from "@/ds-components/atoms"
 import { Badge, Button, Card, Text } from "@/ds-components/atoms"
@@ -16,8 +16,9 @@ import { hasAnyRole } from "@/utils/access"
 import { formatDate } from "@/utils/dates"
 
 import { useEnrollmentAccess } from "../shared/enrollments/useEnrollmentAccess"
-import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
+import { preparationStatuses, useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { lifecycleEventTypes } from "../shared/enrollments/useLifecycleLabels"
+import { useFinanceAccess } from "../shared/finance/useFinanceAccess"
 import { ProfileBar, ProfileBarInfo } from "../shared/people/people.styles"
 import { AbandonEnrollmentDialog } from "./AbandonEnrollmentDialog"
 import { ConfirmEnrollmentDialog } from "./ConfirmEnrollmentDialog"
@@ -27,6 +28,7 @@ import { EnrollmentClass } from "./EnrollmentClass"
 import { EnrollmentGuardians } from "./EnrollmentGuardians"
 import { EnrollmentHistory } from "./EnrollmentHistory"
 import { EnrollmentPreparation } from "./EnrollmentPreparation"
+import { RegularizeModal } from "./finance/RegularizeModal"
 import { LifecycleEventNotice } from "./lifecycle/LifecycleEventNotice"
 import { PrepareLifecycleEventModal } from "./lifecycle/PrepareLifecycleEventModal"
 import { useOpenLifecycleEvent } from "./lifecycle/useOpenLifecycleEvent"
@@ -58,6 +60,7 @@ export const EnrollmentProfile = () => {
   const { formatMoment, statusLabel, statusTone } = useEnrollmentLabels()
   const signedIn = useSignedInUser()
   const { operableUnits } = useEnrollmentAccess()
+  const finance = useFinanceAccess()
 
   const [result, setResult] = useState<LoadResult | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
@@ -67,6 +70,7 @@ export const EnrollmentProfile = () => {
   const [isAbandoning, setIsAbandoning] = useState(false)
   const [isConfirming, setIsConfirming] = useState(false)
   const [preparing, setPreparing] = useState<LifecycleEventType | null>(null)
+  const [isRegularizing, setIsRegularizing] = useState(false)
 
   const requestKey = `${enrollmentId}#${reloadToken}`
   // While the same enrollment is read again its last answer stays on screen, so a choice being made in a
@@ -157,6 +161,34 @@ export const EnrollmentProfile = () => {
           tone: type === "CANCELLATION" ? "danger" : "default",
         }),
       )
+  }
+
+  // The financial side (EPIC 8): the student's installments for those who read the titles of the unit, and
+  // the regularization of a confirmed enrollment with no obligation yet for the Admin and the Financeiro.
+  const financeUnit = finance.units.some((unit) => unit.id === enrollment.unitId)
+  const isConfirmed = enrollment.enrollmentNumber !== null && !preparationStatuses.includes(enrollment.status)
+  if (finance.readsTitles && financeUnit && isConfirmed) {
+    actions.push({
+      icon: "payments-outline",
+      key: "tuition",
+      label: t("finance.enrollment.viewTitles"),
+      onClick: () =>
+        navigate({
+          pathname: paths.tuition,
+          search: createSearchParams({
+            name: enrollment.student.name,
+            studentId: String(enrollment.student.id),
+          }).toString(),
+        }),
+    })
+  }
+  if (finance.operates && financeUnit && isConfirmed) {
+    actions.push({
+      icon: "file-outline",
+      key: "regularize",
+      label: t("finance.enrollment.regularize"),
+      onClick: () => setIsRegularizing(true),
+    })
   }
 
   const canConfirm = enrollment.eligibleActions.includes("CONFIRM")
@@ -308,6 +340,8 @@ export const EnrollmentProfile = () => {
           operableUnits={operableUnits}
         />
       )}
+
+      {isRegularizing && <RegularizeModal enrollment={enrollment} onClose={() => setIsRegularizing(false)} />}
 
       {isAbandoning && (
         <AbandonEnrollmentDialog

@@ -9,8 +9,8 @@ import type { LifecycleEvent } from "@/models"
 import { registerFinanceTransferReview } from "@/services/financeLifecycle"
 import { getErrorCode } from "@/services/httpClient"
 
+import { useFinanceCommand } from "../../shared/finance/useFinanceCommand"
 import { useFailureMessage } from "../../shared/people/useFailureMessage"
-import { useFinanceCommand } from "./useFinanceCommand"
 
 export type TransferReviewDialogProps = {
   event: LifecycleEvent

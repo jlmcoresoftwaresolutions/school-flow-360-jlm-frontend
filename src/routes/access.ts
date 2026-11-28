@@ -43,12 +43,15 @@ export const pageRoles: Partial<Record<PageKey, RoleCode[]>> = {
   peopleSearch: ["ADMIN", "SECRETARIA"],
   periods: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   profilesAndPermissions: ["ADMIN", "SECRETARIA"],
+  reconciliation: ["ADMIN", "FINANCEIRO"],
   rooms: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
   studentEdit: ["ADMIN", "SECRETARIA"],
   studentNew: ["ADMIN", "SECRETARIA"],
   studentProfile: ["ADMIN", "SECRETARIA"],
   students: ["ADMIN", "SECRETARIA"],
   subjects: ["ADMIN", "SECRETARIA", "COORDENACAO", "PROFESSOR"],
+  tuition: ["ADMIN", "SECRETARIA", "FINANCEIRO"],
+  tuitionTitle: ["ADMIN", "SECRETARIA", "FINANCEIRO"],
   userList: ["ADMIN", "SECRETARIA"],
 }
 

@@ -12,8 +12,8 @@ import { getErrorCode } from "@/services/httpClient"
 import { formatDate } from "@/utils/dates"
 import { formatCents } from "@/utils/money"
 
+import { useFinanceCommand } from "../../shared/finance/useFinanceCommand"
 import { useFailureMessage } from "../../shared/people/useFailureMessage"
-import { useFinanceCommand } from "./useFinanceCommand"
 
 export type CutDecisionDialogProps = {
   // Only the Admin of the institution cancels an installment that crosses the cut (a concession).

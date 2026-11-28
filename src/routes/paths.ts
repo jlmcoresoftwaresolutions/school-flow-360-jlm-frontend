@@ -87,6 +87,8 @@ export const paths = {
   students: "/administration/students",
   subjects: "/academic/subjects",
   tuition: "/finance/tuition",
+  // An installment (not in the menu; under the tuition page, whose access rule it follows).
+  tuitionTitle: "/finance/tuition/:titleId",
   userList: "/users/list",
 }
 

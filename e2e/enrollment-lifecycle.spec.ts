@@ -98,7 +98,12 @@ test.describe("enrollment lifecycle events", () => {
 
     await page.getByRole("region", { name: "Matrícula atual" }).getByRole("link", { name: "Abrir matrícula" }).click()
     await expect(page.getByRole("note")).toContainText("Transferência em preparação")
-    await expect(page.getByRole("button", { name: "Ações da matrícula" })).toHaveCount(0)
+    // The menu keeps the financial items, but offers no other event.
+    await page.getByRole("button", { name: "Ações da matrícula" }).click()
+    await expect(page.getByRole("menuitem", { name: "Ver mensalidades" })).toBeVisible()
+    await expect(page.getByRole("menuitem", { name: "Transferir para outra unidade" })).toHaveCount(0)
+    await expect(page.getByRole("menuitem", { name: "Cancelar matrícula" })).toHaveCount(0)
+    await page.keyboard.press("Escape")
 
     await page.getByRole("tab", { name: "Histórico" }).click()
     const row = page.getByRole("row").filter({ hasText: "Transferência preparada" })
@@ -448,6 +453,10 @@ test.describe("enrollment lifecycle events", () => {
     await signInAndOpen(page, brunoPath, secretariaContext)
 
     await expect(page.getByRole("heading", { level: 1, name: "Bruno Lima" })).toBeVisible()
-    await expect(page.getByRole("button", { name: "Ações da matrícula" })).toHaveCount(0)
+    // The mocked unit list isn't scoped, so the financial items may show; the events never do.
+    const menu = page.getByRole("button", { name: "Ações da matrícula" })
+    if ((await menu.count()) > 0) await menu.click()
+    await expect(page.getByRole("menuitem", { name: "Transferir para outra unidade" })).toHaveCount(0)
+    await expect(page.getByRole("menuitem", { name: "Cancelar matrícula" })).toHaveCount(0)
   })
 })
