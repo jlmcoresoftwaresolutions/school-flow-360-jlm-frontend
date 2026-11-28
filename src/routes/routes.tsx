@@ -448,6 +448,13 @@ export const router = createBrowserRouter([
       },
       {
         lazy: async () => {
+          const { TuitionTitle } = await import("@/pages/TuitionTitle")
+          return { Component: TuitionTitle }
+        },
+        path: paths.tuitionTitle,
+      },
+      {
+        lazy: async () => {
           const { Billing } = await import("@/pages/Billing")
           return { Component: Billing }
         },
