@@ -4,6 +4,93 @@ import type { TranslationResource } from "./ptBR"
 // "utilizador", "contacto"...) and no "você". Typed against TranslationResource like en.ts, so a
 // missing key is a compile error.
 export const ptPT: TranslationResource = {
+  financeLifecycle: {
+    changedMeanwhile: "A parcela ou o evento mudou enquanto isso. Os dados foram relidos.",
+    cut: {
+      amount: "Valor",
+      classification: "No cancelamento",
+      classifications: {
+        CANCEL: "Será cancelada",
+        CANCELLED: "Cancelada",
+        DECISION_REQUIRED: "Precisa de decisão",
+        PRESERVE: "Continua exigível",
+        SUBSTITUTED: "Substituída",
+      },
+      cutDate: "Data de corte",
+      decide: "Decidir",
+      decideDescription:
+        "A parcela cruza a data de corte, então não é cancelada nem mantida sozinha. A decisão vale para esta versão da parcela: se chegar um pagamento, ela deixa de valer e o caso volta a bloquear.",
+      decideFor: "Decidir a parcela {{number}}",
+      decideTitle: "Decidir a parcela {{number}}",
+      decided: "Decisão registrada.",
+      decision: "Decisão",
+      description:
+        "O que acontece com as parcelas quando o cancelamento for confirmado: o que continua exigível fica, o futuro sem pagamento é cancelado, e a parcela que cruza a data de corte espera a decisão do Financeiro. Nada é aplicado antes da confirmação.",
+      dueDate: "Vencimento",
+      dueOn: "vence em {{date}}",
+      installment: "Parcela {{number}}",
+      installmentHeader: "Parcela",
+      needsUnpaid: "Esta parcela já tem pagamento e não pode ser cancelada aqui: mantenha-a exigível.",
+      onlyAdminCancels:
+        "Cancelar a parcela é uma concessão, decidida só pelo Admin da instituição. Pode mantê-la exigível.",
+      outcome: "Decisão",
+      outcomeHelper: "Manter exigível deixa a parcela como está. Cancelar é uma concessão, nunca com pagamento.",
+      outcomePlaceholder: "Escolha a decisão",
+      outcomeRequired: "Escolha a decisão.",
+      outcomes: {
+        CANCEL: "Cancelar a parcela",
+        KEEP_DUE: "Manter exigível",
+      },
+      paid: "Pago",
+      paidAndResidual: "pago {{paid}} · saldo {{residual}}",
+      pending: "Aguardando decisão",
+      pendingForOperator: "Há parcela aguardando a sua decisão. Enquanto isso, o cancelamento não é confirmado.",
+      pendingForReader:
+        "Há parcela aguardando a decisão do Financeiro. Enquanto isso, o cancelamento não é confirmado.",
+      preserved: "Continuam exigíveis",
+      redecide: "Decidir novamente",
+      requiresAdmin: "Só o Admin da instituição cancela uma parcela que cruza o corte.",
+      residual: "Saldo",
+      summary_one: "{{count}} parcela · {{total}}",
+      summary_other: "{{count}} parcelas · {{total}}",
+      title: "Parte financeira do cancelamento",
+      toCancel: "Serão canceladas",
+      waiting: "Aguardando decisão",
+      withPayment: "Esta parcela já tem pagamento: só pode continuar exigível.",
+    },
+    failed: "Não foi possível registrar.",
+    inProgress: "A mesma operação ainda está em andamento. Aguarde um instante e tente novamente.",
+    modes: {
+      LOCK_KEEPS: "O trancamento não altera a obrigação: as parcelas, a cobrança e os juros continuam como estão.",
+      REENROLLMENT_NEW:
+        "A obrigação do novo período nasce uma única vez, na confirmação, pelo plano escolhido na preparação de destino.",
+      TRANSFER_CONTINUES:
+        "O plano segue nas mesmas condições: saldo, pagamentos e crédito ficam ligados à origem, sem cobrança em dobro.",
+      TRANSFER_REVIEWED:
+        "O Financeiro revisou a transferência: saldo, pagamentos e crédito ficam ligados à origem, sem cobrança em dobro.",
+    },
+    ready: "A parte financeira não impede a confirmação.",
+    reason: "Motivo",
+    reasonPlaceholder: "Escreva o motivo da decisão",
+    reasonRequired: "Informe o motivo (de {{min}} a {{max}} caracteres).",
+    review: {
+      action: "Registrar revisão",
+      confirm: "Registrar",
+      decisionPending:
+        "O preço, o pagador ou as condições mudaram no destino: o Financeiro precisa registrar a revisão antes da confirmação.",
+      description:
+        "Saldo, pagamentos e crédito continuam ligados à origem e nada é cobrado em dobro. Registre o que foi conferido e o que acontece com o saldo e com o destino.",
+      done: "Revisão registrada.",
+      notNeeded: "A revisão não é mais necessária. Os dados foram relidos.",
+      planNotChosen: "Escolha o plano de pagamento na preparação de destino.",
+      reason: "O que foi conferido",
+      reasonPlaceholder: "Ex.: mesmo plano e mesmo pagador, só a unidade muda",
+      registered: "O Financeiro registrou a revisão. A parte financeira não impede a confirmação.",
+      title: "Registrar a revisão financeira da transferência",
+    },
+    title: "Parte financeira",
+    unavailable: "Não foi possível ler a parte financeira deste evento agora.",
+  },
   lifecyclePolicies: {
     actionsFor: "Ações de {{name}}",
     changedMeanwhile: "A política foi alterada por outra pessoa. Os dados foram relidos.",

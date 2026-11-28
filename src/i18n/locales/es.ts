@@ -3,6 +3,93 @@ import type { TranslationResource } from "./ptBR"
 // Neutral Spanish, used for every Spanish-speaking browser (es-ES, es-MX, es-AR...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const es: TranslationResource = {
+  financeLifecycle: {
+    changedMeanwhile: "La cuota o el evento cambió mientras tanto. Se volvieron a leer los datos.",
+    cut: {
+      amount: "Valor",
+      classification: "En la cancelación",
+      classifications: {
+        CANCEL: "Será cancelada",
+        CANCELLED: "Cancelada",
+        DECISION_REQUIRED: "Necesita decisión",
+        PRESERVE: "Sigue exigible",
+        SUBSTITUTED: "Sustituida",
+      },
+      cutDate: "Fecha de corte",
+      decide: "Decidir",
+      decideDescription:
+        "La cuota cruza la fecha de corte, así que no se cancela ni se mantiene sola. La decisión vale para esta versión de la cuota: si llega un pago, deja de valer y el caso vuelve a bloquear.",
+      decideFor: "Decidir la cuota {{number}}",
+      decideTitle: "Decidir la cuota {{number}}",
+      decided: "Decisión registrada.",
+      decision: "Decisión",
+      description:
+        "Qué pasa con las cuotas cuando se confirme la cancelación: lo que sigue exigible se queda, el futuro sin pago se cancela, y la cuota que cruza la fecha de corte espera la decisión de Finanzas. Nada se aplica antes de la confirmación.",
+      dueDate: "Vencimiento",
+      dueOn: "vence el {{date}}",
+      installment: "Cuota {{number}}",
+      installmentHeader: "Cuota",
+      needsUnpaid: "Esta cuota ya tiene pago y no puede cancelarse aquí: manténgala exigible.",
+      onlyAdminCancels:
+        "Cancelar la cuota es una concesión, decidida solo por el Admin de la institución. Puede mantenerla exigible.",
+      outcome: "Decisión",
+      outcomeHelper: "Mantener exigible deja la cuota como está. Cancelar es una concesión, nunca con pago.",
+      outcomePlaceholder: "Elija la decisión",
+      outcomeRequired: "Elija la decisión.",
+      outcomes: {
+        CANCEL: "Cancelar la cuota",
+        KEEP_DUE: "Mantener exigible",
+      },
+      paid: "Pagado",
+      paidAndResidual: "pagado {{paid}} · saldo {{residual}}",
+      pending: "Esperando decisión",
+      pendingForOperator: "Hay una cuota esperando su decisión. Mientras tanto, la cancelación no se confirma.",
+      pendingForReader:
+        "Hay una cuota esperando la decisión de Finanzas. Mientras tanto, la cancelación no se confirma.",
+      preserved: "Siguen exigibles",
+      redecide: "Decidir de nuevo",
+      requiresAdmin: "Solo el Admin de la institución cancela una cuota que cruza el corte.",
+      residual: "Saldo",
+      summary_one: "{{count}} cuota · {{total}}",
+      summary_other: "{{count}} cuotas · {{total}}",
+      title: "Parte financiera de la cancelación",
+      toCancel: "Serán canceladas",
+      waiting: "Esperando decisión",
+      withPayment: "Esta cuota ya tiene pago: solo puede seguir exigible.",
+    },
+    failed: "No se pudo registrar.",
+    inProgress: "La misma operación todavía está en curso. Espere un momento e inténtelo de nuevo.",
+    modes: {
+      LOCK_KEEPS: "La suspensión no cambia la obligación: las cuotas, el cobro y los intereses siguen como están.",
+      REENROLLMENT_NEW:
+        "La obligación del nuevo período nace una sola vez, en la confirmación, por el plan elegido en la preparación de destino.",
+      TRANSFER_CONTINUES:
+        "El plan sigue en las mismas condiciones: saldo, pagos y crédito quedan ligados al origen, sin cobro doble.",
+      TRANSFER_REVIEWED:
+        "Finanzas revisó el traslado: saldo, pagos y crédito quedan ligados al origen, sin cobro doble.",
+    },
+    ready: "La parte financiera no impide la confirmación.",
+    reason: "Motivo",
+    reasonPlaceholder: "Escriba el motivo de la decisión",
+    reasonRequired: "Indique el motivo (de {{min}} a {{max}} caracteres).",
+    review: {
+      action: "Registrar revisión",
+      confirm: "Registrar",
+      decisionPending:
+        "El precio, el pagador o las condiciones cambiaron en el destino: Finanzas debe registrar la revisión antes de la confirmación.",
+      description:
+        "Saldo, pagos y crédito siguen ligados al origen y nada se cobra dos veces. Registre lo que se revisó y qué pasa con el saldo y con el destino.",
+      done: "Revisión registrada.",
+      notNeeded: "La revisión ya no es necesaria. Se volvieron a leer los datos.",
+      planNotChosen: "Elija el plan de pago en la preparación de destino.",
+      reason: "Lo que se revisó",
+      reasonPlaceholder: "Ej.: mismo plan y mismo pagador, solo cambia la sede",
+      registered: "Finanzas registró la revisión. La parte financiera no impide la confirmación.",
+      title: "Registrar la revisión financiera del traslado",
+    },
+    title: "Parte financiera",
+    unavailable: "No se pudo leer ahora la parte financiera de este evento.",
+  },
   lifecyclePolicies: {
     actionsFor: "Acciones de {{name}}",
     changedMeanwhile: "Otra persona cambió la política. Se volvieron a leer los datos.",

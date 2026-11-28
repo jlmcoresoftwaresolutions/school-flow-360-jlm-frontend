@@ -3,6 +3,95 @@ import type { TranslationResource } from "./ptBR"
 // French, used for every French-speaking browser (fr-FR, fr-CA, fr-BE...). Typed against
 // TranslationResource like en.ts, so a missing key is a compile error.
 export const fr: TranslationResource = {
+  financeLifecycle: {
+    changedMeanwhile: "L'échéance ou l'événement a changé entre-temps. Les données ont été relues.",
+    cut: {
+      amount: "Montant",
+      classification: "Dans l'annulation",
+      classifications: {
+        CANCEL: "Sera annulée",
+        CANCELLED: "Annulée",
+        DECISION_REQUIRED: "Décision nécessaire",
+        PRESERVE: "Reste exigible",
+        SUBSTITUTED: "Remplacée",
+      },
+      cutDate: "Date de coupure",
+      decide: "Décider",
+      decideDescription:
+        "L'échéance chevauche la date de coupure : elle n'est ni annulée ni maintenue d'elle-même. La décision vaut pour cette version de l'échéance : si un paiement arrive, elle ne compte plus et le cas bloque de nouveau.",
+      decideFor: "Décider l'échéance {{number}}",
+      decideTitle: "Décider l'échéance {{number}}",
+      decided: "Décision enregistrée.",
+      decision: "Décision",
+      description:
+        "Ce qui arrive aux échéances quand l'annulation sera confirmée : ce qui reste exigible demeure, le futur impayé est annulé, et l'échéance qui chevauche la date de coupure attend la décision du service financier. Rien n'est appliqué avant la confirmation.",
+      dueDate: "Échéance",
+      dueOn: "échéance le {{date}}",
+      installment: "Échéance {{number}}",
+      installmentHeader: "Échéance",
+      needsUnpaid: "Cette échéance a déjà un paiement et ne peut pas être annulée ici : maintenez-la exigible.",
+      onlyAdminCancels:
+        "Annuler l'échéance est une concession, décidée seulement par l'Admin de l'établissement. Vous pouvez la maintenir exigible.",
+      outcome: "Décision",
+      outcomeHelper:
+        "La maintenir exigible la laisse telle quelle. Annuler est une concession, jamais avec un paiement.",
+      outcomePlaceholder: "Choisissez la décision",
+      outcomeRequired: "Choisissez la décision.",
+      outcomes: {
+        CANCEL: "Annuler l'échéance",
+        KEEP_DUE: "Maintenir exigible",
+      },
+      paid: "Payé",
+      paidAndResidual: "payé {{paid}} · solde {{residual}}",
+      pending: "En attente de décision",
+      pendingForOperator: "Une échéance attend votre décision. En attendant, l'annulation n'est pas confirmée.",
+      pendingForReader:
+        "Une échéance attend la décision du service financier. En attendant, l'annulation n'est pas confirmée.",
+      preserved: "Restent exigibles",
+      redecide: "Décider à nouveau",
+      requiresAdmin: "Seul l'Admin de l'établissement annule une échéance qui chevauche la coupure.",
+      residual: "Solde",
+      summary_one: "{{count}} échéance · {{total}}",
+      summary_other: "{{count}} échéances · {{total}}",
+      title: "Partie financière de l'annulation",
+      toCancel: "Seront annulées",
+      waiting: "En attente de décision",
+      withPayment: "Cette échéance a déjà un paiement : elle ne peut que rester exigible.",
+    },
+    failed: "Impossible d'enregistrer.",
+    inProgress: "La même opération est encore en cours. Attendez un instant et réessayez.",
+    modes: {
+      LOCK_KEEPS:
+        "La suspension ne change pas l'obligation : les échéances, la facturation et les intérêts restent tels quels.",
+      REENROLLMENT_NEW:
+        "L'obligation de la nouvelle période naît une seule fois, à la confirmation, selon le plan choisi dans la préparation de destination.",
+      TRANSFER_CONTINUES:
+        "Le plan continue aux mêmes conditions : solde, paiements et crédit restent liés à l'origine, sans double facturation.",
+      TRANSFER_REVIEWED:
+        "Le service financier a révisé le transfert : solde, paiements et crédit restent liés à l'origine, sans double facturation.",
+    },
+    ready: "La partie financière n'empêche pas la confirmation.",
+    reason: "Motif",
+    reasonPlaceholder: "Saisissez le motif de la décision",
+    reasonRequired: "Indiquez le motif (de {{min}} à {{max}} caractères).",
+    review: {
+      action: "Enregistrer la révision",
+      confirm: "Enregistrer",
+      decisionPending:
+        "Le prix, le payeur ou les conditions ont changé à destination : le service financier doit enregistrer la révision avant la confirmation.",
+      description:
+        "Solde, paiements et crédit restent liés à l'origine et rien n'est facturé deux fois. Enregistrez ce qui a été vérifié et ce qui arrive au solde et à la destination.",
+      done: "Révision enregistrée.",
+      notNeeded: "La révision n'est plus nécessaire. Les données ont été relues.",
+      planNotChosen: "Choisissez le plan de paiement dans la préparation de destination.",
+      reason: "Ce qui a été vérifié",
+      reasonPlaceholder: "Ex. : même plan et même payeur, seule l'unité change",
+      registered: "Le service financier a enregistré la révision. La partie financière n'empêche pas la confirmation.",
+      title: "Enregistrer la révision financière du transfert",
+    },
+    title: "Partie financière",
+    unavailable: "Impossible de lire maintenant la partie financière de cet événement.",
+  },
   lifecyclePolicies: {
     actionsFor: "Actions pour {{name}}",
     changedMeanwhile: "Quelqu'un d'autre a modifié la politique. Les données ont été relues.",
