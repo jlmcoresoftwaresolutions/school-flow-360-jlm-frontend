@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Button, Text } from "@/ds-components/atoms"
-import { Table } from "@/ds-components/organisms"
+import { toast } from "@/components"
+import { Badge, Button, Text } from "@/ds-components/atoms"
+import { ConfirmDialog, Table } from "@/ds-components/organisms"
+import { spacing } from "@/foundation"
 import type { LifecycleNotificationTemplate, LifecycleTemplateType } from "@/models"
-import { getErrorStatus } from "@/services/httpClient"
-import { listNotificationTemplates } from "@/services/lifecyclePolicies"
+import { getErrorCode, getErrorStatus } from "@/services/httpClient"
+import { listNotificationTemplates, publishNotificationTemplate } from "@/services/lifecyclePolicies"
 
 import { useEnrollmentLabels } from "../shared/enrollments/useEnrollmentLabels"
 import { useLifecycleLabels } from "../shared/enrollments/useLifecycleLabels"
 import { PeopleListError } from "../shared/people/PeopleListError"
+import { useFailureMessage } from "../shared/people/useFailureMessage"
 import { ListContent } from "../shared/userAccess/userAccess.styles"
 import { templateTypes } from "./lifecyclePolicies.constants"
 import { TemplateModal } from "./TemplateModal"
@@ -23,18 +26,22 @@ type LoadResult =
   | { items: LifecycleNotificationTemplate[]; key: number }
 
 // The texts of the notifications a confirmed event sends to the signers and payers (one per event type,
-// plus a lock's return): published data the Admin edits, starting from the backend's proposal. The final
-// wording is the school's to approve.
+// plus a lock's return): data the Admin edits, starting from the base text Lucas approved, and then
+// publishes as the school's version (answer 15 of 27/11/2026). Until a text is published, the flow it
+// belongs to isn't confirmed; editing it makes it a draft again.
 export const TemplatesTab = (props: TemplatesTabProps) => {
   const { isAdmin } = props
 
   const { t } = useTranslation()
   const { formatMoment } = useEnrollmentLabels()
   const { typeLabel } = useLifecycleLabels()
+  const toFailureMessage = useFailureMessage()
 
   const [result, setResult] = useState<LoadResult | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [editing, setEditing] = useState<LifecycleNotificationTemplate | null>(null)
+  const [publishing, setPublishing] = useState<LifecycleNotificationTemplate | null>(null)
+  const [isPublishing, setIsPublishing] = useState(false)
 
   const current = result?.key === reloadToken ? result : null
   const items =
@@ -65,6 +72,21 @@ export const TemplatesTab = (props: TemplatesTabProps) => {
 
   const nameOf = (type: LifecycleTemplateType) =>
     type === "LOCK_RETURN" ? t("lifecyclePolicies.templates.lockReturn") : typeLabel(type)
+
+  const publish = async (template: LifecycleNotificationTemplate) => {
+    setIsPublishing(true)
+    try {
+      await publishNotificationTemplate(template.eventType, template.version)
+      toast.success(t("lifecyclePolicies.templates.publishedDone"))
+    } catch (error) {
+      if (getErrorCode(error) === "VERSION_CONFLICT") toast.error(t("lifecyclePolicies.changedMeanwhile"))
+      else toast.error(toFailureMessage(t("lifecyclePolicies.failed"), error))
+    } finally {
+      setIsPublishing(false)
+      setPublishing(null)
+      reload()
+    }
+  }
 
   if (current && "error" in current) {
     return (
@@ -116,22 +138,48 @@ export const TemplatesTab = (props: TemplatesTabProps) => {
           header={t("lifecyclePolicies.templates.text")}
         />
         <Table.Column
-          body={(item: LifecycleNotificationTemplate) => (item.updatedAt ? formatMoment(item.updatedAt) : "")}
-          field="updatedAt"
-          header={t("lifecyclePolicies.templates.updatedAt")}
+          body={(item: LifecycleNotificationTemplate) => (
+            <span style={{ display: "flex", flexDirection: "column" }}>
+              <span>
+                <Badge tone={item.published ? "success" : "warning"}>
+                  {item.published
+                    ? t("lifecyclePolicies.templates.statusPublished")
+                    : t("lifecyclePolicies.templates.statusDraft")}
+                </Badge>
+              </span>
+              {item.published && item.publishedAt && (
+                <Text color="secondary" fontSize="xs">
+                  {formatMoment(item.publishedAt)}
+                </Text>
+              )}
+            </span>
+          )}
+          field="published"
+          header={t("documentRequirements.policies.state")}
         />
         {isAdmin && (
           <Table.Column
             align="right"
             body={(item: LifecycleNotificationTemplate) => (
-              <Button
-                aria-label={t("lifecyclePolicies.templates.editFor", { name: nameOf(item.eventType) })}
-                onClick={() => setEditing(item)}
-                size="small"
-                variant="outlined"
-              >
-                {t("common.edit")}
-              </Button>
+              <span style={{ display: "flex", gap: spacing[8], justifyContent: "flex-end" }}>
+                <Button
+                  aria-label={t("lifecyclePolicies.templates.editFor", { name: nameOf(item.eventType) })}
+                  onClick={() => setEditing(item)}
+                  size="small"
+                  variant="outlined"
+                >
+                  {t("common.edit")}
+                </Button>
+                {!item.published && (
+                  <Button
+                    aria-label={t("lifecyclePolicies.templates.publishFor", { name: nameOf(item.eventType) })}
+                    onClick={() => setPublishing(item)}
+                    size="small"
+                  >
+                    {t("lifecyclePolicies.publish")}
+                  </Button>
+                )}
+              </span>
             )}
             field="version"
             header={t("documentRequirements.actions")}
@@ -140,6 +188,18 @@ export const TemplatesTab = (props: TemplatesTabProps) => {
         )}
       </Table>
 
+      {publishing && (
+        <ConfirmDialog
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("lifecyclePolicies.publish")}
+          description={t("lifecyclePolicies.templates.publishDescription")}
+          loading={isPublishing}
+          onClose={() => setPublishing(null)}
+          onConfirm={() => void publish(publishing)}
+          title={t("lifecyclePolicies.templates.publishTitle", { name: nameOf(publishing.eventType) })}
+          open
+        />
+      )}
       {editing && (
         <TemplateModal
           onClose={() => setEditing(null)}

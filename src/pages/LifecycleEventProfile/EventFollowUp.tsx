@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next"
 
 import { toast } from "@/components"
 import { Badge, type BadgeProps, Button, Text } from "@/ds-components/atoms"
-import { Table } from "@/ds-components/organisms"
+import { Textarea } from "@/ds-components/molecules"
+import { ConfirmDialog, Table } from "@/ds-components/organisms"
 import { spacing } from "@/foundation"
 import { useSignedInUser } from "@/hooks"
 import type { LifecycleEvent, LifecycleOutboxItem, LifecycleOutboxStatus } from "@/models"
@@ -28,8 +29,10 @@ type BadgeTone = NonNullable<BadgeProps["tone"]>
 
 type Loaded = { error: true; key: string } | { items: LifecycleOutboxItem[]; key: string }
 
-// The backend's limit of attempts for a notification sent again by the Secretaria or the Admin.
+// The backend's limit of attempts for a notification sent again by the Secretaria or the Admin, and the
+// limits of the reason of a reprocess.
 const resendAttempts = 3
+const reprocessReason = { max: 300, min: 3 }
 
 const statusTones: Record<LifecycleOutboxStatus, BadgeTone> = {
   APPLIED: "success",
@@ -40,7 +43,7 @@ const statusTones: Record<LifecycleOutboxStatus, BadgeTone> = {
 // What comes after a confirmed event (Fatia H): the projection in the class diary and one notification per
 // signer or payer, each with its attempts and the last failure. A notification may be sent again by the
 // Secretaria or the Admin (up to 3 attempts, 10 minutes apart; it creates no event), and the Admin
-// reprocesses everything not applied, without a limit. The diary stays pending until its module exists,
+// reprocesses only what failed, after treating the cause and saying why (Lucas's answer 14 of 27/11/2026). The diary stays pending until its module exists,
 // never shown as done. Only those who operate the event's units read it.
 export const EventFollowUp = (props: EventFollowUpProps) => {
   const { event, onChanged, refreshKey } = props
@@ -54,6 +57,9 @@ export const EventFollowUp = (props: EventFollowUpProps) => {
   const [loaded, setLoaded] = useState<Loaded | null>(null)
   const [reloadToken, setReloadToken] = useState(0)
   const [busyId, setBusyId] = useState<number | "all" | null>(null)
+  const [isReprocessing, setIsReprocessing] = useState(false)
+  const [reason, setReason] = useState("")
+  const [reasonError, setReasonError] = useState("")
 
   const isAdmin = hasAnyRole(signedIn, ["ADMIN"])
   const operates = hasAnyRole(signedIn, ["SECRETARIA"])
@@ -61,7 +67,7 @@ export const EventFollowUp = (props: EventFollowUpProps) => {
   const key = `${event.id}#${refreshKey}#${reloadToken}`
   const current = loaded?.key === key ? loaded : null
   const items = current && "items" in current ? current.items : []
-  const hasOpen = items.some((item) => item.status !== "APPLIED")
+  const hasFailed = items.some((item) => item.status === "FAILED")
 
   useEffect(() => {
     if (!shown) return
@@ -115,10 +121,18 @@ export const EventFollowUp = (props: EventFollowUpProps) => {
   }
 
   const reprocess = async () => {
+    const trimmed = reason.trim()
+    if (trimmed.length < reprocessReason.min) {
+      setReasonError(t("lifecycle.outbox.reprocessReasonRequired", { min: reprocessReason.min }))
+      return
+    }
+    setReasonError("")
     setBusyId("all")
     try {
-      await reprocessLifecycleEvent(event.id)
+      await reprocessLifecycleEvent(event.id, trimmed)
       toast.success(t("lifecycle.outbox.reprocessed"))
+      setIsReprocessing(false)
+      setReason("")
       afterChange()
     } catch (error) {
       toast.error(toFailureMessage(t("lifecycle.outbox.failed"), error))
@@ -212,8 +226,8 @@ export const EventFollowUp = (props: EventFollowUpProps) => {
   return (
     <PersonBlock
       action={
-        isAdmin && hasOpen ? (
-          <Button disabled={busyId !== null} onClick={() => void reprocess()} size="small" variant="outlined">
+        isAdmin && hasFailed ? (
+          <Button disabled={busyId !== null} onClick={() => setIsReprocessing(true)} size="small" variant="outlined">
             {t("lifecycle.outbox.reprocess")}
           </Button>
         ) : undefined
@@ -224,6 +238,32 @@ export const EventFollowUp = (props: EventFollowUpProps) => {
         {t("lifecycle.outbox.description")}
       </Text>
       {renderContent()}
+
+      {isReprocessing && (
+        <ConfirmDialog
+          cancelLabel={t("common.cancel")}
+          confirmLabel={t("lifecycle.outbox.reprocess")}
+          description={t("lifecycle.outbox.reprocessDescription")}
+          loading={busyId === "all"}
+          onClose={() => setIsReprocessing(false)}
+          onConfirm={() => void reprocess()}
+          title={t("lifecycle.outbox.reprocessTitle")}
+          open
+        >
+          <Textarea
+            error={reasonError}
+            maxLength={reprocessReason.max}
+            onChange={(change) => {
+              setReason(change.target.value)
+              setReasonError("")
+            }}
+            placeholder={t("lifecycle.outbox.reprocessReasonPlaceholder")}
+            title={t("lifecycle.outbox.reprocessReason")}
+            value={reason}
+            required
+          />
+        </ConfirmDialog>
+      )}
     </PersonBlock>
   )
 }

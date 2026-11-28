@@ -65,6 +65,9 @@ export type LifecycleEvent = {
   destinationUnitId: number | null
   // A cancellation's effective date (yyyy-MM-dd), the cut the finance counts; null = the day it is confirmed.
   effectiveDate: string | null
+  // A cancellation's cut as it will be (the date asked, or today while blank and prepared) or was: shown in
+  // the review so nobody finds the date only afterwards.
+  effectiveDateOnConfirmation: string | null
   eligibleActions: LifecycleEventAction[]
   eventType: LifecycleEventType
   id: number
@@ -78,8 +81,12 @@ export type LifecycleEvent = {
   preparedBy: number | null
   reasonCatalogVersion: number
   reasonCode: string
+  // The reference of the attendance through which the family asked for a lock's return.
+  returnAttendanceRef: string | null
   // When a confirmed lock was returned (the enrollment is active again).
   returnedAt: string | null
+  // The day the family asked for the return (yyyy-MM-dd).
+  returnRequestedOn: string | null
   status: LifecycleEventStatus
   studentId: number
   version: number
@@ -104,7 +111,8 @@ export type LifecycleEventSearchParams = {
 // unit by default), never for a cancellation or a lock. `justification`: up to 500 characters.
 export type LifecycleEventPrepareRequest = {
   destinationUnitId?: number
-  // Cancellation only (yyyy-MM-dd): from 30 days before to 30 days after today; empty = the day it is confirmed.
+  // Cancellation only (yyyy-MM-dd): today or up to 30 days ahead (confirmed only on that day); a past date is
+  // refused; empty = the day it is confirmed.
   effectiveDate?: string
   eventType: LifecycleEventType
   intent: string
@@ -121,10 +129,19 @@ export type LifecycleEventAbandonRequest = {
   version: number
 }
 
-// Body of POST /api/lifecycle-events/{id}/confirm and /return: one intent per attempt the person
-// understands as one (the same intent gives the same result back).
+// Body of POST /api/lifecycle-events/{id}/confirm: one intent per attempt the person understands as one
+// (the same intent gives the same result back).
 export type LifecycleEventConfirmRequest = {
   intent: string
+  version: number
+}
+
+// Body of POST /api/lifecycle-events/{id}/return: besides the intent, the day the family asked for the return
+// (yyyy-MM-dd, never in the future) and the reference of the attendance in the school's channel (up to 80).
+export type LifecycleReturnRequest = {
+  attendanceRef: string
+  intent: string
+  requestedOn: string
   version: number
 }
 
@@ -258,10 +275,13 @@ export type LifecycleNoEffectRuleWrite = {
 // Which notification a text is for: one per event type, plus the lock's return.
 export type LifecycleTemplateType = LifecycleEventType | "LOCK_RETURN"
 
-// The subject and text of a notification, published data the Admin edits.
+// The subject and text of a notification, data the Admin edits and then publishes: until it is published, the
+// flow it belongs to isn't confirmed (NOTIFICATION_TEXT_NOT_PUBLISHED); editing it makes it a draft again.
 export type LifecycleNotificationTemplate = {
   body: string
   eventType: LifecycleTemplateType
+  published: boolean
+  publishedAt: string | null
   subject: string
   updatedAt: string | null
   version: number

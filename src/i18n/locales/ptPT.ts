@@ -29,6 +29,9 @@ export const ptPT: TranslationResource = {
       withdrawTitle: "Retirar o limite de trancamento?",
     },
     noEffect: {
+      wholeUnitOption: "Toda a unidade (só homologação)",
+      scopeRequired: "Escolha a oferta.",
+      offerRequired: "Em produção, a regra precisa indicar a oferta (unidade, período e série).",
       description:
         "Enquanto o módulo financeiro não existe, um evento só é confirmado onde a escola publicou, com a referência e a evidência, que aquele tipo de evento não muda obrigações, pagamentos nem cobranças. A regra vale para uma oferta da unidade ou para a unidade toda.",
       emptyDescription: "Sem regra publicada, os eventos desta unidade ficam bloqueados pelo financeiro.",
@@ -52,7 +55,7 @@ export const ptPT: TranslationResource = {
       ruleRefRequired: "Informe a referência da regra.",
       scope: "Alcance",
       scopeHelper:
-        "Uma regra de uma oferta nunca libera outra. Para a unidade toda, use só em homologação ou numa unidade sem oferta faturável.",
+        "A oferta (unidade, período e série) é obrigatória em produção. Uma regra de uma oferta nunca libera outra.",
       scopePlaceholder: "Escolha o alcance",
       wholeUnit: "Toda a unidade",
       withdrawDescription: "Os eventos deste tipo e alcance voltam a ficar bloqueados pelo financeiro. Nada é apagado.",
@@ -74,12 +77,20 @@ export const ptPT: TranslationResource = {
       templates: "Textos dos avisos",
     },
     templates: {
+      statusPublished: "Publicado",
+      statusDraft: "Rascunho",
+      savedDraft: "Texto salvo como rascunho. Publique-o para valer.",
+      publishedDone: "Texto publicado.",
+      publishTitle: "Publicar o texto · {{name}}?",
+      publishFor: "Publicar o texto de {{name}}",
+      publishDescription:
+        "Esta passa a ser a versão da escola, enviada nos avisos. Editar o texto depois o volta a rascunho.",
       body: "Texto",
       bodyHelper: "Campos que o sistema preenche: {{fields}}.",
       bodyPlaceholder: "Escreva o texto do aviso",
       bodyRequired: "Informe o texto.",
       description:
-        "O texto dos avisos que um evento confirmado manda a quem assina e paga. O sistema traz uma proposta, e o texto final é da escola.",
+        "O texto dos avisos que um evento confirmado manda a quem assina e paga. O texto-base foi aprovado pelo Produto; o Admin ajusta e publica a versão da escola. Enquanto um texto não está publicado, o evento daquele tipo não é confirmado.",
       editFor: "Editar o texto de {{name}}",
       editTitle: "Texto do aviso · {{name}}",
       empty: "Nenhum texto.",
@@ -2103,6 +2114,12 @@ export const ptPT: TranslationResource = {
       failed: "Não foi possível exportar a evidência.",
     },
     outbox: {
+      reprocessTitle: "Reprocessar o que falhou?",
+      reprocessReasonRequired: "Informe o motivo (pelo menos {{min}} caracteres).",
+      reprocessReasonPlaceholder: "Ex.: e-mail do responsável corrigido no cadastro",
+      reprocessReason: "Motivo",
+      reprocessDescription:
+        "Envia novamente só o que falhou, depois de tratada a causa. O que já foi feito e o que ainda espera não mudam, e nada novo é criado.",
       actions: "Ações",
       attempts: "Tentativas",
       attemptsCount_one: "{{count}} tentativa",
@@ -2127,7 +2144,7 @@ export const ptPT: TranslationResource = {
       loading: "A carregar...",
       noEmail: "Sem e-mail",
       reprocess: "Reprocessar",
-      reprocessed: "O que faltava foi aplicado novamente.",
+      reprocessed: "O que falhou foi enviado novamente.",
       resend: "Reenviar",
       resent: "Aviso reenviado.",
       status: "Situação",
@@ -2172,8 +2189,18 @@ export const ptPT: TranslationResource = {
       when: "Quando",
     },
     return: {
+      requestedOnRequired: "Informe a data do pedido.",
+      requestedOnHelper: "O dia em que a família pediu a retomada.",
+      requestedOnFuture: "A data do pedido não pode ser no futuro.",
+      requestedOn: "Data do pedido",
+      invalid: "A retomada não foi aceita. Confira a data do pedido e a referência do atendimento.",
+      attendanceRefRequired: "Informe a referência do atendimento.",
+      attendanceRefPlaceholder: "Ex.: Atendimento 2026-1234",
+      attendanceRefHelper: "O protocolo ou a referência do pedido no canal da escola.",
+      attendanceRef: "Referência do atendimento",
       action: "Retomar",
-      description: "A matrícula volta a ficar ativa. A família é avisada pelo canal que a escola informou.",
+      description:
+        "A matrícula volta a ficar ativa. Registre quando a família pediu a retomada e a referência do atendimento; a família é avisada pelo canal que a escola informou.",
       done: "Matrícula retomada.",
       forbidden: "Só a Coordenação da unidade ou o Admin retomam um trancamento.",
       open: "Retomar matrícula",
@@ -2222,6 +2249,14 @@ export const ptPT: TranslationResource = {
         "O evento e a preparação de destino ficam no histórico como abandonados. A matrícula atual não muda.",
     },
     blockers: {
+      NOTIFICATION_TEXT_NOT_PUBLISHED:
+        "O Admin ainda não publicou o texto do aviso deste tipo de evento, em Políticas de eventos.",
+      FINANCIAL_DECISION_PENDING: "O Financeiro ainda precisa decidir sobre as parcelas deste evento.",
+      FINANCIAL_CONDITION_PENDING: "Escolha a condição financeira (o plano de pagamento) na preparação de destino.",
+      EFFECTIVE_DATE_PASSED: "A data efetiva passou sem a confirmação. Abandone o evento e prepare outro.",
+      EFFECTIVE_DATE_NOT_REACHED: "O cancelamento só é confirmado no dia da data efetiva. Volte nesse dia.",
+      DESTINATION_START_DATE_NOT_REACHED:
+        "A transferência só é confirmada no dia de início no destino. Volte nesse dia.",
       DESTINATION_START_DATE_MISSING: "Escolha a data de início na preparação de destino.",
       DESTINATION_START_DATE_PAST: "A data de início da preparação de destino já passou. Escolha outra.",
       LOCK_DAYS_ABOVE_POLICY: "Os dias pedidos passam do limite de trancamento que a unidade publicou para esta etapa.",
@@ -2277,8 +2312,8 @@ export const ptPT: TranslationResource = {
     prepare: {
       effectiveDate: "Data efetiva",
       effectiveDateHelper:
-        "O corte que o financeiro conta. Pode ser até {{days}} dias antes ou depois de hoje; em branco, vale o dia da confirmação.",
-      effectiveDateInvalid: "Escolha uma data até {{days}} dias antes ou depois de hoje.",
+        "O corte que o financeiro conta. Hoje ou até {{days}} dias à frente; o cancelamento é confirmado nesse dia. Em branco, vale o dia da confirmação.",
+      effectiveDateInvalid: "Escolha hoje ou uma data até {{days}} dias à frente.",
       lockDays: "Dias de trancamento",
       lockDaysHelper: "Dias corridos. A unidade publica o limite por etapa; acima dele, o evento não é confirmado.",
       lockDaysInvalid: "Informe de {{min}} a {{max}} dias.",
@@ -2338,6 +2373,7 @@ export const ptPT: TranslationResource = {
       tryAgain: "Não foi possível enviar. Tente novamente.",
     },
     profile: {
+      effectiveOnConfirmationDate: "O dia da confirmação ({{date}}, se confirmado hoje)",
       adminConfirms: "Nada impede a confirmação, mas este evento é confirmado só pelo Admin.",
       confirmedAtLabel: "Confirmado em",
       days_one: "{{count}} dia",
