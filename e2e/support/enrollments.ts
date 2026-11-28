@@ -24,6 +24,11 @@ export type EnrollmentOptions = {
   // The destination class of a transfer or a re-enrollment is full: the event shows DESTINATION_FULL until
   // an Admin authorizes a seat above the limit, in a unit that enabled the capacity exception.
   destinationFull?: boolean
+  // Bruno's enrollment (502) has an obligation of three installments: one of a past month (stays due), one of
+  // this month (crosses a cancellation's cut, waits for a decision) and one of next month (cancelled).
+  cancellationObligation?: boolean
+  // A transfer's price, payer or conditions changed: the financial side waits for the Financeiro's review.
+  transferNeedsReview?: boolean
   // Units with a published lock policy (the maximum days, for every stage).
   lockPolicyUnits?: Record<number, number>
   // The Admin already published the five notification texts (none is published by default, as the backend).
@@ -1304,6 +1309,89 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
   )
   let nextNumber = 77
 
+  // The financial side of the lifecycle events (EPIC 8, Fatias 2 and 4): Bruno's obligation, the decisions
+  // on the installments that cross a cancellation's cut, and the transfer reviews recorded.
+  const shiftDay = (days: number) => {
+    const date = new Date()
+    date.setDate(date.getDate() + days)
+    return date.toLocaleDateString("en-CA")
+  }
+  const brunoTitles: Item[] = options.cancellationObligation
+    ? [
+        { allocatedCents: 50000, amountCents: 50000, dueDate: shiftDay(-35), installmentNo: 1, titleId: 701 },
+        { allocatedCents: 0, amountCents: 50000, dueDate: shiftDay(0), installmentNo: 2, titleId: 702 },
+        { allocatedCents: 0, amountCents: 50000, dueDate: shiftDay(35), installmentNo: 3, titleId: 703 },
+      ]
+    : []
+  const cutDecisions = new Map<string, Item>()
+  const transferReviews = new Set<number>()
+
+  const cutClassification = (title: Item, cutDate: string) => {
+    const due = String(title.dueDate)
+    if (Number(title.allocatedCents) >= Number(title.amountCents)) return "PRESERVE"
+    if (due.slice(0, 7) === cutDate.slice(0, 7)) return "DECISION_REQUIRED"
+    if (due > cutDate) return Number(title.allocatedCents) > 0 ? "DECISION_REQUIRED" : "CANCEL"
+    return "PRESERVE"
+  }
+
+  const cutReview = (event: Item) => {
+    const cutDate = String(event.effectiveDate ?? today())
+    const items = (event.originEnrollmentId === 502 ? brunoTitles : []).map((title) => {
+      const classification = cutClassification(title, cutDate)
+      const decision = cutDecisions.get(`${event.id}#${title.titleId}`)
+      return {
+        allocatedCents: title.allocatedCents,
+        amountCents: title.amountCents,
+        classification,
+        competence: String(title.dueDate).slice(0, 7),
+        decision: decision?.outcome ?? null,
+        decisionReason: decision?.reason ?? null,
+        dueDate: title.dueDate,
+        installmentNo: title.installmentNo,
+        needsDecision: classification === "DECISION_REQUIRED" && !decision,
+        obligationId: 70,
+        residualCents: Number(title.amountCents) - Number(title.allocatedCents),
+        titleId: title.titleId,
+        titleVersion: 0,
+      }
+    })
+    const sum = (list: Item[]) => list.reduce((total, item) => total + Number(item.residualCents), 0)
+    const preserved = items.filter((item) => item.classification === "PRESERVE" || item.decision === "KEEP_DUE")
+    const toCancel = items.filter((item) => item.classification === "CANCEL" || item.decision === "CANCEL")
+    const pending = items.filter((item) => item.needsDecision)
+    return {
+      cutDate,
+      enrollmentId: event.originEnrollmentId,
+      eventId: event.id,
+      items,
+      pendingDecisionCount: pending.length,
+      preservedCents: sum(preserved),
+      preservedCount: preserved.length,
+      ready: pending.length === 0,
+      toCancelCents: sum(toCancel),
+      toCancelCount: toCancel.length,
+    }
+  }
+
+  const financeReview = (event: Item) => {
+    const type = String(event.eventType)
+    const handled = type === "TRANSFER" && Boolean(options.transferNeedsReview)
+    const reviewed = transferReviews.has(Number(event.id))
+    return {
+      blockedCode: handled && !reviewed ? "DECISION_PENDING" : null,
+      destinationObligationId: null,
+      eventId: event.id,
+      eventType: type,
+      handled,
+      message: handled && !reviewed ? "DECISION_PENDING (backend text)" : null,
+      mode: handled ? (reviewed ? "TRANSFER_REVIEWED" : null) : null,
+      originObligationId: handled ? 70 : null,
+      ready: !handled || reviewed,
+      reference: null,
+      reviewRegistered: reviewed,
+    }
+  }
+
   const queueAfterCommit = (event: Item, kind: string) => {
     const items = outbox.get(Number(event.id)) ?? []
     const now = new Date().toISOString()
@@ -1473,7 +1561,14 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
     const released = noEffectRules.some(
       (item) => item.active && item.unitId === financialUnit && item.eventType === type,
     )
-    if (!released) codes.push("FINANCIAL_POLICY_PENDING")
+    // With an obligation the financial module answers instead of the published rule.
+    const hasObligation = type === "CANCELLATION" && event.originEnrollmentId === 502 && brunoTitles.length > 0
+    const reviewNeeded = type === "TRANSFER" && options.transferNeedsReview
+    if (hasObligation) {
+      if (!cutReview(event).ready) codes.push("FINANCIAL_DECISION_PENDING")
+    } else if (reviewNeeded) {
+      if (!transferReviews.has(Number(event.id))) codes.push("FINANCIAL_DECISION_PENDING")
+    } else if (!released) codes.push("FINANCIAL_POLICY_PENDING")
     // A cancellation is confirmed on its effective day; a future one waits for it.
     if (type === "CANCELLATION" && event.effectiveDate) {
       if (String(event.effectiveDate) > today()) codes.push("EFFECTIVE_DATE_NOT_REACHED")
@@ -1954,6 +2049,55 @@ export const mockEnrollmentApi = async (page: Page, options: EnrollmentOptions =
       }
       templatesByType.set(template[1], saved)
       return route.fulfill(apiAnswer(saved))
+    }
+    return route.fallback()
+  })
+
+  // The financial side of the lifecycle events, and the stored results by intent (none: a lost answer had no effect).
+  await page.route(/\/api\/finance\/commands\/.+$/, (route) =>
+    route.fulfill(apiError(404, "FINANCE_COMMAND_NOT_FOUND")),
+  )
+  await page.route(/\/api\/finance\/lifecycle-events\/\d+\/[a-z-]+$/, (route) => {
+    const call = record(route.request())
+    const [, id, action] = /lifecycle-events\/(\d+)\/([a-z-]+)$/.exec(call.path) ?? []
+    const event = lifecycle.get(Number(id))
+    if (!event) return route.fulfill(apiError(404, "FINANCE_OBJECT_NOT_FOUND"))
+    const body = (call.body ?? {}) as Item
+    if (options.readOnly && call.method === "POST") return route.fulfill(apiError(403, "FINANCE_ACCESS_DENIED"))
+
+    if (action === "cancellation-review") {
+      if (event.eventType !== "CANCELLATION") return route.fulfill(apiError(422, "FINANCE_EVENT_NOT_OPEN"))
+      return route.fulfill(apiAnswer(cutReview(event)))
+    }
+    if (action === "cut-decisions") {
+      const item = (cutReview(event).items as Item[]).find((entry) => entry.titleId === body.titleId)
+      if (!item) return route.fulfill(apiError(404, "FINANCE_OBJECT_NOT_FOUND"))
+      if (item.classification !== "DECISION_REQUIRED")
+        return route.fulfill(apiError(422, "FINANCE_DECISION_NOT_NEEDED"))
+      if (body.outcome === "CANCEL" && Number(item.allocatedCents) > 0) {
+        return route.fulfill(apiError(422, "FINANCE_CANCEL_NEEDS_UNPAID"))
+      }
+      cutDecisions.set(`${event.id}#${String(body.titleId)}`, { outcome: body.outcome, reason: body.reason })
+      return route.fulfill(
+        apiAnswer({
+          decidedBy: 1,
+          eventId: event.id,
+          id: 1,
+          outcome: body.outcome,
+          reason: body.reason,
+          review: cutReview(event),
+          titleId: body.titleId,
+          titleVersion: body.titleVersion,
+        }),
+      )
+    }
+    if (action === "financial-review") return route.fulfill(apiAnswer(financeReview(event)))
+    if (action === "transfer-review") {
+      if (!financeReview(event).handled || transferReviews.has(Number(event.id))) {
+        return route.fulfill(apiError(422, "FINANCE_REVIEW_NOT_NEEDED"))
+      }
+      transferReviews.add(Number(event.id))
+      return route.fulfill(apiAnswer(financeReview(event)))
     }
     return route.fallback()
   })

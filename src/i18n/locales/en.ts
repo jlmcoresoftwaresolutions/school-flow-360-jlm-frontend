@@ -3,6 +3,94 @@ import type { TranslationResource } from "./ptBR"
 // Typed against TranslationResource (ptBR's own shape) instead of inferring its own type: a missing
 // or extra key here is then a compile error, not a silent gap discovered at runtime.
 export const en: TranslationResource = {
+  financeLifecycle: {
+    changedMeanwhile: "The installment or the event changed meanwhile. The data was read again.",
+    cut: {
+      amount: "Amount",
+      classification: "In the cancellation",
+      classifications: {
+        CANCEL: "Will be cancelled",
+        CANCELLED: "Cancelled",
+        DECISION_REQUIRED: "Needs a decision",
+        PRESERVE: "Stays due",
+        SUBSTITUTED: "Substituted",
+      },
+      cutDate: "Cut date",
+      decide: "Decide",
+      decideDescription:
+        "The installment crosses the cut date, so it is neither cancelled nor kept on its own. The decision holds for this version of the installment: if a payment arrives, it stops counting and the case blocks again.",
+      decideFor: "Decide installment {{number}}",
+      decideTitle: "Decide installment {{number}}",
+      decided: "Decision recorded.",
+      decision: "Decision",
+      description:
+        "What happens to the installments when the cancellation is confirmed: what stays due remains, the unpaid future is cancelled, and the installment crossing the cut date waits for the Finance team's decision. Nothing is applied before the confirmation.",
+      dueDate: "Due date",
+      dueOn: "due on {{date}}",
+      installment: "Installment {{number}}",
+      installmentHeader: "Installment",
+      needsUnpaid: "This installment already has a payment and can't be cancelled here: keep it due.",
+      onlyAdminCancels:
+        "Cancelling the installment is a concession, decided only by the institution's Admin. You can keep it due.",
+      outcome: "Decision",
+      outcomeHelper:
+        "Keeping it due leaves the installment as it is. Cancelling is a concession, never with a payment.",
+      outcomePlaceholder: "Choose the decision",
+      outcomeRequired: "Choose the decision.",
+      outcomes: {
+        CANCEL: "Cancel the installment",
+        KEEP_DUE: "Keep it due",
+      },
+      paid: "Paid",
+      paidAndResidual: "paid {{paid}} · balance {{residual}}",
+      pending: "Waiting for a decision",
+      pendingForOperator: "An installment waits for your decision. Meanwhile, the cancellation isn't confirmed.",
+      pendingForReader:
+        "An installment waits for the Finance team's decision. Meanwhile, the cancellation isn't confirmed.",
+      preserved: "Stay due",
+      redecide: "Decide again",
+      requiresAdmin: "Only the institution's Admin cancels an installment crossing the cut.",
+      residual: "Balance",
+      summary_one: "{{count}} installment · {{total}}",
+      summary_other: "{{count}} installments · {{total}}",
+      title: "Financial side of the cancellation",
+      toCancel: "Will be cancelled",
+      waiting: "Waiting for a decision",
+      withPayment: "This installment already has a payment: it can only stay due.",
+    },
+    failed: "We couldn't record it.",
+    inProgress: "The same operation is still running. Wait a moment and try again.",
+    modes: {
+      LOCK_KEEPS: "The suspension doesn't change the obligation: installments, charges and interest stay as they are.",
+      REENROLLMENT_NEW:
+        "The new period's obligation is born once, on the confirmation, from the plan chosen in the destination preparation.",
+      TRANSFER_CONTINUES:
+        "The plan continues on the same conditions: balance, payments and credit stay with the origin, with no double charge.",
+      TRANSFER_REVIEWED:
+        "The Finance team reviewed the transfer: balance, payments and credit stay with the origin, with no double charge.",
+    },
+    ready: "The financial side doesn't block the confirmation.",
+    reason: "Reason",
+    reasonPlaceholder: "Type the reason for the decision",
+    reasonRequired: "Enter the reason ({{min}} to {{max}} characters).",
+    review: {
+      action: "Record the review",
+      confirm: "Record",
+      decisionPending:
+        "The price, the payer or the conditions changed at the destination: the Finance team must record the review before the confirmation.",
+      description:
+        "Balance, payments and credit stay with the origin and nothing is charged twice. Record what was checked and what happens to the balance and the destination.",
+      done: "Review recorded.",
+      notNeeded: "The review is no longer needed. The data was read again.",
+      planNotChosen: "Choose the payment plan in the destination preparation.",
+      reason: "What was checked",
+      reasonPlaceholder: "E.g.: same plan and same payer, only the unit changes",
+      registered: "The Finance team recorded the review. The financial side doesn't block the confirmation.",
+      title: "Record the transfer's financial review",
+    },
+    title: "Financial side",
+    unavailable: "We couldn't read this event's financial side now.",
+  },
   lifecyclePolicies: {
     actionsFor: "Actions for {{name}}",
     changedMeanwhile: "The policy was changed by someone else. The data was read again.",

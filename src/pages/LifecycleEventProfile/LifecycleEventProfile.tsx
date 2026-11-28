@@ -28,6 +28,7 @@ import { AbandonLifecycleEventDialog } from "./AbandonLifecycleEventDialog"
 import { EventCapacity } from "./EventCapacity"
 import { EventFollowUp } from "./EventFollowUp"
 import { EventRectifications } from "./EventRectifications"
+import { EventFinance } from "./finance/EventFinance"
 import { LifecycleCommandDialog } from "./LifecycleCommandDialog"
 import { downloadLifecycleEvidence } from "./lifecycleEvidence"
 import { RectifyDialog } from "./RectifyDialog"
@@ -410,6 +411,8 @@ export const LifecycleEventProfile = () => {
           <PersonBlock title={t("lifecycle.profile.confirmationTitle")}>{renderConfirmation()}</PersonBlock>
 
           <EventCapacity event={event} onChanged={reload} refreshKey={requestKey} />
+
+          <EventFinance event={event} onChanged={reload} refreshKey={requestKey} />
 
           <EventFollowUp event={event} onChanged={reload} refreshKey={requestKey} />
 
